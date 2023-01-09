@@ -43,7 +43,7 @@ def write_catalog_info(args, histogram):
     """
     metadata = {}
     metadata["catalog_name"] = args.catalog_name
-    metadata["version"] = pkg_resources.get_distribution("lsd2").version
+    metadata["version"] = pkg_resources.get_distribution("hipscat").version
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
     metadata["ra_kw"] = args.ra_column

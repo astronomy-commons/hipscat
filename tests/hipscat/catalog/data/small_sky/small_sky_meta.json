@@ -6,11 +6,11 @@
     "n_sources": 131,
     "pix_threshold": 1000000,
     "urls": [
-        "/home/delucchi/git/lsd2/tests/partitioner/data/small_sky_parts/catalog_03_of_05.csv",
-        "/home/delucchi/git/lsd2/tests/partitioner/data/small_sky_parts/catalog_00_of_05.csv",
-        "/home/delucchi/git/lsd2/tests/partitioner/data/small_sky_parts/catalog_02_of_05.csv",
-        "/home/delucchi/git/lsd2/tests/partitioner/data/small_sky_parts/catalog_01_of_05.csv",
-        "/home/delucchi/git/lsd2/tests/partitioner/data/small_sky_parts/catalog_04_of_05.csv"
+        "/usr/hipscat/catalogs/small_sky_parts/catalog_03_of_05.csv",
+        "/usr/hipscat/catalogs/small_sky_parts/catalog_00_of_05.csv",
+        "/usr/hipscat/catalogs/small_sky_parts/catalog_02_of_05.csv",
+        "/usr/hipscat/catalogs/small_sky_parts/catalog_01_of_05.csv",
+        "/usr/hipscat/catalogs/small_sky_parts/catalog_04_of_05.csv"
     ],
     "hips": {
         "0": [
