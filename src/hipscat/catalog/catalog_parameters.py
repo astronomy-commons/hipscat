@@ -31,3 +31,17 @@ class CatalogParameters:
 
         self.highest_healpix_order = highest_healpix_order
         self.pixel_threshold = pixel_threshold
+
+    def __str__(self):
+        formatted_string = (
+            f"  catalog_name {self.catalog_name}\n"
+            f"  input format {self.input_format}\n"
+            f"  num input_paths {len(self.input_paths)}\n"
+            f"  ra_column {self.ra_column}\n"
+            f"  dec_column {self.dec_column}\n"
+            f"  id_column {self.id_column}\n"
+            f"  output_path {self.output_path}\n"
+            f"  highest_healpix_order {self.highest_healpix_order}\n"
+            f"  pixel_threshold {self.pixel_threshold}\n"
+        )
+        return formatted_string

@@ -5,6 +5,8 @@ import os
 
 import pandas as pd
 
+import hipscat.io.paths as paths
+
 
 class Catalog:
     """Container class for catalog metadata"""
@@ -59,11 +61,8 @@ class Catalog:
         file_names = []
         for _, partition in self.partition_info.iterrows():
             file_names.append(
-                os.path.join(
-                    self.catalog_path,
-                    f"Norder{int(partition['order'])}",
-                    f"Npix{int(partition['pixel'])}",
-                    "catalog.parquet",
+                paths.pixel_catalog_file(
+                    self.catalog_path, partition["order"], partition["pixel"]
                 )
             )
 
