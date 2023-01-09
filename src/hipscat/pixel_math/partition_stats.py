@@ -128,7 +128,7 @@ def generate_destination_pixel_map(histogram, pixel_map):
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         pixel_map (:obj:`np.array`): one-dimensional numpy array of integer 3-tuples.
-            See `histogram.generate_alignment` for more details on this format.
+            See `generate_alignment` for more details on this format.
     Returns:
         dictionary that maps the integer 3-tuple of a pixel at destination order to the set of
         indexes in histogram for the pixels at the original healpix order

@@ -83,7 +83,7 @@ def write_legacy_metadata(args, histogram, pixel_map):
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         pixel_map (:obj:`np.array`): one-dimensional numpy array of integer 3-tuples.
-            See `histogram.generate_alignment` for more details on this format.
+            See `pixel_math.partition_stats.generate_alignment` for more details on this format.
     """
     metadata = {}
     metadata["cat_name"] = args.catalog_name

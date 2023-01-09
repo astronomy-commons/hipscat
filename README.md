@@ -35,7 +35,6 @@ $ source activate hipscatenv
 $ cd ~/git
 $ git clone https://github.com/astronomy-commons/hipscat
 $ cd lsd2
-$ python -m pip install -r requirements.txt
 $ source setup.bash
 $ pip install -e .
 ```
