@@ -14,7 +14,6 @@ class Catalog:
         self.metadata_keywords = None
 
         self.partition_info = None
-        self.origin_pixel_map = None
 
         self.catalog_name = None
 

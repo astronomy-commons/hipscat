@@ -2,7 +2,7 @@
 
 import os
 
-from catalog.catalog import Catalog
+from hipscat.catalog import Catalog
 
 TEST_DIR = os.path.dirname(__file__)
 
