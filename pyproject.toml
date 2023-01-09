@@ -1,0 +1,26 @@
+[project]
+name = "hipscat"
+license = {file = "LICENSE"}
+readme = "README.md"
+
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+]
+version = "0.0.1"
+
+[metadata]
+description = "Hierarchical Progressive Survey Catalog"
+long_description = { file = "README.md" }
+url = "https://github.com/astronomy-commons/hipscat"
+
+[build-system]
+requires = [
+    "setuptools>=61",
+    "wheel",
+    "setuptools_scm[toml]>=7.0.0",
+    "setuptools_scm_git_archive"
+]
+build-backend = "setuptools.build_meta"
