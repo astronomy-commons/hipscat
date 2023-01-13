@@ -1,5 +1,6 @@
 ## Byte-compiled, execution cache
 __pycache__/
+.coverage*
 
 # Distribution / packaging
 .eggs/

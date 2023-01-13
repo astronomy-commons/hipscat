@@ -1,6 +1,9 @@
 """Tests of catalog functionality"""
 
 import os
+import tempfile
+
+import pytest
 
 from hipscat.catalog import Catalog
 
@@ -25,3 +28,42 @@ def test_load_catalog_small_sky_order1():
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_pixels()) == 4
     assert len(cat.get_partitions()) == 4
+
+
+def test_empty_directory():
+    """Test loading empty or incomplete data"""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ## Path doesn't exist
+        with pytest.raises(FileNotFoundError):
+            Catalog(os.path.join("path", "empty"))
+
+        catalog_path = os.path.join(tmp_dir, "empty")
+        os.makedirs(catalog_path, exist_ok=True)
+
+        ## Path exists but there's nothing there
+        with pytest.raises(FileNotFoundError):
+            Catalog(catalog_path)
+
+        ## catalog_info file exists - getting closer
+        file_name = os.path.join(catalog_path, "catalog_info.json")
+        with open(
+            file_name,
+            "w",
+            encoding="utf-8",
+        ) as metadata_file:
+            metadata_file.write('{"catalog_name":"empty"}')
+
+        with pytest.raises(FileNotFoundError):
+            Catalog(catalog_path)
+
+        ## partition_info file exists - enough to create a catalog
+        file_name = os.path.join(catalog_path, "partition_info.csv")
+        with open(
+            file_name,
+            "w",
+            encoding="utf-8",
+        ) as metadata_file:
+            metadata_file.write("foo")
+
+        catalog = Catalog(catalog_path)
+        assert catalog.catalog_name == "empty"
