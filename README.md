@@ -30,11 +30,7 @@ __ /path/to/catalogs/<catalog_name>/
 
 
 ```bash
-$ conda create -n hipscatenv python=3.8
-$ source activate hipscatenv
-$ cd ~/git
 $ git clone https://github.com/astronomy-commons/hipscat
 $ cd hipscat
-$ source setup.bash
 $ pip install -e .
 ```

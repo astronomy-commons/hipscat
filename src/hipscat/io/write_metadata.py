@@ -25,11 +25,7 @@ def write_json_file(metadata_dictionary, file_name):
         file_name (str): destination for the json file
     """
     dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=NumpyEncoder)
-    with open(
-        file_name,
-        "w",
-        encoding="utf-8",
-    ) as metadata_file:
+    with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write(dumped_metadata + "\n")
 
 

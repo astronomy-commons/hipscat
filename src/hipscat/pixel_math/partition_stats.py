@@ -35,7 +35,7 @@ def generate_histogram(
     Raises:
         ValueError: if the `ra_column` or `dec_column` cannot be found in the input file.
     """
-    histo = empty_histogram(highest_order)
+    histogram_result = empty_histogram(highest_order)
 
     # Verify that the data frame has columns with desired names.
     required_columns = [ra_column, dec_column]
@@ -49,8 +49,8 @@ def generate_histogram(
         nest=True,
     )
     mapped_pixel, count_at_pixel = np.unique(mapped_pixels, return_counts=True)
-    histo[mapped_pixel] += count_at_pixel.astype(np.ulonglong)
-    return histo
+    histogram_result[mapped_pixel] += count_at_pixel.astype(np.ulonglong)
+    return histogram_result
 
 
 def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
