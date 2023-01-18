@@ -57,7 +57,6 @@ class Catalog:
         Returns:
             one-dimensional array of strings, where each string is a partition file
         """
-        ## TODO - there's probably a pythonic way to do this.
         file_names = []
         for _, partition in self.partition_info.iterrows():
             file_names.append(

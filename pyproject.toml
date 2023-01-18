@@ -15,7 +15,12 @@ requires-python = ">=3.8"
 dependencies = [
     "healpy",
     "pandas",
-    "pytest",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest", 
+    "pytest-cov",
 ]
 
 [metadata]
