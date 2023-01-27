@@ -9,7 +9,7 @@ class CatalogParameters:
     def __init__(
         self,
         catalog_name=None,
-        input_paths: list[str] =None,
+        input_paths: list[str] = None,
         input_format="csv",
         output_path=None,
         highest_healpix_order=10,

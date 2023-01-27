@@ -1,4 +1,4 @@
-"""Include all modules in this subdirectory"""
+"""Utilities for reading and writing catalog files"""
 
 from .paths import pixel_catalog_file, pixel_directory
 from .write_metadata import (
