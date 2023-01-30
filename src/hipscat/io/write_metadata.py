@@ -20,6 +20,7 @@ class NumpyEncoder(json.JSONEncoder):
 
 def write_json_file(metadata_dictionary, file_name):
     """Convert metadata_dictionary to a json string and print to file.
+
     Args:
         metadata_dictionary (:obj:`dictionary`): a dictionary of key-value pairs
         file_name (str): destination for the json file
@@ -56,14 +57,15 @@ def write_catalog_info(args, histogram):
 
 def write_partition_info(args, destination_pixel_map):
     """Write all partition data to CSV file.
+
     Args:
         args (:obj:`PartitionArguments`): collection of runtime arguments for the partitioning job
-        destination_pixel_map (:obj:`DataFrame`)
-          data frame that has as columns:
-          - pixel order of destination
-          - pixel number of destination
-          - sum of rows in destination
-          - list of all source pixels at original order
+        destination_pixel_map (dict): data frame that has as columns:
+
+            - pixel order of destination
+            - pixel number of destination
+            - sum of rows in destination
+            - list of all source pixels at original order
     """
     metadata_filename = os.path.join(args.catalog_path, "partition_info.csv")
     data_frame = pd.DataFrame(destination_pixel_map.keys())
@@ -79,7 +81,7 @@ def write_legacy_metadata(args, histogram, pixel_map):
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         pixel_map (:obj:`np.array`): one-dimensional numpy array of integer 3-tuples.
-            See `pixel_math.partition_stats.generate_alignment` for more details on this format.
+            See :func:`~hipscat.pixel_math.partition_stats.generate_alignment` for more details on this format.
     """
     metadata = {}
     metadata["cat_name"] = args.catalog_name

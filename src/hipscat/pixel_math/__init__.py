@@ -1,4 +1,4 @@
-"""Include all modules in this subdirectory"""
+"""Utilities for performing fun math on healpix pixels"""
 
 from .partition_stats import (
     empty_histogram,

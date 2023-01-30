@@ -44,10 +44,13 @@ class Catalog:
         """Get all healpix pixels that are contained in the catalog
 
         Returns:
-            data frame containing the following columns
-                order: order of the destination pixel
-                pixel: pixel number *at the above order*
-                num_objects: the number of rows in the pixel's partition
+            data frame with per-pixel data.
+
+            The data frame contains the following columns:
+
+            - order: order of the destination pixel
+            - pixel: pixel number *at the above order*
+            - num_objects: the number of rows in the pixel's partition
         """
         return self.partition_info
 
