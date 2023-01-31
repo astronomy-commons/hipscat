@@ -19,7 +19,7 @@ dependencies = [
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
-test = [
+dev = [
     "pytest", 
     "pytest-cov",
 ]
