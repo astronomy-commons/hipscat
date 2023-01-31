@@ -34,3 +34,10 @@ $ git clone https://github.com/astronomy-commons/hipscat
 $ cd hipscat
 $ pip install -e .
 ```
+
+### Installing dev dependencies on Mac
+
+```bash
+$ pip install '.[dev]'
+```
+(Make sure to include the single quotes)
