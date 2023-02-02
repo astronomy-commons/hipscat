@@ -6,3 +6,8 @@ from .partition_stats import (
     generate_destination_pixel_map,
     generate_histogram,
 )
+
+from .pixel_margins import (
+    get_edge,
+    get_margin
+)
