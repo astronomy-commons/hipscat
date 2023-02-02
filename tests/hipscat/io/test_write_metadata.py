@@ -96,6 +96,29 @@ def test_write_partition_info():
         ft.assert_text_file_matches(expected_lines, metadata_filename)
 
 
+def test_write_partition_info_float():
+    """Test that we accurately write out the individual partition stats
+    even when the input is floats instead of ints"""
+    expected_lines = [
+        "order,pixel,num_objects",
+        "0,11,131",
+    ]
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        args = CatalogParameters(
+            catalog_name="small_sky",
+            input_paths=["foo"],
+            input_format="csv",
+            output_path=tmp_dir,
+            highest_healpix_order=0,
+            ra_column="ra",
+            dec_column="dec",
+        )
+        pixel_map = {tuple([0.0, 11.0, 131.0]): [44.0, 45.0, 46.0]}
+        io.write_partition_info(args, pixel_map)
+        metadata_filename = os.path.join(tmp_dir, "small_sky", "partition_info.csv")
+        ft.assert_text_file_matches(expected_lines, metadata_filename)
+
+
 def test_write_legacy_metadata_file():
     """Test that we can write out the older version of the partition metadata"""
     expected_lines = [
