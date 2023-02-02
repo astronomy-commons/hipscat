@@ -70,6 +70,7 @@ def write_partition_info(args, destination_pixel_map):
     metadata_filename = os.path.join(args.catalog_path, "partition_info.csv")
     data_frame = pd.DataFrame(destination_pixel_map.keys())
     data_frame.columns = ["order", "pixel", "num_objects"]
+    data_frame = data_frame.astype(int)
     data_frame.to_csv(metadata_filename, index=False)
 
 
