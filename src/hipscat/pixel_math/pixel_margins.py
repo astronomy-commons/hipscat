@@ -20,7 +20,7 @@ _edge_vectors = [
 # cache used by get_margin()
 _suffixes = {}
 
-def get_edge(dk, pix, edge):
+def get_edge(d_order, pix, edge):
     """Get all the pixels at order kk+dk bordering pixel pix.
     See hipscat/pixel_math/README.md for more info.
 
@@ -43,65 +43,69 @@ def get_edge(dk, pix, edge):
     if edge < 0 or edge > 7:
         raise ValueError("edge can only be values between 0 and 7 (see docstring)")
         
-    if (edge, dk) in _suffixes.keys():
-        a = _suffixes[(edge, dk)]
+    if (edge, d_order) in _suffixes.keys():
+        pixel_edge = _suffixes[(edge, d_order)]
     else:
         # generate and cache the suffix:
 
         # generate all combinations of i,j,k,... suffixes for the requested edge
         # See https://stackoverflow.com/a/35608701
-        a = np.array(np.meshgrid(*[_edge_vectors[edge]]*dk)).T.reshape(-1, dk)
+        grid = np.array(np.meshgrid(*[_edge_vectors[edge]]*d_order))
+        pixel_edge = grid.T.reshape(-1, d_order)
         # bit-shift each suffix by the required number of bits
-        a <<= np.arange(2*(dk-1),-2,-2)
+        pixel_edge <<= np.arange(2*(d_order-1),-2,-2)
         # sum them up row-wise, generating the suffix
-        a = a.sum(axis=1)
+        pixel_edge = pixel_edge.sum(axis=1)
         # cache for further reuse
-        _suffixes[(edge, dk)] = a
+        _suffixes[(edge, d_order)] = pixel_edge
 
     # append the 'pix' preffix
-    a = (pix << 2*dk) + a
-    return a
+    pixel_edge = (pix << 2*d_order) + pixel_edge
+    return pixel_edge
 
-def get_margin(kk, pix, dk):
-    """Get all the pixels at order kk+dk bordering pixel pix.
+def get_margin(order, pix, d_order):
+    """Get all the pixels at order order+dk bordering pixel pix.
     See hipscat/pixel_math/README.md for more info.
 
     Args:
-        kk (int): the healpix order of pix.
+        order (int): the healpix order of pix.
         pix (int): the healpix pixel to find margin pixels of.
-        dk (int): the change in k that we wish to find the margins for. 
+        d_order (int): the change in k that we wish to find the margins for. 
             Must be greater than kk.
     Returns:
         one-dimensional numpy array of long integers, filled with the healpix pixels 
             at order kk+dk that border pix.
     """
-    if dk < 1:
-        raise ValueError("dk must be greater than kk")
+    if d_order < 1:
+        raise ValueError("dk must be greater than order")
     
-    nside = hp.order2nside(kk)
+    nside = hp.order2nside(order)
 
     # get all neighboring pixels
-    n = hp.get_all_neighbours(nside, pix, nest=True)
+    neighbors = hp.get_all_neighbours(nside, pix, nest=True)
 
     # get the healpix faces IDs of pix and the neighboring pixels
-    _, _, f0 = hp.pix2xyf(nside, pix, nest=True)
-    _, _, f  = hp.pix2xyf(nside, n, nest=True)
+    _, _, pix_face = hp.pix2xyf(nside, pix, nest=True)
+    _, _, faces  = hp.pix2xyf(nside, neighbors, nest=True)
 
     # indices which tell get_edge() which edge/verted to return
     # for a given pixel. The default order is compatible with the
     # order returned by hp.get_all_neighbours().
     which = np.arange(8)
-    if f0 < 4: # northern hemisphere; 90deg cw rotation for every +1 face increment
-        mask = (f < 4)
-        which[mask] += 2*(f-f0)[mask]
+    if pix_face < 4: # northern hemisphere; 90deg cw rotation for every +1 face increment
+        mask = (faces < 4)
+        which[mask] += 2*(faces-pix_face)[mask]
         which %= 8
-    elif f0 >= 8: # southern hemisphere; 90deg ccw rotation for every +1 face increment
-        mask = (f >= 8)
-        which[mask] -= 2*(f-f0)[mask]
+    elif pix_face >= 8: # southern hemisphere; 90deg ccw rotation for every +1 face increment
+        mask = (faces >= 8)
+        which[mask] -= 2*(faces-pix_face)[mask]
         which %= 8
 
     # get all edges/vertices 
     # (making sure we skip -1 entries, for pixels with seven neighbors)
-    nb = list(get_edge(dk, px, edge) for edge, px in zip(which, n) if px != -1)
-    nb = np.concatenate(nb)
-    return nb
+    margins = []
+    for edge, pixel in zip(which, neighbors):
+        if pixel != -1:
+            margins.append(get_edge(d_order, pixel, edge))
+    margins = np.concatenate(margins)
+    return margins

@@ -25,14 +25,14 @@ def test_zero_dk():
     with pytest.raises(ValueError) as ve:
         margins = pm.get_margin(2, 2, 0)
 
-    assert str(ve.value) == "dk must be greater than kk"
+    assert str(ve.value) == "dk must be greater than order"
 
 def test_negative_dk():
     """Check that the code fails when trying to find margins at a higher order than the pixel."""
     with pytest.raises(ValueError) as ve:
         margins = pm.get_margin(2, 2, -1)
 
-    assert str(ve.value) == "dk must be greater than kk"
+    assert str(ve.value) == "dk must be greater than order"
 
 def test_polar_edge():
     """Check that the code works when trying to find margins around the north pole."""
