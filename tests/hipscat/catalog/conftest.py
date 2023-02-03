@@ -25,11 +25,32 @@ def root_pixel_node():
 
 
 @pytest.fixture
-def leaf_pixel_node_data(root_pixel_node):
+def inner_pixel_node_data(root_pixel_node):
+    return {
+        "hp_order": 0,
+        "hp_pixel": 1,
+        "node_type": PixelNodeType.INNER,
+        "parent": root_pixel_node,
+        "children": None,
+    }
+
+
+@pytest.fixture
+def inner_pixel_node(inner_pixel_node_data):
+    return PixelNode(**inner_pixel_node_data)
+
+
+@pytest.fixture
+def leaf_pixel_node_data(inner_pixel_node):
     return {
         "hp_order": 0,
         "hp_pixel": 1,
         "node_type": PixelNodeType.LEAF,
-        "parent": root_pixel_node,
+        "parent": inner_pixel_node,
         "children": None,
     }
+
+
+@pytest.fixture
+def leaf_pixel_node(leaf_pixel_node_data):
+    return PixelNode(**leaf_pixel_node_data)

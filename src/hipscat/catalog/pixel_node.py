@@ -54,7 +54,7 @@ class PixelNode:
         """Adds a child node to the node
 
         Args:
-            child: child to add
+            child: child node to add
         """
         self.children.append(child)
 
@@ -64,16 +64,23 @@ class PixelNode:
         Leafs nodes correspond to pixels that have data files containing astronomical objects, so this method is used
         to get the files containing all astronomical objects within the pixel
 
-        This function called on a leaf node returns a list including the node itself
+        This function called on a leaf node returns a list including the node itself and only itself
 
         Returns:
-            A list containing all leaf nodes that descend from the current node and the current node if it is a leaf
+            A list containing all leaf nodes that descend from the current node
         """
 
-        if self.node_type == PixelNodeType.LEAF:
-            return [self]
-
         leaf_descendants = []
-        for child in self.children:
-            leaf_descendants += child.get_all_leaf_descendants()
+        self._add_all_leaf_descendants_rec(leaf_descendants)
         return leaf_descendants
+
+    def _add_all_leaf_descendants_rec(self, leaf_descendants: List[PixelNode]):
+        """Recursively add all leaf descendants to list
+
+        list must be created outside function, done for efficiency vs adding lists
+        """
+        if self.node_type == PixelNodeType.LEAF:
+            leaf_descendants.append(self)
+
+        for child in self.children:
+            child._add_all_leaf_descendants_rec(leaf_descendants)
