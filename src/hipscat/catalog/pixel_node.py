@@ -6,7 +6,7 @@ from hipscat.catalog.pixel_node_type import PixelNodeType
 
 
 class PixelNode:
-    """A node in the HIPSCat quadtree of HEALPix pixels
+    """A node in the HiPSCat quadtree of HEALPix pixels
 
     Attributes:
         hp_order: HEALPix order of the pixel
