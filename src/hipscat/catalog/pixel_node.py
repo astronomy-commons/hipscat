@@ -77,7 +77,7 @@ class PixelNode:
     def _add_all_leaf_descendants_rec(self, leaf_descendants: List[PixelNode]):
         """Recursively add all leaf descendants to list
 
-        list must be created outside function, done for efficiency vs adding lists
+        list must be created outside function, done for efficiency vs list concat
         """
         if self.node_type == PixelNodeType.LEAF:
             leaf_descendants.append(self)
