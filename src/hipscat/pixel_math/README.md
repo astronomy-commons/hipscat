@@ -5,7 +5,7 @@ A reference document for the various utility functions of `hipscat/pixel_math`.
 The functions made to find the pixels that make up the border region of a given healpixel. Primarly used as a way to speed up the neighbor/margin caching code for [hipscat-import](https://github.com/astronomy-commons/hipscat-import/). Code originally created by Mario Juric for HIPS, found [here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hipscat/healpix.py).
 
 ### get_edge
-Given a pixel pix of at some order, return all
+Given a pixel pix at some order, return all
 pixels order dk _higher_ than pix's order that line
 pix's edge (or a corner).
 
@@ -17,7 +17,7 @@ edge: which edge/corner to return (NE edge=0, E corner=1, SE edge = 2, ....)
 
 If you look at how the NEST indexing scheme works, a pixel at some order is
 subdivided into four subpixel at every subsequent order in such a way that the south
-subpixel index equals 4\*pix, east is 4\*pix+1, west is 4\*pix+2, north is 4\*pix+3:
+subpixel index equals `4*pix`, east is `4*pix+1`, west is `4*pix+2`, north is `4*pix+3`:
 
 ```
                 4*pix+3
@@ -26,7 +26,7 @@ pix ->     4*pix+2    4*pix+1
 ```
 
 Further subdivisions split up each of those sub pixels accordingly. For example,
-the eastern subpixel (4*pix+1) gets divide up into four more:
+the eastern subpixel (`4*pix+1`) gets divided up into four more:
 
 ```
 S=4*(4*pix+1), E=4*(4*pix+1)+1, W=4*(4*pix+1)+2, N=4*(4*pix+1)+3
@@ -44,8 +44,8 @@ etcetera...
 We can see that the edge indices follow a pattern. For example, after two
 subdivisions the south-east edge would consist of pixels:
 ```
-4\*(4\*pix), 4\*(4\*pix)+1
-4\*(4\*pix+1), 4\*(4\*pix+1)+1
+4*(4*pix), 4*(4*pix)+1
+4*(4*pix+1), 4*(4*pix+1)+1
 ```
 with the top coming from subdividing the southern, and bottom the eastern pixel.
 and so on, recursively, for more subdivisions. Similar patterns are identifiable
