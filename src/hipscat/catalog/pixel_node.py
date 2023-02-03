@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import Set, List
 
 from hipscat.catalog.pixel_node_type import PixelNodeType
 
@@ -17,35 +17,48 @@ class PixelNode:
 
     """
 
+    _NODE_TYPE_MAX_CHILDREN = {
+        PixelNodeType.ROOT: 12,
+        PixelNodeType.INNER: 4,
+        PixelNodeType.LEAF: 0,
+    }
+
     def __init__(self,
-                 hp_order: int | None,
-                 hp_pixel: int | None,
+                 hp_order: int,
+                 hp_pixel: int,
                  node_type: PixelNodeType,
-                 parent: PixelNode | None = None,
-                 children: List[PixelNode] = None):
+                 parent: PixelNode | None,
+                 children: Set[PixelNode] | None = None):
         """Inits PixelNode with its attributes
 
         Raises:
             ValueError: Invalid arguments for the specified pixel type
         """
 
-        if node_type == PixelNodeType.ROOT and parent is not None:
-            raise ValueError("Root node cannot have a parent")
+        if node_type == PixelNodeType.ROOT:
+            if parent is not None:
+                raise ValueError("Root node cannot have a parent")
+            if hp_order != -1:
+                raise ValueError("Root node must be at order -1")
 
         if node_type == PixelNodeType.INNER or node_type == PixelNodeType.LEAF:
             if parent is None:
                 raise ValueError("Inner and leaf nodes must have a parent")
-            if hp_pixel is None or hp_order is None:
-                raise ValueError("Inner and leaf nodes must have an order and pixel number")
+            if hp_pixel < 0 or hp_order < 0:
+                raise ValueError("Inner and leaf nodes must have an order and pixel number >= 0")
 
-        if children is None:
-            children = []
+        if parent is not None and parent.hp_order != hp_order - 1:
+            raise ValueError("Parent node must be at order one less than current node")
 
         self.hp_order = hp_order
         self.hp_pixel = hp_pixel
         self.node_type = node_type
         self.parent = parent
-        self.children = children
+        self.children = set()
+
+        if children is not None:
+            for child in children:
+                self.add_child_node(child)
 
         if self.parent is not None:
             self.parent.add_child_node(self)
@@ -55,8 +68,18 @@ class PixelNode:
 
         Args:
             child: child node to add
+
+        Raises:
+            ValueError: The child to add does not have the current node set as a parent
+            OverflowError: The node already has the maximum amount of children
         """
-        self.children.append(child)
+        if not child.parent == self:
+            raise ValueError("Child node to add must have the node it is adding to as its parent")
+
+        if len(self.children) >= self._NODE_TYPE_MAX_CHILDREN[self.node_type]:
+            raise OverflowError("Node already has the maximum amount of children")
+
+        self.children.add(child)
 
     def get_all_leaf_descendants(self) -> List[PixelNode]:
         """Gets all descendant nodes that are leaf nodes.
