@@ -1,0 +1,69 @@
+from typing import Dict, Set
+
+import pandas as pd
+
+from hipscat.catalog import PixelNode, PixelNodeType
+
+
+class PixelTree:
+    """ Sparse Quadtree of HEALPix pixels that make up the HiPSCat catalog
+
+    This class store each node in the tree, with leaf nodes corresponding to pixels with data files.
+
+    There are a number of methods in this class which allow for quickly navigating through the tree and performing
+    operations to filter the pixels in the catalog.
+
+    Attributes:
+        pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix order then pixel number
+        root_pixel: Root node of the tree. It's children are a subset of the 12 base HEALPix pixels
+    """
+
+    METADATA_ORDER_COLUMN = "order"
+    METADATA_PIXEL_COLUMN = "pixel"
+
+    def __init__(self, partition_info_df: pd.DataFrame):
+        """Initialises the Tree from the partition info metadata
+
+        Args:
+            partition_info_df: Partition Info metadata file loaded into a pandas DataFrame
+
+        Raises:
+            ValueError: Incorrectly configured pixel structure in metadata file
+        """
+        self.root_pixel = PixelNode(-1, -1, PixelNodeType.ROOT, None)
+        self.pixels = {}
+        self._create_tree(partition_info_df)
+
+    def contains(self, hp_order, hp_pixel):
+        return hp_order in self.pixels and hp_pixel in self.pixels[hp_order]
+
+    def _create_tree(self, partition_info_df: pd.DataFrame):
+        """Creates the tree by recursively creating parent nodes until reaching the root from each leaf pixel
+
+        Validates the pixel structure as it does so by checking for duplicate or incorrectly configured pixels
+        """
+        for _, row in partition_info_df.iterrows():
+            self._create_node_and_parent_if_not_exist(row[self.METADATA_ORDER_COLUMN], row[self.METADATA_PIXEL_COLUMN], PixelNodeType.LEAF)
+
+    def _create_node_and_parent_if_not_exist(self, hp_order: int, hp_pixel: int, node_type: PixelNodeType):
+        """Creates a node in the tree, and recursively creates parent node if parent does not exist"""
+        if self.contains(hp_order, hp_pixel):
+            raise ValueError("Incorrectly configured Catalog")
+
+        if hp_order == 0:
+            self._create_node(hp_order, hp_pixel, node_type, self.root_pixel)
+
+        parent_order = hp_order - 1
+        parent_pixel = hp_pixel >> 2
+        if not self.contains(parent_order, parent_pixel):
+            self._create_node_and_parent_if_not_exist(parent_order, parent_pixel, PixelNodeType.INNER)
+
+        parent = self.pixels[parent_order][parent_pixel]
+        self._create_node(hp_order, hp_pixel, node_type, parent)
+
+    def _create_node(self, hp_order, hp_pixel, node_type, parent):
+        """Create a node and add to the tree"""
+        node = PixelNode(hp_order, hp_pixel, node_type, parent)
+        if hp_order not in self.pixels:
+            self.pixels[hp_order] = {}
+        self.pixels[hp_order][hp_pixel] = node
