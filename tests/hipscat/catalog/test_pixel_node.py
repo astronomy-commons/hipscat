@@ -127,4 +127,4 @@ def test_get_leaf_descendants_with_root_node(root_pixel_node, leaf_pixel_node):
 def test_get_leaf_descendants_with_multiple_leafs(root_pixel_node, leaf_pixel_node, leaf_pixel_node_data):
     leaf_pixel_node_data["hp_pixel"] += 1
     second_leaf = PixelNode(**leaf_pixel_node_data)
-    assert root_pixel_node.get_all_leaf_descendants() == [leaf_pixel_node, second_leaf] or root_pixel_node.get_all_leaf_descendants() == [second_leaf, leaf_pixel_node]
+    assert root_pixel_node.get_all_leaf_descendants() == [leaf_pixel_node, second_leaf]
