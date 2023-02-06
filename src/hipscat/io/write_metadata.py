@@ -6,7 +6,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-import pkg_resources
+from setuptools_scm import get_version
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -40,7 +40,7 @@ def write_catalog_info(args, histogram):
     """
     metadata = {}
     metadata["catalog_name"] = args.catalog_name
-    metadata["version"] = pkg_resources.get_distribution("hipscat").version
+    metadata["version"] = get_version()
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
     metadata["ra_kw"] = args.ra_column
