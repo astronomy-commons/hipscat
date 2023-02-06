@@ -20,8 +20,11 @@ dependencies = [
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
 dev = [
-    "pytest", 
-    "pytest-cov",
+    "pytest",
+    "pytest-cov", # Used to report total code coverage
+    "pre-commit", # Used to run checks before finalizing a git commit
+    "nbconvert", # Needed for pre-commit check to clear output from Python notebooks
+    "pylint", # Used for static linting of files
 ]
 
 [metadata]
@@ -32,3 +35,8 @@ url = "https://github.com/astronomy-commons/hipscat"
 [build-system]
 requires = ["setuptools","wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = """
+    missing-module-docstring,
+"""
