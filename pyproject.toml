@@ -15,6 +15,7 @@ requires-python = ">=3.8"
 dependencies = [
     "healpy",
     "pandas",
+    "setuptools_scm",
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
