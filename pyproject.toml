@@ -36,9 +36,6 @@ url = "https://github.com/astronomy-commons/hipscat"
 requires = ["setuptools","wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
-write_to = "src/hipscat/_version.py"
-
 [tool.pylint.'MESSAGES CONTROL']
 disable = """
     missing-module-docstring,
