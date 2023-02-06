@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Set, List
+from bisect import bisect, insort
+from typing import List
 
 from hipscat.catalog.pixel_node_type import PixelNodeType
 
@@ -28,7 +29,7 @@ class PixelNode:
                  hp_pixel: int,
                  node_type: PixelNodeType,
                  parent: PixelNode | None,
-                 children: Set[PixelNode] | None = None):
+                 children: List[PixelNode] | None = None):
         """Inits PixelNode with its attributes
 
         Raises:
@@ -54,7 +55,7 @@ class PixelNode:
         self.hp_pixel = hp_pixel
         self.node_type = node_type
         self.parent = parent
-        self.children = set()
+        self.children = []
 
         if children is not None:
             for child in children:
@@ -65,6 +66,8 @@ class PixelNode:
 
     def add_child_node(self, child: PixelNode):
         """Adds a child node to the node
+
+        Maintains order of children based on pixel index
 
         Args:
             child: child node to add
@@ -79,7 +82,8 @@ class PixelNode:
         if len(self.children) >= self._NODE_TYPE_MAX_CHILDREN[self.node_type]:
             raise OverflowError("Node already has the maximum amount of children")
 
-        self.children.add(child)
+        insert_index = bisect(list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel)
+        self.children.insert(insert_index, child)
 
     def get_all_leaf_descendants(self) -> List[PixelNode]:
         """Gets all descendant nodes that are leaf nodes.
