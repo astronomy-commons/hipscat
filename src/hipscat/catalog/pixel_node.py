@@ -44,7 +44,7 @@ class PixelNode:
             if hp_order != -1:
                 raise ValueError("Root node must be at order -1")
 
-        if node_type in (PixelNodeType.INNER , PixelNodeType.LEAF):
+        if node_type in (PixelNodeType.INNER, PixelNodeType.LEAF):
             if parent is None:
                 raise ValueError("Inner and leaf nodes must have a parent")
             if hp_pixel < 0 or hp_order < 0:

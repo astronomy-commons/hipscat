@@ -94,15 +94,14 @@ def get_margin(order, pix, d_order):
     # for a given pixel. The default order is compatible with the
     # order returned by hp.get_all_neighbours().
     which = np.arange(8)
-    if (
-        pix_face < 4
-    ):  # northern hemisphere; 90deg cw rotation for every +1 face increment
+
+    # northern hemisphere; 90deg cw rotation for every +1 face increment
+    if pix_face < 4:
         mask = faces < 4
         which[mask] += 2 * (faces - pix_face)[mask]
         which %= 8
-    elif (
-        pix_face >= 8
-    ):  # southern hemisphere; 90deg ccw rotation for every +1 face increment
+    # southern hemisphere; 90deg ccw rotation for every +1 face increment
+    elif pix_face >= 8:
         mask = faces >= 8
         which[mask] -= 2 * (faces - pix_face)[mask]
         which %= 8
