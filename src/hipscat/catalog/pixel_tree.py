@@ -6,16 +6,16 @@ from hipscat.catalog import PixelNode, PixelNodeType
 
 
 class PixelTree:
-    """ Sparse Quadtree of HEALPix pixels that make up the HiPSCat catalog
+    """Sparse Quadtree of HEALPix pixels that make up the HiPSCat catalog
 
     This class store each node in the tree, with leaf nodes corresponding to pixels with data files.
 
-    There are a number of methods in this class which allow for quickly navigating through the tree and performing
-    operations to filter the pixels in the catalog.
+    There are a number of methods in this class which allow for quickly navigating through the
+    tree and performing operations to filter the pixels in the catalog.
 
-    Attributes:
-        pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix order then pixel number
-        root_pixel: Root node of the tree. It's children are a subset of the 12 base HEALPix pixels
+    Attributes: pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
+    order then pixel number root_pixel: Root node of the tree. It's children are a subset of the
+    12 base HEALPix pixels
     """
 
     METADATA_ORDER_COLUMN = "order"
@@ -35,10 +35,10 @@ class PixelTree:
         self._create_tree(partition_info_df)
 
     def __len__(self):
-        sum = 0
-        for order in self.pixels:
-            sum += len(self.pixels[order])
-        return sum
+        pixel_count = 0
+        for order_pixels in self.pixels.items():
+            pixel_count += len(order_pixels)
+        return pixel_count
 
     def contains(self, hp_order: int, hp_pixel: int) -> bool:
         """Check if tree contains a node at a given order and pixel
@@ -64,23 +64,31 @@ class PixelTree:
         """
         if self.contains(hp_order, hp_pixel):
             return self.pixels[hp_order][hp_pixel]
-        else:
-            return None
+        return None
 
     def _create_tree(self, partition_info_df: pd.DataFrame):
-        """Creates the tree by recursively creating parent nodes until reaching the root from each leaf pixel
+        """Creates the tree by recursively creating parent nodes until reaching the root from
+        each leaf pixel
 
-        Validates the pixel structure as it does so by checking for duplicate or incorrectly configured pixels
+        Validates the pixel structure as it does so by checking for duplicate or incorrectly
+        configured pixels
         """
         for _, row in partition_info_df.iterrows():
-            self._create_node_and_parent_if_not_exist(row[self.METADATA_ORDER_COLUMN], row[self.METADATA_PIXEL_COLUMN],
-                                                      PixelNodeType.LEAF)
+            self._create_node_and_parent_if_not_exist(
+                row[self.METADATA_ORDER_COLUMN],
+                row[self.METADATA_PIXEL_COLUMN],
+                PixelNodeType.LEAF,
+            )
 
-    def _create_node_and_parent_if_not_exist(self, hp_order: int, hp_pixel: int, node_type: PixelNodeType):
-        """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent node if parent does not
-        exist"""
+    def _create_node_and_parent_if_not_exist(
+        self, hp_order: int, hp_pixel: int, node_type: PixelNodeType
+    ):
+        """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
+        node if parent does not exist"""
         if self.contains(hp_order, hp_pixel):
-            raise ValueError("Incorrectly configured catalog: catalog contains duplicate pixels")
+            raise ValueError(
+                "Incorrectly configured catalog: catalog contains duplicate pixels"
+            )
 
         if hp_order == 0:
             self._create_node(hp_order, hp_pixel, node_type, self.root_pixel)
@@ -89,7 +97,9 @@ class PixelTree:
         parent_order = hp_order - 1
         parent_pixel = hp_pixel >> 2
         if not self.contains(parent_order, parent_pixel):
-            self._create_node_and_parent_if_not_exist(parent_order, parent_pixel, PixelNodeType.INNER)
+            self._create_node_and_parent_if_not_exist(
+                parent_order, parent_pixel, PixelNodeType.INNER
+            )
 
         parent = self.pixels[parent_order][parent_pixel]
         self._create_node(hp_order, hp_pixel, node_type, parent)
