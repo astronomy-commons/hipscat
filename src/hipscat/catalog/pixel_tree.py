@@ -18,8 +18,8 @@ class PixelTree:
     12 base HEALPix pixels
     """
 
-    METADATA_ORDER_COLUMN = "order"
-    METADATA_PIXEL_COLUMN = "pixel"
+    METADATA_ORDER_COLUMN_NAME = "order"
+    METADATA_PIXEL_COLUMN_NAME = "pixel"
 
     def __init__(self, partition_info_df: pd.DataFrame):
         """Initialises the Tree from the partition info metadata
@@ -36,7 +36,7 @@ class PixelTree:
 
     def __len__(self):
         pixel_count = 0
-        for order_pixels in self.pixels.items():
+        for _, order_pixels in self.pixels.items():
             pixel_count += len(order_pixels)
         return pixel_count
 
@@ -70,13 +70,13 @@ class PixelTree:
         """Creates the tree by recursively creating parent nodes until reaching the root from
         each leaf pixel
 
-        Validates the pixel structure as it does so by checking for duplicate or incorrectly
-        configured pixels
+        Validates the pixel structure as it does so by checking for duplicate pixels or pixels
+        defined at multiple orders
         """
         for _, row in partition_info_df.iterrows():
             self._create_node_and_parent_if_not_exist(
-                row[self.METADATA_ORDER_COLUMN],
-                row[self.METADATA_PIXEL_COLUMN],
+                row[self.METADATA_ORDER_COLUMN_NAME],
+                row[self.METADATA_PIXEL_COLUMN_NAME],
                 PixelNodeType.LEAF,
             )
 
@@ -102,6 +102,11 @@ class PixelTree:
             )
 
         parent = self.pixels[parent_order][parent_pixel]
+
+        if parent.node_type != PixelNodeType.INNER:
+            raise ValueError("Incorrectly configured catalog: catalog contains pixels defined at "
+                             "multiple orders")
+
         self._create_node(hp_order, hp_pixel, node_type, parent)
 
     def _create_node(self, hp_order, hp_pixel, node_type, parent):
