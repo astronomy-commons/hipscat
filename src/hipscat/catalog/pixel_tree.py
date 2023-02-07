@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from __future__ import annotations
 
 import pandas as pd
 
@@ -34,8 +34,32 @@ class PixelTree:
         self.pixels = {}
         self._create_tree(partition_info_df)
 
-    def contains(self, hp_order, hp_pixel):
+    def contains(self, hp_order: int, hp_pixel: int) -> bool:
+        """Check if tree contains a node at a given order and pixel
+
+        Args:
+            hp_order: HEALPix order to check
+            hp_pixel: HEALPix pixel number to check
+
+        Returns:
+            True if the tree contains the pixel, False if not
+        """
         return hp_order in self.pixels and hp_pixel in self.pixels[hp_order]
+
+    def get_node(self, hp_order: int, hp_pixel: int) -> PixelNode | None:
+        """Get the node at a given order and pixel
+
+        Args:
+            hp_order: HEALPix order to get
+            hp_pixel: HEALPix pixel number to get
+
+        Returns:
+            The PixelNode at the index, or None if a node does not exist
+        """
+        if self.contains(hp_order, hp_pixel):
+            return self.pixels[hp_order][hp_pixel]
+        else:
+            return None
 
     def _create_tree(self, partition_info_df: pd.DataFrame):
         """Creates the tree by recursively creating parent nodes until reaching the root from each leaf pixel
@@ -43,12 +67,13 @@ class PixelTree:
         Validates the pixel structure as it does so by checking for duplicate or incorrectly configured pixels
         """
         for _, row in partition_info_df.iterrows():
-            self._create_node_and_parent_if_not_exist(row[self.METADATA_ORDER_COLUMN], row[self.METADATA_PIXEL_COLUMN], PixelNodeType.LEAF)
+            self._create_node_and_parent_if_not_exist(row[self.METADATA_ORDER_COLUMN], row[self.METADATA_PIXEL_COLUMN],
+                                                      PixelNodeType.LEAF)
 
     def _create_node_and_parent_if_not_exist(self, hp_order: int, hp_pixel: int, node_type: PixelNodeType):
         """Creates a node in the tree, and recursively creates parent node if parent does not exist"""
         if self.contains(hp_order, hp_pixel):
-            raise ValueError("Incorrectly configured Catalog")
+            raise ValueError("Incorrectly configured catalog: catalog contains duplicate pixels")
 
         if hp_order == 0:
             self._create_node(hp_order, hp_pixel, node_type, self.root_pixel)
