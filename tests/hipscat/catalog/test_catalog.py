@@ -7,23 +7,19 @@ import pytest
 
 from hipscat.catalog import Catalog
 
-TEST_DIR = os.path.dirname(__file__)
 
-TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
-
-
-def test_load_catalog_small_sky():
+def test_load_catalog_small_sky(small_sky_dir):
     """Instantiate a catalog with 1 pixel"""
-    cat = Catalog(os.path.join(TEST_DATA_DIR, "small_sky"))
+    cat = Catalog(small_sky_dir)
 
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_pixels()) == 1
     assert len(cat.get_partitions()) == 1
 
 
-def test_load_catalog_small_sky_order1():
+def test_load_catalog_small_sky_order1(small_sky_order1_dir):
     """Instantiate a catalog with 4 pixels"""
-    cat = Catalog(os.path.join(TEST_DATA_DIR, "small_sky_order1"))
+    cat = Catalog(small_sky_order1_dir)
 
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_pixels()) == 4
