@@ -16,6 +16,7 @@ class NumpyEncoder(json.JSONEncoder):
         int_object = o
         if isinstance(int_object, (np.int64, np.ulonglong)):
             return int(int_object)
+        return o
 
 
 def write_json_file(metadata_dictionary, file_name):
@@ -82,7 +83,8 @@ def write_legacy_metadata(args, histogram, pixel_map):
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         pixel_map (:obj:`np.array`): one-dimensional numpy array of integer 3-tuples.
-            See :func:`~hipscat.pixel_math.partition_stats.generate_alignment` for more details on this format.
+            See :func:`~hipscat.pixel_math.partition_stats.generate_alignment` for more
+            details on this format.
     """
     metadata = {}
     metadata["cat_name"] = args.catalog_name

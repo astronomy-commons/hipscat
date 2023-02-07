@@ -4,6 +4,7 @@ import os
 from typing import List
 
 
+# pylint: disable=too-many-instance-attributes
 class CatalogParameters:
     """Container class for catalog properties"""
 

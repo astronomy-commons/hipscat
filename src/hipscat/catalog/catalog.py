@@ -5,7 +5,7 @@ import os
 
 import pandas as pd
 
-import hipscat.io.paths as paths
+from hipscat.io import paths
 
 
 class Catalog:

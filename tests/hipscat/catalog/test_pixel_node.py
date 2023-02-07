@@ -16,13 +16,17 @@ def test_create_root_node(root_pixel_node_data):
     check_node_data_correct(root_node, root_pixel_node_data)
 
 
-def test_create_root_node_with_parent_raises_error(root_pixel_node, root_pixel_node_data):
+def test_create_root_node_with_parent_raises_error(
+    root_pixel_node, root_pixel_node_data
+):
     with pytest.raises(ValueError):
         root_pixel_node_data["parent"] = root_pixel_node
         PixelNode(**root_pixel_node_data)
 
 
-def test_create_root_node_with_wrong_order_raises_error(root_pixel_node, root_pixel_node_data):
+def test_create_root_node_with_wrong_order_raises_error(
+    root_pixel_node, root_pixel_node_data
+):
     with pytest.raises(ValueError):
         root_pixel_node_data["hp_order"] = 1
         PixelNode(**root_pixel_node_data)
@@ -68,13 +72,17 @@ def test_create_leaf_node_with_negative_hp_pixel_raises_error(leaf_pixel_node_da
         PixelNode(**leaf_pixel_node_data)
 
 
-def test_create_node_with_wrong_order_parent_raises_error(leaf_pixel_node_data, root_pixel_node):
+def test_create_node_with_wrong_order_parent_raises_error(
+    leaf_pixel_node_data, root_pixel_node
+):
     with pytest.raises(ValueError):
         leaf_pixel_node_data["parent"] = root_pixel_node
         PixelNode(**leaf_pixel_node_data)
 
 
-def test_add_child_node_with_wrong_child_parent_raises_error(leaf_pixel_node, root_pixel_node):
+def test_add_child_node_with_wrong_child_parent_raises_error(
+    leaf_pixel_node, root_pixel_node
+):
     with pytest.raises(ValueError):
         root_pixel_node.add_child_node(leaf_pixel_node)
 
@@ -86,7 +94,9 @@ def test_add_max_children_to_root_node(root_pixel_node, inner_pixel_node_data):
         inner_nodes.append(PixelNode(**inner_pixel_node_data))
 
 
-def test_add_too_many_children_to_root_node_fails(root_pixel_node, inner_pixel_node_data):
+def test_add_too_many_children_to_root_node_fails(
+    root_pixel_node, inner_pixel_node_data
+):
     with pytest.raises(OverflowError):
         inner_nodes = []
         for _ in range(13):
@@ -101,7 +111,9 @@ def test_add_max_children_to_inner_node(inner_pixel_node, leaf_pixel_node_data):
         leaf_nodes.append(PixelNode(**leaf_pixel_node_data))
 
 
-def test_add_too_many_children_to_inner_node_fails(inner_pixel_node, leaf_pixel_node_data):
+def test_add_too_many_children_to_inner_node_fails(
+    inner_pixel_node, leaf_pixel_node_data
+):
     with pytest.raises(OverflowError):
         leaf_nodes = []
         for _ in range(5):
@@ -124,7 +136,9 @@ def test_get_leaf_descendants_with_root_node(root_pixel_node, leaf_pixel_node):
     assert root_pixel_node.get_all_leaf_descendants() == [leaf_pixel_node]
 
 
-def test_get_leaf_descendants_with_multiple_leafs(root_pixel_node, leaf_pixel_node, leaf_pixel_node_data):
+def test_get_leaf_descendants_with_multiple_leafs(
+    root_pixel_node, leaf_pixel_node, leaf_pixel_node_data
+):
     leaf_pixel_node_data["hp_pixel"] += 1
     second_leaf = PixelNode(**leaf_pixel_node_data)
     assert root_pixel_node.get_all_leaf_descendants() == [leaf_pixel_node, second_leaf]

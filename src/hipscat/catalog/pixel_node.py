@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bisect import bisect, insort
+from bisect import bisect
 from typing import List
 
 from hipscat.catalog.pixel_node_type import PixelNodeType
@@ -24,12 +24,14 @@ class PixelNode:
         PixelNodeType.LEAF: 0,
     }
 
-    def __init__(self,
-                 hp_order: int,
-                 hp_pixel: int,
-                 node_type: PixelNodeType,
-                 parent: PixelNode | None,
-                 children: List[PixelNode] | None = None):
+    def __init__(
+        self,
+        hp_order: int,
+        hp_pixel: int,
+        node_type: PixelNodeType,
+        parent: PixelNode | None,
+        children: List[PixelNode] | None = None,
+    ):
         """Inits PixelNode with its attributes
 
         Raises:
@@ -42,11 +44,13 @@ class PixelNode:
             if hp_order != -1:
                 raise ValueError("Root node must be at order -1")
 
-        if node_type == PixelNodeType.INNER or node_type == PixelNodeType.LEAF:
+        if node_type in (PixelNodeType.INNER , PixelNodeType.LEAF):
             if parent is None:
                 raise ValueError("Inner and leaf nodes must have a parent")
             if hp_pixel < 0 or hp_order < 0:
-                raise ValueError("Inner and leaf nodes must have an order and pixel number >= 0")
+                raise ValueError(
+                    "Inner and leaf nodes must have an order and pixel number >= 0"
+                )
 
         if parent is not None and parent.hp_order != hp_order - 1:
             raise ValueError("Parent node must be at order one less than current node")
@@ -77,19 +81,23 @@ class PixelNode:
             OverflowError: The node already has the maximum amount of children
         """
         if not child.parent == self:
-            raise ValueError("Child node to add must have the node it is adding to as its parent")
+            raise ValueError(
+                "Child node to add must have the node it is adding to as its parent"
+            )
 
         if len(self.children) >= self._NODE_TYPE_MAX_CHILDREN[self.node_type]:
             raise OverflowError("Node already has the maximum amount of children")
 
-        insert_index = bisect(list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel)
+        insert_index = bisect(
+            list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel
+        )
         self.children.insert(insert_index, child)
 
     def get_all_leaf_descendants(self) -> List[PixelNode]:
         """Gets all descendant nodes that are leaf nodes.
 
-        Leafs nodes correspond to pixels that have data files containing astronomical objects, so this method is used
-        to get the files containing all astronomical objects within the pixel
+        Leafs nodes correspond to pixels that have data files containing astronomical objects, so
+        this method is used to get the files containing all astronomical objects within the pixel.
 
         This function called on a leaf node returns a list including the node itself and only itself
 
@@ -110,4 +118,5 @@ class PixelNode:
             leaf_descendants.append(self)
 
         for child in self.children:
+            # pylint: disable=protected-access
             child._add_all_leaf_descendants_rec(leaf_descendants)
