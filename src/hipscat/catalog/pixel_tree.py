@@ -31,8 +31,14 @@ class PixelTree:
             ValueError: Incorrectly configured pixel structure in metadata file
         """
         self.root_pixel = PixelNode(-1, -1, PixelNodeType.ROOT, None)
-        self.pixels = {}
+        self.pixels = {-1: {-1: self.root_pixel}}
         self._create_tree(partition_info_df)
+
+    def __len__(self):
+        sum = 0
+        for order in self.pixels:
+            sum += len(self.pixels[order])
+        return sum
 
     def contains(self, hp_order: int, hp_pixel: int) -> bool:
         """Check if tree contains a node at a given order and pixel
@@ -71,12 +77,14 @@ class PixelTree:
                                                       PixelNodeType.LEAF)
 
     def _create_node_and_parent_if_not_exist(self, hp_order: int, hp_pixel: int, node_type: PixelNodeType):
-        """Creates a node in the tree, and recursively creates parent node if parent does not exist"""
+        """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent node if parent does not
+        exist"""
         if self.contains(hp_order, hp_pixel):
             raise ValueError("Incorrectly configured catalog: catalog contains duplicate pixels")
 
         if hp_order == 0:
             self._create_node(hp_order, hp_pixel, node_type, self.root_pixel)
+            return
 
         parent_order = hp_order - 1
         parent_pixel = hp_pixel >> 2
@@ -87,7 +95,7 @@ class PixelTree:
         self._create_node(hp_order, hp_pixel, node_type, parent)
 
     def _create_node(self, hp_order, hp_pixel, node_type, parent):
-        """Create a node and add to the tree"""
+        """Create a node and add to `self.pixels` in the tree"""
         node = PixelNode(hp_order, hp_pixel, node_type, parent)
         if hp_order not in self.pixels:
             self.pixels[hp_order] = {}
