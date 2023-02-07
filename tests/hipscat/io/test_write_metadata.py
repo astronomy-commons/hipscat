@@ -46,7 +46,7 @@ def test_write_catalog_info():
     expected_lines = [
         "{",
         '    "catalog_name": "small_sky",',
-        r'    "version": "[.\d]+",',  # version matches digits
+        r'    "version": ".*",',  # version matches digits
         r'    "generation_date": "[.\d]+",',  # date matches date format
         '    "ra_kw": "ra",',
         '    "dec_kw": "dec",',

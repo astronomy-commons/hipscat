@@ -9,12 +9,13 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
 ]
-version = "0.0.1"
+dynamic = ["version"]
 
 requires-python = ">=3.8"
 dependencies = [
     "healpy",
     "pandas",
+    "setuptools_scm",
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
