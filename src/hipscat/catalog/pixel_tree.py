@@ -8,14 +8,16 @@ from hipscat.catalog import PixelNode, PixelNodeType
 class PixelTree:
     """Sparse Quadtree of HEALPix pixels that make up the HiPSCat catalog
 
-    This class store each node in the tree, with leaf nodes corresponding to pixels with data files.
+    This class stores each node in the tree, with leaf nodes corresponding to pixels with data
+    files.
 
     There are a number of methods in this class which allow for quickly navigating through the
     tree and performing operations to filter the pixels in the catalog.
 
-    Attributes: pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-    order then pixel number root_pixel: Root node of the tree. Its children are a subset of the
-    12 base HEALPix pixels
+    Attributes:
+        pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
+        order then pixel number root_pixel: Root node of the tree. Its children are a subset of the
+        12 base HEALPix pixels
     """
 
     METADATA_ORDER_COLUMN_NAME = "order"
@@ -35,6 +37,11 @@ class PixelTree:
         self._create_tree(partition_info_df)
 
     def __len__(self):
+        """Gets the number of nodes in the tree, including inner nodes and the root node
+
+        Returns:
+            The number of nodes in the tree, including inner nodes and the root node
+        """
         pixel_count = 0
         for _, order_pixels in self.pixels.items():
             pixel_count += len(order_pixels)
@@ -72,6 +79,9 @@ class PixelTree:
 
         Validates the pixel structure as it does so by checking for duplicate pixels or pixels
         defined at multiple orders
+
+        Args:
+            partition_info_df: Dataframe loaded from the partition_info metadata
         """
         for _, row in partition_info_df.iterrows():
             self._create_node_and_parent_if_not_exist(
@@ -84,7 +94,13 @@ class PixelTree:
         self, hp_order: int, hp_pixel: int, node_type: PixelNodeType
     ):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
-        node if parent does not exist"""
+        node if parent does not exist
+
+        Args:
+            hp_order: HEALPix order to create the node at
+            hp_pixel: HEALPix pixel to create the node at
+            node_type: Node type of the node to create
+        """
         if self.contains(hp_order, hp_pixel):
             raise ValueError(
                 "Incorrectly configured catalog: catalog contains duplicate pixels"
@@ -109,8 +125,17 @@ class PixelTree:
 
         self._create_node(hp_order, hp_pixel, node_type, parent)
 
-    def _create_node(self, hp_order, hp_pixel, node_type, parent):
-        """Create a node and add to `self.pixels` in the tree"""
+    def _create_node(
+            self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
+    ):
+        """Create a node and add to `self.pixels` in the tree
+
+        Args:
+            hp_order: HEALPix order to create the node at
+            hp_pixel: HEALPix order to create the node at
+            node_type: Node type of the node to create
+            parent: Parent node of the node to create
+        """
         node = PixelNode(hp_order, hp_pixel, node_type, parent)
         if hp_order not in self.pixels:
             self.pixels[hp_order] = {}
