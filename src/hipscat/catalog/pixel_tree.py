@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from typing import List
+
+import healpy as hp
 import pandas as pd
 
 from hipscat.catalog import PixelNode, PixelNodeType
+from hipscat.pixel_math import calculate_lower_order_hp_pixel
 
 
 class PixelTree:
@@ -16,8 +20,9 @@ class PixelTree:
 
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-        order then pixel number root_pixel: Root node of the tree. Its children are a subset of the
-        12 base HEALPix pixels
+        order then pixel number
+        root_pixel: Root node of the tree. Its children are a subset of the  12 base HEALPix pixels
+        max_order: The largest HEALPix order of the nodes stored in the tree
     """
 
     METADATA_ORDER_COLUMN_NAME = "order"
@@ -35,6 +40,7 @@ class PixelTree:
         self.root_pixel = PixelNode(-1, -1, PixelNodeType.ROOT, None)
         self.pixels = {-1: {-1: self.root_pixel}}
         self._create_tree(partition_info_df)
+        self.max_order = max(hp_order for hp_order, _ in self.pixels.items())
 
     def __len__(self):
         """Gets the number of nodes in the tree, including inner nodes and the root node
@@ -140,3 +146,60 @@ class PixelTree:
         if hp_order not in self.pixels:
             self.pixels[hp_order] = {}
         self.pixels[hp_order][hp_pixel] = node
+
+    def get_leaf_nodes_at_healpix_pixel(self, order: int, pixel: int) -> List[PixelNode]:
+        """Lookup all leaf nodes that contain or are within a given HEALPix pixel
+
+        - Exact matches will return a list with only the matching pixel
+        - A pixel that is within a lower order pixel in the tree will return a list with the lower
+        order pixel
+        - A pixel that has higher order pixels within found in the tree will return a list with all
+        higher order pixels
+        - A pixel with no matching leaf nodes in the tree will return an empty list
+
+        Args:
+            order: HEALPix order of the pixel to lookup
+            pixel: HEALPix pixel number of the pixel to lookup, using nested scheme
+
+        Returns:
+            A list of the leaf PixelNodes in the tree that align with the specified pixel
+        """
+
+        if self.contains(order, pixel):
+            node_in_tree = self.get_node(order, pixel)
+            return node_in_tree.get_all_leaf_descendants()
+        node_in_tree = self.find_first_lower_order_leaf_node_in_tree(order, pixel)
+        if node_in_tree is None:
+            return []
+        return [node_in_tree]
+
+    def find_first_lower_order_leaf_node_in_tree(self, order: int, pixel: int) -> PixelNode | None:
+        """todo: write doc"""
+        for delta_order in range(1, order + 1):
+            lower_order, lower_pixel = calculate_lower_order_hp_pixel(order, pixel, delta_order)
+            if self.contains(lower_order, lower_pixel):
+                lower_node = self.get_node(lower_order, lower_pixel)
+                if lower_node.node_type == PixelNodeType.LEAF:
+                    return lower_node
+                return None
+        return None
+
+    def get_leaf_node_containing_point(self, r_a: int, dec: int) -> PixelNode | None:
+        """Lookup the leaf node that contains a point (ra, dec) in the tree
+
+        If no leaf node with the point exists, returns None
+
+        Args:
+            r_a: Right Ascension of the point
+            dec: Declination of the point
+
+        Returns:
+            The PixelNode object that contains the point, or None if no leaf node with the point
+            exists
+        """
+        hp_nside = hp.order2nside(self.max_order)
+        hp_pixel = hp.ang2pix(hp_nside, r_a, dec, lonlat=True, nest=True)
+        matching_pixels = self.get_leaf_nodes_at_healpix_pixel(self.max_order, hp_pixel)
+        if len(matching_pixels) > 0:
+            return matching_pixels[0]
+        return None
