@@ -36,8 +36,11 @@ long_description = { file = "README.md" }
 url = "https://github.com/astronomy-commons/hipscat"
 
 [build-system]
-requires = ["setuptools","wheel"]
+requires = ["setuptools","wheel","setuptools_scm"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "src/hipscat/_version.py"
 
 [tool.pylint.'MESSAGES CONTROL']
 disable = """
