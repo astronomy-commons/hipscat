@@ -35,4 +35,4 @@ jobs:
         python -m pytest --cov=. --cov-report=xml
     - name: Analyze code with pylint
       run: |
-        pylint -rn -sn --recursive=y ./src
+        pylint -rn -sn --recursive=y --ignore=_version.py ./src
