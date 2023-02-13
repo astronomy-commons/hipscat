@@ -49,3 +49,4 @@ disable = """
     too-many-arguments,
     too-few-public-methods,
 """
+ignore-patterns = "^_.*" # Ignore files that start with an underscore, i.e. _version.py
