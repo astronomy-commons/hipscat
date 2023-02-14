@@ -42,7 +42,7 @@ $ pip install '.[dev]'
 ```
 (Make sure to include the single quotes)
 
-### Installing healpy on a Mac
+### Installing healpy on Mac
 Native prebuilt binaries for healpy on Apple Silicon Macs [do not yet exist](https://healpy.readthedocs.io/en/latest/install.html#binary-installation-with-pip-recommended-for-most-other-python-users), so you may need to run 
 ```bash
 $ conda install healpy
