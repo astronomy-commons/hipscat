@@ -2,7 +2,11 @@
 A reference document for the various utility functions of `hipscat/pixel_math`.
 
 ## Pixel Margins
-The functions made to find the pixels that make up the border region of a given healpixel. Primarly used as a way to speed up the neighbor/margin caching code for [hipscat-import](https://github.com/astronomy-commons/hipscat-import/). Code originally created by Mario Juric for HIPS, found [here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hipscat/healpix.py).
+The functions made to find the pixels that make up the border region of a given 
+healpixel. Primarly used as a way to speed up the neighbor/margin caching code 
+for [hipscat-import](https://github.com/astronomy-commons/hipscat-import/). Code 
+originally created by Mario Juric for HIPS, found 
+[here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hipscat/healpix.py).
 
 ### get_edge
 Given a pixel pix at some order, return all
@@ -58,9 +62,9 @@ This can be compactly written as:
 ```
 
 with i, j, k, ... being indices whose choice specifies which edge we get.
-For example iterating through, i = {0, 1}, j = {0, 1}, k = {0, 1} generates indices
-for the 8 pixels of the south-east edge for 3 subdivisions. Similarly, for
-the north-west edge the index values would loop through {2, 3}, etc.
+For example iterating through, i = {0, 1}, j = {0, 1}, k = {0, 1} generates 
+indices for the 8 pixels of the south-east edge for 3 subdivisions. Similarly, 
+for the north-west edge the index values would loop through {2, 3}, etc.
 
 This can be expanded as:
 
