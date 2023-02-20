@@ -35,25 +35,27 @@ __ /path/to/catalogs/<catalog_name>/
 
 ## Installation
 
-
 ```bash
 $ git clone https://github.com/astronomy-commons/hipscat
 $ cd hipscat
 $ pip install -e .
 ```
 
-### Installing dev dependencies on Mac
+## Installation (Macs)
+
+Native prebuilt binaries for healpy on Apple Silicon Macs [do not yet exist](https://healpy.readthedocs.io/en/latest/install.html#binary-installation-with-pip-recommended-for-most-other-python-users), 
+so it's recommended to install via conda before proceeding to hipscat.
+```bash
+$ conda config --add channels conda-forge
+$ conda install healpy
+$ git clone https://github.com/astronomy-commons/hipscat
+$ cd hipscat
+$ pip install -e .
+``` 
+
+#### Installing dev dependencies
 
 ```bash
 $ pip install '.[dev]'
 ```
 (Make sure to include the single quotes)
-
-### Installing healpy on Mac
-Native prebuilt binaries for healpy on Apple Silicon Macs 
-[do not yet exist](https://healpy.readthedocs.io/en/latest/install.html#binary-installation-with-pip-recommended-for-most-other-python-users), 
-so you may need to run 
-```bash
-$ conda install healpy
-``` 
-before installing hipscat.
