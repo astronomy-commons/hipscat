@@ -126,13 +126,15 @@ class PixelTree:
         parent = self.pixels[parent_order][parent_pixel]
 
         if parent.node_type != PixelNodeType.INNER:
-            raise ValueError("Incorrectly configured catalog: catalog contains pixels defined at "
-                             "multiple orders")
+            raise ValueError(
+                "Incorrectly configured catalog: catalog contains pixels defined at "
+                "multiple orders"
+            )
 
         self._create_node(hp_order, hp_pixel, node_type, parent)
 
     def _create_node(
-            self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
+        self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
     ):
         """Create a node and add to `self.pixels` in the tree
 
@@ -147,8 +149,10 @@ class PixelTree:
             self.pixels[hp_order] = {}
         self.pixels[hp_order][hp_pixel] = node
 
-    def get_leaf_nodes_at_healpix_pixel(self, order: int, pixel: int) -> List[PixelNode]:
-        """Lookup all leaf nodes that contain or are within a given HEALPix pixel
+    def get_leaf_nodes_at_healpix_pixel(
+        self, order: int, pixel: int
+    ) -> List[PixelNode]:
+        """Lookup all leaf nodes in this tree that match a given HEALPix pixel
 
         - Exact matches will return a list with only the matching pixel
         - A pixel that is within a lower order pixel in the tree will return a list with the lower
@@ -173,10 +177,22 @@ class PixelTree:
             return []
         return [node_in_tree]
 
-    def find_first_lower_order_leaf_node_in_tree(self, order: int, pixel: int) -> PixelNode | None:
-        """todo: write doc"""
-        for delta_order in range(1, order + 1):
-            lower_order, lower_pixel = calculate_lower_order_hp_pixel(order, pixel, delta_order)
+    def find_first_lower_order_leaf_node_in_tree(
+        self, order: int, pixel: int
+    ) -> PixelNode | None:
+        """Search for the highest order leaf node that contains a given pixel
+
+        Args:
+            order: HEALPix order of pixel to search
+            pixel: HEALPix pixel number of pixel to search
+
+        Returns:
+            The PixelNode object of the found leaf node, or None if no leaf node is found
+        """
+        for delta_order in range(order + 1):
+            lower_order, lower_pixel = calculate_lower_order_hp_pixel(
+                order, pixel, delta_order
+            )
             if self.contains(lower_order, lower_pixel):
                 lower_node = self.get_node(lower_order, lower_pixel)
                 if lower_node.node_type == PixelNodeType.LEAF:

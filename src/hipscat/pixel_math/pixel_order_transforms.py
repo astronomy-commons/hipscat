@@ -1,7 +1,9 @@
 from typing import List, Tuple
 
 
-def calculate_lower_order_hp_pixel(order: int, pixel: int, delta_order: int = 1) -> (int, int):
+def calculate_lower_order_hp_pixel(
+    order: int, pixel: int, delta_order: int = 1
+) -> (int, int):
     """Calculate the HEALPix pixel at a lower order that contains a given pixel
 
     For example, used to calculate the pixel at order 2 that contains the pixel at order 3, pixel 34
@@ -24,7 +26,7 @@ def calculate_lower_order_hp_pixel(order: int, pixel: int, delta_order: int = 1)
 
 
 def calculate_higher_order_hp_pixels(
-        order: int, pixel: int, delta_order: int = 1
+    order: int, pixel: int, delta_order: int = 1
 ) -> List[Tuple[int, int]]:
     """Calculate the HEALPix pixels at a higher order that are contained by a given pixel
 
@@ -41,6 +43,8 @@ def calculate_higher_order_hp_pixels(
 
     pixels = []
     new_order = order + delta_order
-    for new_pixel in range(pixel >> (2 * delta_order), (pixel + 1) >> (2 * delta_order)):
+    for new_pixel in range(
+        pixel << (2 * delta_order), (pixel + 1) << (2 * delta_order)
+    ):
         pixels.append((new_order, new_pixel))
     return pixels
