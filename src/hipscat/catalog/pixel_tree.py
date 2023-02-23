@@ -120,13 +120,15 @@ class PixelTree:
         parent = self.pixels[parent_order][parent_pixel]
 
         if parent.node_type != PixelNodeType.INNER:
-            raise ValueError("Incorrectly configured catalog: catalog contains pixels defined at "
-                             "multiple orders")
+            raise ValueError(
+                "Incorrectly configured catalog: catalog contains pixels defined at "
+                "multiple orders"
+            )
 
         self._create_node(hp_order, hp_pixel, node_type, parent)
 
     def _create_node(
-            self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
+        self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
     ):
         """Create a node and add to `self.pixels` in the tree
 
