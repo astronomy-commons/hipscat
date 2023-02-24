@@ -7,6 +7,8 @@ SMALL_SKY_DIR_NAME = "small_sky"
 SMALL_SKY_ORDER1_DIR_NAME = "small_sky_order1"
 TEST_DIR = os.path.dirname(__file__)
 
+# pylint: disable=missing-function-docstring, redefined-outer-name
+
 
 @pytest.fixture
 def test_data_dir():

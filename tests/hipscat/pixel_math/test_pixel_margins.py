@@ -1,8 +1,8 @@
 """Tests of pixel margin utility functions"""
 
-import pytest
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 import hipscat.pixel_math as pm
 
@@ -43,18 +43,18 @@ def test_get_margin():
 
 def test_zero_dk():
     """Check that the code fails when trying to find margins at same order as the pixel."""
-    with pytest.raises(ValueError) as ve:
-        margins = pm.get_margin(2, 2, 0)
+    with pytest.raises(ValueError) as value_error:
+        pm.get_margin(2, 2, 0)
 
-    assert str(ve.value) == "dk must be greater than order"
+    assert str(value_error.value) == "dk must be greater than order"
 
 
 def test_negative_dk():
     """Check that the code fails when trying to find margins at a higher order than the pixel."""
-    with pytest.raises(ValueError) as ve:
-        margins = pm.get_margin(2, 2, -1)
+    with pytest.raises(ValueError) as value_error:
+        pm.get_margin(2, 2, -1)
 
-    assert str(ve.value) == "dk must be greater than order"
+    assert str(value_error.value) == "dk must be greater than order"
 
 
 def test_polar_edge():
@@ -125,15 +125,21 @@ def test_polar_edge_south():
 
 def test_edge_negative_value():
     """Check to make sure get_edge fails when passed a negative edge value."""
-    with pytest.raises(ValueError) as ve:
-        edge = pm.get_edge(2, 5, -1)
+    with pytest.raises(ValueError) as value_error:
+        pm.get_edge(2, 5, -1)
 
-    assert str(ve.value) == "edge can only be values between 0 and 7 (see docstring)"
+    assert (
+        str(value_error.value)
+        == "edge can only be values between 0 and 7 (see docstring)"
+    )
 
 
 def test_edge_greater_than_7():
     """Check to make sure get_edge fails when passed an edge value greater than 7."""
-    with pytest.raises(ValueError) as ve:
-        edge = pm.get_edge(2, 5, 8)
+    with pytest.raises(ValueError) as value_error:
+        pm.get_edge(2, 5, 8)
 
-    assert str(ve.value) == "edge can only be values between 0 and 7 (see docstring)"
+    assert (
+        str(value_error.value)
+        == "edge can only be values between 0 and 7 (see docstring)"
+    )

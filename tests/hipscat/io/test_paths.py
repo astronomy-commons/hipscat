@@ -2,7 +2,7 @@
 
 import pytest
 
-import hipscat.io.paths as paths
+from hipscat.io import paths
 
 
 def test_pixel_directory():
