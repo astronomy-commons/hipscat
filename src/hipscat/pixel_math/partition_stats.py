@@ -136,18 +136,19 @@ def generate_destination_pixel_map(histogram, pixel_map):
         dictionary that maps the integer 3-tuple of a pixel at destination order to the set of
         indexes in histogram for the pixels at the original healpix order
     """
-
     non_none_elements = [i for i in pixel_map if i is not None]
     unique_pixels = np.unique(non_none_elements, axis=0)
 
+    order = hp.npix2order(len(histogram))
+
     result = {}
     for pixel in unique_pixels:
-        source_pixels = []
-        for i, source in enumerate(pixel_map):
-            if not source:
-                continue
-            if source[0] == pixel[0] and source[1] == pixel[1] and histogram[i] > 0:
-                source_pixels.append(i)
-        result[tuple(pixel)] = source_pixels
+        explosion_factor = 4 ** (order - int(pixel[0]))
+        start_pixel = int(pixel[1]) * explosion_factor
+        end_pixel = (int(pixel[1]) + 1) * explosion_factor
+
+        non_zero_indexes = np.nonzero(histogram[start_pixel:end_pixel])
+        non_zero_indexes = [index + start_pixel for index in non_zero_indexes]
+        result[tuple(pixel)] = non_zero_indexes[0].tolist()
 
     return result
