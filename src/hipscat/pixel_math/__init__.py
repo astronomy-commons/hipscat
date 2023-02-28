@@ -7,4 +7,11 @@ from .partition_stats import (
     generate_histogram,
 )
 
-from .pixel_margins import get_edge, get_margin
+from .pixel_margins import (
+    get_edge, 
+    get_margin
+)
+
+from .margin_bounding import (
+    get_margin_scale
+)

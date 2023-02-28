@@ -1,6 +1,4 @@
-#
-# Healpix utilities
-#
+"""Utilities for find the pixels of higher orders that surround a given healpixel."""
 
 import healpy as hp
 import numpy as np
