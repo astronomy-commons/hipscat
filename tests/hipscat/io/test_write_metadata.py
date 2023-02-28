@@ -44,6 +44,7 @@ def test_write_catalog_info(assert_text_file_matches, tmp_path, basic_catalog_in
         '    "catalog_name": "small_sky",',
         r'    "version": ".*",',  # version matches digits
         r'    "generation_date": "[.\d]+",',  # date matches date format
+        '    "epoch": "J2000",',
         '    "ra_kw": "ra",',
         '    "dec_kw": "dec",',
         '    "id_kw": "id",',

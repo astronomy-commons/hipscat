@@ -44,6 +44,7 @@ def write_catalog_info(args, histogram):
     metadata["version"] = get_version()
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
+    metadata["epoch"] = args.epoch
     metadata["ra_kw"] = args.ra_column
     metadata["dec_kw"] = args.dec_column
     metadata["id_kw"] = args.id_column
