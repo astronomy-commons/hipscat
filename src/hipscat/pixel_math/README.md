@@ -149,3 +149,23 @@ faces).
 
 #### Implementation
 Pretty straightforward implementation of the algorithm above.
+
+## Margin Bounding
+After constraining our data points using the `get_margin` code in `pixel_margins`, we then move on to our more accurate bound checking by building bounding boxes that include a region approximately one `margin_threshold` wide around the original healpixel.
+
+To get this bounding box, we
+- find a `scale` factor to apply to the original healpixel boundaries that increases the resolution by one `margin_threshold`
+- sample a set of points along the boundary of a healpixel
+- apply an affine transformation to these points
+
+resulting in a box that covers a border region of one `margin_threshold` around the original healpixel.
+
+We then can input these points into an astropy `regions.PolygonPixelRegion` object that we can the use to quickly check different datapoints against, resulting in a set of data for the final `neighbors.parquet` file.
+
+### get_margin_scale
+Finds the scale factor that we want to use to scale up the healpixel bounds by to include the neighbor margin.
+
+#### Algorithm
+- get the resolution of our `pixel_order` (sqrt of the pixel area)
+- add the `margin_threshold` to the resolution and square it.
+- divide this new area against the original pixel area to find the scale factor.
