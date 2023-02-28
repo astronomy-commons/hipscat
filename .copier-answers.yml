@@ -1,7 +1,10 @@
 # Changes here will be overwritten by Copier
-_commit: v1.1.0
+_commit: v1.2.1
 _src_path: gh:lincc-frameworks/python-project-template
-author_email: delucchi@andrew.cmu.edu
-author_name: Melissa DeLucchi
+author_email: lincc-calendar@googlegroups.com
+author_name: LINCC Frameworks
+create_example_module: false
 module_name: hipscat
+preferred_linter: pylint
 project_name: hipscat
+use_isort: true
