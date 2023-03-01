@@ -16,6 +16,8 @@ dependencies = [
     "healpy",
     "pandas",
     "setuptools_scm",
+    "astropy",
+    "regions"
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
