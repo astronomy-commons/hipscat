@@ -173,3 +173,19 @@ Finds the scale factor that we want to use to scale up the healpixel bounds by t
 - get the resolution of our `pixel_order` (sqrt of the pixel area)
 - add the `margin_threshold` to the resolution and square it.
 - divide this new area against the original pixel area to find the scale factor.
+
+### get_margin_bounds_and_wcs
+Given a healpixel and a scale factor, generate a `regions.PolygonPixelRegion` polygon and an `astropy.wcs.WCS` object containing the points of the healpixel scaled around the centroid by a factor of `scale`. Used in conjunction with `get_margin_scale` to perform an affine transform on a set of coordinates sampled from the boundaries of a healpixel.
+
+By returning it as a pixel region along with a wcs object, we can quickly check data points against our polygon.
+
+In the case where `pixel_order` is less than 2, we divide the polygon into 4 different polygon regions, each with their own `WCS` object. We do this because `PolygonPixelRegions` start to break down with large bounding boxes at the granular coordinate spaces that we're using.
+
+#### Algorithm
+- get a sample of the healpixel boundaries (4 * `step`)
+- find the centroid of the boundary coordinates, apply the `scale` to it, and find the difference from the original to find the translation values.
+    - this translation keeps the bounding box centered on the orignal healpixel, as an affine transform scales from the origin of the coordinate system.
+- build the [affine transform](https://en.wikipedia.org/wiki/Affine_transformation#Image_transformation) matrix.
+- convert the boundary coordinates into [homogeneous coordinates](https://en.wikipedia.org/wiki/Homogeneous_coordinates).
+- apply the affine transform to the now homogeneous coordinates.
+- build the polygon(s) and wcs object(s) for the now transformed points.
