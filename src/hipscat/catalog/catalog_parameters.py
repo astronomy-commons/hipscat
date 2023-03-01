@@ -16,6 +16,7 @@ class CatalogParameters:
         output_path=None,
         highest_healpix_order=10,
         pixel_threshold=1_000_000,
+        epoch="J2000",
         ra_column="ra",
         dec_column="dec",
         id_column="id",
@@ -27,6 +28,7 @@ class CatalogParameters:
         self.catalog_path = os.path.join(output_path, catalog_name)
         os.makedirs(self.catalog_path, exist_ok=True)
 
+        self.epoch = epoch
         self.ra_column = ra_column
         self.dec_column = dec_column
         self.id_column = id_column
@@ -39,6 +41,7 @@ class CatalogParameters:
             f"  catalog_name {self.catalog_name}\n"
             f"  input format {self.input_format}\n"
             f"  num input_paths {len(self.input_paths)}\n"
+            f"  epoch {self.epoch}\n"
             f"  ra_column {self.ra_column}\n"
             f"  dec_column {self.dec_column}\n"
             f"  id_column {self.id_column}\n"
