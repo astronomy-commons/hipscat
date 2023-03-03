@@ -8,6 +8,7 @@ import os
 import sys
 
 import autoapi
+from importlib.metadata import version
 
 # Define path to the code to be documented **relative to where conf.py (this file) is kept**
 sys.path.insert(0, os.path.abspath('../src/'))
@@ -16,9 +17,11 @@ sys.path.insert(0, os.path.abspath('../src/'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'hipscat'
-copyright = '2023, Melissa DeLucchi'
-author = 'Melissa DeLucchi'
-release = 'v0.1'
+copyright = '2023, LINCC Frameworks'
+author = 'LINCC Frameworks'
+release = version('hipscat')
+# for example take major/minor
+version = '.'.join(release.split('.')[:2])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

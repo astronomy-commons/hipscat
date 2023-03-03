@@ -11,13 +11,17 @@ repos:
         language: system
         entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
 
-    # Run unit tests, verify that they pass
+    # Run unit tests, verify that they pass. Note that coverage is run against
+    # the ./src directory here because that is what will be committed. In the 
+    # github workflow script, the coverage is run against the installed package
+    # and uploaded to Codecov by calling pytest like so:
+    # `python -m pytest --cov=<package_name> --cov-report=xml`
   - repo: local
     hooks:
       - id: pytest-check
         name: pytest-check
         description: Run unit tests with pytest.
-        entry: pytest --cov=./src --cov-report=html
+        entry: python -m pytest --cov=./src --cov-report=html
         language: system
         pass_filenames: false
         always_run: true
@@ -48,6 +52,8 @@ repos:
         types: [python]
         files: ^(src|tests)/
 
+
+    # Analyze the code style and report code that doesn't adhere.
   - repo: local
     hooks:
       - id: pylint
