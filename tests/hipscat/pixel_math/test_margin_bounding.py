@@ -107,7 +107,7 @@ def test_get_margin_bounds_and_wcs_low_order():
     scale = pm.get_margin_scale(0, 0.1)
     bounds = pm.get_margin_bounds_and_wcs(0, 5, scale)
 
-    assert len(bounds) == 4
+    assert len(bounds) == 16
 
     vals = []
     for p, w in bounds:
