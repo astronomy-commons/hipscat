@@ -27,7 +27,8 @@ def get_margin_scale(pixel_order, margin_threshold=0.1):
     return scale
 
 def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
-    """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects for a given margin bounding box scale.
+    """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects 
+        for a given margin bounding box scale.
     
     Args:
         pixel_order (int): the order of the pixel to which we're calculating the margin region for.
@@ -36,7 +37,8 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         step (int): the amount of samples of one side of the given healpixel's boundaries.
             total samples taken = 4 * step.
     Returns:
-        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS` tuples, covering the full area of the given healpixels scaled up area.
+        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS` tuples, 
+            covering the full area of the given healpixels scaled up area.
     """
     
     pixel_boundaries = hp.vec2dir(hp.boundaries(2**pixel_order, pix, step=step, nest=True), lonlat=True)
@@ -87,13 +89,25 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     # code, so we subdivide the pixel into multiple parts with
     # independent wcs.
     if pixel_order < 2:
-        for i in range(4):    
-            j = i * step
-            lon = list(transformed_bounding_box[0][j:j+step+1])
-            lat = list(transformed_bounding_box[1][j:j+step+1])
+        # k == 0 -> 16 subdivisions, k == 1 -> 4 subdivisions
+        divs = 4 ** (2 - pixel_order)
+        div_len = int((step * 4) / divs)
+        for i in range(divs):
+            j = i * div_len
+            lon = list(transformed_bounding_box[0][j:j+div_len+1])
+            lat = list(transformed_bounding_box[1][j:j+div_len+1])
+            
+            # in the last div, include the first data point
+            # to ensure that we cover the whole area
+            if i == divs - 1:
+                lon.append(transformed_bounding_box[0][0])
+                lat.append(transformed_bounding_box[1][0])
 
             lon.append(centroid_lon)
             lat.append(centroid_lat)
+
+            ra_axis = int(ra_naxis / (2 ** (2 - pixel_order)))
+            dec_axis = int(dec_naxis / (2 ** (2 - pixel_order)))
 
             wcs_partial = wcs.WCS(naxis=2)
             wcs_partial.wcs.crpix = [1, 1]
@@ -101,7 +115,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
             wcs_partial.wcs.cunit = ["deg", "deg"]
             wcs_partial.wcs.ctype = ["RA---TAN", "DEC--TAN"]
             wcs_partial.wcs.cdelt = [pix_size, pix_size]
-            wcs_partial.array_shape = [int(ra_naxis/2), int(dec_naxis/2)]
+            wcs_partial.array_shape = [ra_axis, dec_axis]
 
             vertices = SkyCoord(lon, lat, unit='deg')
             sky_region = PolygonSkyRegion(vertices=vertices)
