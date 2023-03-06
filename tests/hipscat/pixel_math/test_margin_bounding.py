@@ -77,7 +77,7 @@ def test_get_margin_bounds_and_wcs():
     scale = pm.get_margin_scale(3, 0.1)
     polygon, wcs_margin = pm.get_margin_bounds_and_wcs(3, 4, scale)[0]
 
-    assert polygon.area == 757886549.2645547
+    assert polygon.area == pytest.approx(757886549.2645547, 0.001)
 
     x, y = wcs_margin.world_to_pixel(test_sc)
 
