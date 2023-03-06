@@ -175,7 +175,7 @@ Given a healpixel and a scale factor, generate a `regions.PolygonPixelRegion` po
 
 By returning it as a pixel region along with a wcs object, we can quickly check data points against our polygon.
 
-In the case where `pixel_order` is less than 2, we divide the polygon into 4 different polygon regions, each with their own `WCS` object. We do this because `PolygonPixelRegions` start to break down with large bounding boxes at the granular coordinate spaces that we're using.
+In the case where `pixel_order` is less than 2, we divide the polygon into 4 or 16 different polygon regions (orders **0** and **1** respectively), each with their own `WCS` object. We do this because `PolygonPixelRegions` start to break down with large bounding boxes at the granular coordinate spaces that we're using.
 
 #### Algorithm
 - get a sample of the healpixel boundaries (4 * `step`)
@@ -185,3 +185,9 @@ In the case where `pixel_order` is less than 2, we divide the polygon into 4 dif
 - convert the boundary coordinates into [homogeneous coordinates](https://en.wikipedia.org/wiki/Homogeneous_coordinates).
 - apply the affine transform to the now homogeneous coordinates.
 - build the polygon(s) and wcs object(s) for the now transformed points.
+
+### check_margin_bounds
+Given a set of ra and dec coordinates as well as a list of `regions.PolygonPixelRegion` and `astropy.wcs.WCS` tuples (see `get_margin_bounds_and_wcs` above), return a 1-dimmensional array of booleans on whether a given ra and dec coordinate pair are contained within any of the given bounding boxes.
+
+#### Implementation
+For ever entry into `poly_and_wcs`, we convert our set of coordinates into pixel values using the `astropy.wcs.utils.skycoord_to_pixel` function then use the built in `contains` function to return the list of bound checks.

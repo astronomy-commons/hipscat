@@ -4,8 +4,8 @@ import healpy as hp
 import numpy as np
 
 from astropy.coordinates import SkyCoord
-from regions import PixCoord, PolygonSkyRegion, PolygonPixelRegion
-import astropy.wcs as wcs
+from regions import PixCoord, PolygonSkyRegion
+import astropy.wcs as world_coordinate_system
 
 def get_margin_scale(pixel_order, margin_threshold=0.1):
     """Get the scale value need to expand the pixel bounding box to include the `margin_threshold`.
@@ -109,7 +109,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
             ra_axis = int(ra_naxis / (2 ** (2 - pixel_order)))
             dec_axis = int(dec_naxis / (2 ** (2 - pixel_order)))
 
-            wcs_partial = wcs.WCS(naxis=2)
+            wcs_partial = world_coordinate_system.WCS(naxis=2)
             wcs_partial.wcs.crpix = [1, 1]
             wcs_partial.wcs.crval = [lon[0], lat[0]]
             wcs_partial.wcs.cunit = ["deg", "deg"]
@@ -121,7 +121,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
             sky_region = PolygonSkyRegion(vertices=vertices)
             polygons.append((sky_region.to_pixel(wcs_partial), wcs_partial))
     else:
-        wcs_margin = wcs.WCS(naxis=2)
+        wcs_margin = world_coordinate_system.WCS(naxis=2)
         wcs_margin.wcs.crpix = [1, 1]
         wcs_margin.wcs.crval = [min_ra, min_dec]
         wcs_margin.wcs.cunit = ["deg", "deg"]
@@ -135,3 +135,26 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         polygons = [(polygon_region, wcs_margin)]
 
     return polygons
+
+def check_margin_bounds(ra, dec, poly_and_wcs):
+    """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects 
+        for a given margin bounding box scale.
+    
+    Args:
+        ra (:obj:`np.array`): one dimmensional array representing the ra of a given set of points.
+        dec (:obj:`np.array`): one dimmensional array representing the ra of a given set of points.
+        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS` tuples, 
+            covering the full area of the given healpixels scaled up area.
+            see get_margin_bounds_and_wcs for more details.
+    Returns:
+        obj:numpy.array of boolean values corresponding to the ra and dec coordinates
+            checked against whether a given point is within any of the provided polygons.
+    """
+    sky_coords = SkyCoord(ra, dec, unit='deg')
+    bound_vals = []
+    for poly, wcs in poly_and_wcs:
+        x_coords, y_coords = world_coordinate_system.utils.skycoord_to_pixel(sky_coords, wcs)
+        pix_coords = PixCoord(x_coords, y_coords)
+        vals = poly.contains(pix_coords)
+        bound_vals.append(vals)
+    return np.array(bound_vals).any(axis=0)

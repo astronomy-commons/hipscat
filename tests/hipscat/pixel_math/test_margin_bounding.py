@@ -136,3 +136,30 @@ def test_get_margin_bounds_and_wcs_south_pole():
 
     assert len(bounds) == 4
 
+def test_check_margin_bounds():
+    """Make sure check_margin_bounds works properly"""
+    scale = pm.get_margin_scale(3, 0.1)
+    bounds = pm.get_margin_bounds_and_wcs(3, 4, scale)
+
+    ra = np.array([42.4704538, 56.25, 50.61225197])
+    dec = np.array([1.4593925, 14.49584495, 14.4767556])
+
+    checks = pm.check_margin_bounds(ra, dec, bounds)
+
+    expected = np.array([False, True, True])
+
+    npt.assert_array_equal(checks, expected)
+
+def test_check_margin_bounds_multi_poly():
+    """Make sure check_margin_bounds works when poly_and_wcs has multiple entries"""
+    scale = pm.get_margin_scale(1, 0.1)
+    bounds = pm.get_margin_bounds_and_wcs(1, 4, scale)
+
+    ra = np.array([42.4704538, 120., 135.0])
+    dec = np.array([1.4593925, 25.0, 19.92530172])
+
+    checks = pm.check_margin_bounds(ra, dec, bounds)
+
+    expected = np.array([False, True, True])
+
+    npt.assert_array_equal(checks, expected)
