@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from hipscat.catalog import PixelNode, PixelNodeType
+from hipscat.catalog import Catalog, PixelNode, PixelNodeType
 
 
 class PixelTree:
@@ -19,9 +19,6 @@ class PixelTree:
         order then pixel number root_pixel: Root node of the tree. Its children are a subset of the
         12 base HEALPix pixels
     """
-
-    METADATA_ORDER_COLUMN_NAME = "order"
-    METADATA_PIXEL_COLUMN_NAME = "pixel"
 
     def __init__(self, partition_info_df: pd.DataFrame):
         """Initialises the Tree from the partition info metadata
@@ -85,8 +82,8 @@ class PixelTree:
         """
         for _, row in partition_info_df.iterrows():
             self._create_node_and_parent_if_not_exist(
-                row[self.METADATA_ORDER_COLUMN_NAME],
-                row[self.METADATA_PIXEL_COLUMN_NAME],
+                row[Catalog.METADATA_ORDER_COLUMN_NAME],
+                row[Catalog.METADATA_PIXEL_COLUMN_NAME],
                 PixelNodeType.LEAF,
             )
 

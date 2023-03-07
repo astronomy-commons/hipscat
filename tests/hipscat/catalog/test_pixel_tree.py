@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from hipscat.catalog import PixelNodeType
+from hipscat.catalog import Catalog, PixelNodeType
 from hipscat.catalog.pixel_tree import PixelTree
 
 
@@ -9,7 +9,10 @@ def assert_pixel_tree_has_nodes_in_catalog(tree, catalog):
     """assert tree contains the same nodes as the catalog"""
     assert tree.contains(-1, -1)
     for _, pixel in catalog.get_pixels().iterrows():
-        assert tree.contains(pixel["order"], pixel["pixel"])
+        assert tree.contains(
+            pixel[Catalog.METADATA_ORDER_COLUMN_NAME],
+            pixel[Catalog.METADATA_PIXEL_COLUMN_NAME],
+        )
 
 
 def test_pixel_tree_small_sky(small_sky_catalog, small_sky_pixels):
@@ -47,8 +50,10 @@ def test_pixel_duplicated_at_different_order_raises_error(small_sky_catalog):
     """test pixel tree raises error with duplicate pixels at different orders"""
     partition_info = small_sky_catalog.partition_info
     pixel_row = partition_info.iloc[0].copy()
-    pixel_row["order"] += 1
-    pixel_row["pixel"] = pixel_row["pixel"] << 2
+    pixel_row[Catalog.METADATA_ORDER_COLUMN_NAME] += 1
+    pixel_row[Catalog.METADATA_PIXEL_COLUMN_NAME] = (
+        pixel_row[Catalog.METADATA_PIXEL_COLUMN_NAME] << 2
+    )
     info_with_duplicate = pd.concat([partition_info, pixel_row.to_frame().T])
     with pytest.raises(ValueError):
         PixelTree(info_with_duplicate)

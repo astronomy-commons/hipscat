@@ -11,6 +11,10 @@ from hipscat.io import paths
 class Catalog:
     """Container class for catalog metadata"""
 
+    METADATA_ORDER_COLUMN_NAME = "Norder"
+    METADATA_DIR_COLUMN_NAME = "Dir"
+    METADATA_PIXEL_COLUMN_NAME = "Npix"
+
     def __init__(self, catalog_path=None):
         self.catalog_path = catalog_path
         self.metadata_keywords = None
@@ -64,7 +68,9 @@ class Catalog:
         for _, partition in self.partition_info.iterrows():
             file_names.append(
                 paths.pixel_catalog_file(
-                    self.catalog_path, partition["order"], partition["pixel"]
+                    self.catalog_path,
+                    partition[self.METADATA_ORDER_COLUMN_NAME],
+                    partition[self.METADATA_PIXEL_COLUMN_NAME],
                 )
             )
 

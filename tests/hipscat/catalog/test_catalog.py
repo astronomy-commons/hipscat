@@ -14,7 +14,12 @@ def test_load_catalog_small_sky(small_sky_dir):
 
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_pixels()) == 1
-    assert len(cat.get_partitions()) == 1
+
+    partition_file_list = cat.get_partitions()
+    assert len(partition_file_list) == 1
+
+    for parquet_file in partition_file_list:
+        assert os.path.exists(parquet_file)
 
 
 def test_load_catalog_small_sky_order1(small_sky_order1_dir):
@@ -23,7 +28,11 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
 
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_pixels()) == 4
-    assert len(cat.get_partitions()) == 4
+    partition_file_list = cat.get_partitions()
+    assert len(partition_file_list) == 4
+
+    for parquet_file in partition_file_list:
+        assert os.path.exists(parquet_file)
 
 
 def test_empty_directory():
