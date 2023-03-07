@@ -43,7 +43,7 @@ def test_negative_margin_threshold():
         == "margin_threshold must be greater than 0."
     )
 
-def test_negative_margin_threshold():
+def test_zero_margin_threshold():
     """Make sure that get_marin_scale raises a value error when threshold is == 0.0"""
     with pytest.raises(ValueError) as value_error:
         pm.get_margin_scale(3, 0.0)

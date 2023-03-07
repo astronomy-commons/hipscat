@@ -160,7 +160,7 @@ After constraining our data points using the `get_margin` code in `pixel_margins
 To get this bounding box, we
 - find a `scale` factor to apply to the original healpixel boundaries that increases the resolution by one `margin_threshold`
 - sample a set of points along the boundary of a healpixel
-- apply an affine transformation to these points
+- apply an affine transformation to these points to center them on the original healpixel
 
 resulting in a box that covers a border region of one `margin_threshold` around the original healpixel.
 
