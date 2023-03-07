@@ -39,9 +39,11 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         step (int): the amount of samples of one side of the given healpixel's boundaries.
             total samples taken = 4 * step.
     Returns:
-        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS` tuples,
-            covering the full area of the given healpixels scaled up area.
+        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS`
+            tuples, covering the full area of the given healpixels scaled up area.
     """
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
 
     pixel_boundaries = hp.vec2dir(
         hp.boundaries(2**pixel_order, pix, step=step, nest=True), lonlat=True
@@ -142,21 +144,23 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     return polygons
 
 
-def check_margin_bounds(ra, dec, poly_and_wcs):
+def check_margin_bounds(r_asc, dec, poly_and_wcs):
     """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects
         for a given margin bounding box scale.
 
     Args:
-        ra (:obj:`np.array`): one dimmensional array representing the ra of a given set of points.
-        dec (:obj:`np.array`): one dimmensional array representing the ra of a given set of points.
-        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS` tuples,
-            covering the full area of the given healpixels scaled up area.
+        r_asc (:obj:`np.array`): one dimmensional array representing the ra of a
+            given set of points.
+        dec (:obj:`np.array`): one dimmensional array representing the dec of a
+            given set of points.
+        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS`
+            tuples, covering the full area of the given healpixels scaled up area.
             see get_margin_bounds_and_wcs for more details.
     Returns:
         obj:numpy.array of boolean values corresponding to the ra and dec coordinates
             checked against whether a given point is within any of the provided polygons.
     """
-    sky_coords = SkyCoord(ra, dec, unit="deg")
+    sky_coords = SkyCoord(r_asc, dec, unit="deg")
     bound_vals = []
     for poly, wcs in poly_and_wcs:
         x_coords, y_coords = world_coordinate_system.utils.skycoord_to_pixel(
