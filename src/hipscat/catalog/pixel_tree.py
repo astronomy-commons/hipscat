@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from hipscat.catalog import Catalog, PixelNode, PixelNodeType
+from hipscat.catalog import PartitionInfo, PixelNode, PixelNodeType
 
 
 class PixelTree:
@@ -82,8 +82,8 @@ class PixelTree:
         """
         for _, row in partition_info_df.iterrows():
             self._create_node_and_parent_if_not_exist(
-                row[Catalog.METADATA_ORDER_COLUMN_NAME],
-                row[Catalog.METADATA_PIXEL_COLUMN_NAME],
+                row[PartitionInfo.METADATA_ORDER_COLUMN_NAME],
+                row[PartitionInfo.METADATA_PIXEL_COLUMN_NAME],
                 PixelNodeType.LEAF,
             )
 

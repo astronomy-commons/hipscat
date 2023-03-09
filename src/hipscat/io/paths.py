@@ -35,7 +35,7 @@ def pixel_directory(
     else:
         npix = int(pixel_number)
         ndir = int(npix / 10_000) * 10_000
-    return os.path.join(catalog_path, f"Norder={norder}/Dir={ndir}")
+    return os.path.join(catalog_path, f"Norder={norder}", f"Dir={ndir}")
 
 
 def pixel_catalog_file(catalog_path="", pixel_order=0, pixel_number=0):
@@ -52,7 +52,6 @@ def pixel_catalog_file(catalog_path="", pixel_order=0, pixel_number=0):
     Args:
         catalog_path (str): base directory of the catalog (includes catalog name)
         pixel_order (int): the healpix order of the pixel
-        directory_number (int): directory number
         pixel_number (int): the healpix pixel
     Returns:
         string catalog file name
@@ -62,5 +61,7 @@ def pixel_catalog_file(catalog_path="", pixel_order=0, pixel_number=0):
     ndir = int(npix / 10_000) * 10_000
     return os.path.join(
         catalog_path,
-        f"Norder={norder}/Dir={ndir}/Npix={npix}.parquet",
+        f"Norder={norder}",
+        f"Dir={ndir}",
+        f"Npix={npix}.parquet",
     )
