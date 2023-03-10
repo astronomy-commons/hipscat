@@ -2,6 +2,10 @@
 
 import os
 
+ORDER_DIRECTORY_PREFIX = "Norder"
+DIR_DIRECTORY_PREFIX = "Dir"
+PIXEL_DIRECTORY_PREFIX = "Npix"
+
 
 def pixel_directory(
     catalog_path="", pixel_order=0, pixel_number=None, directory_number=None
@@ -35,7 +39,11 @@ def pixel_directory(
     else:
         npix = int(pixel_number)
         ndir = int(npix / 10_000) * 10_000
-    return os.path.join(catalog_path, f"Norder={norder}", f"Dir={ndir}")
+    return os.path.join(
+        catalog_path,
+        f"{ORDER_DIRECTORY_PREFIX}={norder}",
+        f"{DIR_DIRECTORY_PREFIX}={ndir}",
+    )
 
 
 def pixel_catalog_file(catalog_path="", pixel_order=0, pixel_number=0):
@@ -61,7 +69,7 @@ def pixel_catalog_file(catalog_path="", pixel_order=0, pixel_number=0):
     ndir = int(npix / 10_000) * 10_000
     return os.path.join(
         catalog_path,
-        f"Norder={norder}",
-        f"Dir={ndir}",
-        f"Npix={npix}.parquet",
+        f"{ORDER_DIRECTORY_PREFIX}={norder}",
+        f"{DIR_DIRECTORY_PREFIX}={ndir}",
+        f"{PIXEL_DIRECTORY_PREFIX}={npix}.parquet",
     )
