@@ -8,3 +8,9 @@ from .partition_stats import (
 )
 
 from .pixel_margins import get_edge, get_margin
+
+from .margin_bounding import (
+    get_margin_scale,
+    get_margin_bounds_and_wcs,
+    check_margin_bounds,
+)

@@ -126,7 +126,6 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
 
 def generate_destination_pixel_map(histogram, pixel_map):
     """Generate mapping from destination pixel to all the constituent pixels.
-
     Args:
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.

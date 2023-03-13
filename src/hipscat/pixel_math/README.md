@@ -153,3 +153,44 @@ faces).
 
 #### Implementation
 Pretty straightforward implementation of the algorithm above.
+
+## Margin Bounding
+After constraining our data points using the `get_margin` code in `pixel_margins`, we then move on to our more accurate bound checking by building bounding boxes that include a region approximately one `margin_threshold` wide around the original healpixel.
+
+To get this bounding box, we
+- find a `scale` factor to apply to the original healpixel boundaries that increases the resolution by one `margin_threshold`
+- sample a set of points along the boundary of a healpixel
+- apply an affine transformation to these points to center them on the original healpixel
+
+resulting in a box that covers a border region of one `margin_threshold` around the original healpixel.
+
+We then can input these points into an astropy `regions.PolygonPixelRegion` object that we can the use to quickly check different datapoints against, resulting in a set of data for the final `neighbors.parquet` file.
+
+### get_margin_scale
+Finds the scale factor that we want to use to scale up the healpixel bounds by to include the neighbor margin.
+
+#### Algorithm
+- get the resolution of our `pixel_order` (sqrt of the pixel area)
+- add the `margin_threshold` to the resolution and square it.
+- divide this new area against the original pixel area to find the scale factor.
+
+### get_margin_bounds_and_wcs
+Given a healpixel and a scale factor, generate a `regions.PolygonPixelRegion` polygon and an `astropy.wcs.WCS` object containing the points of the healpixel scaled around the centroid by a factor of `scale`. Used in conjunction with `get_margin_scale` to perform an affine transform on a set of coordinates sampled from the boundaries of a healpixel.
+
+By returning it as a pixel region along with a wcs object, we can quickly check data points against our polygon.
+
+In the case where `pixel_order` is less than 2, we divide the polygon into 4 or 16 different polygon regions (orders **0** and **1** respectively), each with their own `WCS` object. We do this because `PolygonPixelRegions` start to break down with large bounding boxes at the granular coordinate spaces that we're using.
+
+#### Algorithm
+- get a sample of the healpixel boundaries (4 * `step`)
+- find the centroid of the boundary coordinates, apply the `scale` to it, and find the difference from the original to find the translation values.
+    - this translation keeps the bounding box centered on the orignal healpixel, as an affine transform scales from the origin of the coordinate system.
+- build the [affine transform](https://en.wikipedia.org/wiki/Affine_transformation#Image_transformation) matrix.
+- convert the boundary coordinates into [homogeneous coordinates](https://en.wikipedia.org/wiki/Homogeneous_coordinates).
+- apply the affine transform to the now homogeneous coordinates.
+- build the polygon(s) and wcs object(s) for the now transformed points.
+### check_margin_bounds
+Given a set of ra and dec coordinates as well as a list of `regions.PolygonPixelRegion` and `astropy.wcs.WCS` tuples (see `get_margin_bounds_and_wcs` above), return a 1-dimmensional array of booleans on whether a given ra and dec coordinate pair are contained within any of the given bounding boxes.
+
+#### Implementation
+For ever entry into `poly_and_wcs`, we convert our set of coordinates into pixel values using the `astropy.wcs.utils.skycoord_to_pixel` function then use the built in `contains` function to return the list of bound checks.
