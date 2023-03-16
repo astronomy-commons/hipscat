@@ -2,7 +2,7 @@
 # This is intended to catch any file-system specific issues, and so runs less
 # frequently than other test suites.
 
-name: Unit test and code coverage
+name: Windows unit test
 
 on:
   push:
@@ -30,7 +30,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install .
         pip install .[dev]
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run unit tests with pytest
       run: |
         python -m pytest tests
