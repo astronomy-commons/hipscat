@@ -3,10 +3,10 @@
 import json
 import os
 from datetime import datetime
+from importlib.metadata import version
 
 import numpy as np
 import pandas as pd
-from setuptools_scm import get_version
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -41,7 +41,7 @@ def write_catalog_info(args, histogram):
     """
     metadata = {}
     metadata["catalog_name"] = args.catalog_name
-    metadata["version"] = get_version()
+    metadata["version"] = version("hipscat")
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
     metadata["epoch"] = args.epoch
