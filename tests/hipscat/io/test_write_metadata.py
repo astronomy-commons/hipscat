@@ -5,6 +5,8 @@ import os
 import shutil
 
 import numpy as np
+import numpy.testing as npt
+import pyarrow.parquet as pq
 
 import hipscat.io.write_metadata as io
 
@@ -82,7 +84,7 @@ def test_write_provenance_info(assert_text_file_matches, tmp_path, basic_catalog
         '            "file1",',
         '            "file2",',
         '            "file3"',
-        '        ]',
+        "        ]",
         "    }",
         "}",
     ]
@@ -158,7 +160,9 @@ def test_write_legacy_metadata_file(
     assert_text_file_matches(expected_lines, metadata_filename)
 
 
-def test_write_parquet_metadata(tmp_path, small_sky_dir):
+def test_write_parquet_metadata(
+    tmp_path, small_sky_dir, basic_catalog_parquet_metadata
+):
     """Copy existing catalog and create new metadata files for it"""
     temp_path = os.path.join(tmp_path, "catalog")
     shutil.copytree(
@@ -166,9 +170,18 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir):
         temp_path,
     )
     io.write_parquet_metadata(temp_path)
+    check_parquet_schema(
+        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+    )
+    check_parquet_schema(
+        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        basic_catalog_parquet_metadata,
+    )
 
 
-def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir):
+def test_write_parquet_metadata_order1(
+    tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata
+):
     """Copy existing catalog and create new metadata files for it, using a catalog with multiple files."""
     temp_path = os.path.join(tmp_path, "catalog")
     shutil.copytree(
@@ -176,3 +189,26 @@ def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir):
         temp_path,
     )
     io.write_parquet_metadata(temp_path)
+    check_parquet_schema(
+        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+    )
+    check_parquet_schema(
+        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        basic_catalog_parquet_metadata,
+    )
+
+
+def check_parquet_schema(file_name, expected_schema):
+    """Check parquet schema against expectations"""
+    assert os.path.exists(file_name), f"file not found [{file_name}]"
+
+    single_metadata = pq.read_metadata(file_name)
+    schema = single_metadata.schema.to_arrow_schema()
+
+    assert len(schema) == len(
+        expected_schema
+    ), f"object list not the same size ({len(schema)} vs {len(expected_schema)})"
+
+    npt.assert_array_equal(schema.names, expected_schema.names)
+
+    assert schema.equals(expected_schema, check_metadata=False)

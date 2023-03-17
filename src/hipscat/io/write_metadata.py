@@ -10,6 +10,12 @@ import pandas as pd
 import pyarrow.dataset as pds
 import pyarrow.parquet as pq
 
+from hipscat.io import paths
+
+PROVENANCE_INFO_FILENAME = "provenance_info.json"
+PARQUET_METADATA_FILENAME = "_metadata"
+PARQUET_COMMON_METADATA_FILENAME = "_common_metadata"
+
 
 class NumpyEncoder(json.JSONEncoder):
     """Special json encoder for numpy integer types"""
@@ -80,8 +86,9 @@ def write_provenance_info(args, tool_args):
     metadata["origin_healpix_order"] = args.highest_healpix_order
     metadata["pixel_threshold"] = args.pixel_threshold
 
-    metadata_filename = os.path.join(args.catalog_path, "provenance_info.json")
     metadata["tool_args"] = tool_args
+
+    metadata_filename = os.path.join(args.catalog_path, PROVENANCE_INFO_FILENAME)
     write_json_file(metadata, metadata_filename)
 
 
@@ -162,11 +169,13 @@ def write_parquet_metadata(catalog_path):
 
     ## Trim hive fields from final schema, otherwise there will be a mismatch.
     subschema = dataset.schema
-    subschema = subschema.remove(subschema.get_field_index("Norder"))
-    subschema = subschema.remove(subschema.get_field_index("Dir"))
+    subschema = subschema.remove(
+        subschema.get_field_index(paths.ORDER_DIRECTORY_PREFIX)
+    )
+    subschema = subschema.remove(subschema.get_field_index(paths.DIR_DIRECTORY_PREFIX))
 
-    metadata_path = os.path.join(catalog_path, "_metadata")
-    common_metadata_path = os.path.join(catalog_path, "_common_metadata")
+    metadata_path = os.path.join(catalog_path, PARQUET_METADATA_FILENAME)
+    common_metadata_path = os.path.join(catalog_path, PARQUET_COMMON_METADATA_FILENAME)
 
     pq.write_metadata(subschema, metadata_path, metadata_collector=metadata_collector)
     pq.write_metadata(subschema, common_metadata_path)
