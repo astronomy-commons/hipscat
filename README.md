@@ -1,61 +1,30 @@
 # HiPSCat
 
+[![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
+
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/astronomy-commons/hipscat)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hipscat/ci.yml)
+![Read the Docs](https://img.shields.io/readthedocs/hipscat)
+
 **Hierarchical Progressive Survey Catalog**
 
 A HiPSCat catalog is a partitioning of objects on a sphere. Its purpose is for 
 storing data from large astronomy surveys, but could probably be used for other 
 use cases where you have large data with some spherical properties.
 
-## Partitioning Scheme
+Check out our [ReadTheDocs site](https://hipscat.readthedocs.io/en/latest/)
+for more information on partitioning, installation, and contributing.
 
-We use healpix (Hierarchical Equal Area isoLatitude Pixelization 
-[[more](https://healpix.jpl.nasa.gov/)]) for the spherical pixelation, and 
-adaptively size the partitions based on the number of objects.
+See related projects:
 
-In areas of the sky with more objects, we use smaller pixels, so that all the 
-resulting pixels should contain similar counts of objects (within an order of 
-magnitude).
+* HiPSCat Import ([on GitHub](https://github.com/astronomy-commons/hipscat-import))
+  ([on ReadTheDocs](https://hipscat.readthedocs.io/en/latest/))
+* LSDB ([on GitHub](https://github.com/astronomy-commons/lsdb)) 
+  ([on ReadTheDocs](https://lsdb.readthedocs.io/en/latest/))
 
-## File structure
+## Contributing
 
-The catalog reader expects to find files according to the following partitioned 
-structure:
+[![GitHub issue custom search in repo](https://img.shields.io/github/issues-search/lincc-frameworks/python-project-template?color=purple&label=Good%20first%20issues&query=is%3Aopen%20label%3A%22good%20first%20issue%22)](https://github.com/lincc-frameworks/python-project-template/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
-```
-__ /path/to/catalogs/<catalog_name>/
-  |__ catalog_info.json
-  |__ partition_info.csv
-  |__ Norder1/
-  |  |__ Npix0/catalog.parquet
-  |  |__ Npix1/catalog.parquet
-  |__ NorderJ/
-     |__ NpixK/catalog.parquet
-     |__ NpixM/catalog.parquet
-```
-
-## Installation
-
-```bash
-$ git clone https://github.com/astronomy-commons/hipscat
-$ cd hipscat
-$ pip install -e .
-```
-
-## Installation (Macs)
-
-Native prebuilt binaries for healpy on Apple Silicon Macs [do not yet exist](https://healpy.readthedocs.io/en/latest/install.html#binary-installation-with-pip-recommended-for-most-other-python-users), 
-so it's recommended to install via conda before proceeding to hipscat.
-```bash
-$ conda config --add channels conda-forge
-$ conda install healpy
-$ git clone https://github.com/astronomy-commons/hipscat
-$ cd hipscat
-$ pip install -e .
-``` 
-
-#### Installing dev dependencies
-
-```bash
-$ pip install '.[dev]'
-```
-(Make sure to include the single quotes)
+See the [contribution guide](https://hipscat.readthedocs.io/en/latest/overview/contributing.html)
+for completed installation instructions and contribution best practices.

@@ -1,12 +1,15 @@
-.. hipscat documentation main file.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to hipscat's documentation!
+HiPSCat - Hierarchical Progressive Survey Catalog
 ========================================================================================
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
+   :caption: Overview
 
-   Home page <self>
+   guide/directory_scheme
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developers
+
+   guide/contributing
    API Reference <autoapi/index>
