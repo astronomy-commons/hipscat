@@ -3,7 +3,9 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
-from hipscat_import.hipscat_id import compute_hipscat_id, hipscat_id_to_healpix
+
+from hipscat.pixel_math.hipscat_id import (compute_hipscat_id,
+                                           hipscat_id_to_healpix)
 
 
 def test_single():
