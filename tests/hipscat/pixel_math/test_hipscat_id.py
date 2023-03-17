@@ -16,6 +16,12 @@ def test_single():
     npt.assert_array_equal(result, expected)
 
 
+def test_jagged_list():
+    """Arrays of mismatched lengths."""
+    with pytest.raises(ValueError):
+        compute_hipscat_id([5, 1, 5], [5])
+
+
 def test_short_list():
     """Multiple points that will sit in the same higher-order-pixel.
 
