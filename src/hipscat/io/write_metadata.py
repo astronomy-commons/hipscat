@@ -7,6 +7,14 @@ from importlib.metadata import version
 
 import numpy as np
 import pandas as pd
+import pyarrow.dataset as pds
+import pyarrow.parquet as pq
+
+from hipscat.io import paths
+
+PROVENANCE_INFO_FILENAME = "provenance_info.json"
+PARQUET_METADATA_FILENAME = "_metadata"
+PARQUET_COMMON_METADATA_FILENAME = "_common_metadata"
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -54,6 +62,33 @@ def write_catalog_info(args, histogram):
     metadata["pixel_threshold"] = args.pixel_threshold
 
     metadata_filename = os.path.join(args.catalog_path, "catalog_info.json")
+    write_json_file(metadata, metadata_filename)
+
+
+def write_provenance_info(args, tool_args):
+    """Write a provenance_info.json file with all assorted catalog creation metadata
+
+    Args:
+        args (:obj:`PartitionArguments`): collection of runtime arguments for the partitioning job
+        tool_args (:obj:`dict`): dictionary of additional arguments provided by the tool creating
+            this catalog.
+    """
+    metadata = {}
+    metadata["catalog_name"] = args.catalog_name
+    metadata["version"] = version("hipscat")
+    now = datetime.now()
+    metadata["generation_date"] = now.strftime("%Y.%m.%d")
+    metadata["epoch"] = args.epoch
+    metadata["ra_kw"] = args.ra_column
+    metadata["dec_kw"] = args.dec_column
+    metadata["id_kw"] = args.id_column
+
+    metadata["origin_healpix_order"] = args.highest_healpix_order
+    metadata["pixel_threshold"] = args.pixel_threshold
+
+    metadata["tool_args"] = tool_args
+
+    metadata_filename = os.path.join(args.catalog_path, PROVENANCE_INFO_FILENAME)
     write_json_file(metadata, metadata_filename)
 
 
@@ -112,3 +147,35 @@ def write_legacy_metadata(args, histogram, pixel_map):
         args.catalog_path, f"{args.catalog_name}_meta.json"
     )
     write_json_file(metadata, metadata_filename)
+
+
+def write_parquet_metadata(catalog_path):
+    """Generate parquet metadata, using the already-partitioned parquet files
+    for this catalog
+
+    Args:
+        catalog_path (str): base path for the catalog
+    """
+
+    dataset = pds.dataset(catalog_path, partitioning="hive")
+    metadata_collector = []
+
+    for hips_file in dataset.files:
+        ## Get rid of any non-parquet files
+        if not hips_file.endswith("parquet"):
+            continue
+        single_metadata = pq.read_metadata(hips_file)
+        metadata_collector.append(single_metadata)
+
+    ## Trim hive fields from final schema, otherwise there will be a mismatch.
+    subschema = dataset.schema
+    subschema = subschema.remove(
+        subschema.get_field_index(paths.ORDER_DIRECTORY_PREFIX)
+    )
+    subschema = subschema.remove(subschema.get_field_index(paths.DIR_DIRECTORY_PREFIX))
+
+    metadata_path = os.path.join(catalog_path, PARQUET_METADATA_FILENAME)
+    common_metadata_path = os.path.join(catalog_path, PARQUET_COMMON_METADATA_FILENAME)
+
+    pq.write_metadata(subschema, metadata_path, metadata_collector=metadata_collector)
+    pq.write_metadata(subschema, common_metadata_path)
