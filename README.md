@@ -3,7 +3,7 @@
 [![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/astronomy-commons/hipscat)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hipscat/ci.yml)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hipscat/testing-and-coverage.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/hipscat)
 
 **Hierarchical Progressive Survey Catalog**
