@@ -12,9 +12,6 @@ import pyarrow.parquet as pq
 
 from hipscat.io import paths
 
-PROVENANCE_INFO_FILENAME = "provenance_info.json"
-PARQUET_METADATA_FILENAME = "_metadata"
-PARQUET_COMMON_METADATA_FILENAME = "_common_metadata"
 
 from hipscat.io import file_io, paths
 
@@ -89,8 +86,8 @@ def write_provenance_info(args, tool_args):
 
     metadata["tool_args"] = tool_args
 
-    metadata_filename = os.path.join(args.catalog_path, PROVENANCE_INFO_FILENAME)
-    write_json_file(metadata, metadata_filename)
+    metadata_pointer = paths.get_provenance_pointer(args.catalog_base_dir)
+    write_json_file(metadata, metadata_pointer)
 
 
 def write_partition_info(catalog_parameters, destination_pixel_map: dict):
@@ -177,8 +174,9 @@ def write_parquet_metadata(catalog_path):
     )
     subschema = subschema.remove(subschema.get_field_index(paths.DIR_DIRECTORY_PREFIX))
 
-    metadata_path = os.path.join(catalog_path, PARQUET_METADATA_FILENAME)
-    common_metadata_path = os.path.join(catalog_path, PARQUET_COMMON_METADATA_FILENAME)
+    catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
+    metadata_path = paths.get_parquet_metadata_pointer(catalog_base_dir)
+    common_metadata_path = paths.get_common_metadata_pointer(catalog_base_dir)
 
     pq.write_metadata(subschema, metadata_path, metadata_collector=metadata_collector)
     pq.write_metadata(subschema, common_metadata_path)
