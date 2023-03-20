@@ -6,7 +6,7 @@ import pandas as pd
 from hipscat.io.file_io.file_pointers import FilePointer
 
 
-def make_directory(file_pointer: FilePointer, exist_ok: bool=False):
+def make_directory(file_pointer: FilePointer, exist_ok: bool = False):
     """Make a directory at a given file pointer
 
     Will raise an error if a directory already exists, unless `exist_ok` is True in which case
@@ -23,7 +23,9 @@ def make_directory(file_pointer: FilePointer, exist_ok: bool=False):
     os.makedirs(file_pointer, exist_ok=exist_ok)
 
 
-def write_string_to_file(file_pointer: FilePointer, string: str, encoding: str = "utf-8"):
+def write_string_to_file(
+    file_pointer: FilePointer, string: str, encoding: str = "utf-8"
+):
     """Write a string to a text file
 
     Args:
@@ -59,7 +61,9 @@ def load_csv_to_pandas(file_pointer: FilePointer, **kwargs):
     return pd.read_csv(file_pointer, **kwargs)
 
 
-def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: FilePointer, **kwargs):
+def write_dataframe_to_csv(
+    dataframe: pd.DataFrame, file_pointer: FilePointer, **kwargs
+):
     """Write a pandas DataFrame to a CSV file
 
     Args:

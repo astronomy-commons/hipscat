@@ -1,9 +1,5 @@
 """Container class to hold per-partition metadata"""
 
-import os
-
-import pandas as pd
-
 from hipscat.io import paths, file_io
 
 

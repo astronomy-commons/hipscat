@@ -15,10 +15,10 @@ PARQUET_COMMON_METADATA_FILENAME = "_common_metadata"
 
 
 def pixel_directory(
-        catalog_base_dir: FilePointer,
-        pixel_order: int,
-        pixel_number: int | None = None,
-        directory_number: int | None = None,
+    catalog_base_dir: FilePointer,
+    pixel_order: int,
+    pixel_number: int | None = None,
+    directory_number: int | None = None,
 ) -> FilePointer:
     """Create path pointer for a pixel directory. This will not create the directory.
 
@@ -57,7 +57,7 @@ def pixel_directory(
 
 
 def pixel_catalog_file(
-        catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int
+    catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int
 ) -> FilePointer:
     """Create path *pointer* for a pixel catalog file. This will not create the directory or file.
 

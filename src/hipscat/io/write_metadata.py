@@ -1,7 +1,6 @@
 """Utility functions for writing metadata files"""
 
 import json
-import os
 from datetime import datetime
 from importlib.metadata import version
 
@@ -9,8 +8,6 @@ import numpy as np
 import pandas as pd
 import pyarrow.dataset as pds
 import pyarrow.parquet as pq
-
-from hipscat.io import paths
 
 
 from hipscat.io import file_io, paths
@@ -41,7 +38,8 @@ def write_catalog_info(catalog_parameters, histogram: np.ndarray):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for the partitioning job
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for the
+        partitioning job
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
     """
@@ -59,7 +57,9 @@ def write_catalog_info(catalog_parameters, histogram: np.ndarray):
     metadata["origin_healpix_order"] = catalog_parameters.highest_healpix_order
     metadata["pixel_threshold"] = catalog_parameters.pixel_threshold
 
-    catalog_info_pointer = paths.get_catalog_info_pointer(catalog_parameters.catalog_base_dir)
+    catalog_info_pointer = paths.get_catalog_info_pointer(
+        catalog_parameters.catalog_base_dir
+    )
     write_json_file(metadata, catalog_info_pointer)
 
 
@@ -94,7 +94,8 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
     """Write all partition data to CSV file.
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for the partitioning job
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for the
+        partitioning job
         destination_pixel_map (dict): data frame that has as columns:
 
             - pixel order of destination
@@ -102,18 +103,23 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
             - sum of rows in destination
             - list of all source pixels at original order
     """
-    partition_info_pointer = paths.get_partition_info_pointer(catalog_parameters.catalog_base_dir)
+    partition_info_pointer = paths.get_partition_info_pointer(
+        catalog_parameters.catalog_base_dir
+    )
     data_frame = pd.DataFrame(destination_pixel_map.keys())
     data_frame.columns = ["order", "pixel", "num_objects"]
     data_frame = data_frame.astype(int)
     file_io.write_dataframe_to_csv(data_frame, partition_info_pointer, index=False)
 
 
-def write_legacy_metadata(catalog_patameters, histogram: np.ndarray, pixel_map: np.ndarray):
+def write_legacy_metadata(
+    catalog_patameters, histogram: np.ndarray, pixel_map: np.ndarray
+):
     """Write a <catalog_name>_meta.json with the format expected by the prototype catalog.
 
     Args:
-        catalog_patameters (:obj:`CatalogParameters`): collection of runtime arguments for the partitioning job
+        catalog_patameters (:obj:`CatalogParameters`): collection of runtime arguments for the
+        partitioning job
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         pixel_map (:obj:`np.ndarray`): one-dimensional numpy array of integer 3-tuples.
@@ -143,7 +149,7 @@ def write_legacy_metadata(catalog_patameters, histogram: np.ndarray, pixel_map: 
 
     metadata_pointer = file_io.append_paths_to_pointer(
         catalog_patameters.catalog_base_dir,
-        f"{catalog_patameters.catalog_name}_meta.json"
+        f"{catalog_patameters.catalog_name}_meta.json",
     )
 
     write_json_file(metadata, metadata_pointer)

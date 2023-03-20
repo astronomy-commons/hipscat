@@ -1,6 +1,5 @@
 """Conatiner class for properties of a catalog that is being created"""
 
-import os
 from typing import List
 
 from hipscat.io import file_io
@@ -28,7 +27,9 @@ class CatalogParameters:
         self.input_paths = input_paths
         self.output_path = output_path
         output_path_pointer = file_io.get_file_pointer_from_path(self.output_path)
-        self.catalog_base_dir = file_io.append_paths_to_pointer(output_path_pointer, self.catalog_name)
+        self.catalog_base_dir = file_io.append_paths_to_pointer(
+            output_path_pointer, self.catalog_name
+        )
         self.catalog_path = str(self.catalog_base_dir)
         file_io.make_directory(self.catalog_base_dir, exist_ok=True)
 
