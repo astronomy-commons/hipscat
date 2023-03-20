@@ -20,7 +20,7 @@ It is preferable that you create a new branch with a name like
 ``issue/##/<short-description>``. GitHub makes it pretty easy to associate 
 branches and tickets, but it's nice when it's in the name.
 
-Setting up a development environment
+Set up a development environment
 -------------------------------------------------------------------------------
 
 Most folks use conda for virtual environments. You may want to as well.
