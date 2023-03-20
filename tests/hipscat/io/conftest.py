@@ -3,6 +3,7 @@
 import os
 import re
 
+import pyarrow as pa
 import pytest
 
 from hipscat.catalog.catalog_parameters import CatalogParameters
@@ -62,3 +63,15 @@ def basic_catalog_info(tmp_path):
         ra_column="ra",
         dec_column="dec",
     )
+
+
+@pytest.fixture
+def basic_catalog_parquet_metadata():
+    return pa.schema([
+        pa.field('id', pa.int64()),
+        pa.field('ra', pa.float64()),
+        pa.field('dec', pa.float64()),
+        pa.field('ra_error', pa.int64()),
+        pa.field('dec_error', pa.int64()),
+        pa.field('__index_level_0__', pa.int64()),
+    ])
