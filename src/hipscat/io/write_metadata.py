@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from setuptools_scm import get_version
 
-from hipscat.catalog import CatalogParameters
 from hipscat.io import file_io, paths
 
 
@@ -33,7 +32,7 @@ def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer
     file_io.write_string_to_file(file_pointer, dumped_metadata)
 
 
-def write_catalog_info(catalog_parameters: CatalogParameters, histogram: np.ndarray):
+def write_catalog_info(catalog_parameters, histogram: np.ndarray):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
@@ -59,7 +58,7 @@ def write_catalog_info(catalog_parameters: CatalogParameters, histogram: np.ndar
     write_json_file(metadata, catalog_info_pointer)
 
 
-def write_partition_info(catalog_parameters: CatalogParameters, destination_pixel_map: dict):
+def write_partition_info(catalog_parameters, destination_pixel_map: dict):
     """Write all partition data to CSV file.
 
     Args:
@@ -78,7 +77,7 @@ def write_partition_info(catalog_parameters: CatalogParameters, destination_pixe
     file_io.write_dataframe_to_csv(data_frame, partition_info_pointer, index=False)
 
 
-def write_legacy_metadata(catalog_patameters: CatalogParameters, histogram: np.ndarray, pixel_map: np.ndarray):
+def write_legacy_metadata(catalog_patameters, histogram: np.ndarray, pixel_map: np.ndarray):
     """Write a <catalog_name>_meta.json with the format expected by the prototype catalog.
 
     Args:
