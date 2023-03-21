@@ -153,3 +153,82 @@ faces).
 
 #### Implementation
 Pretty straightforward implementation of the algorithm above.
+
+## HiPSCat ID
+
+This index is defined as a 64-bit integer which has two parts:
+
+* healpix pixel (at order 19)
+* incrementing counter (within same healpix, for uniqueness)
+
+Visually, in bits:
+
+```
+|------------------------------------------|-------------------|
+|<-----    healpixel at order 19    ------>|<--   counter   -->|
+```
+
+This provides us with an increasing index, that will not overlap
+between spatially partitioned data files.
+
+### compute_hipscat_id
+
+For a given list of coordinates, compute the HiPSCat ID s.t. coordinates in the
+same order 19 pixel are appended with a counter to make a unique hipscat_id.
+
+For the example, we'll work with the following simplified hex numbers to help 
+illustrate: `[0xbeee, 0xbeef, 0xbeee, 0xfeed, 0xbeef]`
+
+#### Counter construction
+
+To construct our counters we sort the pixel numbers, call 
+[numpy.unique](https://numpy.org/doc/stable/reference/generated/numpy.unique.html),
+then do some silly arithmetic with the results.
+
+The sorted representation of the above is `[beee, beee, beef, beef, feed]`. What 
+we're looking for at this point is a counter that indicates if the value is being
+repeated and how many times we've seen this value so far. e.g. `[0, 1, 0, 1, 0]`.
+
+The `np.unique` call will yield three outputs:
+
+* `unique_values` (ignored) `[beee, beef, feed]`
+* `unique_indices` - the index of the *first* occurrence of each unique value.
+    `[0, 2, 4]`
+* `unique_inverse` - the indices of *all* occurrences of the unique values 
+    (using indexes from that `unique_values`), used to reconstruct the 
+    original array. `[0, 0, 1, 1, 2]`
+
+By indexing into `unique_indexes` by the `unique_inverse`, we get an array with the 
+index of the first time that healpix pixel was seen, which provides an step-like 
+offset. e.g. `[0, 0, 2, 2, 4]`. This jumps up to the current index each time the
+pixel changes. We subtract this from the actual index value (e.g. `[0, 1, 2, 3, 4]`)
+to get the desired counter. e.g. 
+
+```
+[0, 1, 2, 3, 4]
+-
+[0, 0, 2, 2, 4]
+=
+[0, 1, 0, 1, 0]
+```
+
+#### Putting it together
+
+After mapping our coordinates into order 19 healpix pixels, we bit-shift them to make room for our counters. Then we add the counters to the end.
+
+e.g.
+
+```
+[     0xbeee,      0xbeee,      0xbeef,      0xbeef,      0xfeed]
+           << shifted <<
+[0x5F7700000, 0x5F7700000, 0x5F7780000, 0x5F7780000, 0x7F7680000]
++
+[          0,           1,            0,          1,           0]
+=
+[0x5F7700000, 0x5F7700001, 0x5F7780000, 0x5F7780001, 0x7F7680000]
+```
+
+And finally, we unsort the array to get back the hipscat ids in the order the 
+coordinates were provided.
+
+`[0x5F7700000, 0x5F7780000, 0x5F7700001, 0x7F7680000, 0x5F7780001]`
