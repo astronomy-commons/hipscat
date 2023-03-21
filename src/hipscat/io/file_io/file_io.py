@@ -14,7 +14,7 @@ def make_directory(file_pointer: FilePointer, exist_ok: bool = False):
 
     Args:
         file_pointer: location in file system to make directory
-        exist_ok: Default False. If false will raise error if directory exists. It true existing
+        exist_ok: Default False. If false will raise error if directory exists. If true existing
         directories will be ignored and not modified
 
     Raises:
