@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 
-from hipscat.io.file_io.file_pointers import FilePointer
+from hipscat.io.file_io.file_pointer import FilePointer
 
 
 def make_directory(file_pointer: FilePointer, exist_ok: bool = False):
@@ -34,7 +34,7 @@ def write_string_to_file(
         encoding: Default: 'utf-8', encoding method to write to file with
     """
     with open(file_pointer, "w", encoding=encoding) as file:
-        file.write(string + "\n")
+        file.write(string)
 
 
 def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8") -> dict:

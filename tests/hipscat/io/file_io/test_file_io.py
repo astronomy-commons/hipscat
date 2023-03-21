@@ -45,7 +45,7 @@ def test_write_string_to_file(tmp_path):
     test_string = "this is a test"
     write_string_to_file(test_file_pointer, test_string, encoding="utf-8")
     with open(test_file_path, 'r', encoding="utf-8") as file:
-        data = file.read().rstrip()
+        data = file.read()
         assert data == test_string
 
 

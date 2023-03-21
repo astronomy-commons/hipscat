@@ -1,7 +1,7 @@
 """Methods for creating partitioned data paths"""
 from __future__ import annotations
 
-from hipscat.io.file_io.file_pointers import FilePointer, append_paths_to_pointer
+from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
 
 ORDER_DIRECTORY_PREFIX = "Norder"
 DIR_DIRECTORY_PREFIX = "Dir"
@@ -92,6 +92,8 @@ def get_catalog_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
 
     Args:
         catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `catalog_info.json` file
     """
     return append_paths_to_pointer(catalog_base_dir, CATALOG_INFO_FILENAME)
 
@@ -101,6 +103,8 @@ def get_partition_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
 
     Args:
         catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `partition_info.csv` file
     """
     return append_paths_to_pointer(catalog_base_dir, PARTITION_INFO_FILENAME)
 
@@ -110,23 +114,29 @@ def get_provenance_pointer(catalog_base_dir: FilePointer) -> FilePointer:
 
     Args:
         catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `provenance_info.json` file
     """
     return append_paths_to_pointer(catalog_base_dir, PROVENANCE_INFO_FILENAME)
 
 
 def get_common_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
-    """Get file pointer to `_metadata.parquet` metadata file
+    """Get file pointer to `_metadata` parquet metadata file
 
     Args:
         catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `_metadata` file
     """
     return append_paths_to_pointer(catalog_base_dir, PARQUET_COMMON_METADATA_FILENAME)
 
 
 def get_parquet_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
-    """Get file pointer to `_common_metadata.parquet` metadata file
+    """Get file pointer to `_common_metadata` parquet metadata file
 
     Args:
         catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `_common_metadata` file
     """
     return append_paths_to_pointer(catalog_base_dir, PARQUET_METADATA_FILENAME)

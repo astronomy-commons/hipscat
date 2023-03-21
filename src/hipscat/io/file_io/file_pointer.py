@@ -10,15 +10,15 @@ def get_file_pointer_from_path(path: str) -> FilePointer:
 
 
 def append_paths_to_pointer(pointer: FilePointer, *paths: str) -> FilePointer:
-    """Append directory or file names to a specified file pointer.
+    """Append directories and/or a file name to a specified file pointer.
 
     Args:
         pointer: `FilePointer` object to add path to
-        paths: any number of file or directory names to append to the pointer
+        paths: any number of directory names optionally followed by a file name to append to the
+            pointer
 
     Returns:
         New file pointer to path given by joining given pointer and path names
-
     """
     return FilePointer(os.path.join(pointer, *paths))
 

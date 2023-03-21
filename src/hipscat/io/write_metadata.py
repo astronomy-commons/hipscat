@@ -31,7 +31,7 @@ def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer
         file_pointer (str): destination for the json file
     """
     dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=NumpyEncoder)
-    file_io.write_string_to_file(file_pointer, dumped_metadata)
+    file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 
 def write_catalog_info(catalog_parameters, histogram: np.ndarray):
