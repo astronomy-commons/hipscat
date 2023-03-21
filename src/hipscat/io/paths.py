@@ -25,7 +25,7 @@ def pixel_directory(
     One of pixel_number or directory_number is required. The directory name will
     take the HiPS standard form of:
 
-        <catalog_base_path>/Norder=<pixel_order>/Dir=<directory number>
+        <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>
 
     Where the directory number is calculated using integer division as:
 
