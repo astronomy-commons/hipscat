@@ -1,7 +1,9 @@
 import json
 import os
+from typing import Any
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 from hipscat.io.file_io.file_pointer import FilePointer
 
@@ -43,7 +45,8 @@ def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8") -> dict:
     Args:
         file_pointer: location of file to read
         encoding: string encoding method used by the file
-
+    Returns:
+        dictionary of key value pairs loaded from the JSON file
     """
     json_dict = None
     with open(file_pointer, "r", encoding=encoding) as json_file:
@@ -51,12 +54,14 @@ def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8") -> dict:
     return json_dict
 
 
-def load_csv_to_pandas(file_pointer: FilePointer, **kwargs):
+def load_csv_to_pandas(file_pointer: FilePointer, **kwargs) -> pd.DataFrame:
     """Load a csv file to a pandas dataframe
 
     Args:
         file_pointer: location of csv file to load
         **kwargs: arguments to pass to pandas `read_csv` loading method
+    Returns:
+        pandas dataframe loaded from CSV
     """
     return pd.read_csv(file_pointer, **kwargs)
 
@@ -72,3 +77,29 @@ def write_dataframe_to_csv(
         **kwargs: args to pass to pandas `to_csv` method
     """
     dataframe.to_csv(file_pointer, **kwargs)
+
+
+def read_parquet_metadata(file_pointer: FilePointer, **kwargs) -> pq.FileMetaData:
+    """Read FileMetaData from footer of a single Parquet file.
+
+    Args:
+        file_pointer: location of file to read metadata from
+        **kwargs: additional arguments to be passed to pyarrow.parquet.read_metadata
+    """
+    return pq.read_metadata(file_pointer, **kwargs)
+
+
+def write_parquet_metadata(
+    schema: Any, file_pointer: FilePointer, metadata_collector: list = None, **kwargs
+):
+    """Write a metadata only parquet file from a schema
+
+    Args:
+        schema: schema to be written
+        file_pointer: location of file to be written to
+        metadata_collector: where to collect metadata information
+        **kwargs: additional arguments to be passed to pyarrow.parquet.write_metadata
+    """
+    pq.write_metadata(
+        schema, file_pointer, metadata_collector=metadata_collector, **kwargs
+    )

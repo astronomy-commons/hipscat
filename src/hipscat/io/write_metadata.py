@@ -7,8 +7,6 @@ from importlib.metadata import version
 import numpy as np
 import pandas as pd
 import pyarrow.dataset as pds
-import pyarrow.parquet as pq
-
 
 from hipscat.io import file_io, paths
 
@@ -170,7 +168,8 @@ def write_parquet_metadata(catalog_path):
         ## Get rid of any non-parquet files
         if not hips_file.endswith("parquet"):
             continue
-        single_metadata = pq.read_metadata(hips_file)
+        hips_file_pointer = file_io.get_file_pointer_from_path(hips_file)
+        single_metadata = file_io.read_parquet_metadata(hips_file_pointer)
         metadata_collector.append(single_metadata)
 
     ## Trim hive fields from final schema, otherwise there will be a mismatch.
@@ -181,8 +180,10 @@ def write_parquet_metadata(catalog_path):
     subschema = subschema.remove(subschema.get_field_index(paths.DIR_DIRECTORY_PREFIX))
 
     catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
-    metadata_path = paths.get_parquet_metadata_pointer(catalog_base_dir)
-    common_metadata_path = paths.get_common_metadata_pointer(catalog_base_dir)
+    metadata_file_pointer = paths.get_parquet_metadata_pointer(catalog_base_dir)
+    common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
-    pq.write_metadata(subschema, metadata_path, metadata_collector=metadata_collector)
-    pq.write_metadata(subschema, common_metadata_path)
+    file_io.write_parquet_metadata(
+        subschema, metadata_file_pointer, metadata_collector=metadata_collector
+    )
+    file_io.write_parquet_metadata(subschema, common_metadata_file_pointer)
