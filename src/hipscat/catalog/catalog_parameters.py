@@ -5,7 +5,6 @@ from typing import List
 from hipscat.io import file_io
 
 
-# pylint: disable=too-many-instance-attributes
 class CatalogParameters:
     """Container class for catalog properties"""
 
