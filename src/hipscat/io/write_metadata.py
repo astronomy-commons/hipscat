@@ -165,9 +165,6 @@ def write_parquet_metadata(catalog_path):
     metadata_collector = []
 
     for hips_file in dataset.files:
-        ## Get rid of any non-parquet files
-        if not hips_file.endswith("parquet"):
-            continue
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer)
         metadata_collector.append(single_metadata)

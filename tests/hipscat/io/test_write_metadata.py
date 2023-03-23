@@ -175,9 +175,22 @@ def test_write_parquet_metadata(
     check_parquet_schema(
         os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
     )
+    ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(tmp_path, "catalog", "_common_metadata"),
         basic_catalog_parquet_metadata,
+        0,
+    )
+    ## Re-write - should still have the same properties.
+    io.write_parquet_metadata(temp_path)
+    check_parquet_schema(
+        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+    )
+    ## _common_metadata has 0 row groups
+    check_parquet_schema(
+        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        basic_catalog_parquet_metadata,
+        0,
     )
 
 
@@ -191,13 +204,19 @@ def test_write_parquet_metadata_order1(
         small_sky_order1_dir,
         temp_path,
     )
+
     io.write_parquet_metadata(temp_path)
+    ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+        os.path.join(tmp_path, "catalog", "_metadata"),
+        basic_catalog_parquet_metadata,
+        4,
     )
+    ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(tmp_path, "catalog", "_common_metadata"),
         basic_catalog_parquet_metadata,
+        0,
     )
 
 
@@ -221,13 +240,15 @@ def test_write_index_parquet_metadata(tmp_path):
     check_parquet_schema(
         os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata
     )
+    ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(tmp_path, "index", "_common_metadata"),
         index_catalog_parquet_metadata,
+        0,
     )
 
 
-def check_parquet_schema(file_name, expected_schema):
+def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
     """Check parquet schema against expectations"""
     assert os.path.exists(file_name), f"file not found [{file_name}]"
 
@@ -241,3 +262,6 @@ def check_parquet_schema(file_name, expected_schema):
     npt.assert_array_equal(schema.names, expected_schema.names)
 
     assert schema.equals(expected_schema, check_metadata=False)
+
+    parquet_file = pq.ParquetFile(file_name)
+    assert parquet_file.metadata.num_row_groups == expected_num_row_groups
