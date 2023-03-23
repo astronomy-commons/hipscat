@@ -28,5 +28,5 @@ jobs:
     - name: Analyze code with linter
 
       run: |
-        pylint -rn -sn --recursive=y ./src
+        pylint -rn -sn --recursive=y ./src --rcfile=./src/.pylintrc
 

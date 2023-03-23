@@ -1,7 +1,11 @@
 import os
 
-from hipscat.io.file_io import get_file_pointer_from_path, does_file_or_directory_exist, \
-    append_paths_to_pointer, FilePointer
+from hipscat.io.file_io import (
+    get_file_pointer_from_path,
+    does_file_or_directory_exist,
+    append_paths_to_pointer,
+    FilePointer,
+)
 
 
 def test_get_pointer_from_path(tmp_path):
