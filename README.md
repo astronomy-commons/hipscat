@@ -1,3 +1,5 @@
+<img src="https://www.lsstcorporation.org/lincc/sites/default/files/PastedGraphic-8.png" width="300" height="100">
+
 # HiPSCat
 
 [![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
@@ -6,7 +8,7 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hipscat/testing-and-coverage.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/hipscat)
 
-**Hierarchical Progressive Survey Catalog**
+## Hierarchical Progressive Survey Catalog
 
 A HiPSCat catalog is a partitioning of objects on a sphere. Its purpose is for 
 storing data from large astronomy surveys, but could probably be used for other 
@@ -18,7 +20,7 @@ for more information on partitioning, installation, and contributing.
 See related projects:
 
 * HiPSCat Import ([on GitHub](https://github.com/astronomy-commons/hipscat-import))
-  ([on ReadTheDocs](https://hipscat.readthedocs.io/en/latest/))
+  ([on ReadTheDocs](https://hipscat-import.readthedocs.io/en/latest/))
 * LSDB ([on GitHub](https://github.com/astronomy-commons/lsdb)) 
   ([on ReadTheDocs](https://lsdb.readthedocs.io/en/latest/))
 
