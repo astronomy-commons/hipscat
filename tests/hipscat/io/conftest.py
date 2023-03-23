@@ -67,11 +67,13 @@ def basic_catalog_info(tmp_path):
 
 @pytest.fixture
 def basic_catalog_parquet_metadata():
-    return pa.schema([
-        pa.field('id', pa.int64()),
-        pa.field('ra', pa.float64()),
-        pa.field('dec', pa.float64()),
-        pa.field('ra_error', pa.int64()),
-        pa.field('dec_error', pa.int64()),
-        pa.field('__index_level_0__', pa.int64()),
-    ])
+    return pa.schema(
+        [
+            pa.field("id", pa.int64()),
+            pa.field("ra", pa.float64()),
+            pa.field("dec", pa.float64()),
+            pa.field("ra_error", pa.int64()),
+            pa.field("dec_error", pa.int64()),
+            pa.field("__index_level_0__", pa.int64()),
+        ]
+    )

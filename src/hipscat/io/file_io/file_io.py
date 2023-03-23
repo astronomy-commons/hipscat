@@ -2,6 +2,8 @@ import json
 import os
 from typing import Any
 
+import healpy as hp
+import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -103,3 +105,26 @@ def write_parquet_metadata(
     pq.write_metadata(
         schema, file_pointer, metadata_collector=metadata_collector, **kwargs
     )
+
+
+def read_fits_image(map_file_pointer: FilePointer):
+    """Read the object spatial distribution information from a healpix FITS file.
+
+    Args:
+        file_pointer: location of file to be written
+    Returns:
+        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
+            value at each index corresponds to the number of objects found at the healpix pixel.
+    """
+    return hp.read_map(map_file_pointer)
+
+
+def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer):
+    """Write the object spatial distribution information to a healpix FITS file.
+
+    Args:
+        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
+            value at each index corresponds to the number of objects found at the healpix pixel.
+        file_pointer: location of file to be written
+    """
+    hp.write_map(map_file_pointer, histogram)

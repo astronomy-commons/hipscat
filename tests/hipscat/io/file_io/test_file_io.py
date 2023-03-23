@@ -5,8 +5,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hipscat.io.file_io import get_file_pointer_from_path, make_directory, write_string_to_file, \
-    load_json_file, load_csv_to_pandas, write_dataframe_to_csv
+from hipscat.io.file_io import (
+    get_file_pointer_from_path,
+    make_directory,
+    write_string_to_file,
+    load_json_file,
+    load_csv_to_pandas,
+    write_dataframe_to_csv,
+)
 
 
 def test_make_directory(tmp_path):
@@ -44,7 +50,7 @@ def test_write_string_to_file(tmp_path):
     test_file_pointer = get_file_pointer_from_path(test_file_path)
     test_string = "this is a test"
     write_string_to_file(test_file_pointer, test_string, encoding="utf-8")
-    with open(test_file_path, 'r', encoding="utf-8") as file:
+    with open(test_file_path, "r", encoding="utf-8") as file:
         data = file.read()
         assert data == test_string
 
@@ -68,7 +74,7 @@ def test_load_csv_to_pandas(small_sky_dir):
 
 
 def test_write_df_to_csv(tmp_path):
-    df = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
+    df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
     test_file_path = os.path.join(tmp_path, "test.csv")
     test_file_pointer = get_file_pointer_from_path(test_file_path)
     write_dataframe_to_csv(df, test_file_pointer, index=False)
