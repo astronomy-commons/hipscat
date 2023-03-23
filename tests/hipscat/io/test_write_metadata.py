@@ -7,6 +7,8 @@ import shutil
 import numpy as np
 import numpy.testing as npt
 import pyarrow.parquet as pq
+import pyarrow as pa
+import pandas as pd
 
 import hipscat.io.write_metadata as io
 
@@ -182,7 +184,8 @@ def test_write_parquet_metadata(
 def test_write_parquet_metadata_order1(
     tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata
 ):
-    """Copy existing catalog and create new metadata files for it, using a catalog with multiple files."""
+    """Copy existing catalog and create new metadata files for it,
+    using a catalog with multiple files."""
     temp_path = os.path.join(tmp_path, "catalog")
     shutil.copytree(
         small_sky_order1_dir,
@@ -195,6 +198,32 @@ def test_write_parquet_metadata_order1(
     check_parquet_schema(
         os.path.join(tmp_path, "catalog", "_common_metadata"),
         basic_catalog_parquet_metadata,
+    )
+
+
+def test_write_index_parquet_metadata(tmp_path):
+    """Create an index-like catalog, and test metadata creation."""
+    temp_path = os.path.join(tmp_path, "index")
+
+    index_parquet_path = os.path.join(temp_path, "Parts=0", "part_000_of_001.parquet")
+    os.makedirs(os.path.join(temp_path, "Parts=0"))
+    basic_index = pd.DataFrame({"_hipscat_id": [4000, 4001], "ps1_objid": [700, 800]})
+    basic_index.to_parquet(index_parquet_path)
+
+    index_catalog_parquet_metadata = pa.schema(
+        [
+            pa.field("_hipscat_id", pa.int64()),
+            pa.field("ps1_objid", pa.int64()),
+        ]
+    )
+
+    io.write_parquet_metadata(temp_path)
+    check_parquet_schema(
+        os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata
+    )
+    check_parquet_schema(
+        os.path.join(tmp_path, "index", "_common_metadata"),
+        index_catalog_parquet_metadata,
     )
 
 
