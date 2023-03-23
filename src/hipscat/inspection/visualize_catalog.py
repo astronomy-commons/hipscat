@@ -107,4 +107,4 @@ def _plot_healpix_map(healpix_map, projection, title, draw_map=True):
             title=title,
             nest=True,
         )
-        return plt.plot()
+        plt.plot()
