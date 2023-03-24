@@ -161,29 +161,20 @@ def write_parquet_metadata(catalog_path):
         catalog_path (str): base path for the catalog
     """
 
-    dataset = pds.dataset(catalog_path, partitioning="hive")
+    dataset = pds.dataset(catalog_path, format="parquet", exclude_invalid_files=True)
     metadata_collector = []
 
     for hips_file in dataset.files:
-        ## Get rid of any non-parquet files
-        if not hips_file.endswith("parquet"):
-            continue
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer)
         metadata_collector.append(single_metadata)
 
-    ## Trim hive fields from final schema, otherwise there will be a mismatch.
-    subschema = dataset.schema
-    subschema = subschema.remove(
-        subschema.get_field_index(paths.ORDER_DIRECTORY_PREFIX)
-    )
-    subschema = subschema.remove(subschema.get_field_index(paths.DIR_DIRECTORY_PREFIX))
-
+    ## Write out the two metadata files
     catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
     metadata_file_pointer = paths.get_parquet_metadata_pointer(catalog_base_dir)
     common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
     file_io.write_parquet_metadata(
-        subschema, metadata_file_pointer, metadata_collector=metadata_collector
+        dataset.schema, metadata_file_pointer, metadata_collector=metadata_collector
     )
-    file_io.write_parquet_metadata(subschema, common_metadata_file_pointer)
+    file_io.write_parquet_metadata(dataset.schema, common_metadata_file_pointer)
