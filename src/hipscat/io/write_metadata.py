@@ -36,8 +36,8 @@ def write_catalog_info(catalog_parameters, histogram: np.ndarray):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for the
-        partitioning job
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
+            the new catalog
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
     """
@@ -61,30 +61,31 @@ def write_catalog_info(catalog_parameters, histogram: np.ndarray):
     write_json_file(metadata, catalog_info_pointer)
 
 
-def write_provenance_info(args, tool_args):
+def write_provenance_info(catalog_parameters, tool_args):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
-        args (:obj:`PartitionArguments`): collection of runtime arguments for the partitioning job
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments
+            for the new catalog
         tool_args (:obj:`dict`): dictionary of additional arguments provided by the tool creating
             this catalog.
     """
     metadata = {}
-    metadata["catalog_name"] = args.catalog_name
+    metadata["catalog_name"] = catalog_parameters.catalog_name
     metadata["version"] = version("hipscat")
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
-    metadata["epoch"] = args.epoch
-    metadata["ra_kw"] = args.ra_column
-    metadata["dec_kw"] = args.dec_column
-    metadata["id_kw"] = args.id_column
+    metadata["epoch"] = catalog_parameters.epoch
+    metadata["ra_kw"] = catalog_parameters.ra_column
+    metadata["dec_kw"] = catalog_parameters.dec_column
+    metadata["id_kw"] = catalog_parameters.id_column
 
-    metadata["origin_healpix_order"] = args.highest_healpix_order
-    metadata["pixel_threshold"] = args.pixel_threshold
+    metadata["origin_healpix_order"] = catalog_parameters.highest_healpix_order
+    metadata["pixel_threshold"] = catalog_parameters.pixel_threshold
 
     metadata["tool_args"] = tool_args
 
-    metadata_pointer = paths.get_provenance_pointer(args.catalog_base_dir)
+    metadata_pointer = paths.get_provenance_pointer(catalog_parameters.catalog_base_dir)
     write_json_file(metadata, metadata_pointer)
 
 
@@ -92,8 +93,8 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
     """Write all partition data to CSV file.
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for the
-        partitioning job
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
+            the new job
         destination_pixel_map (dict): data frame that has as columns:
 
             - pixel order of destination
@@ -111,13 +112,13 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
 
 
 def write_legacy_metadata(
-    catalog_patameters, histogram: np.ndarray, pixel_map: np.ndarray
+    catalog_parameters, histogram: np.ndarray, pixel_map: np.ndarray
 ):
     """Write a <catalog_name>_meta.json with the format expected by the prototype catalog.
 
     Args:
-        catalog_patameters (:obj:`CatalogParameters`): collection of runtime arguments for the
-        partitioning job
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
+            the new catalog
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         pixel_map (:obj:`np.ndarray`): one-dimensional numpy array of integer 3-tuples.
@@ -125,13 +126,13 @@ def write_legacy_metadata(
             details on this format.
     """
     metadata = {}
-    metadata["cat_name"] = catalog_patameters.catalog_name
-    metadata["ra_kw"] = catalog_patameters.ra_column
-    metadata["dec_kw"] = catalog_patameters.dec_column
-    metadata["id_kw"] = catalog_patameters.id_column
+    metadata["cat_name"] = catalog_parameters.catalog_name
+    metadata["ra_kw"] = catalog_parameters.ra_column
+    metadata["dec_kw"] = catalog_parameters.dec_column
+    metadata["id_kw"] = catalog_parameters.id_column
     metadata["n_sources"] = histogram.sum()
-    metadata["pix_threshold"] = catalog_patameters.pixel_threshold
-    metadata["urls"] = catalog_patameters.input_paths
+    metadata["pix_threshold"] = catalog_parameters.pixel_threshold
+    metadata["urls"] = catalog_parameters.input_paths
 
     hips_structure = {}
     temp = [i for i in pixel_map if i is not None]
@@ -146,8 +147,8 @@ def write_legacy_metadata(
     metadata["hips"] = hips_structure
 
     metadata_pointer = file_io.append_paths_to_pointer(
-        catalog_patameters.catalog_base_dir,
-        f"{catalog_patameters.catalog_name}_meta.json",
+        catalog_parameters.catalog_base_dir,
+        f"{catalog_parameters.catalog_name}_meta.json",
     )
 
     write_json_file(metadata, metadata_pointer)
@@ -178,3 +179,17 @@ def write_parquet_metadata(catalog_path):
         dataset.schema, metadata_file_pointer, metadata_collector=metadata_collector
     )
     file_io.write_parquet_metadata(dataset.schema, common_metadata_file_pointer)
+
+
+def write_fits_map(catalog_path, histogram: np.ndarray):
+    """Write the object spatial distribution information to a healpix FITS file.
+
+    Args:
+        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
+            the new catalog
+        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
+            value at each index corresponds to the number of objects found at the healpix pixel.
+    """
+    catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
+    map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
+    file_io.write_fits_image(histogram, map_file_pointer)

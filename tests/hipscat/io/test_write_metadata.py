@@ -6,10 +6,11 @@ import shutil
 
 import numpy as np
 import numpy.testing as npt
-import pyarrow.parquet as pq
-import pyarrow as pa
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 
+import hipscat.io.file_io as file_io
 import hipscat.io.write_metadata as io
 
 
@@ -265,3 +266,14 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
 
     parquet_file = pq.ParquetFile(file_name)
     assert parquet_file.metadata.num_row_groups == expected_num_row_groups
+
+
+def test_read_write_fits_point_map(tmp_path):
+    """Check that we write and can read a FITS file for spatial distribution."""
+    initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
+    io.write_fits_map(tmp_path, initial_histogram)
+
+    output_file = os.path.join(tmp_path, "point_map.fits")
+
+    output = file_io.read_fits_image(output_file)
+    npt.assert_array_equal(output, initial_histogram)
