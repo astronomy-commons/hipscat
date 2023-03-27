@@ -106,8 +106,8 @@ def test_write_provenance_info(assert_text_file_matches, tmp_path, basic_catalog
 def test_write_partition_info(assert_text_file_matches, tmp_path, basic_catalog_info):
     """Test that we accurately write out the individual partition stats"""
     expected_lines = [
-        "order,pixel,num_objects",
-        "0,11,131",
+        "Norder,Dir,Npix,num_objects",
+        "0,0,11,131",
     ]
     pixel_map = {tuple([0, 11, 131]): [44, 45, 46]}
     io.write_partition_info(basic_catalog_info, pixel_map)
@@ -121,8 +121,8 @@ def test_write_partition_info_float(
     """Test that we accurately write out the individual partition stats
     even when the input is floats instead of ints"""
     expected_lines = [
-        "order,pixel,num_objects",
-        "0,11,131",
+        "Norder,Dir,Npix,num_objects",
+        "0,0,11,131",
     ]
     pixel_map = {tuple([0.0, 11.0, 131.0]): [44.0, 45.0, 46.0]}
     io.write_partition_info(basic_catalog_info, pixel_map)
