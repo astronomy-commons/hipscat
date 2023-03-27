@@ -12,6 +12,7 @@ import pyarrow.parquet as pq
 
 import hipscat.io.file_io as file_io
 import hipscat.io.write_metadata as io
+import hipscat.pixel_math as hist
 
 
 def test_write_json_file(assert_text_file_matches, tmp_path):
@@ -270,7 +271,9 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
 
 def test_read_write_fits_point_map(tmp_path):
     """Check that we write and can read a FITS file for spatial distribution."""
-    initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
+    initial_histogram = hist.empty_histogram(1)
+    filled_pixels = [51, 29, 51, 0]
+    initial_histogram[44:] = filled_pixels[:]
     io.write_fits_map(tmp_path, initial_histogram)
 
     output_file = os.path.join(tmp_path, "point_map.fits")
