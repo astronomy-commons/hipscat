@@ -7,11 +7,12 @@ import pytest
 
 from hipscat.io.file_io import (
     get_file_pointer_from_path,
-    make_directory,
-    write_string_to_file,
-    load_json_file,
     load_csv_to_pandas,
+    load_json_file,
+    make_directory,
+    remove_directory,
     write_dataframe_to_csv,
+    write_string_to_file,
 )
 
 
@@ -43,6 +44,24 @@ def test_make_existing_directory_existok(tmp_path):
     make_directory(test_dir_pointer, exist_ok=True)
     assert os.path.exists(test_dir_path)
     assert os.path.exists(test_inner_dir_path)
+
+
+def test_make_and_remove_directory(tmp_path):
+    test_dir_path = os.path.join(tmp_path, "test_path")
+    assert not os.path.exists(test_dir_path)
+    test_dir_pointer = get_file_pointer_from_path(test_dir_path)
+    make_directory(test_dir_pointer)
+    assert os.path.exists(test_dir_path)
+    remove_directory(test_dir_pointer)
+    assert not os.path.exists(test_dir_path)
+
+    ## Directory no longer exists to be deleted.
+    with pytest.raises(FileNotFoundError):
+        remove_directory(test_dir_pointer)
+
+    ## Directory doesn't exist, but shouldn't throw an error.
+    remove_directory(test_dir_pointer, ignore_errors=True)
+    assert not os.path.exists(test_dir_path)
 
 
 def test_write_string_to_file(tmp_path):

@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from typing import Any
 
 import healpy as hp
@@ -19,12 +20,22 @@ def make_directory(file_pointer: FilePointer, exist_ok: bool = False):
     Args:
         file_pointer: location in file system to make directory
         exist_ok: Default False. If false will raise error if directory exists. If true existing
-        directories will be ignored and not modified
+            directories will be ignored and not modified
 
     Raises:
         OSError
     """
     os.makedirs(file_pointer, exist_ok=exist_ok)
+
+
+def remove_directory(file_pointer: FilePointer, ignore_errors=False):
+    """Remove a directory, and all contents, recursively.
+
+    Args:
+        file_pointer: directory in file system to remove
+        ignore_errors: if True errors resulting from failed removals will be ignored
+    """
+    shutil.rmtree(file_pointer, ignore_errors=ignore_errors)
 
 
 def write_string_to_file(
