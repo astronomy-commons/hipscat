@@ -37,7 +37,7 @@ def does_file_or_directory_exist(pointer: FilePointer) -> bool:
 
 
 def is_regular_file(pointer: FilePointer) -> bool:
-    """Checks if a file or directory exists for a given file pointer
+    """Checks if a regular file (NOT a directory) exists for a given file pointer.
 
     Args:
         pointer: File Pointer to check if a regular file
@@ -57,7 +57,7 @@ def find_files_matching_path(*paths: str) -> List[FilePointer]:
     Returns:
         New file pointers to files found matching the path
     """
-    matcher = os.path.join(*paths)
+    matcher = append_paths_to_pointer(*paths)
     return [get_file_pointer_from_path(x) for x in glob.glob(matcher)]
 
 
