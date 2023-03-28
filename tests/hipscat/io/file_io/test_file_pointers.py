@@ -1,11 +1,14 @@
 import os
 
-from hipscat.io.file_io import (append_paths_to_pointer,
-                                directory_has_contents,
-                                does_file_or_directory_exist,
-                                find_files_matching_path,
-                                get_directory_contents,
-                                get_file_pointer_from_path, is_regular_file)
+from hipscat.io.file_io import (
+    append_paths_to_pointer,
+    directory_has_contents,
+    does_file_or_directory_exist,
+    find_files_matching_path,
+    get_directory_contents,
+    get_file_pointer_from_path,
+    is_regular_file,
+)
 
 
 def test_get_pointer_from_path(tmp_path):

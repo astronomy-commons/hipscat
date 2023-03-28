@@ -74,8 +74,8 @@ def directory_has_contents(pointer: FilePointer) -> bool:
 
 
 def get_directory_contents(pointer: FilePointer) -> List[FilePointer]:
-    """Finds all files and directories in the specified directory. 
-    
+    """Finds all files and directories in the specified directory.
+
     NBL This is not recursive, and will return only the first level of directory contents.
 
     Args:
@@ -85,7 +85,7 @@ def get_directory_contents(pointer: FilePointer) -> List[FilePointer]:
         New file pointers to files or subdirectories below this directory.
     """
     contents = os.listdir(pointer)
-    if len(contents) ==0:
+    if len(contents) == 0:
         return []
     contents.sort()
     return [append_paths_to_pointer(pointer, x) for x in contents]
