@@ -127,4 +127,4 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer):
             value at each index corresponds to the number of objects found at the healpix pixel.
         file_pointer: location of file to be written
     """
-    hp.write_map(map_file_pointer, histogram, overwrite=True)
+    hp.write_map(map_file_pointer, histogram, overwrite=True, dtype=np.int64)
