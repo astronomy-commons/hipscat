@@ -106,8 +106,25 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
         catalog_parameters.catalog_base_dir
     )
     data_frame = pd.DataFrame(destination_pixel_map.keys())
-    data_frame.columns = ["order", "pixel", "num_objects"]
-    data_frame = data_frame.astype(int)
+
+    # Set column names and add a directory column.
+    data_frame.columns = [
+        "Norder",
+        "Npix",
+        "num_objects",
+    ]
+    data_frame["Dir"] = int(data_frame["Npix"] / 10_000) * 10_000
+
+    # Reorder the columns to match full path, and force to integer types.
+    data_frame = data_frame[
+        [
+            "Norder",
+            "Dir",
+            "Npix",
+            "num_objects",
+        ]
+    ].astype(int)
+
     file_io.write_dataframe_to_csv(data_frame, partition_info_pointer, index=False)
 
 
