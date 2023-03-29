@@ -115,6 +115,23 @@ def test_write_partition_info(assert_text_file_matches, tmp_path, basic_catalog_
     metadata_filename = os.path.join(tmp_path, "small_sky", "partition_info.csv")
     assert_text_file_matches(expected_lines, metadata_filename)
 
+    expected_lines = [
+        "Norder,Dir,Npix,num_objects",
+        "1,0,44,42",
+        "1,0,45,29",
+        "1,0,46,42",
+        "1,0,47,18",
+    ]
+    pixel_map = {
+        tuple([1, 44, 42]): [44],
+        tuple([1, 45, 29]): [45],
+        tuple([1, 46, 42]): [46],
+        tuple([1, 47, 18]): [47],
+    }
+    io.write_partition_info(basic_catalog_info, pixel_map)
+    metadata_filename = os.path.join(tmp_path, "small_sky", "partition_info.csv")
+    assert_text_file_matches(expected_lines, metadata_filename)
+
 
 def test_write_partition_info_float(
     assert_text_file_matches, tmp_path, basic_catalog_info

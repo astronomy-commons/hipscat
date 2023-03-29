@@ -113,7 +113,7 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
         "Npix",
         "num_objects",
     ]
-    data_frame["Dir"] = int(data_frame["Npix"] / 10_000) * 10_000
+    data_frame["Dir"] = [int(x / 10_000) * 10_000 for x in data_frame["Npix"]]
 
     # Reorder the columns to match full path, and force to integer types.
     data_frame = data_frame[
