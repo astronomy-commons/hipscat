@@ -1,6 +1,7 @@
 """Container class to hold catalog metadata and partition iteration"""
 
 
+from hipscat.catalog.catalog_parameters import read_from_metadata_file
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import file_io, paths
 
@@ -14,8 +15,10 @@ class Catalog:
         self.metadata_keywords = None
 
         self.partition_info = None
+        self.catalog_info = None
 
         self.catalog_name = None
+        self.catalog_type = None
 
         self._initialize_metadata()
 
@@ -29,19 +32,9 @@ class Catalog:
             raise FileNotFoundError(
                 f"No catalog info found where expected: {str(catalog_info_file)}"
             )
-
-        self.metadata_keywords = file_io.load_json_file(catalog_info_file)
-        self.catalog_name = self.metadata_keywords["catalog_name"]
-
-        self.catalog_type = self.metadata_keywords.get("catalog_type", "object")
-        if self.catalog_type not in (
-            "object",
-            "source",
-            "index",
-            "association",
-            "margin",
-        ):
-            raise ValueError(f"Unknown catalog type: {self.catalog_type}")
+        self.catalog_info = read_from_metadata_file(catalog_info_file)
+        self.catalog_name = self.catalog_info.catalog_name
+        self.catalog_type = self.catalog_info.catalog_type
 
         if self.catalog_type in ("object", "source"):
             self.partition_info = PartitionInfo(self.catalog_base_dir)

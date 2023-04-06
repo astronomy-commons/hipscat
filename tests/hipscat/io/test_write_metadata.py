@@ -4,7 +4,6 @@
 import os
 import shutil
 
-import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa

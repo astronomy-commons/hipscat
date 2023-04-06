@@ -17,17 +17,19 @@ class CatalogParameters:
     dec_column: str = "dec"
     total_rows: int = 0
 
+    CATALOG_TYPES = [
+        "object",
+        "source",
+        "index",
+        "association",
+        "margin",
+    ]
+
     def __post_init__(
         self,
     ):
 
-        if self.catalog_type not in (
-            "object",
-            "source",
-            "index",
-            "association",
-            "margin",
-        ):
+        if self.catalog_type not in self.CATALOG_TYPES:
             raise ValueError(f"Unknown catalog type: {self.catalog_type}")
 
         output_path_pointer = file_io.get_file_pointer_from_path(self.output_path)
@@ -48,3 +50,24 @@ class CatalogParameters:
             f"  output_path {self.output_path}\n"
         )
         return formatted_string
+
+
+def read_from_metadata_file(catalog_info_file):
+    """Read catalog parameters from a catalog_info.json file. Validate the parameters"""
+    metadata_keywords = file_io.load_json_file(catalog_info_file)
+    catalog_name = metadata_keywords["catalog_name"]
+    if not catalog_name:
+        raise ValueError("Catalog name is required in catalog info file.")
+
+    catalog_type = metadata_keywords.get("catalog_type", "object")
+    if catalog_type not in CatalogParameters.CATALOG_TYPES:
+        raise ValueError(f"Unknown catalog type: {catalog_type}")
+
+    return CatalogParameters(
+        catalog_name=catalog_name,
+        catalog_type=catalog_type,
+        epoch=metadata_keywords.get("epoch", "J2000"),
+        ra_column=metadata_keywords.get("ra_column", "ra"),
+        dec_column=metadata_keywords.get("dec_column", "dec"),
+        total_rows=int(metadata_keywords.get("total_rows", 0)),
+    )
