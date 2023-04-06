@@ -20,6 +20,16 @@ class CatalogParameters:
     def __post_init__(
         self,
     ):
+
+        if self.catalog_type not in (
+            "object",
+            "source",
+            "index",
+            "association",
+            "margin",
+        ):
+            raise ValueError(f"Unknown catalog type: {self.catalog_type}")
+
         output_path_pointer = file_io.get_file_pointer_from_path(self.output_path)
         self.catalog_base_dir = file_io.append_paths_to_pointer(
             output_path_pointer, self.catalog_name

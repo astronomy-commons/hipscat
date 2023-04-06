@@ -11,16 +11,6 @@ import pyarrow.dataset as pds
 from hipscat.io import file_io, paths
 
 
-class NumpyEncoder(json.JSONEncoder):
-    """Special json encoder for numpy integer types"""
-
-    def default(self, o):
-        int_object = o
-        if isinstance(int_object, (np.int64, np.ulonglong)):
-            return int(int_object)
-        return o
-
-
 def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer):
     """Convert metadata_dictionary to a json string and print to file.
 
@@ -28,7 +18,7 @@ def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer
         metadata_dictionary (:obj:`dictionary`): a dictionary of key-value pairs
         file_pointer (str): destination for the json file
     """
-    dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=NumpyEncoder)
+    dumped_metadata = json.dumps(metadata_dictionary, indent=4)
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 
