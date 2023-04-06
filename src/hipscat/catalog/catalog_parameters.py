@@ -1,4 +1,4 @@
-"""Conatiner class for properties of a catalog that is being created"""
+"""Container class for properties of a catalog that is being created"""
 
 from dataclasses import dataclass
 
