@@ -32,28 +32,20 @@ def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 
-def write_catalog_info(catalog_parameters, histogram: np.ndarray):
+def write_catalog_info(catalog_parameters):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
         catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
             the new catalog
-        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
     """
     metadata = {}
     metadata["catalog_name"] = catalog_parameters.catalog_name
-    metadata["version"] = version("hipscat")
-    now = datetime.now()
-    metadata["generation_date"] = now.strftime("%Y.%m.%d")
+    metadata["catalog_type"] = catalog_parameters.catalog_type
     metadata["epoch"] = catalog_parameters.epoch
     metadata["ra_kw"] = catalog_parameters.ra_column
     metadata["dec_kw"] = catalog_parameters.dec_column
-    metadata["id_kw"] = catalog_parameters.id_column
-    metadata["total_objects"] = histogram.sum()
-
-    metadata["origin_healpix_order"] = catalog_parameters.highest_healpix_order
-    metadata["pixel_threshold"] = catalog_parameters.pixel_threshold
+    metadata["total_rows"] = catalog_parameters.total_rows
 
     catalog_info_pointer = paths.get_catalog_info_pointer(
         catalog_parameters.catalog_base_dir
@@ -72,16 +64,14 @@ def write_provenance_info(catalog_parameters, tool_args):
     """
     metadata = {}
     metadata["catalog_name"] = catalog_parameters.catalog_name
+    metadata["catalog_type"] = catalog_parameters.catalog_type
     metadata["version"] = version("hipscat")
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
     metadata["epoch"] = catalog_parameters.epoch
     metadata["ra_kw"] = catalog_parameters.ra_column
     metadata["dec_kw"] = catalog_parameters.dec_column
-    metadata["id_kw"] = catalog_parameters.id_column
-
-    metadata["origin_healpix_order"] = catalog_parameters.highest_healpix_order
-    metadata["pixel_threshold"] = catalog_parameters.pixel_threshold
+    metadata["total_rows"] = catalog_parameters.total_rows
 
     metadata["tool_args"] = tool_args
 
@@ -126,49 +116,6 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
     ].astype(int)
 
     file_io.write_dataframe_to_csv(data_frame, partition_info_pointer, index=False)
-
-
-def write_legacy_metadata(
-    catalog_parameters, histogram: np.ndarray, pixel_map: np.ndarray
-):
-    """Write a <catalog_name>_meta.json with the format expected by the prototype catalog.
-
-    Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
-            the new catalog
-        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
-        pixel_map (:obj:`np.ndarray`): one-dimensional numpy array of integer 3-tuples.
-            See :func:`~hipscat.pixel_math.partition_stats.generate_alignment` for more
-            details on this format.
-    """
-    metadata = {}
-    metadata["cat_name"] = catalog_parameters.catalog_name
-    metadata["ra_kw"] = catalog_parameters.ra_column
-    metadata["dec_kw"] = catalog_parameters.dec_column
-    metadata["id_kw"] = catalog_parameters.id_column
-    metadata["n_sources"] = histogram.sum()
-    metadata["pix_threshold"] = catalog_parameters.pixel_threshold
-    metadata["urls"] = catalog_parameters.input_paths
-
-    hips_structure = {}
-    temp = [i for i in pixel_map if i is not None]
-    unique_partitions = np.unique(temp, axis=0)
-    for item in unique_partitions:
-        order = int(item[0])
-        pixel = int(item[1])
-        if order not in hips_structure:
-            hips_structure[order] = []
-        hips_structure[order].append(pixel)
-
-    metadata["hips"] = hips_structure
-
-    metadata_pointer = file_io.append_paths_to_pointer(
-        catalog_parameters.catalog_base_dir,
-        f"{catalog_parameters.catalog_name}_meta.json",
-    )
-
-    write_json_file(metadata, metadata_pointer)
 
 
 def write_parquet_metadata(catalog_path):

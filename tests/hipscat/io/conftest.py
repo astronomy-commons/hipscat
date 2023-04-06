@@ -56,12 +56,8 @@ def assert_text_file_matches():
 def basic_catalog_info(tmp_path):
     return CatalogParameters(
         catalog_name="small_sky",
-        input_paths=["foo"],
-        input_format="csv",
         output_path=tmp_path,
-        highest_healpix_order=0,
-        ra_column="ra",
-        dec_column="dec",
+        total_rows=131,
     )
 
 

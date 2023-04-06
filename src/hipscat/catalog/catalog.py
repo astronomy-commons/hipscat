@@ -32,7 +32,19 @@ class Catalog:
 
         self.metadata_keywords = file_io.load_json_file(catalog_info_file)
         self.catalog_name = self.metadata_keywords["catalog_name"]
-        self.partition_info = PartitionInfo(self.catalog_base_dir)
+
+        self.catalog_type = self.metadata_keywords.get("catalog_type", "object")
+        if self.catalog_type not in (
+            "object",
+            "source",
+            "index",
+            "association",
+            "margin",
+        ):
+            raise ValueError(f"Unknown catalog type: {self.catalog_type}")
+
+        if self.catalog_type in ("object", "source"):
+            self.partition_info = PartitionInfo(self.catalog_base_dir)
 
     def get_pixels(self):
         """Get all healpix pixels that are contained in the catalog
