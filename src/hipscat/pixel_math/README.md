@@ -189,6 +189,7 @@ In the case where `pixel_order` is less than 2, we divide the polygon into 4 or 
 - convert the boundary coordinates into [homogeneous coordinates](https://en.wikipedia.org/wiki/Homogeneous_coordinates).
 - apply the affine transform to the now homogeneous coordinates.
 - build the polygon(s) and wcs object(s) for the now transformed points.
+
 ### check_margin_bounds
 Given a set of ra and dec coordinates as well as a list of `regions.PolygonPixelRegion` and `astropy.wcs.WCS` tuples (see `get_margin_bounds_and_wcs` above), return a 1-dimmensional array of booleans on whether a given ra and dec coordinate pair are contained within any of the given bounding boxes.
 

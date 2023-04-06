@@ -125,9 +125,27 @@ def test_get_margin_bounds_and_wcs_low_order():
 def test_get_margin_bounds_and_wcs_north_pole():
     """Make sure get_margin_bounds_and_wcs works at pixels along the north polar region"""
     scale = pm.get_margin_scale(1, 0.1)
-    bounds = pm.get_margin_bounds_and_wcs(1, 7, scale)
+    bounds = pm.get_margin_bounds_and_wcs(1, 7, scale, step = 100)
 
     assert len(bounds) == 4
+
+    test_ra = np.array([50, 100., 130., 130., 100.])
+    test_dec = np.array([-60., 89.9, 65., 85., 50.])
+
+    test_sc = SkyCoord(test_ra, test_dec, unit="deg")
+
+    vals = []
+    for p, w in bounds:
+        x, y = w.world_to_pixel(test_sc)
+
+        pc = PixCoord(x, y)
+        vals.append(p.contains(pc))
+
+    checks = np.array(vals).any(axis=0)
+    
+    expected = np.array([False, True, True, True, False])
+
+    npt.assert_array_equal(checks, expected)
 
 def test_get_margin_bounds_and_wcs_south_pole():
     """Make sure get_margin_bounds_and_wcs works at pixels along the south polar region"""
@@ -135,6 +153,75 @@ def test_get_margin_bounds_and_wcs_south_pole():
     bounds = pm.get_margin_bounds_and_wcs(1, 36, scale)
 
     assert len(bounds) == 4
+
+    test_ra = np.array([50, 120., 108., 150., 100., 104.])
+    test_dec = np.array([-60., -70., -66.2, -70., -90., -80])
+
+    test_sc = SkyCoord(test_ra, test_dec, unit="deg")
+
+    vals = []
+    for p, w in bounds:
+        x, y = w.world_to_pixel(test_sc)
+
+        pc = PixCoord(x, y)
+        vals.append(p.contains(pc))
+
+    checks = np.array(vals).any(axis=0)
+    
+    expected = np.array([False, True, True, True, False, True])
+
+    npt.assert_array_equal(checks, expected)
+
+def test_get_margin_bounds_and_wcs_ra_rollover():
+    """Make sure get_margin_bounds_and_wcs works at the rollover point for right ascension"""
+    scale = pm.get_margin_scale(1, 0.1)
+    bounds = pm.get_margin_bounds_and_wcs(1, 27, scale)
+
+    assert len(bounds) == 4
+
+    test_ra = np.array([180., 0.])
+    test_dec = np.array([20., 0.])
+
+    test_sc = SkyCoord(test_ra, test_dec, unit="deg")
+
+    vals = []
+    for p, w in bounds:
+        x, y = w.world_to_pixel(test_sc)
+
+        pc = PixCoord(x, y)
+        vals.append(p.contains(pc))
+
+    checks = np.array(vals).any(axis=0)
+    
+    expected = np.array([True, False])
+
+    npt.assert_array_equal(checks, expected)
+
+def test_get_margin_bounds_and_wcs_origin():
+    """Make sure get_margin_bounds_and_wcs works at the origin of ra and dec."""
+    scale = pm.get_margin_scale(0, 0.1)
+    bounds = pm.get_margin_bounds_and_wcs(0, 4, scale)
+
+    assert len(bounds) == 16
+
+    test_ra = np.array([180.,-20.])
+    test_dec = np.array([20., -10.])
+
+    test_sc = SkyCoord(test_ra, test_dec, unit="deg")
+
+    vals = []
+    for p, w in bounds:
+        x, y = w.world_to_pixel(test_sc)
+
+        pc = PixCoord(x, y)
+        vals.append(p.contains(pc))
+
+    checks = np.array(vals).any(axis=0)
+    
+    expected = np.array([False, True])
+
+    npt.assert_array_equal(checks, expected)
+
 
 def test_check_margin_bounds():
     """Make sure check_margin_bounds works properly"""

@@ -71,12 +71,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
 
     # if the transform places the declination of any points outside of
     # the range 90 > dec > -90, change it to a proper dec value.
-    for i in range(len(transformed_bounding_box[1])):
-        dec = transformed_bounding_box[1][i]
-        if dec > 90.0:
-            transformed_bounding_box[1][i] = 90.0 - (dec - 90.0)
-        elif dec < -90.0:
-            transformed_bounding_box[1][i] = -90.0 - (dec + 90.0)
+    transformed_bounding_box[1] = np.clip(transformed_bounding_box[1], -90., 90.)
 
     min_ra = np.min(transformed_bounding_box[0])
     max_ra = np.max(transformed_bounding_box[0])
@@ -99,6 +94,9 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         div_len = int((step * 4) / divs)
         for i in range(divs):
             j = i * div_len
+            # get a `div_len + 1``  subset of the boundaries
+            # inclusive of the first element of the next slice
+            # so that we don't have any gaps in our boundary area.
             lon = list(transformed_bounding_box[0][j : j + div_len + 1])
             lat = list(transformed_bounding_box[1][j : j + div_len + 1])
 
