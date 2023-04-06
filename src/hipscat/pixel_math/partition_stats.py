@@ -76,10 +76,15 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
         - order of the destination pixel
         - pixel number *at the above order*
         - the number of objects in the pixel
+    Raises:
+        ValueError if the histogram is the wrong size, or some initial histogram bins
+            exceed threshold.
     """
-
     if len(histogram) != hp.order2npix(highest_order):
         raise ValueError("histogram is not the right size")
+    max_bin = np.amax(histogram)
+    if max_bin > threshold:
+        raise ValueError(f"single pixel count {max_bin} exceeds threshold {threshold}")
 
     nested_sums = []
     for i in range(0, highest_order):
@@ -116,11 +121,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
                     index,
                     nested_sums[read_order][index],
                 )
-            elif read_order == highest_order:
-                raise ValueError(
-                    f"""single pixel count {
-                        nested_sums[read_order][index]} exceeds threshold {threshold}"""
-                )
+
     return nested_alignment[highest_order]
 
 
