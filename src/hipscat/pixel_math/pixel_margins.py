@@ -131,7 +131,7 @@ def pixel_is_polar(order, pix):
     # in the ring numbering scheme, the first and last 4 pixels are the poles.
     if ring_pix <= 3:
         return (True, 'North')
-    elif ring_pix >= npix - 4:
+    if ring_pix >= npix - 4:
         return (True, 'South')
     return (False, '')
 
@@ -157,7 +157,7 @@ def get_truncated_margin_pixels(order, pix, margin_order):
 
     partition_nside = hp.order2nside(order)
     margin_nside = hp.order2nside(margin_order)
-    
+
     polar, pole = pixel_is_polar(order, pix)
 
     if not polar:

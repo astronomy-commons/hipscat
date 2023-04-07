@@ -172,6 +172,7 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
         bound_vals.append(vals)
     return np.array(bound_vals).any(axis=0)
 
+# pylint: disable=too-many-locals
 def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_threshold, step=1000):
     """Given a set of ra and dec values that are around one of the poles,
         determine if they are within `margin_threshold` of a provided
@@ -207,7 +208,7 @@ def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_thres
     # on the boundary of the main pixel
     boundary_range = int((marg_pix_res / part_pix_res) * step)
     pixel_boundaries = hp.vec2dir(
-        hp.boundaries(2**order, pix, step=step, nest=True), 
+        hp.boundaries(2**order, pix, step=step, nest=True),
         lonlat=True
     )
 
