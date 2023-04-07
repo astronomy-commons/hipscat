@@ -154,6 +154,22 @@ faces).
 #### Implementation
 Pretty straightforward implementation of the algorithm above.
 
+### pixel_is_polar
+Because of the nature of spherical coordinate systems, hipscat runs into some tricky edge cases at the poles. to ensure we can appropriately handle those problems, we need to check if a pixel is one of the four 'polar pixels'.
+
+#### Algorithm
+In the ring id scheme for `healpix`, the first and last 4 pixels are the polar pixels. To determine whether a nest scheme pixel is at the poles, all we have to do is convert the pixel into the ring scheme and determine if it falls at the beginning or end of the range 0 -> npix. So, if in the ring scheme the pix is `<= 3`, or `>= npix - 4`, we can safely assume that it is a polar pixel.
+
+### get_truncated_margin_pixels
+For pixels that are at the poles, our margin bounding box isn't set up to handle the data that is on the other side of the hemisphere from the partition. So when we calculate the boundaries, we truncate declination values outside of the range -90 -> 90. However, we obviously still want to include neighbor margin data that is affected by this truncation, namely the 3 margin pixels that are also polar pixels.
+
+#### Algorithm
+We want to find the 3 pixels at the healpix order of our margins that are polar. This is all of the pixels around the given pole _except_ the one that is contained within our partition pixel. 
+
+For the north pole, this is straightforwardly done by converting our partition pixel into the ring id scheme and returning the values between 0 and 3 that aren't equal to it.
+
+For the south pole, we have to do a little more complicated math, due to the fact that the southern polar pixels aren't the same values at any healpix order. To find the at polar pixel at the `margin_order` that is contained by the partition pixel (and therefore to be excluded), we can take advantage of the fact that in the nest scheme the southern partition of a pixel is equal to `4 * pix` (see the algorithm section of `get_edge` above for more info), so to get the excluded southern pixel all we have to do is find the difference between `order` and `margin_order`, and multiply our `pix` value by `4 ** d_order`.
+
 ## Margin Bounding
 After constraining our data points using the `get_margin` code in `pixel_margins`, we then move on to our more accurate bound checking by building bounding boxes that include a region approximately one `margin_threshold` wide around the original healpixel.
 
