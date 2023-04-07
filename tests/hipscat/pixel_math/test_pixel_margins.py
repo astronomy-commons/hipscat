@@ -209,3 +209,19 @@ def test_get_truncated_margin_pixels_non_pole():
     expected = np.array([])
 
     npt.assert_array_equal(truncs, expected)
+
+def test_get_truncated_margin_pixels_bad_margin_order():
+    """Check to make sure get_truncated_margin_pixels returns a ValueError when
+        margin_order is smaller or less than order.
+    """
+    order = 1
+    pix = 26
+    margin_order = 1
+
+    with pytest.raises(ValueError) as value_error:
+        pm.get_truncated_margin_pixels(order, pix, margin_order)
+
+    assert (
+        str(value_error.value)
+        == "margin_order must be larger than order"
+    )

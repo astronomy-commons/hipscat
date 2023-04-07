@@ -6,6 +6,9 @@ import numpy as np
 from astropy.coordinates import SkyCoord
 from regions import PixCoord, PolygonSkyRegion
 import astropy.wcs as world_coordinate_system
+import astropy.units as u
+
+from . import pixel_margins as pm
 
 
 def get_margin_scale(pixel_order, margin_threshold=0.1):
@@ -168,3 +171,77 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
         vals = poly.contains(pix_coords)
         bound_vals.append(vals)
     return np.array(bound_vals).any(axis=0)
+
+def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_threshold, step=1000):
+    """Given a set of ra and dec values that are around one of the poles,
+        determine if they are within `margin_threshold` of a provided
+        partition pixel. This method helps us solve the edge cases that
+        occur for margin bounding around the poles.
+
+    Args:
+        r_asc (:obj:`np.array`): one dimmensional array representing the ra of a
+            given set of points.
+        dec (:obj:`np.array`): one dimmensional array representing the dec of a
+            given set of points.
+        order (int): the healpix order of the provided partition pixel.
+        pix (int): the partition healpixel that we are creating the margin cache of.
+        margin_order (int): the healpix order of our pre-generated margin pixels.
+        margin_threshold (float): the size of the border region in degrees.
+        step (int): the total number of samples taken per side of the partition
+            pixel `pix`. Only a small subset of these points will actually be used
+            to check distance from the pixel, but step can be increased to get
+            more granularity in the `margin_threshold` angular distance measurements.
+    Returns:
+        obj:numpy.array of boolean values corresponding to the ra and dec coordinates
+            checked against whether a given point is within any of the provided polygons.
+    """
+    polar, pole = pm.pixel_is_polar(order, pix)
+
+    if not polar:
+        raise ValueError("provided healpixel must be polar")
+
+    part_pix_res = hp.nside2resol(2**order)
+    marg_pix_res = hp.nside2resol(2**margin_order)
+
+    # get the approximate number of boundary samples to cover a highest_k pixel
+    # on the boundary of the main pixel
+    boundary_range = int((marg_pix_res / part_pix_res) * step)
+    pixel_boundaries = hp.vec2dir(
+        hp.boundaries(2**order, pix, step=step, nest=True), 
+        lonlat=True
+    )
+
+    if pole == "North":
+        end = len(pixel_boundaries[0])
+        east_ra = pixel_boundaries[0][0:boundary_range+1]
+        east_dec = pixel_boundaries[1][0:boundary_range+1]
+
+        west_ra = pixel_boundaries[0][end-boundary_range:end]
+        west_dec = pixel_boundaries[1][end-boundary_range:end]
+
+        bound_ra = np.concatenate((east_ra, west_ra), axis=None)
+        bound_dec = np.concatenate((east_dec, west_dec), axis=None)
+        polar_boundaries = np.array([bound_ra, bound_dec])
+    else:
+        start = (2 * step) - boundary_range
+        end = (2 * step) + boundary_range + 1
+        south_ra = pixel_boundaries[0][start:end]
+        south_dec = pixel_boundaries[1][start:end]
+        polar_boundaries = np.array([south_ra, south_dec])
+
+    # healpy.boundaries sometimes returns dec values greater than 90, especially
+    # when taking many samples...
+    polar_boundaries[1] = np.clip(polar_boundaries[1], -90., 90.)
+
+    sky_coords = SkyCoord(r_asc, dec, unit='deg')
+
+    checks = []
+    for i in range(len(polar_boundaries[0])):
+        lon = polar_boundaries[0][i]
+        lat = polar_boundaries[1][i]
+        bound_coord = SkyCoord(lon, lat, unit='deg')
+
+        ang_dist = bound_coord.separation(sky_coords)
+        checks.append(ang_dist <= margin_threshold*u.deg)
+
+    return np.array(checks).any(axis=0)

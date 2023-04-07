@@ -250,3 +250,50 @@ def test_check_margin_bounds_multi_poly():
     expected = np.array([False, True, True])
 
     npt.assert_array_equal(checks, expected)
+
+def test_check_polar_margin_bounds_north():
+    """Make sure check_polar_margin_bounds works at the north pole"""
+    order = 0
+    pix = 1
+    margin_order = 2
+
+    ra = np.array([89, -179, -45])
+    dec = np.array([89.9, 89.9, 85.])
+
+    vals = pm.check_polar_margin_bounds(ra, dec, order, pix, margin_order, 0.1)
+
+    expected = np.array([True, True, False])
+
+    npt.assert_array_equal(vals, expected)
+
+def test_check_polar_margin_bounds_south():
+    """Make sure check_polar_margin_bounds works at the south pole"""
+    order = 0
+    pix = 9
+    margin_order = 2
+
+    ra = np.array([89, -179, -45])
+    dec = np.array([-89.9, -89.9, -85.])
+
+    vals = pm.check_polar_margin_bounds(ra, dec, order, pix, margin_order, 0.1)
+
+    expected = np.array([True, True, False])
+
+    npt.assert_array_equal(vals, expected)
+
+def test_check_polar_margin_bounds_non_pole():
+    """Make sure check_polar_margin_bounds raises a ValueError when pix isn't polar"""
+    order = 0
+    pix = 7
+    margin_order = 2
+
+    ra = np.array([89, -179, -45])
+    dec = np.array([-89.9, -89.9, -85.])
+
+    with pytest.raises(ValueError) as value_error:
+        vals = pm.check_polar_margin_bounds(ra, dec, order, pix, margin_order, 0.1)
+
+    assert (
+        str(value_error.value)
+        == "provided healpixel must be polar"
+    )

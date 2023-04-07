@@ -211,3 +211,14 @@ Given a set of ra and dec coordinates as well as a list of `regions.PolygonPixel
 
 #### Implementation
 For ever entry into `poly_and_wcs`, we convert our set of coordinates into pixel values using the `astropy.wcs.utils.skycoord_to_pixel` function then use the built in `contains` function to return the list of bound checks.
+
+### check_polar_margin_bounds
+For healpixels that surround the poles, the affine transform math breaks down directly around the poles, making it much harder for us to properly check margin data on the opposite hemisphere to our pixel. To solve this problem, we can use the `get_truncated_pixels` to find out what margin data falls around the poles, and then manually check the angular distance between those points and the boundaries of the given partition pixel to find out if the data point falls within a `margin_threshold` distance. While this sort of N^2 calculation isn't practical or desired for the larger dataset, this edge case usually only affects a small amount of the total potential margin cache data for a given catalog.
+
+#### Algorithm
+- Find the ratio of the `margin_order` (i.e. the order that our margin pixels are at) to the `order` of the larger partition pixel so that we can find the approximate range of samples to take from the `hp.boundaries` of our healpixel, giving us a set of points that define the border of the pixel along the poles.
+    - Even at very high `step` values, this generally doesn't return a large number of points to check against, since even having a small difference between `order` and `margin_order` leads to exponentially smaller values of this ratio.
+    - Higher `step` values didn't meaningfully increase the accuracy for `margin_threshold` checks so the default is value 1000, but we've left `step` as variable so that should more granularity be needed a user can adjust this value.
+- Make sure none of these `polar_boundaries` values fall outside of the range -90 -> 90 declination, as sometimes `hp.boundaries` can return values a few millionths lower or higher at highly granular `step` values.
+- Get the angular distance of our `r_asc` and `dec` values and our boundary values.
+- Return `True` for any coordinates that have a distance less than or equal to `margin_threshold`.
