@@ -14,7 +14,6 @@ def test_load_catalog_small_sky(small_sky_dir):
 
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_pixels()) == 1
-    assert len(cat.get_partitions()) == 1
 
 
 def test_load_catalog_small_sky_order1(small_sky_order1_dir):
@@ -23,7 +22,6 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
 
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_pixels()) == 4
-    assert len(cat.get_partitions()) == 4
 
 
 def test_empty_directory():

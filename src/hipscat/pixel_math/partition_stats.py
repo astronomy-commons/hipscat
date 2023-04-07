@@ -14,7 +14,7 @@ def empty_histogram(highest_order):
         one-dimensional numpy array of long integers, where the length is equal to
         the number of pixels in a healpix map of target order, and all values are set to 0.
     """
-    return np.zeros(hp.order2npix(highest_order), dtype=np.ulonglong)
+    return np.zeros(hp.order2npix(highest_order), dtype=np.int64)
 
 
 def generate_histogram(
@@ -50,7 +50,7 @@ def generate_histogram(
         nest=True,
     )
     mapped_pixel, count_at_pixel = np.unique(mapped_pixels, return_counts=True)
-    histogram_result[mapped_pixel] += count_at_pixel.astype(np.ulonglong)
+    histogram_result[mapped_pixel] += count_at_pixel.astype(np.int64)
     return histogram_result
 
 

@@ -1,18 +1,16 @@
 """Container class to hold catalog metadata and partition iteration"""
 
-import json
-import os
 
-import pandas as pd
-
-from hipscat.io import paths
+from hipscat.catalog.partition_info import PartitionInfo
+from hipscat.io import file_io, paths
 
 
 class Catalog:
     """Container class for catalog metadata"""
 
-    def __init__(self, catalog_path=None):
+    def __init__(self, catalog_path: str = None) -> None:
         self.catalog_path = catalog_path
+        self.catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
         self.metadata_keywords = None
 
         self.partition_info = None
@@ -22,23 +20,19 @@ class Catalog:
         self._initialize_metadata()
 
     def _initialize_metadata(self):
-        if not os.path.exists(self.catalog_path):
-            raise FileNotFoundError(f"No directory exists at {self.catalog_path}")
-        metadata_filename = os.path.join(self.catalog_path, "catalog_info.json")
-        if not os.path.exists(metadata_filename):
+        if not file_io.does_file_or_directory_exist(self.catalog_base_dir):
             raise FileNotFoundError(
-                f"No catalog info found where expected: {metadata_filename}"
+                f"No directory exists at {str(self.catalog_base_dir)}"
             )
-        partition_info_filename = os.path.join(self.catalog_path, "partition_info.csv")
-        if not os.path.exists(partition_info_filename):
+        catalog_info_file = paths.get_catalog_info_pointer(self.catalog_base_dir)
+        if not file_io.does_file_or_directory_exist(catalog_info_file):
             raise FileNotFoundError(
-                f"No partition info found where expected: {partition_info_filename}"
+                f"No catalog info found where expected: {str(catalog_info_file)}"
             )
 
-        with open(metadata_filename, "r", encoding="utf-8") as metadata_info:
-            self.metadata_keywords = json.load(metadata_info)
+        self.metadata_keywords = file_io.load_json_file(catalog_info_file)
         self.catalog_name = self.metadata_keywords["catalog_name"]
-        self.partition_info = pd.read_csv(partition_info_filename).copy()
+        self.partition_info = PartitionInfo(self.catalog_base_dir)
 
     def get_pixels(self):
         """Get all healpix pixels that are contained in the catalog
@@ -52,20 +46,4 @@ class Catalog:
             - pixel: pixel number *at the above order*
             - num_objects: the number of rows in the pixel's partition
         """
-        return self.partition_info
-
-    def get_partitions(self):
-        """Get file handles for all partition files in the catalog
-
-        Returns:
-            one-dimensional array of strings, where each string is a partition file
-        """
-        file_names = []
-        for _, partition in self.partition_info.iterrows():
-            file_names.append(
-                paths.pixel_catalog_file(
-                    self.catalog_path, partition["order"], partition["pixel"]
-                )
-            )
-
-        return file_names
+        return self.partition_info.data_frame
