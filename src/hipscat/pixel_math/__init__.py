@@ -9,9 +9,9 @@ from .partition_stats import (
 )
 
 from .pixel_margins import (
-    get_edge, 
-    get_margin, 
-    pixel_is_polar, 
+    get_edge,
+    get_margin,
+    pixel_is_polar,
     get_truncated_margin_pixels
 )
 
