@@ -106,18 +106,20 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         div_len = int((step * 4) / divs)
         for i in range(divs):
             j = i * div_len
-            # get a `div_len + 1``  subset of the boundaries
-            # inclusive of the first element of the next slice
+            # get a `div_len + 2`  subset of the boundaries
+            # inclusive of the first two elements of the next slice
             # so that we don't have any gaps in our boundary area.
             lon = list(transformed_bounding_box[0][j : j + div_len + 2])
             lat = list(transformed_bounding_box[1][j : j + div_len + 2])
 
-            # in the last div, include the first data point
-            # to ensure that we cover the whole area
+            # in the last div, include the first two data points
+            # to ensure that we cover the whole area.
             if i == divs - 1:
                 lon.extend(list(transformed_bounding_box[0][0:2]))
                 lat.extend(list(transformed_bounding_box[1][0:2]))
 
+            # add the centroid as the last point, turning our set of
+            # colinear-ish points into a slice of the total boundary box.
             lon.append(centroid_lon)
             lat.append(centroid_lat)
 
