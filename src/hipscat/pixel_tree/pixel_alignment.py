@@ -1,0 +1,3 @@
+class PixelAlignment:
+
+    pass
