@@ -42,8 +42,9 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         step (int): the amount of samples of one side of the given healpixel's boundaries.
             total samples taken = 4 * step.
     Returns:
-        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS`
-            tuples, covering the full area of the given healpixels scaled up area.
+        polygons (list of tuples): a list of :obj:`regions.PolygonPixelRegion`
+            and :obj:`wcs.WCS` tuples, covering the full area of the given healpixels
+            scaled up area.
     """
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
@@ -165,12 +166,13 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
             given set of points.
         dec (:obj:`np.array`): one dimmensional array representing the dec of a
             given set of points.
-        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and obj:`wcs.WCS`
-            tuples, covering the full area of the given healpixels scaled up area.
-            see get_margin_bounds_and_wcs for more details.
+        polygons (list of tuples): a list of obj:`regions.PolygonPixelRegion` and
+            :obj:`wcs.WCS` tuples, covering the full area of the given healpixels
+            scaled up area. see get_margin_bounds_and_wcs for more details.
     Returns:
-        obj:numpy.array of boolean values corresponding to the ra and dec coordinates
-            checked against whether a given point is within any of the provided polygons.
+        :obj:`numpy.array` of boolean values corresponding to the ra and dec
+            coordinates checked against whether a given point is within any of the
+            provided polygons.
     """
     sky_coords = SkyCoord(r_asc, dec, unit="deg")
     bound_vals = []
@@ -204,8 +206,9 @@ def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_thres
             to check distance from the pixel, but step can be increased to get
             more granularity in the `margin_threshold` angular distance measurements.
     Returns:
-        obj:numpy.array of boolean values corresponding to the ra and dec coordinates
-            checked against whether a given point is within any of the provided polygons.
+        :obj:`numpy.array` of boolean values corresponding to the ra and dec
+            coordinates checked against whether a given point is within any of the
+            provided polygons.
     """
     polar, pole = pm.pixel_is_polar(order, pix)
 
@@ -223,6 +226,8 @@ def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_thres
         lonlat=True
     )
 
+    # to optimize our code, we only want to take boundary samples from the part
+    # of the pixel that directly abuts the polar margin pixels.
     if pole == "North":
         end = len(pixel_boundaries[0])
         east_ra = pixel_boundaries[0][0:boundary_range+1]

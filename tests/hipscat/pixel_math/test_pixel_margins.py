@@ -212,7 +212,7 @@ def test_get_truncated_margin_pixels_non_pole():
 
 def test_get_truncated_margin_pixels_bad_margin_order():
     """Check to make sure get_truncated_margin_pixels returns a ValueError when
-        margin_order is smaller or less than order.
+        margin_order is less than or equal to order.
     """
     order = 1
     pix = 26
