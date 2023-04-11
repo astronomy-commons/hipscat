@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from hipscat.catalog import PartitionInfo, PixelNode, PixelNodeType
+from hipscat.catalog import PartitionInfo
+from hipscat.pixel_tree.pixel_node import PixelNode
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class PixelTree:

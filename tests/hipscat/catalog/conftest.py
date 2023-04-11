@@ -1,8 +1,8 @@
 import pytest
 
 from hipscat.catalog import Catalog
-from hipscat.catalog.pixel_node import PixelNode
-from hipscat.catalog.pixel_node_type import PixelNodeType
+from hipscat.pixel_tree.pixel_node import PixelNode
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 # pylint: disable=missing-function-docstring, redefined-outer-name
 

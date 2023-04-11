@@ -1,8 +1,9 @@
 import pandas as pd
 import pytest
 
-from hipscat.catalog import PartitionInfo, PixelNodeType
-from hipscat.catalog.pixel_tree import PixelTree
+from hipscat.catalog import PartitionInfo
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 def assert_pixel_tree_has_nodes_in_catalog(tree, catalog):

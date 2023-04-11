@@ -1,6 +1,6 @@
 import pytest
 
-from hipscat.catalog.pixel_node import PixelNode
+from hipscat.pixel_tree.pixel_node import PixelNode
 
 
 def check_node_data_correct(node, node_dict):
