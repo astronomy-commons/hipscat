@@ -47,10 +47,26 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     """
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
+    corners = hp.vec2dir(
+        hp.boundaries(2**pixel_order, pix, step=1, nest=True), lonlat=True
+    )
+
+    min_ra = corners[0][1] # western corner
+    max_ra = corners[0][3] # eastern corner
+    min_dec = corners[1][2] # southern corner
+    max_dec = corners[1][0] #  northern corner
 
     pixel_boundaries = hp.vec2dir(
         hp.boundaries(2**pixel_order, pix, step=step, nest=True), lonlat=True
     )
+
+    # if the eastern corner is less than the western corner, then we've hit the
+    # ra rollover and need to normalize to 0 -> 360.
+    if max_ra < min_ra:
+        max_ra = 180. + (180. - abs(max_ra))
+        ra_vals = pixel_boundaries[0]
+        normal = np.where(ra_vals < 0., 180. + (180. - abs(ra_vals)), ra_vals)
+        pixel_boundaries[0] = normal
 
     # find the translation values to keep the bounding box
     # centered around the orignal healpixel.
@@ -76,11 +92,6 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     # the range 90 > dec > -90, change it to a proper dec value.
     transformed_bounding_box[1] = np.clip(transformed_bounding_box[1], -90., 90.)
 
-    min_ra = np.min(transformed_bounding_box[0])
-    max_ra = np.max(transformed_bounding_box[0])
-    min_dec = np.min(transformed_bounding_box[1])
-    max_dec = np.max(transformed_bounding_box[1])
-
     # one arcsecond
     pix_size = 0.0002777777778
 
@@ -100,14 +111,14 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
             # get a `div_len + 1``  subset of the boundaries
             # inclusive of the first element of the next slice
             # so that we don't have any gaps in our boundary area.
-            lon = list(transformed_bounding_box[0][j : j + div_len + 1])
-            lat = list(transformed_bounding_box[1][j : j + div_len + 1])
+            lon = list(transformed_bounding_box[0][j : j + div_len + 2])
+            lat = list(transformed_bounding_box[1][j : j + div_len + 2])
 
             # in the last div, include the first data point
             # to ensure that we cover the whole area
             if i == divs - 1:
-                lon.append(transformed_bounding_box[0][0])
-                lat.append(transformed_bounding_box[1][0])
+                lon.extend(list(transformed_bounding_box[0][0:2]))
+                lat.extend(list(transformed_bounding_box[1][0:2]))
 
             lon.append(centroid_lon)
             lat.append(centroid_lat)
