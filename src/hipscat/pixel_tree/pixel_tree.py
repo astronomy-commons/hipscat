@@ -1,7 +1,12 @@
 from __future__ import annotations
 
-from hipscat.pixel_tree.pixel_node import PixelNode
+import pandas as pd
+
+from hipscat.catalog import PartitionInfo, PixelNode, PixelNodeType
 from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
+from hipscat.pixel_tree.pixel_alignment import PixelAlignment
+from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
 
 
 class PixelTree:
@@ -76,3 +81,15 @@ class PixelTree:
 
     def __getitem__(self, item):
         return self.get_node(item)
+
+    def align(self, other: PixelTree, type: PixelAlignmentType = PixelAlignmentType.INNER) -> PixelAlignment:
+        pixels_to_search = [HealpixPixel(self.root_pixel.hp_order, self.root_pixel.hp_pixel)]
+        aligned_tree_root_node = PixelNode(-1, -1, PixelNodeType.ROOT, None)
+
+        while len(pixels_to_search) > 0:
+            search_pixel = pixels_to_search.pop(0)
+            if self.contains(search_pixel.order, search_pixel.pixel):
+                pixels_to_search += [HealpixPixel(node.hp_order, node.hp_pixel) for node in self.get_node(search_pixel.order, search_pixel.pixel).children]
+            if other.contains(search_pixel.order, search_pixel.pixel):
+                pixels_to_search += [HealpixPixel(node.hp_order, node.hp_pixel) for node in other.get_node(search_pixel.order, search_pixel.pixel).children]
+
