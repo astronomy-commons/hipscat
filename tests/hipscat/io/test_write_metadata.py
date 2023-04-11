@@ -4,7 +4,6 @@
 import os
 import shutil
 
-import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa
@@ -49,21 +48,15 @@ def test_write_catalog_info(assert_text_file_matches, tmp_path, basic_catalog_in
     expected_lines = [
         "{",
         '    "catalog_name": "small_sky",',
-        r'    "version": ".*",',  # version matches digits
-        r'    "generation_date": "[.\d]+",',  # date matches date format
+        '    "catalog_type": "object",',
         '    "epoch": "J2000",',
         '    "ra_kw": "ra",',
         '    "dec_kw": "dec",',
-        '    "id_kw": "id",',
-        '    "total_objects": 131,',
-        '    "origin_healpix_order": 0',
-        '    "pixel_threshold": 1000000',
+        '    "total_rows": 131',
         "}",
     ]
 
-    initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
-
-    io.write_catalog_info(basic_catalog_info, initial_histogram)
+    io.write_catalog_info(basic_catalog_info)
     metadata_filename = os.path.join(tmp_path, "small_sky", "catalog_info.json")
     assert_text_file_matches(expected_lines, metadata_filename)
 
@@ -73,14 +66,13 @@ def test_write_provenance_info(assert_text_file_matches, tmp_path, basic_catalog
     expected_lines = [
         "{",
         '    "catalog_name": "small_sky",',
+        '    "catalog_type": "object",',
         r'    "version": ".*",',  # version matches digits
         r'    "generation_date": "[.\d]+",',  # date matches date format
         '    "epoch": "J2000",',
         '    "ra_kw": "ra",',
         '    "dec_kw": "dec",',
-        '    "id_kw": "id",',
-        '    "origin_healpix_order": 0',
-        '    "pixel_threshold": 1000000',
+        '    "total_rows": 131,',
         '    "tool_args": {',
         '        "tool_name": "hipscat-import",',
         '        "tool_version": "1.0.0",',
@@ -145,39 +137,6 @@ def test_write_partition_info_float(
     pixel_map = {tuple([0.0, 11.0, 131.0]): [44.0, 45.0, 46.0]}
     io.write_partition_info(basic_catalog_info, pixel_map)
     metadata_filename = os.path.join(tmp_path, "small_sky", "partition_info.csv")
-    assert_text_file_matches(expected_lines, metadata_filename)
-
-
-def test_write_legacy_metadata_file(
-    assert_text_file_matches, tmp_path, basic_catalog_info
-):
-    """Test that we can write out the older version of the partition metadata"""
-    expected_lines = [
-        "{",
-        '    "cat_name": "small_sky",',
-        '    "ra_kw": "ra",',
-        '    "dec_kw": "dec",',
-        '    "id_kw": "id",',
-        '    "n_sources": 131,',
-        '    "pix_threshold": 1000000,',
-        r'    "urls": \[',
-        '        "foo"',
-        "    ],",
-        '    "hips": {',
-        r'        "0": \[',
-        "            11",
-        "        ]",
-        "    }",
-        "}",
-    ]
-    initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
-    pixel_map = np.full(12, None)
-    pixel_map[11] = (0, 11, 131)
-
-    io.write_legacy_metadata(basic_catalog_info, initial_histogram, pixel_map)
-
-    metadata_filename = os.path.join(tmp_path, "small_sky", "small_sky_meta.json")
-
     assert_text_file_matches(expected_lines, metadata_filename)
 
 
