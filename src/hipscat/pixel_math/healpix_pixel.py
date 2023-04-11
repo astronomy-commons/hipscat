@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import hipscat.pixel_math.hipscat_id
-
-MAXIMUM_ORDER = hipscat.pixel_math.hipscat_id.HIPSCAT_ID_HEALPIX_ORDER
+from hipscat.pixel_math.hipscat_id import HIPSCAT_ID_HEALPIX_ORDER
 
 
 @dataclass(eq=True, frozen=True)
@@ -23,8 +21,10 @@ class HealpixPixel:
             order: HEALPix order
             pixel: HEALPix pixel number in NESTED ordering scheme
         """
-        if self.order > MAXIMUM_ORDER:
-            raise ValueError(f"HEALPix order cannot be greater than {MAXIMUM_ORDER}")
+        if self.order > HIPSCAT_ID_HEALPIX_ORDER:
+            raise ValueError(
+                f"HEALPix order cannot be greater than {HIPSCAT_ID_HEALPIX_ORDER}"
+            )
 
     def __str__(self) -> str:
         return f"Order: {self.order}, Pixel: {self.pixel}"

@@ -1,6 +1,6 @@
 import pytest
 
-from hipscat.pixel_math.healpix_pixel import HealpixPixel, MAXIMUM_ORDER
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 def test_pixels_equal():
@@ -15,7 +15,7 @@ def test_pixels_equal():
 
 def test_order_greater_than_max_order_fails():
     with pytest.raises(ValueError):
-        HealpixPixel(order=MAXIMUM_ORDER + 1, pixel=0)
+        HealpixPixel(order=20, pixel=0)
 
 
 def test_equal_pixel_hash_equal():

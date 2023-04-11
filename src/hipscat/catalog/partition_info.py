@@ -1,6 +1,9 @@
 """Container class to hold per-partition metadata"""
 
-from hipscat.io import paths, file_io
+from typing import List
+
+from hipscat.io import file_io, paths
+from hipscat.pixel_math import HealpixPixel
 
 
 class PartitionInfo:
@@ -20,6 +23,20 @@ class PartitionInfo:
             )
 
         self.data_frame = file_io.load_csv_to_pandas(partition_info_pointer)
+
+    def get_healpix_pixels(self) -> List[HealpixPixel]:
+        """Get healpix pixel objects for all pixels represented as partitions.
+
+        Returns:
+            List of HealpixPixel
+        """
+        return [
+            HealpixPixel(order, pixel)
+            for order, pixel in zip(
+                self.data_frame[self.METADATA_ORDER_COLUMN_NAME],
+                self.data_frame[self.METADATA_PIXEL_COLUMN_NAME],
+            )
+        ]
 
     def get_file_names(self):
         """Get file handles for all partition files in the catalog
