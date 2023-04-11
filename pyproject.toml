@@ -51,3 +51,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "src/hipscat/_version.py"
+
+[tool.coverage.run]
+omit=["src/hipscat/_version.py"]
