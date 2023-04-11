@@ -13,7 +13,7 @@ def test_get_margin_scale():
     """Check to make sure that get_margin_scale works as expected."""
     scale = pm.get_margin_scale(3, 0.1)
     
-    expected = 1.0274748806654526
+    expected = 1.0272887122119063
 
     assert scale == expected
 
@@ -21,7 +21,7 @@ def test_get_margin_scale_k_zero():
     """Make sure get_margin_scale works when k == 0"""
     scale = pm.get_margin_scale(0, 0.1)
 
-    expected = 1.0034139979085752
+    expected = 1.0034110890264882
 
     assert scale == expected
 
@@ -29,7 +29,7 @@ def test_get_margin_scale_k_high():
     """Make sure get_margin_scale works when k is a high order"""
     scale = pm.get_margin_scale(64, 0.1)
 
-    expected = 9.89841281541636e+32
+    expected = 6.292348628426864e+16
 
     assert scale == expected
 

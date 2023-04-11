@@ -24,10 +24,7 @@ def get_margin_scale(pixel_order, margin_threshold=0.1):
         raise ValueError("margin_threshold must be greater than 0.")
 
     resolution = hp.nside2resol(2**pixel_order, arcmin=True) / 60.0
-    resolution_and_thresh = resolution + (margin_threshold)
-    margin_area = resolution_and_thresh**2
-    pixel_area = hp.pixelfunc.nside2pixarea(2**pixel_order, degrees=True)
-    scale = margin_area / pixel_area
+    scale = 1 + ((2 * margin_threshold) / resolution)
     return scale
 
 
