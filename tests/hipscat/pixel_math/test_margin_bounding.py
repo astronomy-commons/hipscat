@@ -77,7 +77,7 @@ def test_get_margin_bounds_and_wcs():
     scale = pm.get_margin_scale(3, 0.1)
     polygon, wcs_margin = pm.get_margin_bounds_and_wcs(3, 4, scale)[0]
 
-    assert polygon.area == pytest.approx(757886549.2645547, 0.001)
+    assert polygon.area == pytest.approx(756822775.0000424, 0.001)
 
     x, y = wcs_margin.world_to_pixel(test_sc)
 
@@ -179,8 +179,8 @@ def test_get_margin_bounds_and_wcs_ra_rollover():
 
     assert len(bounds) == 4
 
-    test_ra = np.array([180., 0.])
-    test_dec = np.array([20., 0.])
+    test_ra = np.array([180., 0., -157.5, 120., 157.5])
+    test_dec = np.array([20., 0., 19.4, 20., 19.4])
 
     test_sc = SkyCoord(test_ra, test_dec, unit="deg")
 
@@ -193,7 +193,7 @@ def test_get_margin_bounds_and_wcs_ra_rollover():
 
     checks = np.array(vals).any(axis=0)
     
-    expected = np.array([True, False])
+    expected = np.array([True, False, True, False, True])
 
     npt.assert_array_equal(checks, expected)
 
