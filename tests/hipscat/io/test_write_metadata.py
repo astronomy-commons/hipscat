@@ -151,22 +151,22 @@ def test_write_parquet_metadata(
     )
     io.write_parquet_metadata(temp_path)
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+        os.path.join(temp_path, "_metadata"), basic_catalog_parquet_metadata
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
     )
     ## Re-write - should still have the same properties.
     io.write_parquet_metadata(temp_path)
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+        os.path.join(temp_path, "_metadata"), basic_catalog_parquet_metadata
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
     )
@@ -186,13 +186,13 @@ def test_write_parquet_metadata_order1(
     io.write_parquet_metadata(temp_path)
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"),
+        os.path.join(temp_path, "_metadata"),
         basic_catalog_parquet_metadata,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
     )
@@ -243,6 +243,13 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
 
     parquet_file = pq.ParquetFile(file_name)
     assert parquet_file.metadata.num_row_groups == expected_num_row_groups
+
+    for row_index in range(0, parquet_file.metadata.num_row_groups):
+        row_md = parquet_file.metadata.row_group(row_index)
+        for column_index in range(0, row_md.num_columns):
+            column_metadata = row_md.column(column_index)
+            assert column_metadata.file_path.endswith(".parquet")
+
 
 
 def test_read_write_fits_point_map(tmp_path):
