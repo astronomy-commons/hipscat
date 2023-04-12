@@ -61,9 +61,9 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     # if the eastern corner is less than the western corner, then we've hit the
     # ra rollover and need to normalize to 0 -> 360.
     if max_ra < min_ra:
-        max_ra = 180. + (180. - abs(max_ra))
+        max_ra = max_ra + 360.
         ra_vals = pixel_boundaries[0]
-        normal = np.where(ra_vals < 0., 180. + (180. - abs(ra_vals)), ra_vals)
+        normal = np.where(ra_vals < 0., ra_vals + 360., ra_vals)
         pixel_boundaries[0] = normal
 
     # find the translation values to keep the bounding box
