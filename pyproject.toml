@@ -21,6 +21,8 @@ dependencies = [
     "pandas",
     "setuptools_scm",
     "pyarrow",
+    "astropy",
+    "regions"
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)

@@ -143,3 +143,85 @@ def test_edge_greater_than_7():
         str(value_error.value)
         == "edge can only be values between 0 and 7 (see docstring)"
     )
+
+def test_pixel_is_polar_north():
+    """Check to make sure pixel_is_polar works for a pixel at the north pole."""
+    order = 2
+    pix = 31
+
+    polar, pole = pm.pixel_is_polar(order, pix)
+
+    assert polar
+    assert pole == "North"
+
+def test_pixel_is_polar_south():
+    """Check to make sure pixel_is_polar works for a pixel at the south pole."""
+    order = 2
+    pix = 160
+
+    polar, pole = pm.pixel_is_polar(order, pix)
+
+    assert polar
+    assert pole == "South"
+
+def test_pixel_is_polar_non_pole():
+    """Check to make sure pixel_is_polar works for non-polar pixels."""
+    order = 2
+    pix = 105
+
+    polar, pole = pm.pixel_is_polar(order, pix)
+
+    assert not polar
+    assert pole == ""
+
+def test_get_truncated_margin_pixels_north():
+    """Check to make sure get_truncated_margin_pixels works for pixels at the north pole"""
+    order = 1
+    pix = 7
+    margin_order = 2
+
+    truncs = pm.get_truncated_margin_pixels(order, pix, margin_order)
+
+    expected = np.array([15, 47, 63])
+
+    npt.assert_array_equal(truncs, expected)
+
+def test_get_truncated_margin_pixels_south():
+    """Check to make sure get_truncated_margin_pixels works for pixels at the south pole"""
+    order = 1
+    pix = 36
+    margin_order = 2
+
+    truncs = pm.get_truncated_margin_pixels(order, pix, margin_order)
+
+    expected = np.array([128, 160, 176])
+
+    npt.assert_array_equal(truncs, expected)
+
+def test_get_truncated_margin_pixels_non_pole():
+    """Check to make sure get_truncated_margin_pixels works for non-polar pixels"""
+    order = 1
+    pix = 26
+    margin_order = 2
+
+    truncs = pm.get_truncated_margin_pixels(order, pix, margin_order)
+
+    expected = np.array([])
+
+    npt.assert_array_equal(truncs, expected)
+
+def test_get_truncated_margin_pixels_bad_margin_order():
+    """Check to make sure get_truncated_margin_pixels returns a ValueError when
+        margin_order is less than or equal to order.
+    """
+    order = 1
+    pix = 26
+    margin_order = 1
+
+    with pytest.raises(ValueError) as value_error:
+        pm.get_truncated_margin_pixels(order, pix, margin_order)
+
+    assert (
+        str(value_error.value)
+        == "margin_order must be larger than order"
+    )
