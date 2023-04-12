@@ -31,6 +31,8 @@ def get_margin_scale(pixel_order, margin_threshold=0.1):
 def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects
         for a given margin bounding box scale.
+        For healpixels that fall along the poles, the bounding boxes won't
+        fully cover the expected margin area.
 
     Args:
         pixel_order (int): the order of the pixel to which we're calculating the margin region for.
@@ -159,6 +161,9 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
 def check_margin_bounds(r_asc, dec, poly_and_wcs):
     """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects
         for a given margin bounding box scale.
+        For pixels that fall along the poles, this code must be used in conjunction
+        with `check_polar_margin_bounds` and 
+        `pixel_margins.get_truncated_margin_pixels`.
 
     Args:
         r_asc (:obj:`np.array`): one dimmensional array representing the ra of a
