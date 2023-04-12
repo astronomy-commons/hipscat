@@ -151,22 +151,22 @@ def test_write_parquet_metadata(
     )
     io.write_parquet_metadata(temp_path)
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+        os.path.join(temp_path, "_metadata"), basic_catalog_parquet_metadata
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
     )
     ## Re-write - should still have the same properties.
     io.write_parquet_metadata(temp_path)
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"), basic_catalog_parquet_metadata
+        os.path.join(temp_path, "_metadata"), basic_catalog_parquet_metadata
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
     )
@@ -186,13 +186,13 @@ def test_write_parquet_metadata_order1(
     io.write_parquet_metadata(temp_path)
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_metadata"),
+        os.path.join(temp_path, "_metadata"),
         basic_catalog_parquet_metadata,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "catalog", "_common_metadata"),
+        os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
     )
