@@ -6,5 +6,7 @@ from .partition_stats import (
     generate_alignment,
     generate_destination_pixel_map,
     generate_histogram,
+    compute_pixel_map,
 )
+from .healpix_pixel import HealpixPixel
 from .pixel_margins import get_edge, get_margin
