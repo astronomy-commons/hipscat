@@ -160,6 +160,7 @@ def generate_destination_pixel_map(histogram, pixel_map):
 
 
 def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
+    # pylint: disable=too-many-locals
     """Generate alignment from high order pixels to those of equal or lower order
 
     We may initially find healpix pixels at order 10, but after aggregating up to the pixel
@@ -196,15 +197,18 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
     nested_sums.append(histogram)
 
     ## Determine the highest order that does not exceed the threshold
-    orders_at_threshold = [0 if k > 0 else None for i, k in enumerate(nested_sums[0])]
-    for read_order in range(1, highest_order + 1):
-        new_orders_at_threshold = [
-            read_order if k > 0 else None for i, k in enumerate(nested_sums[read_order])
-        ]
-        parent_alignment = np.repeat(orders_at_threshold, 4, axis=0)
-        orders_at_threshold = np.where(
-            parent_alignment is not None, parent_alignment, new_orders_at_threshold
+    orders_at_threshold = [0 if 0 < k <= threshold else None for k in nested_sums[0]]
+    for order in range(1, highest_order + 1):
+        new_orders_at_threshold = np.array(
+            [order if 0 < k <= threshold else None for k in nested_sums[order]]
         )
+        parent_alignment = np.repeat(orders_at_threshold, 4, axis=0)
+        orders_at_threshold = [
+            parent_order if parent_order is not None else new_order
+            for parent_order, new_order in zip(
+                parent_alignment, new_orders_at_threshold
+            )
+        ]
 
     ## Zip up the orders and the pixel numbers.
     healpix_pixels = np.array(

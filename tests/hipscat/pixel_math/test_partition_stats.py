@@ -179,6 +179,16 @@ def test_compute_pixel_map_order1():
 
     expected = {HealpixPixel(0, 11): (131, [44, 45, 46])}
 
+    result = hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=150)
+
+    npt.assert_array_equal(result, expected)
+
+    expected = {
+        HealpixPixel(1, 44): (51, [44]),
+        HealpixPixel(1, 45): (29, [45]),
+        HealpixPixel(1, 46): (51, [46]),
+    }
+
     result = hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=100)
 
     npt.assert_array_equal(result, expected)
