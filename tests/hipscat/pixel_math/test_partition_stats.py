@@ -192,3 +192,18 @@ def test_compute_pixel_map_order1():
     result = hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=100)
 
     npt.assert_array_equal(result, expected)
+
+def test_compute_pixel_map_invalid_inputs():
+    """Create destination pixel map for small sky at order 1"""
+
+    initial_histogram = hist.empty_histogram(1)
+    filled_pixels = [51, 29, 51, 0]
+    initial_histogram[44:] = filled_pixels[:]
+
+    ## Order doesn't match histogram length
+    with pytest.raises(ValueError):
+        hist.compute_pixel_map(initial_histogram, highest_order=2, threshold=150)
+
+    ## Some bins exceed threshold
+    with pytest.raises(ValueError):
+        hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=30)
