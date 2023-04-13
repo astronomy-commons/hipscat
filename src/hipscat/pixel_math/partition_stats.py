@@ -4,6 +4,8 @@ import healpy as hp
 import numpy as np
 import pandas as pd
 
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
+
 
 def empty_histogram(highest_order):
     """Use numpy to create an histogram array with the right shape, filled with zeros.
@@ -76,10 +78,15 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
         - order of the destination pixel
         - pixel number *at the above order*
         - the number of objects in the pixel
+    Raises:
+        ValueError if the histogram is the wrong size, or some initial histogram bins
+            exceed threshold.
     """
-
     if len(histogram) != hp.order2npix(highest_order):
         raise ValueError("histogram is not the right size")
+    max_bin = np.amax(histogram)
+    if max_bin > threshold:
+        raise ValueError(f"single pixel count {max_bin} exceeds threshold {threshold}")
 
     nested_sums = []
     for i in range(0, highest_order):
@@ -116,11 +123,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
                     index,
                     nested_sums[read_order][index],
                 )
-            elif read_order == highest_order:
-                raise ValueError(
-                    f"""single pixel count {
-                        nested_sums[read_order][index]} exceeds threshold {threshold}"""
-                )
+
     return nested_alignment[highest_order]
 
 
@@ -153,4 +156,86 @@ def generate_destination_pixel_map(histogram, pixel_map):
         non_zero_indexes = np.nonzero(histogram[start_pixel:end_pixel])[0] + start_pixel
         result[(order, pixel, count)] = non_zero_indexes.tolist()
 
+    return result
+
+
+def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
+    # pylint: disable=too-many-locals
+    """Generate alignment from high order pixels to those of equal or lower order
+
+    We may initially find healpix pixels at order 10, but after aggregating up to the pixel
+    threshold, some final pixels are order 4 or 7. This method provides a map from destination
+    healpix pixels at a lower order to the origin pixels at the highest order. This may be used
+    as an input into later partitioning map reduce steps.
+
+    Args:
+        histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
+            value at each index corresponds to the number of objects found at the healpix pixel.
+        highest_order (int):  the highest healpix order (e.g. 0-10)
+        threshold (int): the maximum number of objects allowed in a single pixel
+    Returns:
+        dictionary that maps the HealpixPixel (a pixel at destination order) to a tuple of
+            origin pixel information:
+
+            - 0 - the total number of rows found in this destination pixel
+            - 1 - the set of indexes in histogram for the pixels at the original healpix order.
+    Raises:
+        ValueError if the histogram is the wrong size, or some initial histogram bins
+            exceed threshold.
+    """
+    if len(histogram) != hp.order2npix(highest_order):
+        raise ValueError("histogram is not the right size")
+    max_bin = np.amax(histogram)
+    if max_bin > threshold:
+        raise ValueError(f"single pixel count {max_bin} exceeds threshold {threshold}")
+
+    nested_sums = []
+
+    for order in range(0, highest_order):
+        explosion_factor = 4 ** (highest_order - order)
+        nested_sums.append(histogram.reshape(-1, explosion_factor).sum(axis=1))
+    nested_sums.append(histogram)
+
+    ## Determine the highest order that does not exceed the threshold
+    orders_at_threshold = [0 if 0 < k <= threshold else None for k in nested_sums[0]]
+    for order in range(1, highest_order + 1):
+        new_orders_at_threshold = np.array(
+            [order if 0 < k <= threshold else None for k in nested_sums[order]]
+        )
+        parent_alignment = np.repeat(orders_at_threshold, 4, axis=0)
+        orders_at_threshold = [
+            parent_order if parent_order is not None else new_order
+            for parent_order, new_order in zip(
+                parent_alignment, new_orders_at_threshold
+            )
+        ]
+
+    ## Zip up the orders and the pixel numbers.
+    healpix_pixels = np.array(
+        [
+            HealpixPixel(order, pixel >> 2 * (highest_order - order))
+            if order is not None
+            else None
+            for order, pixel in zip(
+                orders_at_threshold, np.arange(0, len(orders_at_threshold))
+            )
+        ]
+    )
+
+    ## Create a map from healpix pixel to origin pixel data
+    non_none_elements = healpix_pixels[healpix_pixels != np.array(None)]
+    unique_pixels = np.unique(non_none_elements)
+
+    result = {}
+    for healpix_pixel in unique_pixels:
+        # Find all nonzero constituent pixels at the histogram's order
+        explosion_factor = 4 ** (highest_order - healpix_pixel.order)
+        start_pixel = healpix_pixel.pixel * explosion_factor
+        end_pixel = (healpix_pixel.pixel + 1) * explosion_factor
+
+        non_zero_indexes = np.nonzero(histogram[start_pixel:end_pixel])[0] + start_pixel
+        result[healpix_pixel] = (
+            nested_sums[healpix_pixel.order][healpix_pixel.pixel],
+            non_zero_indexes.tolist(),
+        )
     return result

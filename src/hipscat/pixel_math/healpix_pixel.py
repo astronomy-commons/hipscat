@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from hipscat.pixel_math.hipscat_id import HIPSCAT_ID_HEALPIX_ORDER
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, frozen=True, order=True)
 class HealpixPixel:
     """A HEALPix pixel, represented by an order and pixel number in NESTED ordering scheme
 
