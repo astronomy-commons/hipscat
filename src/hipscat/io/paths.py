@@ -1,11 +1,15 @@
 """Methods for creating partitioned data paths"""
 from __future__ import annotations
 
-from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
+from hipscat.io.file_io.file_pointer import (FilePointer,
+                                             append_paths_to_pointer)
 
 ORDER_DIRECTORY_PREFIX = "Norder"
 DIR_DIRECTORY_PREFIX = "Dir"
 PIXEL_DIRECTORY_PREFIX = "Npix"
+JOIN_ORDER_DIRECTORY_PREFIX = "join_Norder"
+JOIN_DIR_DIRECTORY_PREFIX = "join_Dir"
+JOIN_PIXEL_DIRECTORY_PREFIX = "join_Npix"
 
 CATALOG_INFO_FILENAME = "catalog_info.json"
 PARTITION_INFO_FILENAME = "partition_info.csv"
@@ -50,10 +54,10 @@ def pixel_directory(
     else:
         npix = int(pixel_number)
         ndir = int(npix / 10_000) * 10_000
-    return append_paths_to_pointer(
+    return create_hive_directory_name(
         catalog_base_dir,
-        f"{ORDER_DIRECTORY_PREFIX}={norder}",
-        f"{DIR_DIRECTORY_PREFIX}={ndir}",
+        [ORDER_DIRECTORY_PREFIX, DIR_DIRECTORY_PREFIX],
+        [norder, ndir],
     )
 
 
@@ -77,15 +81,153 @@ def pixel_catalog_file(
     Returns:
         string catalog file name
     """
-    norder = int(pixel_order)
-    npix = int(pixel_number)
-    ndir = int(npix / 10_000) * 10_000
-    return append_paths_to_pointer(
+    return create_hive_parquet_file_name(
         catalog_base_dir,
-        f"{ORDER_DIRECTORY_PREFIX}={norder}",
-        f"{DIR_DIRECTORY_PREFIX}={ndir}",
-        f"{PIXEL_DIRECTORY_PREFIX}={npix}.parquet",
+        [ORDER_DIRECTORY_PREFIX, DIR_DIRECTORY_PREFIX, PIXEL_DIRECTORY_PREFIX],
+        [int(pixel_order), int(pixel_number / 10_000) * 10_000, int(pixel_number)],
     )
+
+
+def pixel_association_directory(
+    catalog_base_dir: FilePointer,
+    primary_pixel_order: int,
+    primary_pixel_number: int,
+    join_pixel_order: int,
+    join_pixel_number: int,
+) -> FilePointer:
+    """Create path *pointer* for a single pixel file of an association catalog.
+    This will not create the directory or file.
+
+    The catalog file name will take the form of:
+
+        <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>/Npix=<pixel_number>/
+            join_Norder=<join_order>/join_Dir=<join directory number>
+
+    Where the directory numbers are calculated using integer division as:
+
+        (pixel number/10000)*10000
+
+    Args:
+        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        primary_pixel_order (int): the healpix order of the primary pixel
+        primary_pixel_number (int): the primary healpix pixel
+        join_pixel_order (int): the healpix order of the joining pixel
+        join_pixel_number (int): the joining healpix pixel
+    Returns:
+        string pixel association file name
+    """
+    return create_hive_directory_name(
+        catalog_base_dir,
+        [
+            ORDER_DIRECTORY_PREFIX,
+            DIR_DIRECTORY_PREFIX,
+            PIXEL_DIRECTORY_PREFIX,
+            JOIN_ORDER_DIRECTORY_PREFIX,
+            JOIN_DIR_DIRECTORY_PREFIX,
+        ],
+        [
+            int(primary_pixel_order),
+            int(primary_pixel_number / 10_000) * 10_000,
+            int(primary_pixel_number),
+            int(join_pixel_order),
+            int(join_pixel_number / 10_000) * 10_000,
+        ],
+    )
+
+
+def pixel_association_file(
+    catalog_base_dir: FilePointer,
+    primary_pixel_order: int,
+    primary_pixel_number: int,
+    join_pixel_order: int,
+    join_pixel_number: int,
+) -> FilePointer:
+    """Create path *pointer* for a single pixel file of an association catalog.
+    This will not create the directory or file.
+
+    The catalog file name will take the form of:
+
+        <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>/Npix=<pixel_number>/
+            join_Norder=<join_order>/join_Dir=<join directory number>/
+            join_Npix=<join_pixel_number>.parquet
+
+    Where the directory numbers are calculated using integer division as:
+
+        (pixel number/10000)*10000
+
+    Args:
+        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        primary_pixel_order (int): the healpix order of the primary pixel
+        primary_pixel_number (int): the primary healpix pixel
+        join_pixel_order (int): the healpix order of the joining pixel
+        join_pixel_number (int): the joining healpix pixel
+    Returns:
+        string pixel association file name
+    """
+    return create_hive_parquet_file_name(
+        catalog_base_dir,
+        [
+            ORDER_DIRECTORY_PREFIX,
+            DIR_DIRECTORY_PREFIX,
+            PIXEL_DIRECTORY_PREFIX,
+            JOIN_ORDER_DIRECTORY_PREFIX,
+            JOIN_DIR_DIRECTORY_PREFIX,
+            JOIN_PIXEL_DIRECTORY_PREFIX,
+        ],
+        [
+            int(primary_pixel_order),
+            int(primary_pixel_number / 10_000) * 10_000,
+            int(primary_pixel_number),
+            int(join_pixel_order),
+            int(join_pixel_number / 10_000) * 10_000,
+            int(join_pixel_number),
+        ],
+    )
+
+
+def create_hive_directory_name(
+    base_dir, partition_token_names, partition_token_values
+):
+    """Create path *pointer* for a directory with hive partitioning naming.
+    This will not create the directory.
+
+    The directory name will have the form of:
+
+        <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>
+    
+    Args:
+        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        partition_token_names (list[string]): list of partition name parts.
+        partition_token_values (list[string]): list of partition values that
+            correspond to the token name parts.
+    """
+    partition_tokens = [
+        f"{name}={value}"
+        for name, value in zip(partition_token_names, partition_token_values)
+    ]
+    return append_paths_to_pointer(base_dir, *partition_tokens)
+
+
+def create_hive_parquet_file_name(
+    base_dir, partition_token_names, partition_token_values
+):
+    """Create path *pointer* for a single parquet with hive partitioning naming.
+    
+    The file name will have the form of:
+
+        <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>.parquet
+    
+    Args:
+        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        partition_token_names (list[string]): list of partition name parts.
+        partition_token_values (list[string]): list of partition values that
+            correspond to the token name parts.
+    """
+    partition_tokens = [
+        f"{name}={value}"
+        for name, value in zip(partition_token_names, partition_token_values)
+    ]
+    return f"{append_paths_to_pointer(base_dir, *partition_tokens)}.parquet"
 
 
 def get_catalog_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
