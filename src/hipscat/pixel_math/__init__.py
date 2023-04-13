@@ -9,4 +9,7 @@ from .partition_stats import (
     generate_histogram,
     compute_pixel_map,
 )
-from .pixel_margins import get_edge, get_margin
+from .pixel_margins import (get_edge, get_margin, pixel_is_polar,
+                            get_truncated_margin_pixels)
+from .margin_bounding import (get_margin_scale, get_margin_bounds_and_wcs,
+                              check_margin_bounds, check_polar_margin_bounds)

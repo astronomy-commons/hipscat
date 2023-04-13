@@ -1,6 +1,4 @@
-#
-# Healpix utilities
-#
+"""Utilities for find the pixels of higher orders that surround a given healpixel."""
 
 import healpy as hp
 import numpy as np
@@ -114,3 +112,72 @@ def get_margin(order, pix, d_order):
             margins.append(get_edge(d_order, pixel, edge))
     margins = np.concatenate(margins)
     return margins
+
+def pixel_is_polar(order, pix):
+    """Checks if a healpixel is a polar pixel.
+
+    Args:
+        order (int): the healpix order of the pixel to be checked.
+        pix (int): the id of a healpixel to be checked. must be in the nested id scheme.
+    Returns:
+        tuple of a boolean and a string, the boolean indicating whether the pixel
+            polar and the string denoting which pole it is ('North' or 'South')).
+            string is empty in the case that the pixel isn't polar.
+    """
+    nside = hp.order2nside(order)
+    npix = hp.nside2npix(nside)
+    ring_pix = hp.nest2ring(nside, pix)
+
+    # in the ring numbering scheme, the first and last 4 pixels are the poles.
+    if ring_pix <= 3:
+        return (True, 'North')
+    if ring_pix >= npix - 4:
+        return (True, 'South')
+    return (False, '')
+
+def get_truncated_margin_pixels(order, pix, margin_order):
+    """Given a polar healpixel, find the margin pixels at order highest_k that will be
+    truncated at the poles. In other words, find the margin pixels that are also
+    polar pixels.
+
+    Args:
+        order (int): the healpix order of the pixel that we wish to
+            find the truncated margin pixels for. 
+        pix (int): the healpixel we wish to find the truncated margin pixels for.
+        margin_order (int): the healpixel order that our margin pixels are at. Must
+            be larger than `order`.
+    Returns:
+        a list of margin pixels at margin_order order that will be truncated at 
+            the poles, i.e. the margin pixels that are also polar pixels 
+            themselves. In the case that pix is a polar pixel, it will return
+            3 pixels, otherwise it will return an empty list.
+    """
+    if margin_order <= order:
+        raise ValueError("margin_order must be larger than order")
+
+    partition_nside = hp.order2nside(order)
+    margin_nside = hp.order2nside(margin_order)
+
+    polar, pole = pixel_is_polar(order, pix)
+
+    if not polar:
+        return []
+
+    truncs = []
+
+    if pole == "North":
+        excluded_pixel = hp.nest2ring(partition_nside, pix)
+        for i in range(4):
+            if i != excluded_pixel:
+                truncs.append(hp.ring2nest(margin_nside, i))
+    else:
+        d_order = margin_order - order
+        excluded_pixel_nest = (4 ** d_order) * pix
+        excluded_pixel_ring = hp.nest2ring(margin_nside, excluded_pixel_nest)
+        npix = hp.nside2npix(margin_nside)
+
+        for j in range(npix - 4, npix):
+            if j != excluded_pixel_ring:
+                truncs.append(hp.ring2nest(margin_nside, j))
+
+    return truncs
