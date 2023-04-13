@@ -7,18 +7,39 @@ from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 class PixelTreeBuilder:
+    """Build a PixelTree
+
+    Initially a root node is created when the builder is initialized.
+    Nodes can then be added to the tree.
+    To create a pixel tree object once the tree is built, call the `build` method
+
+    """
 
     def __init__(self):
         self.root_pixel = PixelNode(-1, -1, PixelNodeType.ROOT, None)
         self.pixels = {-1: {-1: self.root_pixel}}
 
     def build(self) -> PixelTree:
+        """Build a `PixelTree` object from the nodes created
+
+        Returns:
+            The pixel tree with the nodes created in the builder
+        """
         return PixelTree(self.root_pixel, self.pixels)
 
     @staticmethod
     def from_partition_info_df(partition_info_df: pd.DataFrame) -> PixelTree:
+        """Build a tree from ta partition info DataFrame
+
+        Args:
+            partition_info_df: Pandas Dataframe with columns matching those in the
+            `partition_info.csv` metadata file
+
+        Returns:
+            The pixel tree with the leaf pixels specified in the DataFrame
+        """
         builder = PixelTreeBuilder()
-        builder._create_tree_from_partition_info_df(partition_info_df)
+        builder._create_tree_from_partition_info_df(partition_info_df)  # pylint: disable=W0212
         return builder.build()
 
     def contains(self, hp_order: int, hp_pixel: int) -> bool:
