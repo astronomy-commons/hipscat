@@ -14,7 +14,8 @@ class PixelTree:
 
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-        order then pixel number root_pixel: Root node of the tree. Its children are a subset of the
+             order then pixel number 
+        root_pixel: Root node of the tree. Its children are a subset of the
         12 base HEALPix pixels
     """
 
