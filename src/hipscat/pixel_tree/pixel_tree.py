@@ -25,9 +25,6 @@ class PixelTree:
         Args:
             root_pixel: PixelNode representing the root node in the tree
             pixels: Dictionary containing all PixelNodes in the tree
-
-        Raises:
-            ValueError: Incorrectly configured pixel structure in metadata file
         """
         self.root_pixel = root_pixel
         self.pixels = pixels

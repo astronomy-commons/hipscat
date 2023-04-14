@@ -29,7 +29,7 @@ class PixelTreeBuilder:
 
     @staticmethod
     def from_partition_info_df(partition_info_df: pd.DataFrame) -> PixelTree:
-        """Build a tree from ta partition info DataFrame
+        """Build a tree from a partition_info DataFrame
 
         Args:
             partition_info_df: Pandas Dataframe with columns matching those in the
