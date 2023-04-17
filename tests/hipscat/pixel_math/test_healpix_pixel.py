@@ -29,3 +29,12 @@ def test_equal_pixel_hash_equal():
     assert pix1 == pix2
     assert pix2 in test_dict
     assert test_dict[pix2] == test_string
+
+
+def test_pixel_str_and_repr():
+    order = 3
+    pixel = 42
+    test_string = f"Order: {order}, Pixel: {pixel}"
+    pix = HealpixPixel(order=order, pixel=pixel)
+    assert str(pix) == test_string
+    assert repr(pix) == test_string

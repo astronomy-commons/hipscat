@@ -1,48 +1,46 @@
-from __future__ import annotations
-
 import pandas as pd
 
-from hipscat.catalog import PartitionInfo, PixelNode, PixelNodeType
+from hipscat.catalog import PartitionInfo
+from hipscat.pixel_tree.pixel_node import PixelNode
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
-class PixelTree:
-    """Sparse Quadtree of HEALPix pixels that make up the HiPSCat catalog
+class PixelTreeBuilder:
+    """Build a PixelTree
 
-    This class stores each node in the tree, with leaf nodes corresponding to pixels with data
-    files.
+    Initially a root node is created when the builder is initialized.
+    Nodes can then be added to the tree.
+    To create a pixel tree object once the tree is built, call the `build` method
 
-    There are a number of methods in this class which allow for quickly navigating through the
-    tree and performing operations to filter the pixels in the catalog.
-
-    Attributes:
-        pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-        order then pixel number root_pixel: Root node of the tree. Its children are a subset of the
-        12 base HEALPix pixels
     """
 
-    def __init__(self, partition_info_df: pd.DataFrame):
-        """Initialises the Tree from the partition info metadata
-
-        Args:
-            partition_info_df: Partition Info metadata file loaded into a pandas DataFrame
-
-        Raises:
-            ValueError: Incorrectly configured pixel structure in metadata file
-        """
+    def __init__(self):
         self.root_pixel = PixelNode(-1, -1, PixelNodeType.ROOT, None)
         self.pixels = {-1: {-1: self.root_pixel}}
-        self._create_tree(partition_info_df)
 
-    def __len__(self):
-        """Gets the number of nodes in the tree, including inner nodes and the root node
+    def build(self) -> PixelTree:
+        """Build a `PixelTree` object from the nodes created
 
         Returns:
-            The number of nodes in the tree, including inner nodes and the root node
+            The pixel tree with the nodes created in the builder
         """
-        pixel_count = 0
-        for _, order_pixels in self.pixels.items():
-            pixel_count += len(order_pixels)
-        return pixel_count
+        return PixelTree(self.root_pixel, self.pixels)
+
+    @staticmethod
+    def from_partition_info_df(partition_info_df: pd.DataFrame) -> PixelTree:
+        """Build a tree from a partition_info DataFrame
+
+        Args:
+            partition_info_df: Pandas Dataframe with columns matching those in the
+            `partition_info.csv` metadata file
+
+        Returns:
+            The pixel tree with the leaf pixels specified in the DataFrame
+        """
+        builder = PixelTreeBuilder()
+        builder._create_tree_from_partition_info_df(partition_info_df)  # pylint: disable=W0212
+        return builder.build()
 
     def contains(self, hp_order: int, hp_pixel: int) -> bool:
         """Check if tree contains a node at a given order and pixel
@@ -56,21 +54,7 @@ class PixelTree:
         """
         return hp_order in self.pixels and hp_pixel in self.pixels[hp_order]
 
-    def get_node(self, hp_order: int, hp_pixel: int) -> PixelNode | None:
-        """Get the node at a given order and pixel
-
-        Args:
-            hp_order: HEALPix order to get
-            hp_pixel: HEALPix pixel number to get
-
-        Returns:
-            The PixelNode at the index, or None if a node does not exist
-        """
-        if self.contains(hp_order, hp_pixel):
-            return self.pixels[hp_order][hp_pixel]
-        return None
-
-    def _create_tree(self, partition_info_df: pd.DataFrame):
+    def _create_tree_from_partition_info_df(self, partition_info_df: pd.DataFrame):
         """Creates the tree by recursively creating parent nodes until reaching the root from
         each leaf pixel
 
@@ -81,13 +65,13 @@ class PixelTree:
             partition_info_df: Dataframe loaded from the partition_info metadata
         """
         for _, row in partition_info_df.iterrows():
-            self._create_node_and_parent_if_not_exist(
+            self.create_node_and_parent_if_not_exist(
                 row[PartitionInfo.METADATA_ORDER_COLUMN_NAME],
                 row[PartitionInfo.METADATA_PIXEL_COLUMN_NAME],
                 PixelNodeType.LEAF,
             )
 
-    def _create_node_and_parent_if_not_exist(
+    def create_node_and_parent_if_not_exist(
         self, hp_order: int, hp_pixel: int, node_type: PixelNodeType
     ):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
@@ -104,13 +88,13 @@ class PixelTree:
             )
 
         if hp_order == 0:
-            self._create_node(hp_order, hp_pixel, node_type, self.root_pixel)
+            self.create_node(hp_order, hp_pixel, node_type, self.root_pixel)
             return
 
         parent_order = hp_order - 1
         parent_pixel = hp_pixel >> 2
         if not self.contains(parent_order, parent_pixel):
-            self._create_node_and_parent_if_not_exist(
+            self.create_node_and_parent_if_not_exist(
                 parent_order, parent_pixel, PixelNodeType.INNER
             )
 
@@ -122,9 +106,9 @@ class PixelTree:
                 "multiple orders"
             )
 
-        self._create_node(hp_order, hp_pixel, node_type, parent)
+        self.create_node(hp_order, hp_pixel, node_type, parent)
 
-    def _create_node(
+    def create_node(
         self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
     ):
         """Create a node and add to `self.pixels` in the tree

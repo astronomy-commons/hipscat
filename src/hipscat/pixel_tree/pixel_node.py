@@ -3,7 +3,7 @@ from __future__ import annotations
 from bisect import bisect
 from typing import List
 
-from hipscat.catalog.pixel_node_type import PixelNodeType
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class PixelNode:
