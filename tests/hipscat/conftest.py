@@ -1,17 +1,17 @@
 import pytest
 
 from hipscat.catalog import Catalog
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
-# pylint: disable=missing-function-docstring, redefined-outer-name
+# pylint: disable= redefined-outer-name
 
 
 @pytest.fixture
 def root_pixel_node_data():
     return {
-        "hp_order": -1,
-        "hp_pixel": -1,
+        "pixel": HealpixPixel(-1, -1),
         "node_type": PixelNodeType.ROOT,
         "parent": None,
         "children": None,
@@ -26,8 +26,7 @@ def root_pixel_node(root_pixel_node_data):
 @pytest.fixture
 def inner_pixel_node_data(root_pixel_node):
     return {
-        "hp_order": 0,
-        "hp_pixel": 1,
+        "pixel": HealpixPixel(0, 1),
         "node_type": PixelNodeType.INNER,
         "parent": root_pixel_node,
         "children": None,
@@ -42,8 +41,7 @@ def inner_pixel_node(inner_pixel_node_data):
 @pytest.fixture
 def leaf_pixel_node_data(inner_pixel_node):
     return {
-        "hp_order": 1,
-        "hp_pixel": 12,
+        "pixel": HealpixPixel(1, 12),
         "node_type": PixelNodeType.LEAF,
         "parent": inner_pixel_node,
         "children": None,
@@ -63,7 +61,7 @@ def small_sky_catalog(small_sky_dir):
 @pytest.fixture()
 def small_sky_pixels():
     return [
-        {"hp_order": 0, "hp_pixel": 11},
+        HealpixPixel(0, 11),
     ]
 
 
@@ -75,8 +73,8 @@ def small_sky_order1_catalog(small_sky_order1_dir):
 @pytest.fixture()
 def small_sky_order1_pixels():
     return [
-        {"hp_order": 1, "hp_pixel": 44},
-        {"hp_order": 1, "hp_pixel": 45},
-        {"hp_order": 1, "hp_pixel": 46},
-        {"hp_order": 1, "hp_pixel": 47},
+        HealpixPixel(1, 44),
+        HealpixPixel(1, 45),
+        HealpixPixel(1, 46),
+        HealpixPixel(1, 47),
     ]

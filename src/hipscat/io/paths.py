@@ -185,16 +185,14 @@ def pixel_association_file(
     )
 
 
-def create_hive_directory_name(
-    base_dir, partition_token_names, partition_token_values
-):
+def create_hive_directory_name(base_dir, partition_token_names, partition_token_values):
     """Create path *pointer* for a directory with hive partitioning naming.
     This will not create the directory.
 
     The directory name will have the form of:
 
         <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>
-    
+
     Args:
         catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
         partition_token_names (list[string]): list of partition name parts.
@@ -212,11 +210,11 @@ def create_hive_parquet_file_name(
     base_dir, partition_token_names, partition_token_values
 ):
     """Create path *pointer* for a single parquet with hive partitioning naming.
-    
+
     The file name will have the form of:
 
         <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>.parquet
-    
+
     Args:
         catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
         partition_token_names (list[string]): list of partition name parts.

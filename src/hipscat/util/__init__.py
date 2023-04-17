@@ -1,0 +1,1 @@
+from .healpix_pixel_decorator import healpix_or_tuple_arg

@@ -251,7 +251,6 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
             assert column_metadata.file_path.endswith(".parquet")
 
 
-
 def test_read_write_fits_point_map(tmp_path):
     """Check that we write and can read a FITS file for spatial distribution."""
     initial_histogram = hist.empty_histogram(1)

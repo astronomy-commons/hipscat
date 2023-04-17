@@ -127,7 +127,7 @@ def write_parquet_metadata(catalog_path):
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer)
-        relative_path = hips_file[len(catalog_path):]
+        relative_path = hips_file[len(catalog_path) :]
         single_metadata.set_file_path(relative_path)
         metadata_collector.append(single_metadata)
 

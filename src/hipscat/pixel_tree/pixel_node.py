@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from bisect import bisect
-from typing import List
+from typing import List, overload
 
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
+from hipscat.util import healpix_or_tuple_arg
 
 
 class PixelNode:
@@ -24,14 +26,34 @@ class PixelNode:
         PixelNodeType.LEAF: 0,
     }
 
+    @overload
     def __init__(
         self,
-        hp_order: int,
-        hp_pixel: int,
+        pixel: tuple[int, int],
         node_type: PixelNodeType,
         parent: PixelNode | None,
         children: List[PixelNode] | None = None,
-    ):
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        pixel: HealpixPixel,
+        node_type: PixelNodeType,
+        parent: PixelNode | None,
+        children: List[PixelNode] | None = None,
+    ) -> None:
+        ...
+
+    @healpix_or_tuple_arg
+    def __init__(
+        self,
+        pixel: HealpixPixel,
+        node_type: PixelNodeType,
+        parent: PixelNode | None,
+        children: List[PixelNode] | None = None,
+    ) -> None:
         """Inits PixelNode with its attributes
 
         Raises:
@@ -41,22 +63,21 @@ class PixelNode:
         if node_type == PixelNodeType.ROOT:
             if parent is not None:
                 raise ValueError("Root node cannot have a parent")
-            if hp_order != -1:
+            if pixel.order != -1:
                 raise ValueError("Root node must be at order -1")
 
         if node_type in (PixelNodeType.INNER, PixelNodeType.LEAF):
             if parent is None:
                 raise ValueError("Inner and leaf nodes must have a parent")
-            if hp_pixel < 0 or hp_order < 0:
+            if pixel.order < 0 or pixel.pixel < 0:
                 raise ValueError(
                     "Inner and leaf nodes must have an order and pixel number >= 0"
                 )
 
-        if parent is not None and parent.hp_order != hp_order - 1:
+        if parent is not None and parent.hp_order != pixel.order - 1:
             raise ValueError("Parent node must be at order one less than current node")
 
-        self.hp_order = hp_order
-        self.hp_pixel = hp_pixel
+        self.pixel = pixel
         self.node_type = node_type
         self.parent = parent
         self.children = []
@@ -67,6 +88,16 @@ class PixelNode:
 
         if self.parent is not None:
             self.parent.add_child_node(self)
+
+    @property
+    def hp_order(self):
+        """The order of the HealpixPixel the node is at"""
+        return self.pixel.order
+
+    @property
+    def hp_pixel(self):
+        """The pixel number in NESTED ordering of the HealpixPixel the node is at"""
+        return self.pixel.pixel
 
     def add_child_node(self, child: PixelNode):
         """Adds a child node to the node

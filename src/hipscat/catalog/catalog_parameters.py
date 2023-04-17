@@ -28,7 +28,6 @@ class CatalogParameters:
     def __post_init__(
         self,
     ):
-
         if self.catalog_type not in self.CATALOG_TYPES:
             raise ValueError(f"Unknown catalog type: {self.catalog_type}")
 

@@ -35,7 +35,6 @@ def assert_text_file_matches():
             "r",
             encoding="utf-8",
         ) as metadata_file:
-
             contents = metadata_file.readlines()
 
         assert len(expected_lines) == len(
