@@ -214,3 +214,43 @@ def test_compute_pixel_map_invalid_inputs():
     with pytest.raises(ValueError) as threshold_error:
         hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=30)
         assert "exceeds threshold" in threshold_error.value
+
+
+def test_generate_constant_pixel_map():
+    """Create constant pixel map for small sky data"""
+
+    initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
+    expected = {HealpixPixel(0, 11): (131, [11])}
+
+    result = hist.generate_constant_pixel_map(
+        initial_histogram, constant_healpix_order=0
+    )
+    npt.assert_array_equal(result, expected)
+
+    initial_histogram = hist.empty_histogram(1)
+    filled_pixels = [51, 29, 51, 0]
+    initial_histogram[44:] = filled_pixels[:]
+    expected = {
+        HealpixPixel(1, 44): (51, [44]),
+        HealpixPixel(1, 45): (29, [45]),
+        HealpixPixel(1, 46): (51, [46]),
+    }
+
+    result = hist.generate_constant_pixel_map(
+        initial_histogram, constant_healpix_order=1
+    )
+
+    npt.assert_array_equal(result, expected)
+
+
+def test_generate_constant_pixel_map_invalid_inputs():
+    """Create destination pixel map for small sky at order 1"""
+
+    initial_histogram = hist.empty_histogram(1)
+    filled_pixels = [51, 29, 51, 0]
+    initial_histogram[44:] = filled_pixels[:]
+
+    ## Order doesn't match histogram length
+    with pytest.raises(ValueError) as length_error:
+        hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=2)
+        assert "histogram is not the right size" in length_error.value
