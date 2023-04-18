@@ -105,6 +105,14 @@ def test_pixel_builder_retrieve_added_node():
     )
 
 
+def test_pixel_builder_retrieve_none_node():
+    tree_builder = PixelTreeBuilder()
+    assert tree_builder.get_node((10, 10)) is None
+    assert tree_builder.get_node(HealpixPixel(10, 10)) is None
+    assert tree_builder[(10, 10)] is None
+    assert tree_builder[HealpixPixel(10, 10)] is None
+
+
 def test_built_pixel_tree_contains_same_nodes_as_builder():
     tree_builder = PixelTreeBuilder()
     tree_builder.create_node((0, 0), PixelNodeType.INNER, tree_builder.root_pixel)
