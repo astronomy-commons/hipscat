@@ -110,7 +110,7 @@ def write_partition_info(
         ]
     else:
         raise ValueError(
-            "one of destination_pixel_map or destination_healpix_pixel_map"
+            "one of destination_pixel_map or destination_healpix_pixel_map is required"
         )
 
     ## For either method, we should now have columns ["Norder", "Npix", "num_rows"]
