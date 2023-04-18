@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import overload
-
-from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node import PixelNode
-from hipscat.util import healpix_or_tuple_arg
+from hipscat.util import HealpixInputTypes, get_healpix_pixel
 
 
 class PixelTree:
@@ -46,16 +43,7 @@ class PixelTree:
             pixel_count += len(order_pixels)
         return pixel_count
 
-    @overload
-    def contains(self, pixel: tuple[int, int]) -> bool:
-        ...
-
-    @overload
-    def contains(self, pixel: HealpixPixel) -> bool:
-        ...
-
-    @healpix_or_tuple_arg
-    def contains(self, pixel: HealpixPixel) -> bool:
+    def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel
 
         Args:
@@ -65,21 +53,13 @@ class PixelTree:
         Returns:
             True if the tree contains the pixel, False if not
         """
+        pixel = get_healpix_pixel(pixel)
         return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
 
     def __contains__(self, item):
         return self.contains(item)
 
-    @overload
-    def get_node(self, pixel: tuple[int, int]) -> PixelNode | None:
-        ...
-
-    @overload
-    def get_node(self, pixel: HealpixPixel) -> PixelNode | None:
-        ...
-
-    @healpix_or_tuple_arg
-    def get_node(self, pixel: HealpixPixel) -> PixelNode | None:
+    def get_node(self, pixel: HealpixInputTypes) -> PixelNode | None:
         """Get the node at a given pixel
 
         Args:
@@ -89,6 +69,7 @@ class PixelTree:
         Returns:
             The PixelNode at the index, or None if a node does not exist
         """
+        pixel = get_healpix_pixel(pixel)
         if self.contains(pixel):
             return self.pixels[pixel.order][pixel.pixel]
         return None

@@ -5,7 +5,7 @@ from typing import List, overload
 
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
-from hipscat.util import healpix_or_tuple_arg
+from hipscat.util import HealpixInputTypes, get_healpix_pixel
 
 
 class PixelNode:
@@ -46,10 +46,9 @@ class PixelNode:
     ) -> None:
         ...
 
-    @healpix_or_tuple_arg
     def __init__(
         self,
-        pixel: HealpixPixel,
+        pixel: HealpixInputTypes,
         node_type: PixelNodeType,
         parent: PixelNode | None,
         children: List[PixelNode] | None = None,
@@ -59,6 +58,8 @@ class PixelNode:
         Raises:
             ValueError: Invalid arguments for the specified pixel type
         """
+
+        pixel = get_healpix_pixel(pixel)
 
         if node_type == PixelNodeType.ROOT:
             if parent is not None:

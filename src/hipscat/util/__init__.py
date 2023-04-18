@@ -1,1 +1,1 @@
-from .healpix_pixel_decorator import healpix_or_tuple_arg
+from .healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
