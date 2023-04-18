@@ -69,30 +69,52 @@ def write_provenance_info(catalog_parameters, tool_args):
     write_json_file(metadata, metadata_pointer)
 
 
-def write_partition_info(catalog_parameters, destination_pixel_map: dict):
+def write_partition_info(
+    catalog_parameters,
+    destination_pixel_map: dict = None,
+    destination_healpix_pixel_map: dict = None,
+):
     """Write all partition data to CSV file.
 
     Args:
         catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
             the new job
-        destination_pixel_map (dict): data frame that has as columns:
-
-            - pixel order of destination
-            - pixel number of destination
-            - sum of rows in destination
-            - list of all source pixels at original order
+        destination_pixel_map (dict): dictionary that maps the integer 3-tuple of a pixel
+            at destination order to the set of indexes in histogram for the pixels at the
+            original healpix order
+        destination_healpix_pixel_map (dict):  dictionary that maps the HealpixPixel to a
+            tuple of origin pixel information:
+            - 0 - the total number of rows found in this destination pixel
+            - 1 - the set of indexes in histogram for the pixels at the original healpix order
     """
     partition_info_pointer = paths.get_partition_info_pointer(
         catalog_parameters.catalog_base_dir
     )
-    data_frame = pd.DataFrame(destination_pixel_map.keys())
+    if destination_pixel_map:
+        data_frame = pd.DataFrame(destination_pixel_map.keys())
+        # Set column names.
+        data_frame.columns = [
+            "Norder",
+            "Npix",
+            "num_rows",
+        ]
+    elif destination_healpix_pixel_map:
+        data_frame = pd.DataFrame(destination_healpix_pixel_map.keys())
+        # Set column names.
+        data_frame.columns = [
+            "Norder",
+            "Npix",
+        ]
+        data_frame["num_rows"] = [
+            pixel_info[0] for pixel_info in destination_healpix_pixel_map.values()
+        ]
+    else:
+        raise ValueError(
+            "one of destination_pixel_map or destination_healpix_pixel_map is required"
+        )
 
-    # Set column names and add a directory column.
-    data_frame.columns = [
-        "Norder",
-        "Npix",
-        "num_objects",
-    ]
+    ## For either method, we should now have columns ["Norder", "Npix", "num_rows"]
+    # Add a directory column.
     data_frame["Dir"] = [int(x / 10_000) * 10_000 for x in data_frame["Npix"]]
 
     # Reorder the columns to match full path, and force to integer types.
@@ -101,7 +123,7 @@ def write_partition_info(catalog_parameters, destination_pixel_map: dict):
             "Norder",
             "Dir",
             "Npix",
-            "num_objects",
+            "num_rows",
         ]
     ].astype(int)
 
@@ -127,7 +149,7 @@ def write_parquet_metadata(catalog_path):
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer)
-        relative_path = hips_file[len(catalog_path):]
+        relative_path = hips_file[len(catalog_path) :]
         single_metadata.set_file_path(relative_path)
         metadata_collector.append(single_metadata)
 

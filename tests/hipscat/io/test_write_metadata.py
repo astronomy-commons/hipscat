@@ -1,6 +1,5 @@
 """Tests of file IO (reads and writes)"""
 
-
 import os
 import shutil
 
@@ -8,10 +7,12 @@ import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
 
 import hipscat.io.file_io as file_io
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 def test_write_json_file(assert_text_file_matches, tmp_path):
@@ -99,7 +100,7 @@ def test_write_provenance_info(assert_text_file_matches, tmp_path, basic_catalog
 def test_write_partition_info(assert_text_file_matches, tmp_path, basic_catalog_info):
     """Test that we accurately write out the individual partition stats"""
     expected_lines = [
-        "Norder,Dir,Npix,num_objects",
+        "Norder,Dir,Npix,num_rows",
         "0,0,11,131",
     ]
     pixel_map = {tuple([0, 11, 131]): [44, 45, 46]}
@@ -108,7 +109,7 @@ def test_write_partition_info(assert_text_file_matches, tmp_path, basic_catalog_
     assert_text_file_matches(expected_lines, metadata_filename)
 
     expected_lines = [
-        "Norder,Dir,Npix,num_objects",
+        "Norder,Dir,Npix,num_rows",
         "1,0,44,42",
         "1,0,45,29",
         "1,0,46,42",
@@ -125,13 +126,48 @@ def test_write_partition_info(assert_text_file_matches, tmp_path, basic_catalog_
     assert_text_file_matches(expected_lines, metadata_filename)
 
 
+def test_write_partition_info_healpix_pixel_map(
+    assert_text_file_matches, tmp_path, basic_catalog_info
+):
+    """Test that we accurately write out the partition stats for overloaded input"""
+    expected_lines = [
+        "Norder,Dir,Npix,num_rows",
+        "0,0,11,131",
+    ]
+    pixel_map = {HealpixPixel(0, 11): (131, [11])}
+    io.write_partition_info(basic_catalog_info, destination_healpix_pixel_map=pixel_map)
+    metadata_filename = os.path.join(tmp_path, "small_sky", "partition_info.csv")
+    assert_text_file_matches(expected_lines, metadata_filename)
+
+    expected_lines = [
+        "Norder,Dir,Npix,num_rows",
+        "1,0,44,51",
+        "1,0,45,29",
+        "1,0,46,51",
+    ]
+    pixel_map = {
+        HealpixPixel(1, 44): (51, [44]),
+        HealpixPixel(1, 45): (29, [45]),
+        HealpixPixel(1, 46): (51, [46]),
+    }
+    io.write_partition_info(basic_catalog_info, destination_healpix_pixel_map=pixel_map)
+    metadata_filename = os.path.join(tmp_path, "small_sky", "partition_info.csv")
+    assert_text_file_matches(expected_lines, metadata_filename)
+
+
+def test_write_partition_info_no_map(basic_catalog_info):
+    """Test that we error if there's no valid input"""
+    with pytest.raises(ValueError):
+        io.write_partition_info(basic_catalog_info)
+
+
 def test_write_partition_info_float(
     assert_text_file_matches, tmp_path, basic_catalog_info
 ):
     """Test that we accurately write out the individual partition stats
     even when the input is floats instead of ints"""
     expected_lines = [
-        "Norder,Dir,Npix,num_objects",
+        "Norder,Dir,Npix,num_rows",
         "0,0,11,131",
     ]
     pixel_map = {tuple([0.0, 11.0, 131.0]): [44.0, 45.0, 46.0]}
@@ -249,7 +285,6 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
         for column_index in range(0, row_md.num_columns):
             column_metadata = row_md.column(column_index)
             assert column_metadata.file_path.endswith(".parquet")
-
 
 
 def test_read_write_fits_point_map(tmp_path):
