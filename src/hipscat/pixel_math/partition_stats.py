@@ -239,3 +239,37 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
             non_zero_indexes.tolist(),
         )
     return result
+
+
+def generate_constant_pixel_map(histogram, constant_healpix_order):
+    """Special case of creating a destination pixel map where you want to
+    preserve some constant healpix order across the sky.
+
+    NB:
+        - this method filters out pixels with no counts
+        - no upper thresholds are applied, and single pixel may contain many rows
+
+    Args:
+        histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
+            value at each index corresponds to the number of objects found at the healpix pixel.
+        constant_healpix_order (int):  the desired healpix order (e.g. 0-10)
+    Returns:
+        dictionary that maps the HealpixPixel to a tuple of origin pixel information:
+
+            - 0 - the total number of rows found in this destination pixel (same as the origin)
+            - 1 - the set of indexes in histogram for the pixels at the original healpix order
+                (list containing only the origin pixel)
+    Raises:
+        ValueError if the histogram is the wrong size
+    """
+    if len(histogram) != hp.order2npix(constant_healpix_order):
+        raise ValueError("histogram is not the right size")
+
+    non_zero_indexes = np.nonzero(histogram)[0]
+    healpix_pixels = [
+        HealpixPixel(constant_healpix_order, pixel) for pixel in non_zero_indexes
+    ]
+
+    value_list = [(histogram[pixel], [pixel]) for pixel in non_zero_indexes]
+
+    return dict(zip(healpix_pixels, value_list))
