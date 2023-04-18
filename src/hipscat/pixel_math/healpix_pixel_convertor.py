@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import Tuple, Union
 
-from hipscat.pixel_math import HealpixPixel
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 HealpixInputTypes = Union[HealpixPixel, Tuple[int, int]]
 
