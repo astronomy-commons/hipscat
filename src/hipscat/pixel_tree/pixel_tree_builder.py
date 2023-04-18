@@ -1,9 +1,15 @@
+# pylint: disable=duplicate-code
+
+from __future__ import annotations
+
 import pandas as pd
 
 from hipscat.catalog import PartitionInfo
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
+from hipscat.pixel_math.healpix_pixel_convertor import (HealpixInputTypes,
+                                                        get_healpix_pixel)
 
 
 class PixelTreeBuilder:
@@ -16,7 +22,7 @@ class PixelTreeBuilder:
     """
 
     def __init__(self):
-        self.root_pixel = PixelNode(-1, -1, PixelNodeType.ROOT, None)
+        self.root_pixel = PixelNode((-1, -1), PixelNodeType.ROOT, None)
         self.pixels = {-1: {-1: self.root_pixel}}
 
     def build(self) -> PixelTree:
@@ -39,20 +45,43 @@ class PixelTreeBuilder:
             The pixel tree with the leaf pixels specified in the DataFrame
         """
         builder = PixelTreeBuilder()
-        builder._create_tree_from_partition_info_df(partition_info_df)  # pylint: disable=W0212
+        # pylint: disable=protected-access
+        builder._create_tree_from_partition_info_df(partition_info_df)
         return builder.build()
 
-    def contains(self, hp_order: int, hp_pixel: int) -> bool:
+    def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel
 
         Args:
-            hp_order: HEALPix order to check
-            hp_pixel: HEALPix pixel number to check
+            pixel: HEALPix pixel to check. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
 
         Returns:
             True if the tree contains the pixel, False if not
         """
-        return hp_order in self.pixels and hp_pixel in self.pixels[hp_order]
+        pixel = get_healpix_pixel(pixel)
+        return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+
+    def __contains__(self, item):
+        return self.contains(item)
+
+    def get_node(self, pixel: HealpixInputTypes) -> PixelNode | None:
+        """Get the node at a given pixel
+
+        Args:
+            pixel: HEALPix pixel to get. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
+
+        Returns:
+            The PixelNode at the index, or None if a node does not exist
+        """
+        pixel = get_healpix_pixel(pixel)
+        if self.contains(pixel):
+            return self.pixels[pixel.order][pixel.pixel]
+        return None
+
+    def __getitem__(self, item):
+        return self.get_node(item)
 
     def _create_tree_from_partition_info_df(self, partition_info_df: pd.DataFrame):
         """Creates the tree by recursively creating parent nodes until reaching the root from
@@ -66,36 +95,39 @@ class PixelTreeBuilder:
         """
         for _, row in partition_info_df.iterrows():
             self.create_node_and_parent_if_not_exist(
-                row[PartitionInfo.METADATA_ORDER_COLUMN_NAME],
-                row[PartitionInfo.METADATA_PIXEL_COLUMN_NAME],
+                (
+                    row[PartitionInfo.METADATA_ORDER_COLUMN_NAME],
+                    row[PartitionInfo.METADATA_PIXEL_COLUMN_NAME],
+                ),
                 PixelNodeType.LEAF,
             )
 
     def create_node_and_parent_if_not_exist(
-        self, hp_order: int, hp_pixel: int, node_type: PixelNodeType
+        self, pixel: HealpixInputTypes, node_type: PixelNodeType
     ):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
         node if parent does not exist
 
         Args:
-            hp_order: HEALPix order to create the node at
-            hp_pixel: HEALPix pixel to create the node at
+            pixel: HEALPix pixel to get. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
             node_type: Node type of the node to create
         """
-        if self.contains(hp_order, hp_pixel):
+        pixel = get_healpix_pixel(pixel)
+        if self.contains(pixel):
             raise ValueError(
                 "Incorrectly configured catalog: catalog contains duplicate pixels"
             )
 
-        if hp_order == 0:
-            self.create_node(hp_order, hp_pixel, node_type, self.root_pixel)
+        if pixel.order == 0:
+            self.create_node(pixel, node_type, self.root_pixel)
             return
 
-        parent_order = hp_order - 1
-        parent_pixel = hp_pixel >> 2
-        if not self.contains(parent_order, parent_pixel):
+        parent_order = pixel.order - 1
+        parent_pixel = pixel.pixel >> 2
+        if not self.contains((parent_order, parent_pixel)):
             self.create_node_and_parent_if_not_exist(
-                parent_order, parent_pixel, PixelNodeType.INNER
+                (parent_order, parent_pixel), PixelNodeType.INNER
             )
 
         parent = self.pixels[parent_order][parent_pixel]
@@ -106,20 +138,21 @@ class PixelTreeBuilder:
                 "multiple orders"
             )
 
-        self.create_node(hp_order, hp_pixel, node_type, parent)
+        self.create_node(pixel, node_type, parent)
 
     def create_node(
-        self, hp_order: int, hp_pixel: int, node_type: PixelNodeType, parent: PixelNode
+        self, pixel: HealpixInputTypes, node_type: PixelNodeType, parent: PixelNode
     ):
         """Create a node and add to `self.pixels` in the tree
 
         Args:
-            hp_order: HEALPix order to create the node at
-            hp_pixel: HEALPix order to create the node at
+            pixel: HEALPix pixel to get. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
             node_type: Node type of the node to create
             parent: Parent node of the node to create
         """
-        node = PixelNode(hp_order, hp_pixel, node_type, parent)
-        if hp_order not in self.pixels:
-            self.pixels[hp_order] = {}
-        self.pixels[hp_order][hp_pixel] = node
+        pixel = get_healpix_pixel(pixel)
+        node = PixelNode(pixel, node_type, parent)
+        if pixel.order not in self.pixels:
+            self.pixels[pixel.order] = {}
+        self.pixels[pixel.order][pixel.pixel] = node

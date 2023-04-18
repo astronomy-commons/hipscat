@@ -22,3 +22,7 @@ from .pixel_margins import (
     get_truncated_margin_pixels,
     pixel_is_polar,
 )
+from .healpix_pixel_convertor import (
+    get_healpix_pixel,
+    HealpixInputTypes,
+)

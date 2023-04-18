@@ -1,12 +1,11 @@
 """Utilities to build bounding boxes around healpixels that include a neighor margin."""
 
+import astropy.units as u
+import astropy.wcs as world_coordinate_system
 import healpy as hp
 import numpy as np
-
 from astropy.coordinates import SkyCoord
 from regions import PixCoord, PolygonSkyRegion
-import astropy.wcs as world_coordinate_system
-import astropy.units as u
 
 from . import pixel_margins as pm
 
@@ -51,10 +50,10 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         hp.boundaries(2**pixel_order, pix, step=1, nest=True), lonlat=True
     )
 
-    min_ra = corners[0][1] # western corner
-    max_ra = corners[0][3] # eastern corner
-    min_dec = corners[1][2] # southern corner
-    max_dec = corners[1][0] #  northern corner
+    min_ra = corners[0][1]  # western corner
+    max_ra = corners[0][3]  # eastern corner
+    min_dec = corners[1][2]  # southern corner
+    max_dec = corners[1][0]  #  northern corner
 
     pixel_boundaries = hp.vec2dir(
         hp.boundaries(2**pixel_order, pix, step=step, nest=True), lonlat=True
@@ -63,9 +62,9 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     # if the eastern corner is less than the western corner, then we've hit the
     # ra rollover and need to normalize to 0 -> 360.
     if max_ra < min_ra:
-        max_ra = max_ra + 360.
+        max_ra = max_ra + 360.0
         ra_vals = pixel_boundaries[0]
-        normal = np.where(ra_vals < 0., ra_vals + 360., ra_vals)
+        normal = np.where(ra_vals < 0.0, ra_vals + 360.0, ra_vals)
         pixel_boundaries[0] = normal
 
     # find the translation values to keep the bounding box
@@ -90,7 +89,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
 
     # if the transform places the declination of any points outside of
     # the range 90 > dec > -90, change it to a proper dec value.
-    transformed_bounding_box[1] = np.clip(transformed_bounding_box[1], -90., 90.)
+    transformed_bounding_box[1] = np.clip(transformed_bounding_box[1], -90.0, 90.0)
 
     # one arcsecond
     pix_size = 0.0002777777778
@@ -162,7 +161,7 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
     """Get the astropy `regions.PolygonPixelRegion` and `astropy.wcs` objects
         for a given margin bounding box scale.
         For pixels that fall along the poles, this code must be used in conjunction
-        with `check_polar_margin_bounds` and 
+        with `check_polar_margin_bounds` and
         `pixel_margins.get_truncated_margin_pixels`.
 
     Args:
@@ -189,8 +188,11 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
         bound_vals.append(vals)
     return np.array(bound_vals).any(axis=0)
 
+
 # pylint: disable=too-many-locals
-def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_threshold, step=1000):
+def check_polar_margin_bounds(
+    r_asc, dec, order, pix, margin_order, margin_threshold, step=1000
+):
     """Given a set of ra and dec values that are around one of the poles,
         determine if they are within `margin_threshold` of a provided
         partition pixel. This method helps us solve the edge cases that
@@ -226,19 +228,18 @@ def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_thres
     # on the boundary of the main pixel
     boundary_range = int((marg_pix_res / part_pix_res) * step)
     pixel_boundaries = hp.vec2dir(
-        hp.boundaries(2**order, pix, step=step, nest=True),
-        lonlat=True
+        hp.boundaries(2**order, pix, step=step, nest=True), lonlat=True
     )
 
     # to optimize our code, we only want to take boundary samples from the part
     # of the pixel that directly abuts the polar margin pixels.
     if pole == "North":
         end = len(pixel_boundaries[0])
-        east_ra = pixel_boundaries[0][0:boundary_range+1]
-        east_dec = pixel_boundaries[1][0:boundary_range+1]
+        east_ra = pixel_boundaries[0][0 : boundary_range + 1]
+        east_dec = pixel_boundaries[1][0 : boundary_range + 1]
 
-        west_ra = pixel_boundaries[0][end-boundary_range:end]
-        west_dec = pixel_boundaries[1][end-boundary_range:end]
+        west_ra = pixel_boundaries[0][end - boundary_range : end]
+        west_dec = pixel_boundaries[1][end - boundary_range : end]
 
         bound_ra = np.concatenate((east_ra, west_ra), axis=None)
         bound_dec = np.concatenate((east_dec, west_dec), axis=None)
@@ -252,17 +253,17 @@ def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_thres
 
     # healpy.boundaries sometimes returns dec values greater than 90, especially
     # when taking many samples...
-    polar_boundaries[1] = np.clip(polar_boundaries[1], -90., 90.)
+    polar_boundaries[1] = np.clip(polar_boundaries[1], -90.0, 90.0)
 
-    sky_coords = SkyCoord(r_asc, dec, unit='deg')
+    sky_coords = SkyCoord(r_asc, dec, unit="deg")
 
     checks = []
     for i in range(len(polar_boundaries[0])):
         lon = polar_boundaries[0][i]
         lat = polar_boundaries[1][i]
-        bound_coord = SkyCoord(lon, lat, unit='deg')
+        bound_coord = SkyCoord(lon, lat, unit="deg")
 
         ang_dist = bound_coord.separation(sky_coords)
-        checks.append(ang_dist <= margin_threshold*u.deg)
+        checks.append(ang_dist <= margin_threshold * u.deg)
 
     return np.array(checks).any(axis=0)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from hipscat.pixel_tree.pixel_node import PixelNode
+from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
 
 
 class PixelTree:
@@ -14,12 +15,14 @@ class PixelTree:
 
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-             order then pixel number 
+             order then pixel number
         root_pixel: Root node of the tree. Its children are a subset of the
         12 base HEALPix pixels
     """
 
-    def __init__(self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]) -> None:
+    def __init__(
+        self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]
+    ) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:
@@ -40,28 +43,36 @@ class PixelTree:
             pixel_count += len(order_pixels)
         return pixel_count
 
-    def contains(self, hp_order: int, hp_pixel: int) -> bool:
+    def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel
 
         Args:
-            hp_order: HEALPix order to check
-            hp_pixel: HEALPix pixel number to check
+            pixel: HEALPix pixel to check. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
 
         Returns:
             True if the tree contains the pixel, False if not
         """
-        return hp_order in self.pixels and hp_pixel in self.pixels[hp_order]
+        pixel = get_healpix_pixel(pixel)
+        return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
 
-    def get_node(self, hp_order: int, hp_pixel: int) -> PixelNode | None:
-        """Get the node at a given order and pixel
+    def __contains__(self, item):
+        return self.contains(item)
+
+    def get_node(self, pixel: HealpixInputTypes) -> PixelNode | None:
+        """Get the node at a given pixel
 
         Args:
-            hp_order: HEALPix order to get
-            hp_pixel: HEALPix pixel number to get
+            pixel: HEALPix pixel to get. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
 
         Returns:
             The PixelNode at the index, or None if a node does not exist
         """
-        if self.contains(hp_order, hp_pixel):
-            return self.pixels[hp_order][hp_pixel]
+        pixel = get_healpix_pixel(pixel)
+        if self.contains(pixel):
+            return self.pixels[pixel.order][pixel.pixel]
         return None
+
+    def __getitem__(self, item):
+        return self.get_node(item)

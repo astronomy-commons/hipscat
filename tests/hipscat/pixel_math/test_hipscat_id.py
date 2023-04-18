@@ -4,7 +4,8 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from hipscat.pixel_math.hipscat_id import compute_hipscat_id, hipscat_id_to_healpix
+from hipscat.pixel_math.hipscat_id import (compute_hipscat_id,
+                                           hipscat_id_to_healpix)
 
 
 def test_single():
@@ -70,7 +71,8 @@ def test_list():
 @pytest.mark.timeout(1)
 def test_load():
     """Generate a kinda big array and make sure the method completes in under a second.
-    If this method is failing due to timeouts, please refactor to keep within the time limit."""
+    If this method is failing due to timeouts, please refactor to keep within the time limit.
+    """
     rng = np.random.default_rng(seed=800)
     test_num = 1_000_000
 
