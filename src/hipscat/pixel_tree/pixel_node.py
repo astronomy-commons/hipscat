@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from bisect import bisect
-from typing import List, overload
+from typing import List
 
-from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
-from hipscat.util import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
 
 
 class PixelNode:
@@ -25,26 +24,6 @@ class PixelNode:
         PixelNodeType.INNER: 4,
         PixelNodeType.LEAF: 0,
     }
-
-    @overload
-    def __init__(
-        self,
-        pixel: tuple[int, int],
-        node_type: PixelNodeType,
-        parent: PixelNode | None,
-        children: List[PixelNode] | None = None,
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self,
-        pixel: HealpixPixel,
-        node_type: PixelNodeType,
-        parent: PixelNode | None,
-        children: List[PixelNode] | None = None,
-    ) -> None:
-        ...
 
     def __init__(
         self,

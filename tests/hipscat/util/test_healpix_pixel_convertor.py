@@ -1,8 +1,8 @@
 import pytest
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.util.healpix_pixel_convertor import (HealpixInputTypes,
-                                                  get_healpix_pixel)
+from hipscat.pixel_math.healpix_pixel_convertor import (HealpixInputTypes,
+                                                        get_healpix_pixel)
 
 
 def return_healpix(pixel: HealpixInputTypes):

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from hipscat.pixel_tree.pixel_node import PixelNode
-from hipscat.util import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
 
 
 class PixelTree:

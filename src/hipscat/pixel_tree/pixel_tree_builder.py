@@ -8,8 +8,8 @@ from hipscat.catalog import PartitionInfo
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.util.healpix_pixel_convertor import (HealpixInputTypes,
-                                                  get_healpix_pixel)
+from hipscat.pixel_math.healpix_pixel_convertor import (HealpixInputTypes,
+                                                        get_healpix_pixel)
 
 
 class PixelTreeBuilder:
