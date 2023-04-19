@@ -22,7 +22,8 @@ dependencies = [
     "setuptools_scm",
     "pyarrow",
     "astropy",
-    "regions"
+    "regions",
+    "typing-extensions"
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)

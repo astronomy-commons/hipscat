@@ -1,43 +1,46 @@
 """Container class to hold catalog metadata and partition iteration"""
+from __future__ import annotations
 
+from typing import Union
 
-from hipscat.catalog.catalog_parameters import read_from_metadata_file
+import pandas as pd
+
+from hipscat.catalog import CatalogType
+from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.io import file_io, paths
+from hipscat.io import FilePointer, file_io, paths
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
-class Catalog:
+class Catalog(Dataset):
     """Container class for catalog metadata"""
 
-    def __init__(self, catalog_path: str = None) -> None:
-        self.catalog_path = catalog_path
-        self.catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
-        self.metadata_keywords = None
+    CatalogInfoClass = CatalogInfo
+    PixelInputTypes = Union[dict, list, pd.DataFrame, PixelTree, PartitionInfo]
+    HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
-        self.partition_info = None
-        self.catalog_info = None
-
-        self.catalog_name = None
-        self.catalog_type = None
-
-        self._initialize_metadata()
-
-    def _initialize_metadata(self):
-        if not file_io.does_file_or_directory_exist(self.catalog_base_dir):
-            raise FileNotFoundError(
-                f"No directory exists at {str(self.catalog_base_dir)}"
+    def __init__(
+        self,
+        catalog_info: CatalogInfoClass,
+        pixels: PixelInputTypes,
+        on_disk=False,
+        catalog_path=None,
+    ) -> None:
+        if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
+            raise ValueError(
+                f"Catalog type must be one of "
+                f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
-        catalog_info_file = paths.get_catalog_info_pointer(self.catalog_base_dir)
-        if not file_io.does_file_or_directory_exist(catalog_info_file):
-            raise FileNotFoundError(
-                f"No catalog info found where expected: {str(catalog_info_file)}"
-            )
-        self.catalog_info = read_from_metadata_file(catalog_info_file)
-        self.catalog_name = self.catalog_info.catalog_name
-        self.catalog_type = self.catalog_info.catalog_type
+        super().__init__(catalog_info, on_disk, catalog_path)
+        self.partition_info = self._get_partition_info_from_pixels(pixels)
+        self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
 
-        if self.catalog_type in ("object", "source"):
-            self.partition_info = PartitionInfo(self.catalog_base_dir)
+    def _get_partition_info_from_pixels(self, pixels: PixelInputTypes) -> PartitionInfo:
+        pass
+
+    def _get_pixel_tree_from_pixels(self, pixels: PixelInputTypes) -> PixelTree:
+        pass
 
     def get_pixels(self):
         """Get all healpix pixels that are contained in the catalog
@@ -52,3 +55,19 @@ class Catalog:
             - num_objects: the number of rows in the pixel's partition
         """
         return self.partition_info.data_frame
+
+    @classmethod
+    def read_args(cls, catalog_base_dir: FilePointer) -> tuple[CatalogInfoClass, PartitionInfo]:
+        args = super().read_args(catalog_base_dir)
+        partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
+        partition_info = PartitionInfo.read_from_file(partition_info_file)
+        return args + (partition_info,)
+
+    @classmethod
+    def check_files_exist(cls, catalog_base_dir: FilePointer):
+        super().check_files_exist(catalog_base_dir)
+        partition_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
+        if not file_io.does_file_or_directory_exist(partition_info_file):
+            raise FileNotFoundError(
+                f"No partition info found where expected: {str(partition_info_file)}"
+            )
