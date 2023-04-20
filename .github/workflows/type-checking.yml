@@ -1,17 +1,16 @@
-# This workflow will run daily at 06:45.
-# It will install Python dependencies and run tests with a variety of Python versions.
+# This workflow will install Python dependencies, then perform static type checking analysis.
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Unit test smoke test
+name: mypy Type checking
 
 on:
-  schedule:
-    - cron: 45 6 * * *
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -30,6 +29,8 @@ jobs:
         pip install .
         pip install .[dev]
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Run unit tests with pytest
+    - name: Analyze code with mypy
+
       run: |
-        python -m pytest tests
+        mypy ./src ./tests --ignore-missing-imports
+
