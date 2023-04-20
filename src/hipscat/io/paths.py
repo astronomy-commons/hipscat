@@ -13,6 +13,7 @@ JOIN_PIXEL_DIRECTORY_PREFIX = "join_Npix"
 
 CATALOG_INFO_FILENAME = "catalog_info.json"
 PARTITION_INFO_FILENAME = "partition_info.csv"
+PARTITION_JOIN_INFO_FILENAME = "partition_join_info.csv"
 PROVENANCE_INFO_FILENAME = "provenance_info.json"
 PARQUET_METADATA_FILENAME = "_metadata"
 PARQUET_COMMON_METADATA_FILENAME = "_common_metadata"
@@ -292,3 +293,14 @@ def get_point_map_file_pointer(catalog_base_dir: FilePointer) -> FilePointer:
         File Pointer to the catalog's `point_map.fits` FITS image file.
     """
     return append_paths_to_pointer(catalog_base_dir, POINT_MAP_FILENAME)
+
+
+def get_partition_join_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+    """Get file pointer to `partition_join_info.csv` association metadata file
+
+    Args:
+        catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `partition_join_info.csv` association metadata file
+    """
+    return append_paths_to_pointer(catalog_base_dir, PARTITION_JOIN_INFO_FILENAME)
