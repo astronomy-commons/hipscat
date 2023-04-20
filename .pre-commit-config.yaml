@@ -100,22 +100,6 @@ repos:
           ]
 
 
-    # Analyze type hints and report errors.
-  - repo: local
-    hooks:
-      - id: mypy
-        name: mypy (python files in src/ and tests/)
-        entry: mypy
-        language: system
-        types: [python]
-        files: ^(src|tests)/
-        args:
-          [
-          
-            "--ignore-missing-imports", # Ignore imports without type hints
-          
-          ]
-
     # Make sure Sphinx can build the documentation without issues.
   - repo: local
     hooks:

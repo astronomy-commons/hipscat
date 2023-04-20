@@ -7,7 +7,7 @@ create_example_module: false
 custom_install: true
 include_notebooks: false
 module_name: hipscat
-mypy_type_checking: basic
+mypy_type_checking: none
 preferred_linter: pylint
 project_license: BSD
 project_name: hipscat
