@@ -55,7 +55,7 @@ def leaf_pixel_node(leaf_pixel_node_data):
 
 @pytest.fixture
 def small_sky_catalog(small_sky_dir):
-    return Catalog(small_sky_dir)
+    return Catalog.read_from_hipscat(small_sky_dir)
 
 
 @pytest.fixture()
@@ -67,7 +67,7 @@ def small_sky_pixels():
 
 @pytest.fixture
 def small_sky_order1_catalog(small_sky_order1_dir):
-    return Catalog(small_sky_order1_dir)
+    return Catalog.read_from_hipscat(small_sky_order1_dir)
 
 
 @pytest.fixture()

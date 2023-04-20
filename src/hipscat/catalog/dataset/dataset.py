@@ -31,18 +31,18 @@ class Dataset:
     def read_from_hipscat(cls, catalog_path: str) -> Self:
         catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
         cls.check_files_exist(catalog_base_dir)
-        args = cls.read_args(catalog_base_dir)
-        kwargs = cls.read_kwargs(catalog_base_dir)
+        args = cls._read_args(catalog_base_dir)
+        kwargs = cls._read_kwargs(catalog_base_dir)
         return cls(*args, **kwargs)
 
     @classmethod
-    def read_args(cls, catalog_base_dir: FilePointer) -> tuple[CatalogInfoClass]:
+    def _read_args(cls, catalog_base_dir: FilePointer) -> tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         catalog_info = cls.CatalogInfoClass.read_from_metadata_file(catalog_info_file)
         return catalog_info,
 
     @classmethod
-    def read_kwargs(cls, catalog_base_dir: FilePointer) -> dict:
+    def _read_kwargs(cls, catalog_base_dir: FilePointer) -> dict:
         return {"on_disk": True, "catalog_path": str(catalog_base_dir)}
 
     @classmethod

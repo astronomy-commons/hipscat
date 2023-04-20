@@ -1,5 +1,6 @@
 import dataclasses
 from dataclasses import dataclass
+from typing import Any
 
 from typing_extensions import Self
 
@@ -18,9 +19,12 @@ class BaseCatalogInfo:
 
     CATALOG_TYPES = [t.value for t in CatalogType]
 
+    required_fields = ["catalog_type"]
+
     def __post_init__(
         self,
     ):
+        self.check_required_fields()
         if self.catalog_type not in self.CATALOG_TYPES:
             raise ValueError(f"Unknown catalog type: {self.catalog_type}")
         self.catalog_base_dir = None
@@ -44,3 +48,12 @@ class BaseCatalogInfo:
             if field.name in metadata_keywords:
                 catalog_info_keywords[field.name] = metadata_keywords[field.name]
         return cls(**catalog_info_keywords)
+
+    def check_required_fields(self):
+        fields_dict = dataclasses.asdict(self)
+        for field_name in self.required_fields:
+            if field_name not in fields_dict or fields_dict[field_name] is None:
+                raise ValueError(
+                    f"{field_name} is required in the Catalog Info and a value must be provided"
+                )
+
