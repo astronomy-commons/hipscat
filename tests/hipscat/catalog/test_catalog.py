@@ -4,7 +4,19 @@ import os
 
 import pytest
 
-from hipscat.catalog import Catalog
+from hipscat.catalog import Catalog, PartitionInfo
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
+
+
+def test_catalog_load(catalog_info, catalog_pixels):
+    catalog = Catalog(catalog_info, catalog_pixels)
+    assert len(catalog.get_pixels()) == catalog_pixels.shape[0]
+    assert catalog.catalog_name == catalog_info.catalog_name
+    for _, pixel in catalog_pixels.iterrows():
+        order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
+        pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
+        assert (order, pixel) in catalog.pixel_tree
+        assert catalog.pixel_tree[(order, pixel)].type == PixelNodeType.LEAF
 
 
 def test_load_catalog_small_sky(small_sky_dir):

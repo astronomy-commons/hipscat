@@ -14,7 +14,6 @@ class BaseCatalogInfo:
 
     catalog_name: str = ""
     catalog_type: CatalogType = None
-    catalog_path: str = None
     total_rows: int = None
 
     CATALOG_TYPES = [t.value for t in CatalogType]
@@ -27,11 +26,6 @@ class BaseCatalogInfo:
         self.check_required_fields()
         if self.catalog_type not in self.CATALOG_TYPES:
             raise ValueError(f"Unknown catalog type: {self.catalog_type}")
-        self.catalog_base_dir = None
-        if self.catalog_path is not None:
-            self.catalog_base_dir = file_io.get_file_pointer_from_path(
-                self.catalog_path
-            )
 
     def __str__(self):
         parameters = dataclasses.asdict(self)
@@ -56,4 +50,3 @@ class BaseCatalogInfo:
                 raise ValueError(
                     f"{field_name} is required in the Catalog Info and a value must be provided"
                 )
-

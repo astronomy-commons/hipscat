@@ -25,7 +25,6 @@ class Catalog(Dataset):
         self,
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
-        on_disk=False,
         catalog_path=None,
     ) -> None:
         if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
@@ -33,7 +32,7 @@ class Catalog(Dataset):
                 f"Catalog info `catalog_type` must be one of "
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
-        super().__init__(catalog_info, on_disk, catalog_path)
+        super().__init__(catalog_info, catalog_path)
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
 
@@ -73,8 +72,8 @@ class Catalog(Dataset):
         return args + (partition_info,)
 
     @classmethod
-    def check_files_exist(cls, catalog_base_dir: FilePointer):
-        super().check_files_exist(catalog_base_dir)
+    def _check_files_exist(cls, catalog_base_dir: FilePointer):
+        super()._check_files_exist(catalog_base_dir)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(partition_info_file):
             raise FileNotFoundError(
