@@ -9,3 +9,5 @@ class CatalogInfo(BaseCatalogInfo):
     epoch: str = "J2000"
     ra_column: str = "ra"
     dec_column: str = "dec"
+
+    required_fields = BaseCatalogInfo.required_fields + ["epoch", "ra_column", "dec_column"]
