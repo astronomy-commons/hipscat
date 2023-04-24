@@ -7,6 +7,10 @@ from hipscat.io import FilePointer, file_io, paths
 
 
 class Dataset:
+    """A base HiPSCat dataset
+
+    A base dataset contains a catalog_info metadata file and the data contained in parquet files
+    """
     CatalogInfoClass: Type[BaseCatalogInfo] = BaseCatalogInfo
 
     def __init__(
@@ -14,6 +18,13 @@ class Dataset:
         catalog_info: CatalogInfoClass,
         catalog_path=None,
     ) -> None:
+        """Initializes a Dataset
+
+        Args:
+            catalog_info: A catalog_info object with the catalog metadata
+            catalog_path: If the catalog is stored on disk, specify the location of the catalog
+                Does not load the catalog from this path, only store as metadata
+        """
         if not isinstance(catalog_info, self.CatalogInfoClass):
             raise TypeError(f"catalog_info type must be {self.CatalogInfoClass}")
 
@@ -26,6 +37,14 @@ class Dataset:
 
     @classmethod
     def read_from_hipscat(cls, catalog_path: str) -> Self:
+        """Reads a HiPSCat Catalog from a HiPSCat directory
+
+        Args:
+            catalog_path: path to the root directory of the catalog
+
+        Returns:
+            The initialized catalog object
+        """
         catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
         cls._check_files_exist(catalog_base_dir)
         args = cls._read_args(catalog_base_dir)
@@ -36,7 +55,7 @@ class Dataset:
     def _read_args(cls, catalog_base_dir: FilePointer) -> tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         catalog_info = cls.CatalogInfoClass.read_from_metadata_file(catalog_info_file)
-        return catalog_info,
+        return (catalog_info,)
 
     @classmethod
     def _read_kwargs(cls, catalog_base_dir: FilePointer) -> dict:

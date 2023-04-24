@@ -5,8 +5,8 @@ from typing import Union
 
 import pandas as pd
 
-from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
@@ -15,7 +15,12 @@ from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
 class Catalog(Dataset):
-    """Container class for catalog metadata"""
+    """A HiPSCat Catalog with data stored in a HEALPix Hive partitioned structure
+
+    Catalogs of this type are partitioned spatially, contain `partition_info` metadata specifying
+    the pixels in Catalog, and on disk conform to the parquet partitioning structure
+    `Norder=/Dir=/Npix=.parquet`
+    """
 
     CatalogInfoClass = CatalogInfo
     PixelInputTypes = Union[pd.DataFrame, PartitionInfo]
@@ -27,6 +32,16 @@ class Catalog(Dataset):
         pixels: PixelInputTypes,
         catalog_path=None,
     ) -> None:
+        """Initializes a Catalog
+
+        Args:
+            catalog_info: CatalogInfo object with catalog metadata
+            pixels: Specifies the pixels contained in the catalog. Can be either a Dataframe with
+                columns `Norder`, `Dir`, and `Npix` matching a `partition_info.csv` file, or a
+                PartitionInfo object
+            catalog_path: If the catalog is stored on disk, specify the location of the catalog
+                Does not load the catalog from this path, only store as metadata
+        """
         if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
             raise ValueError(
                 f"Catalog info `catalog_type` must be one of "
@@ -42,6 +57,7 @@ class Catalog(Dataset):
             return pixels
         if isinstance(pixels, pd.DataFrame):
             return PartitionInfo(pixels)
+        raise TypeError("Pixels must be of type PartitionInfo or Dataframe")
 
     @staticmethod
     def _get_pixel_tree_from_pixels(pixels: PixelInputTypes) -> PixelTree:
@@ -49,6 +65,7 @@ class Catalog(Dataset):
             return PixelTreeBuilder.from_partition_info_df(pixels.data_frame)
         if isinstance(pixels, pd.DataFrame):
             return PixelTreeBuilder.from_partition_info_df(pixels)
+        raise TypeError("Pixels must be of type PartitionInfo or Dataframe")
 
     def get_pixels(self):
         """Get all healpix pixels that are contained in the catalog
