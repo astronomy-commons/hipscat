@@ -5,7 +5,7 @@ import os
 import pandas.testing
 import pytest
 
-from hipscat.catalog import Catalog, PartitionInfo, CatalogType
+from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
@@ -40,6 +40,15 @@ def test_different_pixel_input_types(catalog_info, catalog_pixels):
         pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
         assert (order, pixel) in catalog.pixel_tree
         assert catalog.pixel_tree[(order, pixel)].node_type == PixelNodeType.LEAF
+
+
+def test_wrong_pixel_input_type(catalog_info):
+    with pytest.raises(TypeError):
+        Catalog(catalog_info, "test")
+    with pytest.raises(TypeError):
+        Catalog._get_pixel_tree_from_pixels("test")
+    with pytest.raises(TypeError):
+        Catalog._get_partition_info_from_pixels("test")
 
 
 def test_get_pixels(catalog_info, catalog_pixels):
