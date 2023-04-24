@@ -2,9 +2,10 @@
 
 import os
 
+import pandas.testing
 import pytest
 
-from hipscat.catalog import Catalog, PartitionInfo
+from hipscat.catalog import Catalog, PartitionInfo, CatalogType
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
@@ -16,7 +17,35 @@ def test_catalog_load(catalog_info, catalog_pixels):
         order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
         pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
         assert (order, pixel) in catalog.pixel_tree
-        assert catalog.pixel_tree[(order, pixel)].type == PixelNodeType.LEAF
+        assert catalog.pixel_tree[(order, pixel)].node_type == PixelNodeType.LEAF
+
+
+def test_catalog_load_wrong_catalog_info(base_catalog_info, catalog_pixels):
+    with pytest.raises(TypeError):
+        Catalog(base_catalog_info, catalog_pixels)
+
+
+def test_catalog_wrong_catalog_type(catalog_info, catalog_pixels):
+    catalog_info.catalog_type = CatalogType.INDEX
+    with pytest.raises(ValueError):
+        Catalog(catalog_info, catalog_pixels)
+
+
+def test_different_pixel_input_types(catalog_info, catalog_pixels):
+    partition_info = PartitionInfo(catalog_pixels)
+    catalog = Catalog(catalog_info, partition_info)
+    assert len(catalog.get_pixels()) == catalog_pixels.shape[0]
+    for _, pixel in catalog_pixels.iterrows():
+        order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
+        pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
+        assert (order, pixel) in catalog.pixel_tree
+        assert catalog.pixel_tree[(order, pixel)].node_type == PixelNodeType.LEAF
+
+
+def test_get_pixels(catalog_info, catalog_pixels):
+    catalog = Catalog(catalog_info, catalog_pixels)
+    pixels = catalog.get_pixels()
+    pandas.testing.assert_frame_equal(pixels, catalog_pixels)
 
 
 def test_load_catalog_small_sky(small_sky_dir):

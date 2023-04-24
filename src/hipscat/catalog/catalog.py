@@ -18,7 +18,7 @@ class Catalog(Dataset):
     """Container class for catalog metadata"""
 
     CatalogInfoClass = CatalogInfo
-    PixelInputTypes = Union[dict, list, pd.DataFrame, PixelTree, PartitionInfo]
+    PixelInputTypes = Union[pd.DataFrame, PartitionInfo]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
     def __init__(
