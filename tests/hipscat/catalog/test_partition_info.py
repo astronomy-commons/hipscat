@@ -1,20 +1,17 @@
 """Tests of partition info functionality"""
-
 import os
 
+import pytest
+
 from hipscat.catalog import PartitionInfo
+from hipscat.io import file_io, paths
 from hipscat.pixel_math import HealpixPixel
 
 
 def test_load_partition_info_small_sky(small_sky_dir):
     """Instantiate the partition info for catalog with 1 pixel"""
-    partitions = PartitionInfo(small_sky_dir)
-
-    partition_file_list = partitions.get_file_names()
-    assert len(partition_file_list) == 1
-
-    for parquet_file in partition_file_list:
-        assert os.path.exists(parquet_file)
+    partition_info_file = paths.get_partition_info_pointer(small_sky_dir)
+    partitions = PartitionInfo.read_from_file(partition_info_file)
 
     order_pixel_pairs = partitions.get_healpix_pixels()
     assert len(order_pixel_pairs) == 1
@@ -24,13 +21,8 @@ def test_load_partition_info_small_sky(small_sky_dir):
 
 def test_load_partition_info_small_sky_order1(small_sky_order1_dir):
     """Instantiate the partition info for catalog with 4 pixels"""
-    partitions = PartitionInfo(small_sky_order1_dir)
-
-    partition_file_list = partitions.get_file_names()
-    assert len(partition_file_list) == 4
-
-    for parquet_file in partition_file_list:
-        assert os.path.exists(parquet_file)
+    partition_info_file = paths.get_partition_info_pointer(small_sky_order1_dir)
+    partitions = PartitionInfo.read_from_file(partition_info_file)
 
     order_pixel_pairs = partitions.get_healpix_pixels()
     assert len(order_pixel_pairs) == 4
@@ -41,3 +33,10 @@ def test_load_partition_info_small_sky_order1(small_sky_order1_dir):
         HealpixPixel(1, 47),
     ]
     assert order_pixel_pairs == expected
+
+
+def test_load_partition_no_file(tmp_path):
+    wrong_path = os.path.join(tmp_path, "wrong.csv")
+    wrong_pointer = file_io.get_file_pointer_from_path(wrong_path)
+    with pytest.raises(FileNotFoundError):
+        PartitionInfo.read_from_file(wrong_pointer)

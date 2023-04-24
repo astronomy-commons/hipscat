@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from hipscat.catalog import PartitionInfo
+from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
