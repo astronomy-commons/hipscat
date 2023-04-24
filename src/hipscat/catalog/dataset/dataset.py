@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Tuple, Type
 
 from typing_extensions import Self
 
@@ -52,7 +52,7 @@ class Dataset:
         return cls(*args, **kwargs)
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: FilePointer) -> tuple[CatalogInfoClass]:
+    def _read_args(cls, catalog_base_dir: FilePointer) -> Tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         catalog_info = cls.CatalogInfoClass.read_from_metadata_file(catalog_info_file)
         return (catalog_info,)
