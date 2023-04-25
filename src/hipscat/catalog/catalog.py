@@ -30,7 +30,7 @@ class Catalog(Dataset):
         self,
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
-        catalog_path=None,
+        catalog_path: str = None,
     ) -> None:
         """Initializes a Catalog
 
