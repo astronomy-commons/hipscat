@@ -10,10 +10,23 @@ class PartitionJoinInfo:
     PRIMARY_ORDER_COLUMN_NAME = "primary_Norder"
     PRIMARY_PIXEL_COLUMN_NAME = "primary_Npix"
     JOIN_ORDER_COLUMN_NAME = "join_Norder"
-    JOIN_PIXEL_PIXEL_NAME = "join_Npix"
+    JOIN_PIXEL_COLUMN_NAME = "join_Npix"
+
+    COLUMN_NAMES = [
+        PRIMARY_PIXEL_COLUMN_NAME,
+        PRIMARY_PIXEL_COLUMN_NAME,
+        JOIN_ORDER_COLUMN_NAME,
+        JOIN_PIXEL_COLUMN_NAME,
+    ]
 
     def __init__(self, join_info_df: pd.DataFrame) -> None:
         self.data_frame = join_info_df
+        self._check_column_names()
+
+    def _check_column_names(self):
+        for column in self.COLUMN_NAMES:
+            if column not in self.data_frame.columns:
+                raise ValueError(f"join_info_df does not contain column {column}")
 
     @classmethod
     def read_from_file(cls, partition_join_info_file: FilePointer) -> Self:

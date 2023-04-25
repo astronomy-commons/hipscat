@@ -12,7 +12,14 @@ from hipscat.io import FilePointer, paths
 
 
 class AssociationCatalog(Dataset):
-    """Container for Association catalog metadata"""
+    """A HiPSCat Catalog for enabling fast joins between two HiPSCat catalogs
+
+    Catalogs of this type are partitioned based on the partitioning of both joining catalogs in the
+    form 'Norder=/Dir=/Npix=/join_Norder=/join_Dir=/join_Npix=.parquet'. Where each partition
+    contains the matching pair of hipscat indexes from each catalog's respective partitions to join.
+    The `partition_join_info` metadata file specifies all pairs of pixels in the Association
+    Catalog, corresponding to each pair of partitions in each catalog that contain rows to join.
+    """
 
     CatalogInfoClass = AssociationCatalogInfo
     JoinPixelInputTypes = Union[list, pd.DataFrame, PartitionJoinInfo]
