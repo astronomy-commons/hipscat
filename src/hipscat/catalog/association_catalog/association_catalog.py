@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Tuple, Union
 
 import pandas as pd
 
@@ -59,7 +59,7 @@ class AssociationCatalog(Dataset):
     @classmethod
     def _read_args(
             cls, catalog_base_dir: FilePointer
-    ) -> tuple[CatalogInfoClass, JoinPixelInputTypes]:
+    ) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:
         args = super()._read_args(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_file(partition_join_info_file)
