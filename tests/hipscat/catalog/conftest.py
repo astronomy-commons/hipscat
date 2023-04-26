@@ -4,7 +4,11 @@ import os.path
 import pandas as pd
 import pytest
 
-from hipscat.catalog import partition_info, PartitionInfo
+from hipscat.catalog import PartitionInfo
+from hipscat.catalog.association_catalog.association_catalog_info import \
+    AssociationCatalogInfo
+from hipscat.catalog.association_catalog.partition_join_info import \
+    PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 
@@ -35,6 +39,19 @@ def catalog_info_data() -> dict:
         "epoch": "J2000",
         "ra_column": "ra",
         "dec_column": "dec",
+    }
+
+
+@pytest.fixture
+def association_catalog_info_data() -> dict:
+    return {
+        "catalog_name": "test_name",
+        "catalog_type": "association",
+        "total_rows": 10,
+        "primary_catalog": "small_sky",
+        "primary_column": "id",
+        "join_catalog": "small_sky_order1",
+        "join_column": "id",
     }
 
 
@@ -74,4 +91,34 @@ def catalog_pixels() -> pd.DataFrame:
         PartitionInfo.METADATA_ORDER_COLUMN_NAME: [1, 1, 2],
         PartitionInfo.METADATA_DIR_COLUMN_NAME: [0, 0, 0],
         PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [0, 1, 8]
+    })
+
+
+@pytest.fixture
+def association_catalog_path(test_data_dir) -> str:
+    return os.path.join(test_data_dir, "small_sky_to_small_sky_order1")
+
+
+@pytest.fixture
+def association_catalog_info_file(association_catalog_path) -> str:
+    return os.path.join(association_catalog_path, "catalog_info.json")
+
+
+@pytest.fixture
+def association_catalog_info(association_catalog_info_data) -> AssociationCatalogInfo:
+    return AssociationCatalogInfo(**association_catalog_info_data)
+
+
+@pytest.fixture
+def association_catalog_partition_join_file(association_catalog_path) -> str:
+    return os.path.join(association_catalog_path, "partition_join_info.csv")
+
+
+@pytest.fixture
+def association_catalog_join_pixels() -> pd.DataFrame:
+    return pd.DataFrame.from_dict({
+        PartitionJoinInfo.PRIMARY_ORDER_COLUMN_NAME: [0, 0, 0, 0],
+        PartitionJoinInfo.PRIMARY_PIXEL_COLUMN_NAME: [11, 11, 11, 11],
+        PartitionJoinInfo.JOIN_ORDER_COLUMN_NAME: [1, 1, 1, 1],
+        PartitionJoinInfo.JOIN_PIXEL_COLUMN_NAME: [44, 45, 46, 47],
     })

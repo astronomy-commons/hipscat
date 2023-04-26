@@ -1,0 +1,9 @@
+{
+  "catalog_name": "small_sky_to_small_sky_order1",
+  "catalog_type": "association",
+  "primary_catalog": "small_sky",
+  "primary_column": "id",
+  "join_catalog": "small_sky_order1",
+  "join_column": "id",
+  "total_rows": 131
+}
