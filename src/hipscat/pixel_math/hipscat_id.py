@@ -7,8 +7,6 @@ See the README in this directory for more information on the fiddly pixel math.
 import healpy as hp
 import numpy as np
 
-from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
-
 HIPSCAT_ID_HEALPIX_ORDER = 19
 
 
@@ -77,9 +75,8 @@ def hipscat_id_to_healpix(ids):
     return np.asarray(ids, dtype=np.uint64) >> (64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
 
 
-def healpix_to_hipscat_id(pixel: HealpixInputTypes):
-    pixel = get_healpix_pixel(pixel)
-    pixel_higher_order = pixel.pixel * (4**(HIPSCAT_ID_HEALPIX_ORDER-pixel.order))
+def healpix_to_hipscat_id(order: int, pixel: int):
+    pixel_higher_order = pixel * (4**(HIPSCAT_ID_HEALPIX_ORDER-order))
     shifted_pixel = pixel_higher_order << (
             64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER)
     )
