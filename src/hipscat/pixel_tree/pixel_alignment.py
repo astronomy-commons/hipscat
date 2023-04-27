@@ -77,10 +77,26 @@ class PixelAlignment:
             cls.ALIGNED_PIXEL_COLUMN_NAME: [],
         }
         for leaf_node in tree.root_pixel.get_all_leaf_descendants():
-            pixel_mapping_dict[cls.ALIGNED_ORDER_COLUMN_NAME].append(leaf_node.hp_order)
-            pixel_mapping_dict[cls.ALIGNED_PIXEL_COLUMN_NAME].append(leaf_node.hp_pixel)
-
-
+            left_leaf_nodes = left.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
+            right_leaf_nodes = right.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
+            if len(left_leaf_nodes) == 0:
+                left_leaf_nodes = [None]
+            if len(right_leaf_nodes) == 0:
+                right_leaf_nodes = [None]
+            for left_node in left_leaf_nodes:
+                for right_node in right_leaf_nodes:
+                    pixel_mapping_dict[cls.ALIGNED_ORDER_COLUMN_NAME].append(leaf_node.hp_order)
+                    pixel_mapping_dict[cls.ALIGNED_PIXEL_COLUMN_NAME].append(leaf_node.hp_pixel)
+                    left_order = left_node.hp_order if left_node is not None else None
+                    left_pixel = left_node.hp_pixel if left_node is not None else None
+                    pixel_mapping_dict[cls.PRIMARY_ORDER_COLUMN_NAME].append(left_order)
+                    pixel_mapping_dict[cls.PRIMARY_PIXEL_COLUMN_NAME].append(left_pixel)
+                    right_order = right_node.hp_order if right_node is not None else None
+                    right_pixel = right_node.hp_pixel if right_node is not None else None
+                    pixel_mapping_dict[cls.JOIN_ORDER_COLUMN_NAME].append(right_order)
+                    pixel_mapping_dict[cls.JOIN_PIXEL_COLUMN_NAME].append(right_pixel)
+        pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict)
+        return cls(tree, pixel_mapping)
 
     @staticmethod
     def _get_children_pixels_from_trees(trees: List[PixelTree], pixel: HealpixInputTypes) -> \
