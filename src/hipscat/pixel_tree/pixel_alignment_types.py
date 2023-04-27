@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class PixelAlignmentType(Enum, str):
+class PixelAlignmentType(str, Enum):
 
     INNER = "inner"
     OUTER = "outer"
