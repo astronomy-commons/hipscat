@@ -7,7 +7,7 @@ See the README in this directory for more information on the fiddly pixel math.
 import healpy as hp
 import numpy as np
 
-from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
 
 HIPSCAT_ID_HEALPIX_ORDER = 19
 
