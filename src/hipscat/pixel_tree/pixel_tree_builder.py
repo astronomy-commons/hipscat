@@ -214,7 +214,7 @@ class PixelTreeBuilder:
             replace_existing_node=False
     ):
         pixel = get_healpix_pixel(pixel)
-        nodes_to_add = tree[pixel].children
+        nodes_to_add = [child for child in tree[pixel].children]
         while len(nodes_to_add) > 0:
             node = nodes_to_add.pop(0)
             nodes_to_add += node.children
