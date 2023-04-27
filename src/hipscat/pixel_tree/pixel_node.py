@@ -3,8 +3,8 @@ from __future__ import annotations
 from bisect import bisect
 from typing import List
 
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class PixelNode:
@@ -103,6 +103,11 @@ class PixelNode:
             list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel
         )
         self.children.insert(insert_index, child)
+
+    def remove_child_node(self, node):
+        if node not in self.children:
+            raise ValueError(f"Node not a child node, cannot remove")
+        self.children.remove(node)
 
     def get_all_leaf_descendants(self) -> List[PixelNode]:
         """Gets all descendant nodes that are leaf nodes.
