@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from typing import List
+
 from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
 from hipscat.pixel_tree.pixel_node import PixelNode
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class PixelTree:
@@ -76,3 +79,41 @@ class PixelTree:
 
     def __getitem__(self, item):
         return self.get_node(item)
+
+    def get_leaf_nodes_at_healpix_pixel(self, pixel: HealpixInputTypes) -> List[PixelNode]:
+        """Lookup all leaf nodes that contain or are within a given HEALPix pixel
+
+        - Exact matches will return a list with only the matching pixel
+        - A pixel that is within a lower order pixel in the tree will return a list with the lower
+        order pixel
+        - A pixel that has higher order pixels within found in the tree will return a list with all
+        higher order pixels
+        - A pixel with no matching leaf nodes in the tree will return an empty list
+
+        Args:
+            pixel: HEALPix pixel of the pixel to lookup
+
+        Returns:
+            A list of the leaf PixelNodes in the tree that align with the specified pixel
+        """
+        pixel = get_healpix_pixel(pixel)
+
+        if self.contains(pixel):
+            node_in_tree = self.get_node(pixel)
+            return node_in_tree.get_all_leaf_descendants()
+        node_in_tree = self.find_first_lower_order_leaf_node_in_tree(pixel)
+        if node_in_tree is None:
+            return []
+        return [node_in_tree]
+
+    def find_first_lower_order_leaf_node_in_tree(self, pixel: HealpixInputTypes) -> PixelNode | None:
+        """todo: write doc"""
+        pixel = get_healpix_pixel(pixel)
+        for delta_order in range(1, pixel.order + 1):
+            lower_pixel = pixel.convert_to_lower_order(delta_order)
+            if self.contains(lower_pixel):
+                lower_node = self.get_node(lower_pixel)
+                if lower_node.node_type == PixelNodeType.LEAF:
+                    return lower_node
+                return None
+        return None

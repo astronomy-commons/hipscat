@@ -15,5 +15,6 @@ def test_pixel_tree_alignment():
     right_tree_builder.create_node((1, 4), PixelNodeType.LEAF)
     left_tree = left_tree_builder.build()
     right_tree = right_tree_builder.build()
-    aligned_tree = PixelAlignment.align_trees(left_tree, right_tree, alignment_type=PixelAlignmentType.OUTER)
-    print(aligned_tree.pixels)
+    aligned_tree = PixelAlignment.align_trees(left_tree, right_tree, alignment_type=PixelAlignmentType.INNER)
+    print(aligned_tree.pixel_tree.pixels)
+    print(aligned_tree.pixel_mapping)
