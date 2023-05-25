@@ -43,6 +43,7 @@ dev = [
     # dependencies to ./docs/requirements.txt as well.
     "nbconvert", # Needed for pre-commit check to clear output from Python notebooks
     "nbsphinx", # Used to integrate Python notebooks into Sphinx documentation
+    "ipykernel", # Also used in building notebooks into Sphinx
     "ipython", # Also used in building notebooks into Sphinx
     "matplotlib", # Used in sample notebook intro_notebook.ipynb
     "numpy", # Used in sample notebook intro_notebook.ipynb
