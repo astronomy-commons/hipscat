@@ -1,5 +1,17 @@
 """
-Compute the hipscat ID field
+Compute the hipscat index field
+
+This index is defined as a 64-bit integer which has two parts:
+    - healpix pixel (at order 19)
+    - incrementing counter (within same healpix, for uniqueness)
+    
+::
+
+    |------------------------------------------|-------------------|
+    |<-----    healpixel at order 19    ------>|<--   counter   -->|
+
+This provides us with an increasing index, that will not overlap
+between spatially partitioned data files.
 
 See the README in this directory for more information on the fiddly pixel math.
 """
@@ -12,15 +24,6 @@ HIPSCAT_ID_HEALPIX_ORDER = 19
 
 def compute_hipscat_id(ra_values, dec_values):
     """Compute the hipscat ID field.
-
-    This index is defined as a 64-bit integer which has two parts:
-        - healpix pixel (at order 19)
-        - incrementing counter (within same healpix, for uniqueness)
-    |------------------------------------------|-------------------|
-    |<-----    healpixel at order 19    ------>|<--   counter   -->|
-
-    This provides us with an increasing index, that will not overlap
-    between spatially partitioned data files.
 
     Args:
         ra_values (list[float]): celestial coordinates, right ascension
