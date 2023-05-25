@@ -79,7 +79,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
         - pixel number *at the above order*
         - the number of objects in the pixel
     Raises:
-        ValueError if the histogram is the wrong size, or some initial histogram bins
+        ValueError: if the histogram is the wrong size, or some initial histogram bins
             exceed threshold.
     """
     if len(histogram) != hp.order2npix(highest_order):
@@ -180,7 +180,7 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
             - 0 - the total number of rows found in this destination pixel
             - 1 - the set of indexes in histogram for the pixels at the original healpix order.
     Raises:
-        ValueError if the histogram is the wrong size, or some initial histogram bins
+        ValueError: if the histogram is the wrong size, or some initial histogram bins
             exceed threshold.
     """
     if len(histogram) != hp.order2npix(highest_order):
@@ -260,7 +260,7 @@ def generate_constant_pixel_map(histogram, constant_healpix_order):
             - 1 - the set of indexes in histogram for the pixels at the original healpix order
                 (list containing only the origin pixel)
     Raises:
-        ValueError if the histogram is the wrong size
+        ValueError: if the histogram is the wrong size
     """
     if len(histogram) != hp.order2npix(constant_healpix_order):
         raise ValueError("histogram is not the right size")

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_tree.pixel_node import PixelNode
 
 
 class PixelTree:
@@ -15,9 +15,9 @@ class PixelTree:
 
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-             order then pixel number
+            order then pixel number
         root_pixel: Root node of the tree. Its children are a subset of the
-        12 base HEALPix pixels
+            12 base HEALPix pixels
     """
 
     def __init__(
