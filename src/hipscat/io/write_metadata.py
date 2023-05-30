@@ -33,8 +33,8 @@ def write_catalog_info(catalog_parameters):
     metadata["catalog_name"] = catalog_parameters.catalog_name
     metadata["catalog_type"] = catalog_parameters.catalog_type
     metadata["epoch"] = catalog_parameters.epoch
-    metadata["ra_kw"] = catalog_parameters.ra_column
-    metadata["dec_kw"] = catalog_parameters.dec_column
+    metadata["ra_column"] = catalog_parameters.ra_column
+    metadata["dec_column"] = catalog_parameters.dec_column
     metadata["total_rows"] = catalog_parameters.total_rows
 
     catalog_info_pointer = paths.get_catalog_info_pointer(

@@ -9,9 +9,9 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-import hipscat.io.file_io as file_io
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
+from hipscat.io import file_io
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
@@ -51,8 +51,8 @@ def test_write_catalog_info(assert_text_file_matches, tmp_path, basic_catalog_in
         '    "catalog_name": "small_sky",',
         '    "catalog_type": "object",',
         '    "epoch": "J2000",',
-        '    "ra_kw": "ra",',
-        '    "dec_kw": "dec",',
+        '    "ra_column": "ra",',
+        '    "dec_column": "dec",',
         '    "total_rows": 131',
         "}",
     ]
