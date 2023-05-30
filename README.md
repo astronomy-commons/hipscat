@@ -28,7 +28,7 @@ See related projects:
 
 [![GitHub issue custom search in repo](https://img.shields.io/github/issues-search/astronomy-commons/hipscat?color=purple&label=Good%20first%20issues&query=is%3Aopen%20label%3A%22good%20first%20issue%22)](https://github.com/astronomy-commons/hipscat/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
-See the [contribution guide](https://hipscat.readthedocs.io/en/latest/overview/contributing.html)
+See the [contribution guide](https://hipscat.readthedocs.io/en/latest/guide/contributing.html)
 for completed installation instructions and contribution best practices.
 
 ## Acknowledgements
