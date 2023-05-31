@@ -10,7 +10,9 @@ def test_catalog_info(catalog_info_data, assert_catalog_info_matches_dict):
     assert_catalog_info_matches_dict(info, catalog_info_data)
 
 
-def test_catalog_info_defaults(base_catalog_info_data, assert_catalog_info_matches_dict):
+def test_catalog_info_defaults(
+    base_catalog_info_data, assert_catalog_info_matches_dict
+):
     info = CatalogInfo(**base_catalog_info_data)
     actual_catalog_info = base_catalog_info_data.copy()
     actual_catalog_info["epoch"] = "J2000"
@@ -31,7 +33,12 @@ def test_read_from_file(catalog_info_file, assert_catalog_info_matches_dict):
     cat_info_fp = file_io.get_file_pointer_from_path(catalog_info_file)
     catalog_info = CatalogInfo.read_from_metadata_file(cat_info_fp)
     for column in [
-        "catalog_name", "catalog_type", "total_rows", "epoch", "ra_column", "dec_column"
+        "catalog_name",
+        "catalog_type",
+        "total_rows",
+        "epoch",
+        "ra_column",
+        "dec_column",
     ]:
         assert column in dataclasses.asdict(catalog_info)
 
