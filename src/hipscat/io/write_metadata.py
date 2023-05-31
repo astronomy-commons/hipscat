@@ -1,5 +1,6 @@
 """Utility functions for writing metadata files"""
 
+import dataclasses
 import json
 from datetime import datetime
 from importlib.metadata import version
@@ -7,7 +8,6 @@ from importlib.metadata import version
 import numpy as np
 import pandas as pd
 import pyarrow.dataset as pds
-
 from hipscat.io import file_io, paths
 
 
@@ -22,28 +22,21 @@ def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 
-def write_catalog_info(catalog_parameters):
+def write_catalog_info(catalog_base_dir="", dataset_info=None):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
         catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
             the new catalog
     """
-    metadata = {}
-    metadata["catalog_name"] = catalog_parameters.catalog_name
-    metadata["catalog_type"] = catalog_parameters.catalog_type
-    metadata["epoch"] = catalog_parameters.epoch
-    metadata["ra_column"] = catalog_parameters.ra_column
-    metadata["dec_column"] = catalog_parameters.dec_column
-    metadata["total_rows"] = catalog_parameters.total_rows
-
-    catalog_info_pointer = paths.get_catalog_info_pointer(
-        catalog_parameters.catalog_base_dir
-    )
+    metadata = dataclasses.asdict(dataset_info)
+    catalog_info_pointer = paths.get_catalog_info_pointer(catalog_base_dir)
     write_json_file(metadata, catalog_info_pointer)
 
 
-def write_provenance_info(catalog_parameters, tool_args):
+def write_provenance_info(
+    catalog_base_dir="", dataset_info=None, tool_args: dict = None
+):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
@@ -52,26 +45,19 @@ def write_provenance_info(catalog_parameters, tool_args):
         tool_args (:obj:`dict`): dictionary of additional arguments provided by the tool creating
             this catalog.
     """
-    metadata = {}
-    metadata["catalog_name"] = catalog_parameters.catalog_name
-    metadata["catalog_type"] = catalog_parameters.catalog_type
+    metadata = dataclasses.asdict(dataset_info)
     metadata["version"] = version("hipscat")
     now = datetime.now()
     metadata["generation_date"] = now.strftime("%Y.%m.%d")
-    metadata["epoch"] = catalog_parameters.epoch
-    metadata["ra_kw"] = catalog_parameters.ra_column
-    metadata["dec_kw"] = catalog_parameters.dec_column
-    metadata["total_rows"] = catalog_parameters.total_rows
 
     metadata["tool_args"] = tool_args
 
-    metadata_pointer = paths.get_provenance_pointer(catalog_parameters.catalog_base_dir)
+    metadata_pointer = paths.get_provenance_pointer(catalog_base_dir)
     write_json_file(metadata, metadata_pointer)
 
 
 def write_partition_info(
-    catalog_parameters,
-    destination_pixel_map: dict = None,
+    catalog_base_dir: str = "",
     destination_healpix_pixel_map: dict = None,
 ):
     """Write all partition data to CSV file.
@@ -79,39 +65,21 @@ def write_partition_info(
     Args:
         catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
             the new job
-        destination_pixel_map (dict): dictionary that maps the integer 3-tuple of a pixel
-            at destination order to the set of indexes in histogram for the pixels at the
-            original healpix order
         destination_healpix_pixel_map (dict):  dictionary that maps the HealpixPixel to a
             tuple of origin pixel information:
             - 0 - the total number of rows found in this destination pixel
             - 1 - the set of indexes in histogram for the pixels at the original healpix order
     """
-    partition_info_pointer = paths.get_partition_info_pointer(
-        catalog_parameters.catalog_base_dir
-    )
-    if destination_pixel_map:
-        data_frame = pd.DataFrame(destination_pixel_map.keys())
-        # Set column names.
-        data_frame.columns = [
-            "Norder",
-            "Npix",
-            "num_rows",
-        ]
-    elif destination_healpix_pixel_map:
-        data_frame = pd.DataFrame(destination_healpix_pixel_map.keys())
-        # Set column names.
-        data_frame.columns = [
-            "Norder",
-            "Npix",
-        ]
-        data_frame["num_rows"] = [
-            pixel_info[0] for pixel_info in destination_healpix_pixel_map.values()
-        ]
-    else:
-        raise ValueError(
-            "one of destination_pixel_map or destination_healpix_pixel_map is required"
-        )
+    partition_info_pointer = paths.get_partition_info_pointer(catalog_base_dir)
+    data_frame = pd.DataFrame(destination_healpix_pixel_map.keys())
+    # Set column names.
+    data_frame.columns = [
+        "Norder",
+        "Npix",
+    ]
+    data_frame["num_rows"] = [
+        pixel_info[0] for pixel_info in destination_healpix_pixel_map.values()
+    ]
 
     ## For either method, we should now have columns ["Norder", "Npix", "num_rows"]
     # Add a directory column.

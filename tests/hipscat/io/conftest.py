@@ -6,8 +6,6 @@ import re
 import pyarrow as pa
 import pytest
 
-from hipscat.catalog.catalog_parameters import CatalogParameters
-
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 
@@ -49,15 +47,6 @@ def assert_text_file_matches():
         metadata_file.close()
 
     return assert_text_file_matches
-
-
-@pytest.fixture
-def basic_catalog_info(tmp_path):
-    return CatalogParameters(
-        catalog_name="small_sky",
-        output_path=tmp_path,
-        total_rows=131,
-    )
 
 
 @pytest.fixture
