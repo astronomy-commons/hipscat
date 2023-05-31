@@ -3,16 +3,14 @@ from __future__ import annotations
 from bisect import bisect
 from typing import List
 
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_math import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class PixelNode:
     """A node in the HiPSCat quadtree of HEALPix pixels
 
     Attributes:
-        hp_order: HEALPix order of the pixel
-        hp_pixel: HEALPix pixel number
         node_type: If the node is a leaf, root, or inner type
         parent: The parent pixel node in the tree
         children: The child nodes of the pixel

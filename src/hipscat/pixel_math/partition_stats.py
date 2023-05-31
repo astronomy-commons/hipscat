@@ -28,7 +28,7 @@ def generate_histogram(
     """Generate a histogram of counts for objects found in `data`
 
     Args:
-        data (obj:`pd.DataFrame`): tabular object data
+        data (:obj:`pd.DataFrame`): tabular object data
         highest_order (int):  the highest healpix order (e.g. 0-10)
         ra_column (str): where in the input to find the celestial coordinate, right ascension
         dec_column (str): where in the input to find the celestial coordinate, declination
@@ -79,7 +79,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
         - pixel number *at the above order*
         - the number of objects in the pixel
     Raises:
-        ValueError if the histogram is the wrong size, or some initial histogram bins
+        ValueError: if the histogram is the wrong size, or some initial histogram bins
             exceed threshold.
     """
     if len(histogram) != hp.order2npix(highest_order):
@@ -129,6 +129,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
 
 def generate_destination_pixel_map(histogram, pixel_map):
     """Generate mapping from destination pixel to all the constituent pixels.
+
     Args:
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
@@ -175,12 +176,14 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
         threshold (int): the maximum number of objects allowed in a single pixel
     Returns:
         dictionary that maps the HealpixPixel (a pixel at destination order) to a tuple of
-            origin pixel information:
+        origin pixel information.
 
-            - 0 - the total number of rows found in this destination pixel
-            - 1 - the set of indexes in histogram for the pixels at the original healpix order.
+        The tuple contains the following:
+
+        - 0 - the total number of rows found in this destination pixel
+        - 1 - the set of indexes in histogram for the pixels at the original healpix order.
     Raises:
-        ValueError if the histogram is the wrong size, or some initial histogram bins
+        ValueError: if the histogram is the wrong size, or some initial histogram bins
             exceed threshold.
     """
     if len(histogram) != hp.order2npix(highest_order):
@@ -254,13 +257,16 @@ def generate_constant_pixel_map(histogram, constant_healpix_order):
             value at each index corresponds to the number of objects found at the healpix pixel.
         constant_healpix_order (int):  the desired healpix order (e.g. 0-10)
     Returns:
-        dictionary that maps the HealpixPixel to a tuple of origin pixel information:
+        dictionary that maps non-empty bins as HealpixPixel to a tuple of origin pixel
+        information.
 
-            - 0 - the total number of rows found in this destination pixel (same as the origin)
-            - 1 - the set of indexes in histogram for the pixels at the original healpix order
-                (list containing only the origin pixel)
+        The tuple contains the following:
+
+        - 0 - the total number of rows found in this destination pixel, same as the origin bin
+        - 1 - the set of indexes in histogram for the pixels at the original healpix 
+          order, which will be a list containing only the origin pixel.
     Raises:
-        ValueError if the histogram is the wrong size
+        ValueError: if the histogram is the wrong size
     """
     if len(histogram) != hp.order2npix(constant_healpix_order):
         raise ValueError("histogram is not the right size")

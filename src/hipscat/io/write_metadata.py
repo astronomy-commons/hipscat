@@ -31,7 +31,6 @@ def write_catalog_info(catalog_base_dir="", dataset_info=None):
     """
     metadata = dataclasses.asdict(dataset_info)
     catalog_info_pointer = paths.get_catalog_info_pointer(catalog_base_dir)
-
     write_json_file(metadata, catalog_info_pointer)
 
 
