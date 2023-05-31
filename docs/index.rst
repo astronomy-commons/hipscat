@@ -6,6 +6,7 @@ HiPSCat - Hierarchical Progressive Survey Catalog
    :caption: Overview
 
    guide/directory_scheme
+   Notebooks <notebooks>
 
 .. toctree::
    :maxdepth: 1

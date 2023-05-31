@@ -17,8 +17,8 @@ def _read_point_map(catalog_base_dir):
     Args:
         catalog_base_dir: path to a catalog
     Returns:
-        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
+        one-dimensional numpy array of long integers where the value at each index 
+        corresponds to the number of objects found at the healpix pixel.
     """
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
     return file_io.read_fits_image(map_file_pointer)
@@ -46,6 +46,7 @@ def plot_points(catalog: Catalog, projection="moll", draw_map=True):
 
 def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
     """Create a visual map of the pixel density of the catalog.
+
     Args:
         catalog (`hipscat.catalog.Catalog`) Catalog to display
         projection (str) The map projection to use. Valid values include:
