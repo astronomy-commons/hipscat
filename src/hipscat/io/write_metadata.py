@@ -22,26 +22,27 @@ def write_json_file(metadata_dictionary: dict, file_pointer: file_io.FilePointer
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 
-def write_catalog_info(catalog_base_dir="", dataset_info=None):
+def write_catalog_info(catalog_base_dir, dataset_info):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
-            the new catalog
+        catalog_base_dir (str): base directory for catalog, where file will be written
+        dataset_info (:obj:`BaseCatalogInfo`) base metadata for the catalog
     """
     metadata = dataclasses.asdict(dataset_info)
     catalog_info_pointer = paths.get_catalog_info_pointer(catalog_base_dir)
+
     write_json_file(metadata, catalog_info_pointer)
 
 
 def write_provenance_info(
-    catalog_base_dir="", dataset_info=None, tool_args: dict = None
+    catalog_base_dir:file_io.FilePointer, dataset_info, tool_args: dict
 ):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments
-            for the new catalog
+        catalog_base_dir (str): base directory for catalog, where file will be written
+        dataset_info (:obj:`BaseCatalogInfo`) base metadata for the catalog
         tool_args (:obj:`dict`): dictionary of additional arguments provided by the tool creating
             this catalog.
     """
@@ -57,14 +58,13 @@ def write_provenance_info(
 
 
 def write_partition_info(
-    catalog_base_dir: str = "",
-    destination_healpix_pixel_map: dict = None,
+    catalog_base_dir: file_io.FilePointer,
+    destination_healpix_pixel_map: dict,
 ):
     """Write all partition data to CSV file.
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
-            the new job
+        catalog_base_dir (str): base directory for catalog, where file will be written
         destination_healpix_pixel_map (dict):  dictionary that maps the HealpixPixel to a
             tuple of origin pixel information:
             - 0 - the total number of rows found in this destination pixel
@@ -80,9 +80,6 @@ def write_partition_info(
     data_frame["num_rows"] = [
         pixel_info[0] for pixel_info in destination_healpix_pixel_map.values()
     ]
-
-    ## For either method, we should now have columns ["Norder", "Npix", "num_rows"]
-    # Add a directory column.
     data_frame["Dir"] = [int(x / 10_000) * 10_000 for x in data_frame["Npix"]]
 
     # Reorder the columns to match full path, and force to integer types.
@@ -136,8 +133,7 @@ def write_fits_map(catalog_path, histogram: np.ndarray):
     """Write the object spatial distribution information to a healpix FITS file.
 
     Args:
-        catalog_parameters (:obj:`CatalogParameters`): collection of runtime arguments for
-            the new catalog
+        catalog_path (str): base path for the catalog
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
     """
