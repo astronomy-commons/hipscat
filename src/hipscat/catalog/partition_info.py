@@ -2,6 +2,7 @@
 
 from typing import List
 
+import numpy as np
 import pandas as pd
 
 from hipscat.io import FilePointer, file_io
@@ -31,6 +32,18 @@ class PartitionInfo:
                 self.data_frame[self.METADATA_PIXEL_COLUMN_NAME],
             )
         ]
+
+    def get_highest_order(self) -> int:
+        """Get the highest healpix order for the dataset.
+        
+        Returns:
+            int representing highest order.
+        """
+        highest_order = np.max(
+            self.data_frame[self.METADATA_ORDER_COLUMN_NAME].values
+        )
+
+        return highest_order
 
     @classmethod
     def read_from_file(cls, partition_info_file: FilePointer):

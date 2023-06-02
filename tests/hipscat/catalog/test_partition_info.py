@@ -40,3 +40,13 @@ def test_load_partition_no_file(tmp_path):
     wrong_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
         PartitionInfo.read_from_file(wrong_pointer)
+
+
+def test_get_highest_order(small_sky_order1_dir):
+    """test the `get_highest_order` method"""
+    partition_info_file = paths.get_partition_info_pointer(small_sky_order1_dir)
+    partitions = PartitionInfo.read_from_file(partition_info_file)
+
+    highest_order = partitions.get_highest_order()
+
+    assert highest_order == 1
