@@ -13,4 +13,5 @@ HiPSCat - Hierarchical Progressive Survey Catalog
    :caption: Developers
 
    guide/contributing
+   Pixel math <guide/pixel_math>
    API Reference <autoapi/index>

@@ -6,5 +6,6 @@ ipykernel
 ipython
 jupytext
 jupyter
+myst_parser
 matplotlib
 numpy
