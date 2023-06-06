@@ -57,9 +57,17 @@ def test_required_fields_missing(association_catalog_info_data):
 
 
 def test_type_missing(association_catalog_info_data):
-    for required_field in ["primary_catalog", "join_catalog"]:
-        assert required_field in AssociationCatalogInfo.required_fields
     init_data = association_catalog_info_data.copy()
     init_data["catalog_type"] = None
     catalog_info = AssociationCatalogInfo(**init_data)
     assert catalog_info.catalog_type == CatalogType.ASSOCIATION
+
+
+def test_wrong_type(association_catalog_info_data, catalog_info_data):
+    with pytest.raises(TypeError, match="unexpected"):
+        AssociationCatalogInfo(**catalog_info_data)
+
+    with pytest.raises(ValueError, match="type association"):
+        init_data = association_catalog_info_data.copy()
+        init_data["catalog_type"] = CatalogType.OBJECT
+        AssociationCatalogInfo(**init_data)

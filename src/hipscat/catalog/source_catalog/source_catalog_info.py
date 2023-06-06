@@ -30,3 +30,5 @@ class SourceCatalogInfo(CatalogInfo):
 
     DEFAULT_TYPE = CatalogType.SOURCE
     REQUIRED_TYPE = CatalogType.SOURCE
+
+    ## NB: No additional required columns.

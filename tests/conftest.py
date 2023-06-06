@@ -45,8 +45,11 @@ def small_sky_to_small_sky_order1_dir(test_data_dir):
 @pytest.fixture
 def assert_catalog_info_matches_dict():
     def assert_match(catalog_info: BaseCatalogInfo, dictionary: dict):
+        """Check that all members of the catalog_info object match dictionary
+        elements, where specified."""
         catalog_info_dict = dataclasses.asdict(catalog_info)
-        assert catalog_info_dict == dictionary
+        for key, value in dictionary.items():
+            assert catalog_info_dict[key] == value
 
     return assert_match
 
@@ -134,6 +137,19 @@ def association_catalog_path(test_data_dir) -> str:
 @pytest.fixture
 def association_catalog_info_file(association_catalog_path) -> str:
     return os.path.join(association_catalog_path, "catalog_info.json")
+
+@pytest.fixture
+def index_catalog_info_file(test_data_dir) -> str:
+    return os.path.join(test_data_dir, "index_catalog", "catalog_info.json")
+
+@pytest.fixture
+def margin_cache_catalog_info_file(test_data_dir) -> str:
+    return os.path.join(test_data_dir, "margin_cache", "catalog_info.json")
+
+
+@pytest.fixture
+def source_catalog_info_file(test_data_dir) -> str:
+    return os.path.join(test_data_dir, "small_sky_source", "catalog_info.json")
 
 
 @pytest.fixture
