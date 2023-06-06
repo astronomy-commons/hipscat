@@ -56,7 +56,9 @@ def generate_histogram(
     return histogram_result
 
 
-def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
+def generate_alignment(
+    histogram, highest_order=10, lowest_order=0, threshold=1_000_000
+):
     """Generate alignment from high order pixels to those of equal or lower order
 
     We may initially find healpix pixels at order 10, but after aggregating up to the pixel
@@ -67,7 +69,9 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
     Args:
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
-        highest_order (int):  the highest healpix order (e.g. 0-10)
+        highest_order (int):  the highest healpix order (e.g. 5-10)
+        lowest_order (int): the lowest healpix order (e.g. 1-5). specifying a lowest order
+            constrains the partitioning to prevent spatially large pixels.
         threshold (int): the maximum number of objects allowed in a single pixel
     Returns:
         one-dimensional numpy array of integer 3-tuples, where the value at each index corresponds
@@ -84,6 +88,8 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
     """
     if len(histogram) != hp.order2npix(highest_order):
         raise ValueError("histogram is not the right size")
+    if lowest_order > highest_order:
+        raise ValueError("lowest_order should be less than highest_order")
     max_bin = np.amax(histogram)
     if max_bin > threshold:
         raise ValueError(f"single pixel count {max_bin} exceeds threshold {threshold}")
@@ -94,7 +100,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
     nested_sums.append(histogram)
 
     # work backward - from highest order, fill in the sums of lower order pixels
-    for read_order in range(highest_order, 0, -1):
+    for read_order in range(highest_order, lowest_order, -1):
         parent_order = read_order - 1
         for index in range(0, len(nested_sums[read_order])):
             parent_pixel = index >> 2
@@ -105,7 +111,7 @@ def generate_alignment(histogram, highest_order=10, threshold=1_000_000):
         nested_alignment.append(np.full(hp.order2npix(i), None))
 
     # work forward - determine if we should map to a lower order pixel, this pixel, or keep looking.
-    for read_order in range(0, highest_order + 1):
+    for read_order in range(lowest_order, highest_order + 1):
         parent_order = read_order - 1
         for index in range(0, len(nested_sums[read_order])):
             parent_alignment = None
@@ -160,7 +166,7 @@ def generate_destination_pixel_map(histogram, pixel_map):
     return result
 
 
-def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
+def compute_pixel_map(histogram, highest_order=10, lowest_order=0, threshold=1_000_000):
     # pylint: disable=too-many-locals
     """Generate alignment from high order pixels to those of equal or lower order
 
@@ -173,6 +179,8 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
         histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
         highest_order (int):  the highest healpix order (e.g. 0-10)
+        lowest_order (int): the lowest healpix order (e.g. 1-5). specifying a lowest order
+            constrains the partitioning to prevent spatially large pixels.
         threshold (int): the maximum number of objects allowed in a single pixel
     Returns:
         dictionary that maps the HealpixPixel (a pixel at destination order) to a tuple of
@@ -188,6 +196,8 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
     """
     if len(histogram) != hp.order2npix(highest_order):
         raise ValueError("histogram is not the right size")
+    if lowest_order > highest_order:
+        raise ValueError("lowest_order should be less than highest_order")
     max_bin = np.amax(histogram)
     if max_bin > threshold:
         raise ValueError(f"single pixel count {max_bin} exceeds threshold {threshold}")
@@ -201,7 +211,7 @@ def compute_pixel_map(histogram, highest_order=10, threshold=1_000_000):
 
     ## Determine the highest order that does not exceed the threshold
     orders_at_threshold = [0 if 0 < k <= threshold else None for k in nested_sums[0]]
-    for order in range(1, highest_order + 1):
+    for order in range(lowest_order, highest_order + 1):
         new_orders_at_threshold = np.array(
             [order if 0 < k <= threshold else None for k in nested_sums[order]]
         )
@@ -263,7 +273,7 @@ def generate_constant_pixel_map(histogram, constant_healpix_order):
         The tuple contains the following:
 
         - 0 - the total number of rows found in this destination pixel, same as the origin bin
-        - 1 - the set of indexes in histogram for the pixels at the original healpix 
+        - 1 - the set of indexes in histogram for the pixels at the original healpix
           order, which will be a list containing only the origin pixel.
     Raises:
         ValueError: if the histogram is the wrong size
