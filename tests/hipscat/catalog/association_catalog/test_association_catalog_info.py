@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-from hipscat.catalog.association_catalog.association_catalog_info import (
-    AssociationCatalogInfo,
-)
+from hipscat.catalog.association_catalog.association_catalog_info import \
+    AssociationCatalogInfo
+from hipscat.catalog.catalog_type import CatalogType
 from hipscat.io import file_io
 
 
@@ -46,10 +46,20 @@ def test_read_from_file(
 
 
 def test_required_fields_missing(association_catalog_info_data):
-    for required_field in ["primary_catalog", "join_catalog"]:
+    required_fields = ["primary_catalog", "join_catalog"]
+    for required_field in required_fields:
         assert required_field in AssociationCatalogInfo.required_fields
-    for field in AssociationCatalogInfo.required_fields:
+    for field in required_fields:
         init_data = association_catalog_info_data.copy()
         init_data[field] = None
         with pytest.raises(ValueError, match=field):
             AssociationCatalogInfo(**init_data)
+
+
+def test_type_missing(association_catalog_info_data):
+    for required_field in ["primary_catalog", "join_catalog"]:
+        assert required_field in AssociationCatalogInfo.required_fields
+    init_data = association_catalog_info_data.copy()
+    init_data["catalog_type"] = None
+    catalog_info = AssociationCatalogInfo(**init_data)
+    assert catalog_info.catalog_type == CatalogType.ASSOCIATION

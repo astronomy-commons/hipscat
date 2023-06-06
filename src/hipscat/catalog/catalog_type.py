@@ -9,3 +9,8 @@ class CatalogType(str, Enum):
     ASSOCIATION = "association"
     INDEX = "index"
     MARGIN = "margin"
+
+    @classmethod
+    def all_types(cls):
+        """Fetch a list of all catalog types"""
+        return [t.value for t in cls]
