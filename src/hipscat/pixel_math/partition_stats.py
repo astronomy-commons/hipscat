@@ -71,7 +71,7 @@ def generate_alignment(
             value at each index corresponds to the number of objects found at the healpix pixel.
         highest_order (int):  the highest healpix order (e.g. 5-10)
         lowest_order (int): the lowest healpix order (e.g. 1-5). specifying a lowest order
-            constrains the partitioning  to prevent spatially large pixels.
+            constrains the partitioning to prevent spatially large pixels.
         threshold (int): the maximum number of objects allowed in a single pixel
     Returns:
         one-dimensional numpy array of integer 3-tuples, where the value at each index corresponds
@@ -180,7 +180,7 @@ def compute_pixel_map(histogram, highest_order=10, lowest_order=0, threshold=1_0
             value at each index corresponds to the number of objects found at the healpix pixel.
         highest_order (int):  the highest healpix order (e.g. 0-10)
         lowest_order (int): the lowest healpix order (e.g. 1-5). specifying a lowest order
-            constrains the partitioning  to prevent spatially large pixels.
+            constrains the partitioning to prevent spatially large pixels.
         threshold (int): the maximum number of objects allowed in a single pixel
     Returns:
         dictionary that maps the HealpixPixel (a pixel at destination order) to a tuple of
