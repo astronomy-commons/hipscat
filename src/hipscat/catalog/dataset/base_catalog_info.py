@@ -15,15 +15,23 @@ class BaseCatalogInfo:
     catalog_type: CatalogType = None
     total_rows: int = None
 
-    CATALOG_TYPES = [t.value for t in CatalogType]
+    DEFAULT_TYPE = None
+    """The default catalog type for this catalog info type. To be overridden by subclasses.
+    If specified, we will use this value when no catalog_type is provided."""
+
+    REQUIRED_TYPE = None
+    """The required catalog type for this catalog info type. To be overridden by subclasses.
+    If specified, the catalog MUST have this type."""
 
     required_fields = ["catalog_type"]
 
-    def __post_init__(
-        self,
-    ):
+    def __post_init__(self):
+        if not self.catalog_type and self.DEFAULT_TYPE:
+            self.catalog_type = self.DEFAULT_TYPE
+        elif self.REQUIRED_TYPE and self.catalog_type != self.REQUIRED_TYPE:
+            raise ValueError(f"Catalog must have type {self.REQUIRED_TYPE}")
         self._check_required_fields()
-        if self.catalog_type not in self.CATALOG_TYPES:
+        if self.catalog_type not in CatalogType.all_types():
             raise ValueError(f"Unknown catalog type: {self.catalog_type}")
 
     def __str__(self):

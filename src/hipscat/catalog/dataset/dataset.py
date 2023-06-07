@@ -11,6 +11,7 @@ class Dataset:
 
     A base dataset contains a catalog_info metadata file and the data contained in parquet files
     """
+
     CatalogInfoClass: Type[BaseCatalogInfo] = BaseCatalogInfo
 
     def __init__(

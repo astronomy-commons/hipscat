@@ -1,0 +1,7 @@
+{
+  "catalog_name": "test_index",
+  "catalog_type": "index",
+  "total_rows": 100,
+  "primary_catalog": "test_name",
+  "indexing_column": "id"
+}
