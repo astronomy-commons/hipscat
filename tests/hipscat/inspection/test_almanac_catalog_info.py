@@ -17,3 +17,12 @@ def test_write_to_file(tmp_path, small_sky_dir):
 
     alms = Almanac(include_default_dir=False, dirs=tmp_path)
     assert len(alms.catalogs()) == 1
+
+
+## Commented out -
+## As new test catalogs are added, you can use this method to quickly add
+## their almanac to the default almanac directory
+# def test_add_almanac(source_catalog_info_file):
+#     """Write out the almanac to file and make sure we can read it again."""
+#     almanac_info = AlmanacCatalogInfo.from_catalog_dir(source_catalog_info_file)
+#     almanac_info.write_to_file()

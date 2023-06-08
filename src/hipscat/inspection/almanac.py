@@ -3,7 +3,6 @@ import os
 from typing import List
 
 import pandas as pd
-import yaml
 
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
@@ -58,36 +57,37 @@ class Almanac:
     def _init_catalog_objects(self):
         for namespace, files in self.files.items():
             for file in files:
-                with open(file, "r", encoding="utf-8") as file_handle:
-                    catalog_info = AlmanacCatalogInfo(**yaml.safe_load(file_handle))
-                    catalog_info.namespace = namespace
-                    if namespace:
-                        full_name = f"{namespace}:{catalog_info.catalog_name}"
-                    else:
-                        full_name = catalog_info.catalog_name
-                    if full_name in self.entries:
-                        raise ValueError(
-                            f"Duplicate catalog name ({full_name}). Try using namespaces."
-                        )
-                    self.entries[full_name] = catalog_info
-                    self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
+                catalog_info = AlmanacCatalogInfo.from_file(file)
+                catalog_info.namespace = namespace
+                if namespace:
+                    full_name = f"{namespace}:{catalog_info.catalog_name}"
+                else:
+                    full_name = catalog_info.catalog_name
+                if full_name in self.entries:
+                    raise ValueError(
+                        f"Duplicate catalog name ({full_name}). Try using namespaces."
+                    )
+                self.entries[full_name] = catalog_info
+                self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
 
     def _init_catalog_links(self):
         for catalog_entry in self.entries.values():
             if catalog_entry.catalog_type == CatalogType.OBJECT:
                 pass
             elif catalog_entry.catalog_type == CatalogType.SOURCE:
-                if catalog_entry.primary:
-                    catalog_entry.primary_link = self._get_linked_catalog(
-                        catalog_entry.primary,
-                        "primary",
-                        "source",
-                        catalog_entry.catalog_name,
-                        catalog_entry.namespace,
-                    )
+                catalog_entry.primary_link = self._get_linked_catalog(
+                    catalog_entry.get_primary_text(),
+                    "primary",
+                    "source",
+                    catalog_entry.catalog_name,
+                    catalog_entry.namespace,
+                )
+                if catalog_entry.primary_link:
+                    catalog_entry.objects.append(catalog_entry.primary_link)
+                    catalog_entry.primary_link.sources.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.ASSOCIATION:
                 catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.primary,
+                    catalog_entry.get_primary_text(),
                     "primary",
                     "association",
                     catalog_entry.catalog_name,
@@ -95,7 +95,7 @@ class Almanac:
                 )
                 catalog_entry.primary_link.associations.append(catalog_entry)
                 catalog_entry.join_link = self._get_linked_catalog(
-                    catalog_entry.join,
+                    catalog_entry.get_join_text(),
                     "join",
                     "association",
                     catalog_entry.catalog_name,
@@ -103,10 +103,26 @@ class Almanac:
                 )
                 catalog_entry.join_link.associations_right.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.MARGIN:
-                pass
+                catalog_entry.primary_link = self._get_linked_catalog(
+                    catalog_entry.get_primary_text(),
+                    "primary",
+                    "margin",
+                    catalog_entry.catalog_name,
+                    catalog_entry.namespace,
+                )
+                if catalog_entry.primary_link:
+                    catalog_entry.primary_link.margins.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.INDEX:
-                pass
-            else:
+                catalog_entry.primary_link = self._get_linked_catalog(
+                    catalog_entry.get_primary_text(),
+                    "primary",
+                    "index",
+                    catalog_entry.catalog_name,
+                    catalog_entry.namespace,
+                )
+                if catalog_entry.primary_link:
+                    catalog_entry.primary_link.indexes.append(catalog_entry)
+            else:  # pragma: no cover
                 raise ValueError(f"Unknown catalog type {catalog_entry.catalog_type}")
 
     def _get_linked_catalog(
@@ -117,6 +133,8 @@ class Almanac:
         Raises:
             ValueError: if catalog is not found in almanac
         """
+        if not linked_text:
+            return None
         resolved_path = os.path.expandvars(linked_text)
         if linked_text in self.dir_to_catalog_name:
             linked_text = self.dir_to_catalog_name[linked_text]

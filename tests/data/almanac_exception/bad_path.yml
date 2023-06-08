@@ -1,0 +1,4 @@
+catalog_name: catalog
+catalog_type: source
+catalog_path: $HIPSCAT_DEFAULT_DIR/catalog
+primary: /does/not/exist

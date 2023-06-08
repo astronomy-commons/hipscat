@@ -7,8 +7,10 @@ import yaml
 from typing_extensions import Self
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.catalog.dataset.catalog_info_factory import (create_catalog_info,
-                                                          from_catalog_dir)
+from hipscat.catalog.dataset.catalog_info_factory import (
+    create_catalog_info,
+    from_catalog_dir,
+)
 from hipscat.io import file_io
 
 
@@ -50,6 +52,22 @@ class AlmanacCatalogInfo:
         ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
         self.catalog_path = os.path.expandvars(self.catalog_path)
 
+    def get_primary_text(self) -> str:
+        """Find some text name/path for a primary catalog link, if present"""
+        if self.primary:
+            return self.primary
+        if self.catalog_info and "primary_catalog" in self.catalog_info:
+            return self.catalog_info["primary_catalog"]
+        return None
+
+    def get_join_text(self) -> str:
+        """Find some text name/path for a join catalog link, if present"""
+        if self.join:
+            return self.join
+        if self.catalog_info and "join_catalog" in self.catalog_info:
+            return self.catalog_info["join_catalog"]
+        return None
+
     @staticmethod
     def get_default_dir() -> str:
         """Fetch the default directory for environment variables.
@@ -82,6 +100,17 @@ class AlmanacCatalogInfo:
             "catalog_info": dataclasses.asdict(catalog_info),
         }
         return cls(**args)
+
+    @classmethod
+    def from_file(cls, file: str) -> Self:
+        """Create almanac information from an almanac file."""
+        _, fmt = os.path.splitext(file)
+        with open(file, "r", encoding="utf-8") as file_handle:
+            if fmt == ".yml":
+                metadata = yaml.safe_load(file_handle)
+            else:
+                raise ValueError(f"Unsupported file format {fmt}")
+        return cls(**metadata)
 
     def write_to_file(self, directory=None, default_dir=True, fmt="yml"):
         """Write the almanac to an almanac file"""

@@ -1,3 +1,5 @@
+import pytest
+
 from hipscat.catalog.association_catalog.association_catalog_info import (
     AssociationCatalogInfo,
 )
@@ -12,6 +14,16 @@ from hipscat.catalog.margin_cache.margin_cache_catalog_info import (
     MarginCacheCatalogInfo,
 )
 from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
+
+
+def test_create_catalog_info_bad(base_catalog_info_data):
+    base_catalog_info_data["catalog_type"] = "foo"
+    with pytest.raises(ValueError, match="Unknown"):
+        create_catalog_info(base_catalog_info_data)
+
+    base_catalog_info_data.pop("catalog_type")
+    with pytest.raises(ValueError, match="required"):
+        create_catalog_info(base_catalog_info_data)
 
 
 def test_create_catalog_info(base_catalog_info_data, catalog_info_data):

@@ -38,7 +38,7 @@ def create_catalog_info(keywords: dict, catalog_type: str = None) -> BaseCatalog
         ci_class = IndexCatalogInfo
     elif catalog_type == CatalogType.MARGIN:
         ci_class = MarginCacheCatalogInfo
-    else:
+    else:  # pragma: no cover
         raise NotImplementedError(f"Unhandled catalog type: {catalog_type}")
 
     catalog_info_keywords = {}
