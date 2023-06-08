@@ -7,10 +7,8 @@ import yaml
 from typing_extensions import Self
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.catalog.dataset.catalog_info_factory import (
-    create_catalog_info,
-    from_catalog_dir,
-)
+from hipscat.catalog.dataset.catalog_info_factory import (create_catalog_info,
+                                                          from_catalog_dir)
 from hipscat.io import file_io
 
 
@@ -134,9 +132,9 @@ class AlmanacCatalogInfo:
             "description": self.description,
             "catalog_info": self.catalog_info,
         }
-        if self.primary:
+        if self.get_primary_text():
             args["primary"] = self.primary
-        if self.join:
+        if self.get_join_text():
             args["join"] = self.join
         if self.version:
             args["version"] = self.version

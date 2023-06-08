@@ -147,7 +147,20 @@ def test_almanac_exceptions(test_data_dir):
     with pytest.raises(ValueError, match="foo"):
         Almanac(include_default_dir=False, dirs=bad_typed_file)
 
-    bad_path_file = os.path.join(test_data_dir, "almanac_exception", "bad_path.yml")
+    bad_primary_path_file = os.path.join(
+        test_data_dir, "almanac_exception", "bad_primary_path.yml"
+    )
 
     with pytest.raises(ValueError, match="/does/not/exist"):
-        Almanac(include_default_dir=False, dirs=bad_path_file)
+        Almanac(include_default_dir=False, dirs=bad_primary_path_file)
+
+    bad_catalog_path_file = os.path.join(
+        test_data_dir, "almanac_exception", "bad_catalog_path.yml"
+    )
+
+    bad_links = Almanac(
+        include_default_dir=False, dirs=[bad_primary_path_file, bad_catalog_path_file]
+    )
+    assert len(bad_links.catalogs()) == 2
+    with pytest.raises(FileNotFoundError):
+        bad_links.get_catalog("non_existent")
