@@ -3,44 +3,16 @@ import json
 
 import pytest
 
-from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
+from hipscat.catalog.source_catalog.source_catalog_info import \
+    SourceCatalogInfo
 from hipscat.io import file_io
-
-# pylint: disable=missing-function-docstring, redefined-outer-name
-
-
-@pytest.fixture
-def source_catalog_info() -> dict:
-    return {
-        "catalog_name": "test_source",
-        "catalog_type": "source",
-        "total_rows": 100,
-        "epoch": "J2000",
-        "ra_column": "source_ra",
-        "dec_column": "source_dec",
-    }
-
-
-@pytest.fixture
-def source_catalog_info_with_extra() -> dict:
-    return {
-        "catalog_name": "test_source",
-        "catalog_type": "source",
-        "total_rows": 100,
-        "epoch": "J2000",
-        "ra_column": "source_ra",
-        "dec_column": "source_dec",
-        "primary_catalog": "test_name",
-        "mjd_column": "mjd",
-        "band_column": "band",
-        "mag_column": "mag",
-        "mag_err_column": ""
-    }
 
 
 def test_source_catalog_info(
-    source_catalog_info, source_catalog_info_with_extra, assert_catalog_info_matches_dict
+    source_catalog_info,
+    source_catalog_info_with_extra,
+    assert_catalog_info_matches_dict,
 ):
     info = SourceCatalogInfo(**source_catalog_info)
     assert_catalog_info_matches_dict(info, source_catalog_info)

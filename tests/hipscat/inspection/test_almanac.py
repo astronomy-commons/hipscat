@@ -4,17 +4,6 @@ import pytest
 
 from hipscat.inspection.almanac import Almanac
 
-# pylint: disable=redefined-outer-name
-
-
-@pytest.fixture
-def default_almanac(almanac_dir, test_data_dir):
-    """Set up default environment variables and fetch default almanac data."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
-    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
-
-    return Almanac()
-
 
 def test_default(almanac_dir, test_data_dir):
     """Test loading from a default directory"""

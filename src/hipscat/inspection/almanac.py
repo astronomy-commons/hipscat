@@ -1,5 +1,6 @@
 import glob
 import os
+from typing import List
 
 import pandas as pd
 import yaml
@@ -60,10 +61,6 @@ class Almanac:
                 with open(file, "r", encoding="utf-8") as file_handle:
                     catalog_info = AlmanacCatalogInfo(**yaml.safe_load(file_handle))
                     catalog_info.namespace = namespace
-                    ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
-                    catalog_info.catalog_path = os.path.expandvars(
-                        catalog_info.catalog_path
-                    )
                     if namespace:
                         full_name = f"{namespace}:{catalog_info.catalog_name}"
                     else:
@@ -76,7 +73,7 @@ class Almanac:
                     self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
 
     def _init_catalog_links(self):
-        for entry_name, catalog_entry in self.entries.items():
+        for catalog_entry in self.entries.values():
             if catalog_entry.catalog_type == CatalogType.OBJECT:
                 pass
             elif catalog_entry.catalog_type == CatalogType.SOURCE:
@@ -114,6 +111,11 @@ class Almanac:
     def _get_linked_catalog(
         self, linked_text, node_type, link_type, catalog_name, namespace
     ):
+        """Find a catalog, either by original path, expanded path, raw name, or namespaced-name.
+
+        Raises:
+            ValueError: if catalog is not found in almanac
+        """
         resolved_path = os.path.expandvars(linked_text)
         if linked_text in self.dir_to_catalog_name:
             linked_text = self.dir_to_catalog_name[linked_text]
@@ -129,9 +131,19 @@ class Almanac:
                 )
         return self.entries[resolved_name]
 
-    def catalogs(self):
-        """Get names of all the catalogs in the almanac."""
-        return self.entries.keys()
+    def catalogs(self, include_deprecated = False, types: List[str] = None):
+        """Get names of catalogs in the almanac, matching the provided conditions."""
+        selected = []
+        for full_name, catalog_info in self.entries.items():
+            include = True
+            if not include_deprecated and catalog_info.deprecated:
+                include=False
+            if types and catalog_info.catalog_type not in types:
+                include = False
+
+            if include:
+                selected.append(full_name)
+        return selected
 
     def get_almanac_info(self, catalog_name: str) -> AlmanacCatalogInfo:
         """Fetch the almanac info for a single catalog."""

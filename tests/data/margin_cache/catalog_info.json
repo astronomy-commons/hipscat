@@ -1,7 +1,7 @@
 {
-  "catalog_name": "test_margin",
+  "catalog_name": "margin_cache",
   "catalog_type": "margin",
   "total_rows": 100,
-  "primary_catalog": "test_name",
+  "primary_catalog": "catalog",
   "margin_threshold": 0.5
 }
