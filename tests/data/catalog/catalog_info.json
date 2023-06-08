@@ -1,5 +1,5 @@
 {
-  "catalog_name": "test_name",
+  "catalog_name": "catalog",
   "catalog_type": "object",
   "epoch": "J2000",
   "ra_column": "ra",
