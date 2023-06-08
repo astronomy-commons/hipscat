@@ -14,7 +14,7 @@ def test_default(almanac_dir, test_data_dir):
 
     os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
     alms = Almanac(include_default_dir=True)
-    assert len(alms.catalogs()) == 5
+    assert len(alms.catalogs()) == 7
 
     os.environ.pop("HIPSCAT_ALMANAC_DIR")
     alms = Almanac(include_default_dir=True)
@@ -29,7 +29,7 @@ def test_non_default(almanac_dir, test_data_dir):
     assert len(alms.catalogs()) == 0
 
     alms = Almanac(include_default_dir=False, dirs=almanac_dir)
-    assert len(alms.catalogs()) == 5
+    assert len(alms.catalogs()) == 7
 
 
 def test_namespaced(almanac_dir, test_data_dir):
@@ -44,13 +44,13 @@ def test_namespaced(almanac_dir, test_data_dir):
         include_default_dir=True,
         dirs={"custom": almanac_dir},
     )
-    assert len(alms.catalogs()) == 10
+    assert len(alms.catalogs()) == 14
 
     alms = Almanac(
         include_default_dir=False,
         dirs={"custom": almanac_dir, "custom2": almanac_dir},
     )
-    assert len(alms.catalogs()) == 10
+    assert len(alms.catalogs()) == 14
 
 
 def test_linked_catalogs(default_almanac):

@@ -1,5 +1,3 @@
-import pytest
-
 from hipscat.inspection.almanac import Almanac
 from hipscat.inspection.almanac_catalog_info import AlmanacCatalogInfo
 
@@ -11,6 +9,7 @@ def test_from_catalog_dir(small_sky_dir):
 
 
 def test_write_to_file(tmp_path, small_sky_dir):
+    """Write out the almanac to file and make sure we can read it again."""
     almanac_info = AlmanacCatalogInfo.from_catalog_dir(small_sky_dir)
     assert almanac_info.catalog_name == "small_sky"
 
