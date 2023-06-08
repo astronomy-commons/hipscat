@@ -61,7 +61,9 @@ class Almanac:
                     catalog_info = AlmanacCatalogInfo(**yaml.safe_load(file_handle))
                     catalog_info.namespace = namespace
                     ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
-                    catalog_info.catalog_path = os.path.expandvars(catalog_info.catalog_path)
+                    catalog_info.catalog_path = os.path.expandvars(
+                        catalog_info.catalog_path
+                    )
                     if namespace:
                         full_name = f"{namespace}:{catalog_info.catalog_name}"
                     else:
@@ -112,10 +114,10 @@ class Almanac:
     def _get_linked_catalog(
         self, linked_text, node_type, link_type, catalog_name, namespace
     ):
-        resolved_path =  os.path.expandvars(linked_text)
+        resolved_path = os.path.expandvars(linked_text)
         if linked_text in self.dir_to_catalog_name:
             linked_text = self.dir_to_catalog_name[linked_text]
-        elif  resolved_path in self.dir_to_catalog_name:
+        elif resolved_path in self.dir_to_catalog_name:
             linked_text = self.dir_to_catalog_name[resolved_path]
 
         resolved_name = linked_text
@@ -131,10 +133,12 @@ class Almanac:
         """Get names of all the catalogs in the almanac."""
         return self.entries.keys()
 
-    def get_almanac_info(self, catalog_name:str) -> AlmanacCatalogInfo:
+    def get_almanac_info(self, catalog_name: str) -> AlmanacCatalogInfo:
         """Fetch the almanac info for a single catalog."""
         return self.entries[catalog_name]
-    
-    def get_catalog(self, catalog_name:str) -> Dataset:
+
+    def get_catalog(self, catalog_name: str) -> Dataset:
         """Fetch the fully-populated hipscat metadata for the catalog name."""
-        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path)
+        return Dataset.read_from_hipscat(
+            self.get_almanac_info(catalog_name=catalog_name).catalog_path
+        )

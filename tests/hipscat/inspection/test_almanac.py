@@ -6,6 +6,7 @@ from hipscat.inspection.almanac import Almanac
 
 # pylint: disable=redefined-outer-name
 
+
 @pytest.fixture
 def default_almanac(almanac_dir, test_data_dir):
     """Set up default environment variables and fetch default almanac data."""
@@ -13,6 +14,7 @@ def default_almanac(almanac_dir, test_data_dir):
     os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
 
     return Almanac()
+
 
 def test_default(almanac_dir, test_data_dir):
     """Test loading from a default directory"""
@@ -61,10 +63,13 @@ def test_namespaced(almanac_dir, test_data_dir):
     )
     assert len(alms.catalogs()) == 10
 
+
 def test_linked_catalogs(default_almanac):
     """Check that read almanac entries are fully linked to one another."""
 
-    association_almanac = default_almanac.get_almanac_info("small_sky_to_small_sky_order1")
+    association_almanac = default_almanac.get_almanac_info(
+        "small_sky_to_small_sky_order1"
+    )
     assert association_almanac.catalog_name == "small_sky_to_small_sky_order1"
 
     primary_almanac = association_almanac.primary_link
@@ -78,6 +83,7 @@ def test_linked_catalogs(default_almanac):
     assert join_almanac.catalog_name == "small_sky_order1"
     assert len(join_almanac.associations) == 0
     assert len(join_almanac.associations_right) == 1
+
 
 def test_get_catalog(default_almanac):
     """Test that catalogs in almanac really exist (in test directory)"""

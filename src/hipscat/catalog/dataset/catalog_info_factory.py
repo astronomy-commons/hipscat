@@ -1,14 +1,17 @@
 import dataclasses
 
-from hipscat.catalog.association_catalog.association_catalog_info import \
-    AssociationCatalogInfo
+from hipscat.catalog.association_catalog.association_catalog_info import (
+    AssociationCatalogInfo,
+)
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 
 
-def create_catalog_info(keywords: dict, catalog_type: str="object") -> BaseCatalogInfo:
-    """Generate a typed catalog info object from the type specified explicitly or using ``catalog_type`` keyword. """
+def create_catalog_info(
+    keywords: dict, catalog_type: str = "object"
+) -> BaseCatalogInfo:
+    """Generate a typed catalog info object from the type specified explicitly or using ``catalog_type`` keyword."""
 
     if not catalog_type:
         if "catalog_type" not in keywords.keys():
@@ -20,7 +23,7 @@ def create_catalog_info(keywords: dict, catalog_type: str="object") -> BaseCatal
 
     if catalog_type not in CATALOG_TYPES:
         raise ValueError(f"Unknown catalog type: {catalog_type}")
-    
+
     ci_class = None
 
     if catalog_type == CatalogType.OBJECT or catalog_type == CatalogType.SOURCE:

@@ -9,13 +9,13 @@ from hipscat.catalog.dataset.catalog_info_factory import create_catalog_info
 
 @dataclass
 class AlmanacCatalogInfo:
-    file_path: str=""
+    file_path: str = ""
     namespace: str = ""
     catalog_path: str = ""
     catalog_name: str = ""
     catalog_type: str = ""
-    primary: str=""
-    join: str=""
+    primary: str = ""
+    join: str = ""
     primary_link: Self = None
     join_link: Self = None
     sources: List[Self] = field(default_factory=list)
@@ -27,13 +27,12 @@ class AlmanacCatalogInfo:
 
     creators: List[str] = field(default_factory=list)
     description: str = ""
-    version: str=""
-    deprecated: str=""
+    version: str = ""
+    deprecated: str = ""
 
     catalog_info: dict = field(default_factory=dict)
 
     catalog_info_object: BaseCatalogInfo = None
-
 
     ## TODO - general catalog info (e.g. BaseCatalogInfo)
 
