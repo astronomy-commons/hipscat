@@ -3,11 +3,13 @@ import os
 from dataclasses import dataclass, field
 from typing import List
 
+import yaml
 from typing_extensions import Self
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.catalog.dataset.catalog_info_factory import (create_catalog_info,
                                                           from_catalog_dir)
+from hipscat.io import file_io
 
 
 @dataclass
@@ -48,15 +50,73 @@ class AlmanacCatalogInfo:
         ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
         self.catalog_path = os.path.expandvars(self.catalog_path)
 
+    @staticmethod
+    def get_default_dir() -> str:
+        """Fetch the default directory for environment variables.
+
+        This is set via the environment variable: HIPSCAT_ALMANAC_DIR
+
+        To set this in a linux-like environment, use a command like:
+
+            export HIPSCAT_ALMANAC_DIR=/data/path/to/almanacs
+
+        This will also attempt to expand any environment variables WITHIN the default
+        directory environment variable. This can be useful in cases where:
+
+            $HIPSCAT_ALMANAC_DIR=$HIPSCAT_DEFAULT_DIR/almanacs/
+        """
+        default_dir = os.getenv("HIPSCAT_ALMANAC_DIR", "")
+        if default_dir:
+            default_dir = os.path.expandvars(default_dir)
+        return default_dir
+
     @classmethod
     def from_catalog_dir(cls, catalog_base_dir: str) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
         catalog_info = from_catalog_dir(catalog_base_dir=catalog_base_dir)
         args = {
-            "catalog_path":catalog_base_dir,
+            "catalog_path": catalog_base_dir,
             "catalog_name": catalog_info.catalog_name,
             "catalog_type": catalog_info.catalog_type,
-            "catalog_info_object":catalog_info,
+            "catalog_info_object": catalog_info,
             "catalog_info": dataclasses.asdict(catalog_info),
         }
-        return cls(args)
+        return cls(**args)
+
+    def write_to_file(self, directory=None, default_dir=True, fmt="yml"):
+        """Write the almanac to an almanac file"""
+        if default_dir and directory:
+            raise ValueError("Use only one of dir and default_dir")
+
+        if default_dir:
+            directory = AlmanacCatalogInfo.get_default_dir()
+
+        file_path = file_io.append_paths_to_pointer(
+            file_io.get_file_pointer_from_path(directory), f"{self.catalog_name}.{fmt}"
+        )
+        if file_io.does_file_or_directory_exist(file_path):
+            raise ValueError(f"File already exists at path {str(file_path)}")
+
+        args = {
+            "catalog_path": self.catalog_path,
+            "catalog_name": self.catalog_name,
+            "catalog_type": self.catalog_type,
+            "creators": self.creators,
+            "description": self.description,
+            "catalog_info": self.catalog_info,
+        }
+        if self.primary:
+            args["primary"] = self.primary
+        if self.join:
+            args["join"] = self.join
+        if self.version:
+            args["version"] = self.version
+        if self.deprecated:
+            args["deprecated"] = self.deprecated
+
+        if fmt == "yml":
+            encoded_string = yaml.dump(args, sort_keys=False)
+        else:
+            raise ValueError(f"Unsupported file format {fmt}")
+
+        file_io.write_string_to_file(file_path, encoded_string)

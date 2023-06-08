@@ -24,7 +24,7 @@ class Almanac:
 
     def _init_files(self, include_default_dir=True, dirs=None):
         if include_default_dir:
-            default_dir = os.getenv("HIPSCAT_ALMANAC_DIR", "")
+            default_dir = AlmanacCatalogInfo.get_default_dir()
             if default_dir:
                 self._add_files_to_namespace(default_dir)
         if pd.api.types.is_dict_like(dirs):
@@ -77,13 +77,14 @@ class Almanac:
             if catalog_entry.catalog_type == CatalogType.OBJECT:
                 pass
             elif catalog_entry.catalog_type == CatalogType.SOURCE:
-                catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.primary,
-                    "primary",
-                    "source",
-                    catalog_entry.catalog_name,
-                    catalog_entry.namespace,
-                )
+                if catalog_entry.primary:
+                    catalog_entry.primary_link = self._get_linked_catalog(
+                        catalog_entry.primary,
+                        "primary",
+                        "source",
+                        catalog_entry.catalog_name,
+                        catalog_entry.namespace,
+                    )
             elif catalog_entry.catalog_type == CatalogType.ASSOCIATION:
                 catalog_entry.primary_link = self._get_linked_catalog(
                     catalog_entry.primary,
@@ -131,13 +132,13 @@ class Almanac:
                 )
         return self.entries[resolved_name]
 
-    def catalogs(self, include_deprecated = False, types: List[str] = None):
+    def catalogs(self, include_deprecated=False, types: List[str] = None):
         """Get names of catalogs in the almanac, matching the provided conditions."""
         selected = []
         for full_name, catalog_info in self.entries.items():
             include = True
             if not include_deprecated and catalog_info.deprecated:
-                include=False
+                include = False
             if types and catalog_info.catalog_type not in types:
                 include = False
 

@@ -6,10 +6,10 @@ import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo
-from hipscat.catalog.association_catalog.association_catalog_info import \
-    AssociationCatalogInfo
-from hipscat.catalog.association_catalog.partition_join_info import \
-    PartitionJoinInfo
+from hipscat.catalog.association_catalog.association_catalog_info import (
+    AssociationCatalogInfo,
+)
+from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.inspection.almanac import Almanac
@@ -93,6 +93,7 @@ def association_catalog_info_data() -> dict:
         "join_catalog": "small_sky_order1",
         "join_column": "id",
     }
+
 
 @pytest.fixture
 def source_catalog_info() -> dict:
@@ -243,6 +244,7 @@ def association_catalog_join_pixels() -> pd.DataFrame:
             PartitionJoinInfo.JOIN_PIXEL_COLUMN_NAME: [44, 45, 46, 47],
         }
     )
+
 
 @pytest.fixture
 def default_almanac(almanac_dir, test_data_dir):
