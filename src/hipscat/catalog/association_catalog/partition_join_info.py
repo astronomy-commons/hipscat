@@ -1,6 +1,7 @@
 import pandas as pd
-from hipscat.io import FilePointer, file_io
 from typing_extensions import Self
+
+from hipscat.io import FilePointer, file_io
 
 
 class PartitionJoinInfo:
