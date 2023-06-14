@@ -80,11 +80,11 @@ def test_catalogs_filters(default_almanac):
                 include_deprecated=True, types=["object", "source"]
             )
         )
-        == 5
+        == 6
     )
 
     ## all active object and source
-    assert len(default_almanac.catalogs(types=["object", "source"])) == 4
+    assert len(default_almanac.catalogs(types=["object", "source"])) == 5
 
     ## non-existent type
     assert len(default_almanac.catalogs(types=["foo"])) == 0
@@ -106,6 +106,27 @@ def test_linked_catalogs_object(default_almanac):
     ## TODO - this could use some more direct API.
     source_catalog = default_almanac.get_catalog(object_almanac.sources[0].catalog_name)
     assert source_catalog.catalog_name == "small_sky_source_catalog"
+
+
+def test_linked_catalogs_source(default_almanac, test_data_dir):
+    """Check that we can access the affiliated catalogs"""
+    source_almanac = default_almanac.get_almanac_info("small_sky_source_catalog")
+    assert len(source_almanac.objects) == 1
+
+    object_almanac = source_almanac.objects[0]
+    assert object_almanac.catalog_name == "small_sky"
+
+    source_almanac = default_almanac.get_almanac_info("small_sky_source_catalog")
+    assert len(source_almanac.objects) == 1
+
+    ## This source catalog has no object catalog, *and that's ok*
+    new_almanac = Almanac(
+        dirs=os.path.join(
+            test_data_dir, "almanac_exception", "standalone_source_catalog.yml"
+        )
+    )
+    source_almanac = new_almanac.get_almanac_info("just_the_small_sky_source_catalog")
+    assert len(source_almanac.objects) == 0
 
 
 def test_linked_catalogs_association(default_almanac):
@@ -162,27 +183,47 @@ def test_get_catalog(default_almanac):
         assert catalog.catalog_name == catalog_name
 
 
-def test_almanac_exceptions(test_data_dir):
-    """Test that we can add duplicate catalogs, so long as we add a namespace."""
-    bad_typed_file = os.path.join(test_data_dir, "almanac_exception", "bad_type.yml")
-
-    with pytest.raises(ValueError, match="foo"):
-        Almanac(include_default_dir=False, dirs=bad_typed_file)
-
-    bad_primary_path_file = os.path.join(
-        test_data_dir, "almanac_exception", "bad_primary_path.yml"
-    )
-
-    with pytest.raises(ValueError, match="/does/not/exist"):
-        Almanac(include_default_dir=False, dirs=bad_primary_path_file)
-
+def test_get_catalog_exceptions(test_data_dir):
+    """Test that we can create almanac entries, where catalogs might not exist."""
     bad_catalog_path_file = os.path.join(
         test_data_dir, "almanac_exception", "bad_catalog_path.yml"
     )
 
-    bad_links = Almanac(
-        include_default_dir=False, dirs=[bad_primary_path_file, bad_catalog_path_file]
-    )
-    assert len(bad_links.catalogs()) == 2
+    bad_links = Almanac(include_default_dir=False, dirs=bad_catalog_path_file)
+    assert len(bad_links.catalogs()) == 1
     with pytest.raises(FileNotFoundError):
         bad_links.get_catalog("non_existent")
+
+
+@pytest.mark.parametrize(
+    "file_name,expected_error_match",
+    [
+        ("bad_type.yml", "foo"),
+        (
+            "association_missing_primary.yml",
+            "association table .* missing primary catalog",
+        ),
+        (
+            "association_missing_join.yml",
+            "association table .* missing join catalog",
+        ),
+        (
+            "index_missing_primary.yml",
+            "index table .* missing primary catalog",
+        ),
+        (
+            "margin_missing_primary.yml",
+            "margin table .* missing primary catalog",
+        ),
+        (
+            "bad_primary_path.yml",
+            "source catalog .* missing object catalog /does/not/exist",
+        ),
+    ],
+)
+def test_almanac_creation(test_data_dir, file_name, expected_error_match):
+    """Test that we throw exceptions, where bad almanac data or links exist in the files."""
+    bad_links_file = os.path.join(test_data_dir, "almanac_exception", file_name)
+
+    with pytest.raises(ValueError, match=expected_error_match):
+        Almanac(dirs=bad_links_file)

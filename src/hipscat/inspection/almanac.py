@@ -10,10 +10,27 @@ from hipscat.inspection.almanac_info import AlmanacInfo
 
 
 class Almanac:
-    """Single instance of an almanac, and available catalogs within namespaces"""
+    """Single instance of an almanac, and available catalogs within namespaces
+
+    Params:
+        include_default_dir:
+            include directory indicated in HIPSCAT_ALMANAC_DIR
+            environment variable. see AlmanacInfo.get_default_dir
+        dirs:
+            additional directories to look for almanac files in. we support a
+            few types of input, with different behaviors:
+
+            - ``str`` - a single directory
+            - ``list[str]`` - multiple directories
+            - ``dict[str:str]`` / ``dict[str:list[str]]`` - namespace
+              dictionary. for each key in the dictionary, we put all almanac
+              entries under a namespace. this is useful if you have name
+              collisions e.g. between multiple surveys or user-provided
+              catalogs.
+    """
 
     def __init__(self, include_default_dir=True, dirs=None):
-        """Create new almanac"""
+        """Create new almanac."""
         self.files = {}
         self.entries = {}
         self.dir_to_catalog_name = {}
@@ -22,6 +39,15 @@ class Almanac:
         self._init_catalog_links()
 
     def _init_files(self, include_default_dir=True, dirs=None):
+        """Create a list of all the almanac files we want to add to this instance.
+
+        Each almanac file corresponds to a single catalog.
+
+        Args:
+            include_default_dir: include directory indicated in HIPSCAT_ALMANAC_DIR
+                environment variable. see AlmanacInfo.get_default_dir
+            dirs: additional directories to look for almanac files in
+        """
         if include_default_dir:
             default_dir = AlmanacInfo.get_default_dir()
             if default_dir:
@@ -35,7 +61,13 @@ class Almanac:
             self._add_files_to_namespace(dirs)
 
     def _add_files_to_namespace(self, directory, namespace=""):
-        """Get yaml files within a directory or list of directories."""
+        """Get almanac files within a directory or list of directories.
+
+        Args:
+            directory: directory to scan
+            namespace: if provided, files in this directory will be in their
+                own namespace in the almanac
+        """
         if not pd.api.types.is_list_like(directory):
             directory = [directory]
 
@@ -55,6 +87,8 @@ class Almanac:
             self.files[namespace] = files
 
     def _init_catalog_objects(self):
+        """Create (unlinked) almanac info objects for all the files found
+        in the previous steps."""
         for namespace, files in self.files.items():
             for file in files:
                 catalog_info = AlmanacInfo.from_file(file)
@@ -71,72 +105,108 @@ class Almanac:
                 self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
 
     def _init_catalog_links(self):
+        """Initialize the links between almanac catalogs.
+
+        For each type of link (e.g. primary or join), look for the catalog in
+        the almanac, using whatever text we have. If found, add the object
+        to the almanac info as a pointer. Additionally, add the reference to
+        the linked object, so catalogs know about each other from either side.
+        """
         for catalog_entry in self.entries.values():
             if catalog_entry.catalog_type == CatalogType.OBJECT:
+                ## Object currently has no links that start in the catalog.
                 pass
             elif catalog_entry.catalog_type == CatalogType.SOURCE:
-                catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.primary,
-                    "primary",
-                    "source",
-                    catalog_entry.catalog_name,
-                    catalog_entry.namespace,
-                )
-                if catalog_entry.primary_link:
-                    catalog_entry.objects.append(catalog_entry.primary_link)
-                    catalog_entry.primary_link.sources.append(catalog_entry)
+                ## Source catalogs MAY indicate their primary object catalog.
+                if catalog_entry.primary:
+                    object_catalog = self._get_linked_catalog(
+                        catalog_entry.primary, catalog_entry.namespace
+                    )
+                    if not object_catalog:
+                        raise ValueError(
+                            f"source catalog {catalog_entry.catalog_name} missing "
+                            f"object catalog {catalog_entry.primary}"
+                        )
+                    catalog_entry.primary_link = object_catalog
+                    catalog_entry.objects.append(object_catalog)
+                    object_catalog.sources.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.ASSOCIATION:
-                catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.primary,
-                    "primary",
-                    "association",
-                    catalog_entry.catalog_name,
-                    catalog_entry.namespace,
+                ## Association table MUST have a primary and join catalog
+                primary_catalog = self._get_linked_catalog(
+                    catalog_entry.primary, catalog_entry.namespace
                 )
-                catalog_entry.primary_link.associations.append(catalog_entry)
-                catalog_entry.join_link = self._get_linked_catalog(
+                if not primary_catalog:
+                    raise ValueError(
+                        f"association table {catalog_entry.catalog_name} missing "
+                        f"primary catalog {catalog_entry.primary}"
+                    )
+                join_catalog = self._get_linked_catalog(
                     catalog_entry.join,
-                    "join",
-                    "association",
-                    catalog_entry.catalog_name,
                     catalog_entry.namespace,
                 )
-                catalog_entry.join_link.associations_right.append(catalog_entry)
+                if not join_catalog:
+                    raise ValueError(
+                        f"association table {catalog_entry.catalog_name} missing "
+                        f"join catalog {catalog_entry.join}"
+                    )
+
+                catalog_entry.primary_link = primary_catalog
+                primary_catalog.associations.append(catalog_entry)
+
+                catalog_entry.join_link = join_catalog
+                join_catalog.associations_right.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.MARGIN:
-                catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.primary,
-                    "primary",
-                    "margin",
-                    catalog_entry.catalog_name,
-                    catalog_entry.namespace,
+                ## Margin catalogs MUST have a primary catalog
+                primary_catalog = self._get_linked_catalog(
+                    catalog_entry.primary, catalog_entry.namespace
                 )
-                if catalog_entry.primary_link:
-                    catalog_entry.primary_link.margins.append(catalog_entry)
+                if not primary_catalog:
+                    raise ValueError(
+                        f"margin table {catalog_entry.catalog_name} missing "
+                        f"primary catalog {catalog_entry.primary}"
+                    )
+                catalog_entry.primary_link = primary_catalog
+                primary_catalog.margins.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.INDEX:
-                catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.primary,
-                    "primary",
-                    "index",
-                    catalog_entry.catalog_name,
-                    catalog_entry.namespace,
+                ## Index tables MUST have a primary catalog
+                primary_catalog = self._get_linked_catalog(
+                    catalog_entry.primary, catalog_entry.namespace
                 )
-                if catalog_entry.primary_link:
-                    catalog_entry.primary_link.indexes.append(catalog_entry)
+                if not primary_catalog:
+                    raise ValueError(
+                        f"index table {catalog_entry.catalog_name} missing "
+                        f"primary catalog {catalog_entry.primary}"
+                    )
+                catalog_entry.primary_link = primary_catalog
+                primary_catalog.indexes.append(catalog_entry)
             else:  # pragma: no cover
                 raise ValueError(f"Unknown catalog type {catalog_entry.catalog_type}")
 
-    def _get_linked_catalog(
-        self, linked_text, node_type, link_type, catalog_name, namespace
-    ):
-        """Find a catalog, either by original path, expanded path, raw name, or namespaced-name.
+    def _get_linked_catalog(self, linked_text, namespace) -> AlmanacInfo:
+        """Find a catalog to be used for linking catalogs within the almanac.
 
-        Raises:
-            ValueError: if catalog is not found in almanac
+        e.g. for an association table, we will have a primary and join catalog.
+        the association catalog is "receiving" the link of primary catalog info,
+        and a link of join catalog info.
+
+        Args:
+            linked_text: text provided for the linked catalog. this could take
+                a few different forms:
+
+                - empty or None (returns None)
+                - short name of a catalog
+                - namespaced name of a catalog
+                - full path to a catalog base directory
+                - path to a catalog base directory, with environment variables
+            namespace: the namespace in the catalog **receiving** the link.
+                this is used to resolve the linked_text argument, so if you're
+                relying on namespaces, the receiving and linking catalog should
+                be in the same namespace
+        Returns:
+            almanac info for the linked catalog, if found
         """
-        if not linked_text:
-            return None
         resolved_path = os.path.expandvars(linked_text)
-        if linked_text in self.dir_to_catalog_name:
+        if linked_text in self.dir_to_catalog_name:  # pragma: no cover
             linked_text = self.dir_to_catalog_name[linked_text]
         elif resolved_path in self.dir_to_catalog_name:
             linked_text = self.dir_to_catalog_name[resolved_path]
@@ -145,13 +215,20 @@ class Almanac:
         if not resolved_name in self.entries:
             resolved_name = f"{namespace}:{linked_text}"
             if not resolved_name in self.entries:
-                raise ValueError(
-                    f"{link_type} {catalog_name} missing {node_type} catalog {linked_text}"
-                )
+                return None
         return self.entries[resolved_name]
 
     def catalogs(self, include_deprecated=False, types: List[str] = None):
-        """Get names of catalogs in the almanac, matching the provided conditions."""
+        """Get names of catalogs in the almanac, matching the provided conditions.
+
+        Catalogs must meet all criteria provided in order to be returned (e.g.
+        the criteria are ANDED together).
+
+        Args:
+            include_deprecated: include catalogs which contain some text in their
+                ``deprecated`` field.
+            types: include ONLY catalogs within the list of provided types.
+        """
         selected = []
         for full_name, catalog_info in self.entries.items():
             include = True
@@ -169,7 +246,10 @@ class Almanac:
         return self.entries[catalog_name]
 
     def get_catalog(self, catalog_name: str) -> Dataset:
-        """Fetch the fully-populated hipscat metadata for the catalog name."""
+        """Fetch the fully-populated hipscat metadata for the catalog name.
+
+        This will load the ``catalog_info.join`` and other relevant metadata files
+        from disk."""
         return Dataset.read_from_hipscat(
             self.get_almanac_info(catalog_name=catalog_name).catalog_path
         )

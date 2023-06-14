@@ -47,7 +47,7 @@ def create_catalog_info(
     if catalog_type not in CatalogType.all_types():
         raise ValueError(f"Unknown catalog type: {catalog_type}")
 
-    if catalog_type not in CATALOG_TYPE_TO_INFO_CLASS:
+    if catalog_type not in CATALOG_TYPE_TO_INFO_CLASS:  # pragma: no cover
         raise NotImplementedError(f"Unhandled catalog type: {catalog_type}")
     ci_class = CATALOG_TYPE_TO_INFO_CLASS[catalog_type]
     catalog_info_keywords = {}
