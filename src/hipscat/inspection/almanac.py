@@ -6,7 +6,7 @@ import pandas as pd
 
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
-from hipscat.inspection.almanac_catalog_info import AlmanacCatalogInfo
+from hipscat.inspection.almanac_info import AlmanacInfo
 
 
 class Almanac:
@@ -23,7 +23,7 @@ class Almanac:
 
     def _init_files(self, include_default_dir=True, dirs=None):
         if include_default_dir:
-            default_dir = AlmanacCatalogInfo.get_default_dir()
+            default_dir = AlmanacInfo.get_default_dir()
             if default_dir:
                 self._add_files_to_namespace(default_dir)
         if pd.api.types.is_dict_like(dirs):
@@ -57,7 +57,7 @@ class Almanac:
     def _init_catalog_objects(self):
         for namespace, files in self.files.items():
             for file in files:
-                catalog_info = AlmanacCatalogInfo.from_file(file)
+                catalog_info = AlmanacInfo.from_file(file)
                 catalog_info.namespace = namespace
                 if namespace:
                     full_name = f"{namespace}:{catalog_info.catalog_name}"
@@ -76,7 +76,7 @@ class Almanac:
                 pass
             elif catalog_entry.catalog_type == CatalogType.SOURCE:
                 catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.get_primary_text(),
+                    catalog_entry.primary,
                     "primary",
                     "source",
                     catalog_entry.catalog_name,
@@ -87,7 +87,7 @@ class Almanac:
                     catalog_entry.primary_link.sources.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.ASSOCIATION:
                 catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.get_primary_text(),
+                    catalog_entry.primary,
                     "primary",
                     "association",
                     catalog_entry.catalog_name,
@@ -95,7 +95,7 @@ class Almanac:
                 )
                 catalog_entry.primary_link.associations.append(catalog_entry)
                 catalog_entry.join_link = self._get_linked_catalog(
-                    catalog_entry.get_join_text(),
+                    catalog_entry.join,
                     "join",
                     "association",
                     catalog_entry.catalog_name,
@@ -104,7 +104,7 @@ class Almanac:
                 catalog_entry.join_link.associations_right.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.MARGIN:
                 catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.get_primary_text(),
+                    catalog_entry.primary,
                     "primary",
                     "margin",
                     catalog_entry.catalog_name,
@@ -114,7 +114,7 @@ class Almanac:
                     catalog_entry.primary_link.margins.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.INDEX:
                 catalog_entry.primary_link = self._get_linked_catalog(
-                    catalog_entry.get_primary_text(),
+                    catalog_entry.primary,
                     "primary",
                     "index",
                     catalog_entry.catalog_name,
@@ -164,7 +164,7 @@ class Almanac:
                 selected.append(full_name)
         return selected
 
-    def get_almanac_info(self, catalog_name: str) -> AlmanacCatalogInfo:
+    def get_almanac_info(self, catalog_name: str) -> AlmanacInfo:
         """Fetch the almanac info for a single catalog."""
         return self.entries[catalog_name]
 

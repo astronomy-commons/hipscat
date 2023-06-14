@@ -6,14 +6,13 @@ from typing import List
 import yaml
 from typing_extensions import Self
 
+from hipscat.catalog.dataset import catalog_info_factory
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.catalog.dataset.catalog_info_factory import (create_catalog_info,
-                                                          from_catalog_dir)
 from hipscat.io import file_io
 
 
 @dataclass
-class AlmanacCatalogInfo:
+class AlmanacInfo:
     """Container for parsed almanac information."""
 
     file_path: str = ""
@@ -21,8 +20,8 @@ class AlmanacCatalogInfo:
     catalog_path: str = ""
     catalog_name: str = ""
     catalog_type: str = ""
-    primary: str = ""
-    join: str = ""
+    primary: str = None
+    join: str = None
     primary_link: Self = None
     join_link: Self = None
     sources: List[Self] = field(default_factory=list)
@@ -41,30 +40,26 @@ class AlmanacCatalogInfo:
 
     catalog_info_object: BaseCatalogInfo = None
 
-    def __post_init__(
-        self,
-    ):
+    def __post_init__(self):
         if len(self.catalog_info):
-            self.catalog_info_object = create_catalog_info(self.catalog_info)
+            self.catalog_info_object = catalog_info_factory.create_catalog_info(
+                self.catalog_info
+            )
+            if (
+                self.catalog_info
+                and "primary_catalog" in self.catalog_info
+                and not self.primary
+            ):
+                self.primary = self.catalog_info["primary_catalog"]
+            if (
+                self.catalog_info
+                and "join_catalog" in self.catalog_info
+                and not self.join
+            ):
+                self.join = self.catalog_info["join_catalog"]
 
         ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
         self.catalog_path = os.path.expandvars(self.catalog_path)
-
-    def get_primary_text(self) -> str:
-        """Find some text name/path for a primary catalog link, if present"""
-        if self.primary:
-            return self.primary
-        if self.catalog_info and "primary_catalog" in self.catalog_info:
-            return self.catalog_info["primary_catalog"]
-        return None
-
-    def get_join_text(self) -> str:
-        """Find some text name/path for a join catalog link, if present"""
-        if self.join:
-            return self.join
-        if self.catalog_info and "join_catalog" in self.catalog_info:
-            return self.catalog_info["join_catalog"]
-        return None
 
     @staticmethod
     def get_default_dir() -> str:
@@ -89,7 +84,9 @@ class AlmanacCatalogInfo:
     @classmethod
     def from_catalog_dir(cls, catalog_base_dir: str) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
-        catalog_info = from_catalog_dir(catalog_base_dir=catalog_base_dir)
+        catalog_info = catalog_info_factory.from_catalog_dir(
+            catalog_base_dir=catalog_base_dir
+        )
         args = {
             "catalog_path": catalog_base_dir,
             "catalog_name": catalog_info.catalog_name,
@@ -116,7 +113,7 @@ class AlmanacCatalogInfo:
             raise ValueError("Use only one of dir and default_dir")
 
         if default_dir:
-            directory = AlmanacCatalogInfo.get_default_dir()
+            directory = AlmanacInfo.get_default_dir()
 
         file_path = file_io.append_paths_to_pointer(
             file_io.get_file_pointer_from_path(directory), f"{self.catalog_name}.{fmt}"
@@ -132,9 +129,9 @@ class AlmanacCatalogInfo:
             "description": self.description,
             "catalog_info": self.catalog_info,
         }
-        if self.get_primary_text():
+        if self.primary:
             args["primary"] = self.primary
-        if self.get_join_text():
+        if self.join:
             args["join"] = self.join
         if self.version:
             args["version"] = self.version

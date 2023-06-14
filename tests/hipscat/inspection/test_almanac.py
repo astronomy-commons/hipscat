@@ -67,11 +67,13 @@ def test_namespaced(almanac_dir, test_data_dir):
 
 def test_catalogs_filters(default_almanac):
     """Test listing names of catalogs, using filters"""
-    ## all catalogs
+    ## all (non-deprecated) catalogs
     assert len(default_almanac.catalogs()) == 8
 
+    ## **all** catalogs
     assert len(default_almanac.catalogs(include_deprecated=True)) == 9
 
+    ## all object and source (skip association/index/etc)
     assert (
         len(
             default_almanac.catalogs(
@@ -80,9 +82,30 @@ def test_catalogs_filters(default_almanac):
         )
         == 5
     )
+
+    ## all active object and source
     assert len(default_almanac.catalogs(types=["object", "source"])) == 4
 
+    ## non-existent type
     assert len(default_almanac.catalogs(types=["foo"])) == 0
+
+
+def test_linked_catalogs_object(default_almanac):
+    """Check that we can access the affiliated catalogs"""
+    object_almanac = default_almanac.get_almanac_info("small_sky")
+    assert len(object_almanac.sources) == 1
+
+    source_almanac = object_almanac.sources[0]
+    assert source_almanac.catalog_name == "small_sky_source_catalog"
+
+    source_almanac = default_almanac.get_almanac_info(
+        object_almanac.sources[0].catalog_name
+    )
+    assert source_almanac.catalog_name == "small_sky_source_catalog"
+
+    ## TODO - this could use some more direct API.
+    source_catalog = default_almanac.get_catalog(object_almanac.sources[0].catalog_name)
+    assert source_catalog.catalog_name == "small_sky_source_catalog"
 
 
 def test_linked_catalogs_association(default_almanac):
@@ -134,7 +157,6 @@ def test_get_catalog(default_almanac):
     """Test that catalogs in almanac really exist (in test directory)"""
 
     for catalog_name in default_almanac.catalogs():
-
         catalog = default_almanac.get_catalog(catalog_name)
         assert catalog
         assert catalog.catalog_name == catalog_name

@@ -4,24 +4,24 @@ import os
 import pytest
 
 from hipscat.inspection.almanac import Almanac
-from hipscat.inspection.almanac_catalog_info import AlmanacCatalogInfo
+from hipscat.inspection.almanac_info import AlmanacInfo
 
 
 def test_from_catalog_dir(small_sky_dir):
     """Load from a directory."""
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(small_sky_dir)
+    almanac_info = AlmanacInfo.from_catalog_dir(small_sky_dir)
     assert almanac_info.catalog_name == "small_sky"
 
 
 def test_from_bad_file(association_catalog_partition_join_file):
     """Test failures when loading almanac from invalid files."""
     with pytest.raises(ValueError, match="csv"):
-        AlmanacCatalogInfo.from_file(association_catalog_partition_join_file)
+        AlmanacInfo.from_file(association_catalog_partition_join_file)
 
 
 def test_write_to_file(tmp_path, association_catalog_path):
     """Write out the almanac to file and make sure we can read it again."""
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(association_catalog_path)
+    almanac_info = AlmanacInfo.from_catalog_dir(association_catalog_path)
     assert almanac_info.catalog_name == "small_sky_to_small_sky_order1"
     almanac_info.version = "v0.0.1"
     almanac_info.deprecated = "yes - use something else"
@@ -29,7 +29,7 @@ def test_write_to_file(tmp_path, association_catalog_path):
 
     almanac_info.write_to_file(tmp_path, default_dir=False)
 
-    new_info = AlmanacCatalogInfo.from_file(
+    new_info = AlmanacInfo.from_file(
         os.path.join(tmp_path, "small_sky_to_small_sky_order1.yml")
     )
 
@@ -43,7 +43,7 @@ def test_write_to_file(tmp_path, association_catalog_path):
 
 def test_write_to_file_load_almanac(tmp_path, small_sky_dir):
     """Write out the almanac to file and make sure we can read it again."""
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(small_sky_dir)
+    almanac_info = AlmanacInfo.from_catalog_dir(small_sky_dir)
     assert almanac_info.catalog_name == "small_sky"
 
     almanac_info.write_to_file(tmp_path, default_dir=False)
@@ -55,7 +55,7 @@ def test_write_to_file_load_almanac(tmp_path, small_sky_dir):
 def test_write_to_bad_file(tmp_path, small_sky_dir):
     """Test failure conditions when writing almanac."""
     os.environ["HIPSCAT_ALMANAC_DIR"] = str(tmp_path)
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(small_sky_dir)
+    almanac_info = AlmanacInfo.from_catalog_dir(small_sky_dir)
 
     with pytest.raises(ValueError, match="only one"):
         almanac_info.write_to_file(tmp_path, default_dir=True)
@@ -72,18 +72,18 @@ def test_association_fields(
     association_catalog_path, index_catalog_info_file, small_sky_dir
 ):
     """Test additional text fields tables with primary/join relationships."""
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(association_catalog_path)
+    almanac_info = AlmanacInfo.from_catalog_dir(association_catalog_path)
     assert almanac_info.catalog_name == "small_sky_to_small_sky_order1"
-    assert almanac_info.get_primary_text() == "small_sky"
-    assert almanac_info.get_join_text() == "small_sky_order1"
+    assert almanac_info.primary == "small_sky"
+    assert almanac_info.join == "small_sky_order1"
 
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(index_catalog_info_file)
-    assert almanac_info.get_primary_text() == "catalog"
-    assert almanac_info.get_join_text() is None
+    almanac_info = AlmanacInfo.from_catalog_dir(index_catalog_info_file)
+    assert almanac_info.primary == "catalog"
+    assert almanac_info.join is None
 
-    almanac_info = AlmanacCatalogInfo.from_catalog_dir(small_sky_dir)
-    assert almanac_info.get_primary_text() is None
-    assert almanac_info.get_join_text() is None
+    almanac_info = AlmanacInfo.from_catalog_dir(small_sky_dir)
+    assert almanac_info.primary is None
+    assert almanac_info.join is None
 
 
 ## Commented out -
@@ -91,5 +91,5 @@ def test_association_fields(
 ## their almanac to the default almanac directory
 # def test_add_almanac(source_catalog_info_file):
 #     """Write out the almanac to file and make sure we can read it again."""
-#     almanac_info = AlmanacCatalogInfo.from_catalog_dir(source_catalog_info_file)
+#     almanac_info = AlmanacInfo.from_catalog_dir(source_catalog_info_file)
 #     almanac_info.write_to_file()
