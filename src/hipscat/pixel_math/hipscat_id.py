@@ -45,7 +45,7 @@ def compute_hipscat_id(ra_values, dec_values):
     ## We sort to put pixels next to each other that will need to be counted.
     ## This simplifies the counter logic, as we can subtract the index where
     ## we first see the pixel value from the current index to get the offset counter.
-    sort_index = np.argsort(mapped_pixels)
+    sort_index = np.argsort(mapped_pixels, kind="stable")
     mapped_pixels = mapped_pixels[sort_index]
 
     ## Construct the counter.
@@ -62,7 +62,7 @@ def compute_hipscat_id(ra_values, dec_values):
     )
     shifted_pixels = shifted_pixels + offset_counter
 
-    unsort_index = np.argsort(sort_index)
+    unsort_index = np.argsort(sort_index, kind="stable")
     return shifted_pixels[unsort_index]
 
 
