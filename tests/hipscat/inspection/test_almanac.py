@@ -49,7 +49,7 @@ def test_namespaced(almanac_dir, test_data_dir):
     os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
     os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
 
-    with pytest.raises(ValueError, match="Duplicate"):
+    with pytest.warns(match="Duplicate"):
         Almanac(include_default_dir=True, dirs=almanac_dir)
 
     alms = Almanac(
@@ -225,5 +225,5 @@ def test_almanac_creation(test_data_dir, file_name, expected_error_match):
     """Test that we throw exceptions, where bad almanac data or links exist in the files."""
     bad_links_file = os.path.join(test_data_dir, "almanac_exception", file_name)
 
-    with pytest.raises(ValueError, match=expected_error_match):
+    with pytest.warns(match=expected_error_match):
         Almanac(dirs=bad_links_file)

@@ -1,5 +1,6 @@
 import glob
 import os
+import warnings
 from typing import List
 
 import pandas as pd
@@ -98,11 +99,12 @@ class Almanac:
                 else:
                     full_name = catalog_info.catalog_name
                 if full_name in self.entries:
-                    raise ValueError(
+                    warnings.warn(
                         f"Duplicate catalog name ({full_name}). Try using namespaces."
                     )
-                self.entries[full_name] = catalog_info
-                self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
+                else:
+                    self.entries[full_name] = catalog_info
+                    self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
 
     def _init_catalog_links(self):
         """Initialize the links between almanac catalogs.
@@ -123,64 +125,68 @@ class Almanac:
                         catalog_entry.primary, catalog_entry.namespace
                     )
                     if not object_catalog:
-                        raise ValueError(
+                        warnings.warn(
                             f"source catalog {catalog_entry.catalog_name} missing "
                             f"object catalog {catalog_entry.primary}"
                         )
-                    catalog_entry.primary_link = object_catalog
-                    catalog_entry.objects.append(object_catalog)
-                    object_catalog.sources.append(catalog_entry)
+                    else:
+                        catalog_entry.primary_link = object_catalog
+                        catalog_entry.objects.append(object_catalog)
+                        object_catalog.sources.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.ASSOCIATION:
                 ## Association table MUST have a primary and join catalog
                 primary_catalog = self._get_linked_catalog(
                     catalog_entry.primary, catalog_entry.namespace
                 )
                 if not primary_catalog:
-                    raise ValueError(
+                    warnings.warn(
                         f"association table {catalog_entry.catalog_name} missing "
                         f"primary catalog {catalog_entry.primary}"
                     )
+                else:
+                    catalog_entry.primary_link = primary_catalog
+                    primary_catalog.associations.append(catalog_entry)
+
                 join_catalog = self._get_linked_catalog(
                     catalog_entry.join,
                     catalog_entry.namespace,
                 )
                 if not join_catalog:
-                    raise ValueError(
+                    warnings.warn(
                         f"association table {catalog_entry.catalog_name} missing "
                         f"join catalog {catalog_entry.join}"
                     )
-
-                catalog_entry.primary_link = primary_catalog
-                primary_catalog.associations.append(catalog_entry)
-
-                catalog_entry.join_link = join_catalog
-                join_catalog.associations_right.append(catalog_entry)
+                else:
+                    catalog_entry.join_link = join_catalog
+                    join_catalog.associations_right.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.MARGIN:
                 ## Margin catalogs MUST have a primary catalog
                 primary_catalog = self._get_linked_catalog(
                     catalog_entry.primary, catalog_entry.namespace
                 )
                 if not primary_catalog:
-                    raise ValueError(
+                    warnings.warn(
                         f"margin table {catalog_entry.catalog_name} missing "
                         f"primary catalog {catalog_entry.primary}"
                     )
-                catalog_entry.primary_link = primary_catalog
-                primary_catalog.margins.append(catalog_entry)
+                else:
+                    catalog_entry.primary_link = primary_catalog
+                    primary_catalog.margins.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.INDEX:
                 ## Index tables MUST have a primary catalog
                 primary_catalog = self._get_linked_catalog(
                     catalog_entry.primary, catalog_entry.namespace
                 )
                 if not primary_catalog:
-                    raise ValueError(
+                    warnings.warn(
                         f"index table {catalog_entry.catalog_name} missing "
                         f"primary catalog {catalog_entry.primary}"
                     )
-                catalog_entry.primary_link = primary_catalog
-                primary_catalog.indexes.append(catalog_entry)
+                else:                
+                    catalog_entry.primary_link = primary_catalog
+                    primary_catalog.indexes.append(catalog_entry)
             else:  # pragma: no cover
-                raise ValueError(f"Unknown catalog type {catalog_entry.catalog_type}")
+                warnings.warn(f"Unknown catalog type {catalog_entry.catalog_type}")
 
     def _get_linked_catalog(self, linked_text, namespace) -> AlmanacInfo:
         """Find a catalog to be used for linking catalogs within the almanac.
