@@ -6,14 +6,16 @@ import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo
-from hipscat.catalog.association_catalog.association_catalog_info import \
-    AssociationCatalogInfo
-from hipscat.catalog.association_catalog.partition_join_info import \
-    PartitionJoinInfo
+from hipscat.catalog.association_catalog.association_catalog_info import (
+    AssociationCatalogInfo,
+)
+from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
+from hipscat.inspection.almanac import Almanac
 
 DATA_DIR_NAME = "data"
+ALMANAC_DIR_NAME = "almanac"
 SMALL_SKY_DIR_NAME = "small_sky"
 SMALL_SKY_ORDER1_DIR_NAME = "small_sky_order1"
 SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME = "small_sky_to_small_sky_order1"
@@ -25,6 +27,11 @@ TEST_DIR = os.path.dirname(__file__)
 @pytest.fixture
 def test_data_dir():
     return os.path.join(TEST_DIR, DATA_DIR_NAME)
+
+
+@pytest.fixture
+def almanac_dir(test_data_dir):
+    return os.path.join(test_data_dir, ALMANAC_DIR_NAME)
 
 
 @pytest.fixture
@@ -89,6 +96,69 @@ def association_catalog_info_data() -> dict:
 
 
 @pytest.fixture
+def source_catalog_info() -> dict:
+    return {
+        "catalog_name": "test_source",
+        "catalog_type": "source",
+        "total_rows": 100,
+        "epoch": "J2000",
+        "ra_column": "source_ra",
+        "dec_column": "source_dec",
+    }
+
+
+@pytest.fixture
+def source_catalog_info_with_extra() -> dict:
+    return {
+        "catalog_name": "test_source",
+        "catalog_type": "source",
+        "total_rows": 100,
+        "epoch": "J2000",
+        "ra_column": "source_ra",
+        "dec_column": "source_dec",
+        "primary_catalog": "test_name",
+        "mjd_column": "mjd",
+        "band_column": "band",
+        "mag_column": "mag",
+        "mag_err_column": "",
+    }
+
+
+@pytest.fixture
+def margin_cache_catalog_info() -> dict:
+    return {
+        "catalog_name": "test_margin",
+        "catalog_type": "margin",
+        "total_rows": 100,
+        "primary_catalog": "test_name",
+        "margin_threshold": 0.5,
+    }
+
+
+@pytest.fixture
+def index_catalog_info() -> dict:
+    return {
+        "catalog_name": "test_index",
+        "catalog_type": "index",
+        "total_rows": 100,
+        "primary_catalog": "test_name",
+        "indexing_column": "id",
+    }
+
+
+@pytest.fixture
+def index_catalog_info_with_extra() -> dict:
+    return {
+        "catalog_name": "test_index",
+        "catalog_type": "index",
+        "total_rows": 100,
+        "primary_catalog": "test_name",
+        "indexing_column": "id",
+        "extra_columns": ["foo", "bar"],
+    }
+
+
+@pytest.fixture
 def dataset_path(test_data_dir) -> str:
     return os.path.join(test_data_dir, "dataset")
 
@@ -138,9 +208,11 @@ def association_catalog_path(test_data_dir) -> str:
 def association_catalog_info_file(association_catalog_path) -> str:
     return os.path.join(association_catalog_path, "catalog_info.json")
 
+
 @pytest.fixture
 def index_catalog_info_file(test_data_dir) -> str:
     return os.path.join(test_data_dir, "index_catalog", "catalog_info.json")
+
 
 @pytest.fixture
 def margin_cache_catalog_info_file(test_data_dir) -> str:
@@ -172,3 +244,12 @@ def association_catalog_join_pixels() -> pd.DataFrame:
             PartitionJoinInfo.JOIN_PIXEL_COLUMN_NAME: [44, 45, 46, 47],
         }
     )
+
+
+@pytest.fixture
+def default_almanac(almanac_dir, test_data_dir):
+    """Set up default environment variables and fetch default almanac data."""
+    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
+    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
+
+    return Almanac()

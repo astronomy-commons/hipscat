@@ -10,6 +10,9 @@ class Dataset:
     """A base HiPSCat dataset
 
     A base dataset contains a catalog_info metadata file and the data contained in parquet files
+
+    TODO - create factory methods to get appropriately-typed datasets for
+    some catalog info or catalog directory
     """
 
     CatalogInfoClass: Type[BaseCatalogInfo] = BaseCatalogInfo

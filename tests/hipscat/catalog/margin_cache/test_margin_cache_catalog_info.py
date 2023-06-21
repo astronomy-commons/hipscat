@@ -3,22 +3,10 @@ import json
 
 import pytest
 
-from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
+from hipscat.catalog.margin_cache.margin_cache_catalog_info import \
+    MarginCacheCatalogInfo
 from hipscat.io import file_io
-
-# pylint: disable=missing-function-docstring, redefined-outer-name
-
-
-@pytest.fixture
-def margin_cache_catalog_info() -> dict:
-    return {
-        "catalog_name": "test_margin",
-        "catalog_type": "margin",
-        "total_rows": 100,
-        "primary_catalog": "test_name",
-        "margin_threshold": 0.5,
-    }
 
 
 def test_margin_cache_catalog_info(
@@ -26,7 +14,6 @@ def test_margin_cache_catalog_info(
 ):
     info = MarginCacheCatalogInfo(**margin_cache_catalog_info)
     assert_catalog_info_matches_dict(info, margin_cache_catalog_info)
-
 
 
 def test_str(margin_cache_catalog_info):
@@ -37,7 +24,9 @@ def test_str(margin_cache_catalog_info):
     assert str(cat_info) == correct_string
 
 
-def test_read_from_file(margin_cache_catalog_info_file, assert_catalog_info_matches_dict):
+def test_read_from_file(
+    margin_cache_catalog_info_file, assert_catalog_info_matches_dict
+):
     cat_info_fp = file_io.get_file_pointer_from_path(margin_cache_catalog_info_file)
     catalog_info = MarginCacheCatalogInfo.read_from_metadata_file(cat_info_fp)
     for column in [

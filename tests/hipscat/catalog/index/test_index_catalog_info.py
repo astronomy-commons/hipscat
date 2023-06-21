@@ -3,34 +3,9 @@ import json
 
 import pytest
 
-from hipscat.catalog.index.index_catalog_info import IndexCatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
+from hipscat.catalog.index.index_catalog_info import IndexCatalogInfo
 from hipscat.io import file_io
-
-# pylint: disable=missing-function-docstring, redefined-outer-name
-
-
-@pytest.fixture
-def index_catalog_info() -> dict:
-    return {
-        "catalog_name": "test_index",
-        "catalog_type": "index",
-        "total_rows": 100,
-        "primary_catalog": "test_name",
-        "indexing_column": "id",
-    }
-
-
-@pytest.fixture
-def index_catalog_info_with_extra() -> dict:
-    return {
-        "catalog_name": "test_index",
-        "catalog_type": "index",
-        "total_rows": 100,
-        "primary_catalog": "test_name",
-        "indexing_column": "id",
-        "extra_columns": ["foo", "bar"],
-    }
 
 
 def test_index_catalog_info(
