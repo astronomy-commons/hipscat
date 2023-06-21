@@ -182,7 +182,7 @@ class Almanac:
                         f"index table {catalog_entry.catalog_name} missing "
                         f"primary catalog {catalog_entry.primary}"
                     )
-                else:                
+                else:
                     catalog_entry.primary_link = primary_catalog
                     primary_catalog.indexes.append(catalog_entry)
             else:  # pragma: no cover
