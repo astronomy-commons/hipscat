@@ -30,6 +30,9 @@ jobs:
         pip install .
         pip install .[dev]
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: List dependencies
+      run: |
+        pip list
     - name: Run unit tests with pytest
       run: |
         python -m pytest tests
