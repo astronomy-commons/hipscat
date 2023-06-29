@@ -68,11 +68,7 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
 
     ## catalog_info file exists - getting closer
     file_name = os.path.join(catalog_path, "catalog_info.json")
-    with open(
-        file_name,
-        "w",
-        encoding="utf-8",
-    ) as metadata_file:
+    with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write(json.dumps(association_catalog_info_data))
 
     with pytest.raises(FileNotFoundError):

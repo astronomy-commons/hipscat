@@ -68,24 +68,31 @@ def test_get_margin_bounds_and_wcs():
     test_ra3 = 50.61225197
     test_dec3 = 14.4767556
 
-    test_ra = np.array([test_ra1, test_ra2, test_ra3])
-    test_dec = np.array([test_dec1, test_dec2, test_dec3])
-
-    test_sc = SkyCoord(test_ra, test_dec, unit="deg")
+    test_sc = SkyCoord(
+        np.array([test_ra1, test_ra2, test_ra3]), np.array([test_dec1, test_dec2, test_dec3]), unit="deg"
+    )
 
     scale = pm.get_margin_scale(3, 0.1)
     polygon, wcs_margin = pm.get_margin_bounds_and_wcs(3, 4, scale)[0]
 
     assert polygon.area == pytest.approx(756822775.0000424, 0.001)
 
-    x, y = wcs_margin.world_to_pixel(test_sc)
-
-    pc = PixCoord(x, y)
-    checks = polygon.contains(pc)
-
+    coord_x, coord_y = wcs_margin.world_to_pixel(test_sc)
     expected = np.array([False, True, True])
 
-    npt.assert_array_equal(checks, expected)
+    npt.assert_array_equal(polygon.contains(PixCoord(coord_x, coord_y)), expected)
+
+
+def get_checks_for_bounds(bounds, test_sky_coords):
+    """Helper method for getting the check flags for
+    some boundaries and sky coordinates to check."""
+    vals = []
+    for polygon, margin in bounds:
+        coord_x, coord_y = margin.world_to_pixel(test_sky_coords)
+
+        vals.append(polygon.contains(PixCoord(coord_x, coord_y)))
+
+    return np.array(vals).any(axis=0)
 
 
 def test_get_margin_bounds_and_wcs_low_order():
@@ -108,18 +115,9 @@ def test_get_margin_bounds_and_wcs_low_order():
 
     assert len(bounds) == 16
 
-    vals = []
-    for p, w in bounds:
-        x, y = w.world_to_pixel(test_sc)
-
-        pc = PixCoord(x, y)
-        vals.append(p.contains(pc))
-
-    checks = np.array(vals).any(axis=0)
-
     expected = np.array([True, False])
 
-    npt.assert_array_equal(checks, expected)
+    npt.assert_array_equal(get_checks_for_bounds(bounds, test_sc), expected)
 
 
 def test_get_margin_bounds_and_wcs_north_pole():
@@ -134,18 +132,9 @@ def test_get_margin_bounds_and_wcs_north_pole():
 
     test_sc = SkyCoord(test_ra, test_dec, unit="deg")
 
-    vals = []
-    for p, w in bounds:
-        x, y = w.world_to_pixel(test_sc)
-
-        pc = PixCoord(x, y)
-        vals.append(p.contains(pc))
-
-    checks = np.array(vals).any(axis=0)
-
     expected = np.array([False, True, True, True, False])
 
-    npt.assert_array_equal(checks, expected)
+    npt.assert_array_equal(get_checks_for_bounds(bounds, test_sc), expected)
 
 
 def test_get_margin_bounds_and_wcs_south_pole():
@@ -160,18 +149,9 @@ def test_get_margin_bounds_and_wcs_south_pole():
 
     test_sc = SkyCoord(test_ra, test_dec, unit="deg")
 
-    vals = []
-    for p, w in bounds:
-        x, y = w.world_to_pixel(test_sc)
-
-        pc = PixCoord(x, y)
-        vals.append(p.contains(pc))
-
-    checks = np.array(vals).any(axis=0)
-
     expected = np.array([False, True, True, True, False, True])
 
-    npt.assert_array_equal(checks, expected)
+    npt.assert_array_equal(get_checks_for_bounds(bounds, test_sc), expected)
 
 
 def test_get_margin_bounds_and_wcs_ra_rollover():
@@ -186,18 +166,9 @@ def test_get_margin_bounds_and_wcs_ra_rollover():
 
     test_sc = SkyCoord(test_ra, test_dec, unit="deg")
 
-    vals = []
-    for p, w in bounds:
-        x, y = w.world_to_pixel(test_sc)
-
-        pc = PixCoord(x, y)
-        vals.append(p.contains(pc))
-
-    checks = np.array(vals).any(axis=0)
-
     expected = np.array([True, False, True, False, True])
 
-    npt.assert_array_equal(checks, expected)
+    npt.assert_array_equal(get_checks_for_bounds(bounds, test_sc), expected)
 
 
 def test_get_margin_bounds_and_wcs_origin():
@@ -212,18 +183,9 @@ def test_get_margin_bounds_and_wcs_origin():
 
     test_sc = SkyCoord(test_ra, test_dec, unit="deg")
 
-    vals = []
-    for p, w in bounds:
-        x, y = w.world_to_pixel(test_sc)
-
-        pc = PixCoord(x, y)
-        vals.append(p.contains(pc))
-
-    checks = np.array(vals).any(axis=0)
-
     expected = np.array([False, True])
 
-    npt.assert_array_equal(checks, expected)
+    npt.assert_array_equal(get_checks_for_bounds(bounds, test_sc), expected)
 
 
 def test_check_margin_bounds():
@@ -231,10 +193,10 @@ def test_check_margin_bounds():
     scale = pm.get_margin_scale(3, 0.1)
     bounds = pm.get_margin_bounds_and_wcs(3, 4, scale)
 
-    ra = np.array([42.4704538, 56.25, 50.61225197])
-    dec = np.array([1.4593925, 14.49584495, 14.4767556])
+    test_ra = np.array([42.4704538, 56.25, 50.61225197])
+    test_dec = np.array([1.4593925, 14.49584495, 14.4767556])
 
-    checks = pm.check_margin_bounds(ra, dec, bounds)
+    checks = pm.check_margin_bounds(test_ra, test_dec, bounds)
 
     expected = np.array([False, True, True])
 
@@ -246,10 +208,10 @@ def test_check_margin_bounds_multi_poly():
     scale = pm.get_margin_scale(1, 0.1)
     bounds = pm.get_margin_bounds_and_wcs(1, 4, scale)
 
-    ra = np.array([42.4704538, 120.0, 135.0])
-    dec = np.array([1.4593925, 25.0, 19.92530172])
+    test_ra = np.array([42.4704538, 120.0, 135.0])
+    test_dec = np.array([1.4593925, 25.0, 19.92530172])
 
-    checks = pm.check_margin_bounds(ra, dec, bounds)
+    checks = pm.check_margin_bounds(test_ra, test_dec, bounds)
 
     expected = np.array([False, True, True])
 
@@ -262,10 +224,10 @@ def test_check_polar_margin_bounds_north():
     pix = 1
     margin_order = 2
 
-    ra = np.array([89, -179, -45])
-    dec = np.array([89.9, 89.9, 85.0])
+    test_ra = np.array([89, -179, -45])
+    test_dec = np.array([89.9, 89.9, 85.0])
 
-    vals = pm.check_polar_margin_bounds(ra, dec, order, pix, margin_order, 0.1)
+    vals = pm.check_polar_margin_bounds(test_ra, test_dec, order, pix, margin_order, 0.1)
 
     expected = np.array([True, True, False])
 
@@ -278,10 +240,10 @@ def test_check_polar_margin_bounds_south():
     pix = 9
     margin_order = 2
 
-    ra = np.array([89, -179, -45])
-    dec = np.array([-89.9, -89.9, -85.0])
+    test_ra = np.array([89, -179, -45])
+    test_dec = np.array([-89.9, -89.9, -85.0])
 
-    vals = pm.check_polar_margin_bounds(ra, dec, order, pix, margin_order, 0.1)
+    vals = pm.check_polar_margin_bounds(test_ra, test_dec, order, pix, margin_order, 0.1)
 
     expected = np.array([True, True, False])
 
@@ -294,10 +256,10 @@ def test_check_polar_margin_bounds_non_pole():
     pix = 7
     margin_order = 2
 
-    ra = np.array([89, -179, -45])
-    dec = np.array([-89.9, -89.9, -85.0])
+    test_ra = np.array([89, -179, -45])
+    test_dec = np.array([-89.9, -89.9, -85.0])
 
     with pytest.raises(ValueError) as value_error:
-        vals = pm.check_polar_margin_bounds(ra, dec, order, pix, margin_order, 0.1)
+        pm.check_polar_margin_bounds(test_ra, test_dec, order, pix, margin_order, 0.1)
 
     assert str(value_error.value) == "provided healpixel must be polar"

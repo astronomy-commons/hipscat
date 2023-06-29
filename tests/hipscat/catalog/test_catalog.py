@@ -88,11 +88,7 @@ def test_empty_directory(tmp_path):
 
     ## catalog_info file exists - getting closer
     file_name = os.path.join(catalog_path, "catalog_info.json")
-    with open(
-        file_name,
-        "w",
-        encoding="utf-8",
-    ) as metadata_file:
+    with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write('{"catalog_name":"empty", "catalog_type":"source"}')
 
     with pytest.raises(FileNotFoundError):
@@ -100,11 +96,7 @@ def test_empty_directory(tmp_path):
 
     ## partition_info file exists - enough to create a catalog
     file_name = os.path.join(catalog_path, "partition_info.csv")
-    with open(
-        file_name,
-        "w",
-        encoding="utf-8",
-    ) as metadata_file:
+    with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write("foo")
 
     catalog = Catalog.read_from_hipscat(catalog_path)

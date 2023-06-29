@@ -93,9 +93,9 @@ def test_load_csv_to_pandas(small_sky_dir):
 
 
 def test_write_df_to_csv(tmp_path):
-    df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
+    random_df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
     test_file_path = os.path.join(tmp_path, "test.csv")
     test_file_pointer = get_file_pointer_from_path(test_file_path)
-    write_dataframe_to_csv(df, test_file_pointer, index=False)
+    write_dataframe_to_csv(random_df, test_file_pointer, index=False)
     loaded_df = pd.read_csv(test_file_path)
-    pd.testing.assert_frame_equal(loaded_df, df)
+    pd.testing.assert_frame_equal(loaded_df, random_df)
