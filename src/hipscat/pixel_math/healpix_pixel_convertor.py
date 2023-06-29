@@ -17,12 +17,8 @@ def get_healpix_pixel(pixel: HealpixInputTypes) -> HealpixPixel:
 
     if isinstance(pixel, tuple):
         if len(pixel) != 2:
-            raise ValueError(
-                "Tuple must contain two values: HEALPix order and HEALPix pixel number"
-            )
+            raise ValueError("Tuple must contain two values: HEALPix order and HEALPix pixel number")
         return HealpixPixel(order=pixel[0], pixel=pixel[1])
     if isinstance(pixel, HealpixPixel):
         return pixel
-    raise TypeError(
-        "pixel must either be of type `HealpixPixel` or tuple (order, pixel)"
-    )
+    raise TypeError("pixel must either be of type `HealpixPixel` or tuple (order, pixel)")

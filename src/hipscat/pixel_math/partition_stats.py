@@ -56,9 +56,7 @@ def generate_histogram(
     return histogram_result
 
 
-def generate_alignment(
-    histogram, highest_order=10, lowest_order=0, threshold=1_000_000
-):
+def generate_alignment(histogram, highest_order=10, lowest_order=0, threshold=1_000_000):
     """Generate alignment from high order pixels to those of equal or lower order
 
     We may initially find healpix pixels at order 10, but after aggregating up to the pixel
@@ -218,20 +216,14 @@ def compute_pixel_map(histogram, highest_order=10, lowest_order=0, threshold=1_0
         parent_alignment = np.repeat(orders_at_threshold, 4, axis=0)
         orders_at_threshold = [
             parent_order if parent_order is not None else new_order
-            for parent_order, new_order in zip(
-                parent_alignment, new_orders_at_threshold
-            )
+            for parent_order, new_order in zip(parent_alignment, new_orders_at_threshold)
         ]
 
     ## Zip up the orders and the pixel numbers.
     healpix_pixels = np.array(
         [
-            HealpixPixel(order, pixel >> 2 * (highest_order - order))
-            if order is not None
-            else None
-            for order, pixel in zip(
-                orders_at_threshold, np.arange(0, len(orders_at_threshold))
-            )
+            HealpixPixel(order, pixel >> 2 * (highest_order - order)) if order is not None else None
+            for order, pixel in zip(orders_at_threshold, np.arange(0, len(orders_at_threshold)))
         ]
     )
 
@@ -282,9 +274,7 @@ def generate_constant_pixel_map(histogram, constant_healpix_order):
         raise ValueError("histogram is not the right size")
 
     non_zero_indexes = np.nonzero(histogram)[0]
-    healpix_pixels = [
-        HealpixPixel(constant_healpix_order, pixel) for pixel in non_zero_indexes
-    ]
+    healpix_pixels = [HealpixPixel(constant_healpix_order, pixel) for pixel in non_zero_indexes]
 
     value_list = [(histogram[pixel], [pixel]) for pixel in non_zero_indexes]
 

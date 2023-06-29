@@ -29,9 +29,7 @@ def test_write_to_file(tmp_path, association_catalog_path):
 
     almanac_info.write_to_file(tmp_path, default_dir=False)
 
-    new_info = AlmanacInfo.from_file(
-        os.path.join(tmp_path, "small_sky_to_small_sky_order1.yml")
-    )
+    new_info = AlmanacInfo.from_file(os.path.join(tmp_path, "small_sky_to_small_sky_order1.yml"))
 
     assert new_info.catalog_name == almanac_info.catalog_name
 
@@ -68,9 +66,7 @@ def test_write_to_bad_file(tmp_path, small_sky_dir):
         almanac_info.write_to_file(default_dir=True)
 
 
-def test_association_fields(
-    association_catalog_path, index_catalog_info_file, small_sky_dir
-):
+def test_association_fields(association_catalog_path, index_catalog_info_file, small_sky_dir):
     """Test additional text fields tables with primary/join relationships."""
     almanac_info = AlmanacInfo.from_catalog_dir(association_catalog_path)
     assert almanac_info.catalog_name == "small_sky_to_small_sky_order1"

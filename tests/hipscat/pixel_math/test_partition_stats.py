@@ -84,9 +84,7 @@ def test_alignment_lowest_order_too_large():
     """Check that the method raises error when some pixel exceeds the threshold."""
     initial_histogram = hist.empty_histogram(1)
     with pytest.raises(ValueError, match="lowest_order"):
-        hist.generate_alignment(
-            initial_histogram, highest_order=1, lowest_order=2, threshold=20
-        )
+        hist.generate_alignment(initial_histogram, highest_order=1, lowest_order=2, threshold=20)
 
 
 def test_alignment_exceeds_threshold_order2():
@@ -156,16 +154,12 @@ def test_alignment_small_sky_order2():
 def test_alignment_even_sky():
     """Create alignment from an even distribution at order 8"""
     initial_histogram = np.full(hp.order2npix(8), 10)
-    result = hist.generate_alignment(
-        initial_histogram, highest_order=8, threshold=1_000
-    )
+    result = hist.generate_alignment(initial_histogram, highest_order=8, threshold=1_000)
     # everything maps to order 5, given the density
     for mapping in result:
         assert mapping[0] == 5
 
-    result = hist.generate_alignment(
-        initial_histogram, highest_order=8, lowest_order=7, threshold=1_000
-    )
+    result = hist.generate_alignment(initial_histogram, highest_order=8, lowest_order=7, threshold=1_000)
     # everything maps to order 7 (would be 5, but lowest of 7 is enforced)
     for mapping in result:
         assert mapping[0] == 7
@@ -215,19 +209,16 @@ def test_compute_pixel_map_order1():
 def test_compute_pixel_map_even_sky():
     """Create alignment from an even distribution at order 8"""
     initial_histogram = np.full(hp.order2npix(8), 10)
-    result = hist.compute_pixel_map(
-        initial_histogram, highest_order=8, threshold=1_000
-    )
+    result = hist.compute_pixel_map(initial_histogram, highest_order=8, threshold=1_000)
     # everything maps to order 5, given the density
     for mapping in result:
         assert mapping.order == 5
 
-    result = hist.compute_pixel_map(
-        initial_histogram, highest_order=8, lowest_order=7, threshold=1_000
-    )
+    result = hist.compute_pixel_map(initial_histogram, highest_order=8, lowest_order=7, threshold=1_000)
     # everything maps to order 7 (would be 5, but lowest of 7 is enforced)
     for mapping in result:
         assert mapping.order == 7
+
 
 def test_compute_pixel_map_invalid_inputs():
     """Create destination pixel map for small sky at order 1"""
@@ -246,9 +237,7 @@ def test_compute_pixel_map_invalid_inputs():
 
     ## lowest_order too large
     with pytest.raises(ValueError, match="lowest_order"):
-        hist.compute_pixel_map(
-            initial_histogram, highest_order=1, lowest_order=2, threshold=30
-        )
+        hist.compute_pixel_map(initial_histogram, highest_order=1, lowest_order=2, threshold=30)
 
 
 def test_generate_constant_pixel_map():
@@ -257,9 +246,7 @@ def test_generate_constant_pixel_map():
     initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
     expected = {HealpixPixel(0, 11): (131, [11])}
 
-    result = hist.generate_constant_pixel_map(
-        initial_histogram, constant_healpix_order=0
-    )
+    result = hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=0)
     npt.assert_array_equal(result, expected)
 
     initial_histogram = hist.empty_histogram(1)
@@ -271,9 +258,7 @@ def test_generate_constant_pixel_map():
         HealpixPixel(1, 46): (51, [46]),
     }
 
-    result = hist.generate_constant_pixel_map(
-        initial_histogram, constant_healpix_order=1
-    )
+    result = hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=1)
 
     npt.assert_array_equal(result, expected)
 

@@ -20,9 +20,7 @@ class PixelTree:
             12 base HEALPix pixels
     """
 
-    def __init__(
-        self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]
-    ) -> None:
+    def __init__(self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:

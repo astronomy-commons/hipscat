@@ -99,9 +99,7 @@ class Almanac:
                 else:
                     full_name = catalog_info.catalog_name
                 if full_name in self.entries:
-                    warnings.warn(
-                        f"Duplicate catalog name ({full_name}). Try using namespaces."
-                    )
+                    warnings.warn(f"Duplicate catalog name ({full_name}). Try using namespaces.")
                 else:
                     self.entries[full_name] = catalog_info
                     self.dir_to_catalog_name[catalog_info.catalog_path] = full_name
@@ -121,9 +119,7 @@ class Almanac:
             elif catalog_entry.catalog_type == CatalogType.SOURCE:
                 ## Source catalogs MAY indicate their primary object catalog.
                 if catalog_entry.primary:
-                    object_catalog = self._get_linked_catalog(
-                        catalog_entry.primary, catalog_entry.namespace
-                    )
+                    object_catalog = self._get_linked_catalog(catalog_entry.primary, catalog_entry.namespace)
                     if not object_catalog:
                         warnings.warn(
                             f"source catalog {catalog_entry.catalog_name} missing "
@@ -135,9 +131,7 @@ class Almanac:
                         object_catalog.sources.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.ASSOCIATION:
                 ## Association table MUST have a primary and join catalog
-                primary_catalog = self._get_linked_catalog(
-                    catalog_entry.primary, catalog_entry.namespace
-                )
+                primary_catalog = self._get_linked_catalog(catalog_entry.primary, catalog_entry.namespace)
                 if not primary_catalog:
                     warnings.warn(
                         f"association table {catalog_entry.catalog_name} missing "
@@ -161,9 +155,7 @@ class Almanac:
                     join_catalog.associations_right.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.MARGIN:
                 ## Margin catalogs MUST have a primary catalog
-                primary_catalog = self._get_linked_catalog(
-                    catalog_entry.primary, catalog_entry.namespace
-                )
+                primary_catalog = self._get_linked_catalog(catalog_entry.primary, catalog_entry.namespace)
                 if not primary_catalog:
                     warnings.warn(
                         f"margin table {catalog_entry.catalog_name} missing "
@@ -174,9 +166,7 @@ class Almanac:
                     primary_catalog.margins.append(catalog_entry)
             elif catalog_entry.catalog_type == CatalogType.INDEX:
                 ## Index tables MUST have a primary catalog
-                primary_catalog = self._get_linked_catalog(
-                    catalog_entry.primary, catalog_entry.namespace
-                )
+                primary_catalog = self._get_linked_catalog(catalog_entry.primary, catalog_entry.namespace)
                 if not primary_catalog:
                     warnings.warn(
                         f"index table {catalog_entry.catalog_name} missing "
@@ -256,6 +246,4 @@ class Almanac:
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(
-            self.get_almanac_info(catalog_name=catalog_name).catalog_path
-        )
+        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path)

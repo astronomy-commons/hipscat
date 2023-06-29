@@ -38,9 +38,7 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False):
     shutil.rmtree(file_pointer, ignore_errors=ignore_errors)
 
 
-def write_string_to_file(
-    file_pointer: FilePointer, string: str, encoding: str = "utf-8"
-):
+def write_string_to_file(file_pointer: FilePointer, string: str, encoding: str = "utf-8"):
     """Write a string to a text file
 
     Args:
@@ -79,9 +77,7 @@ def load_csv_to_pandas(file_pointer: FilePointer, **kwargs) -> pd.DataFrame:
     return pd.read_csv(file_pointer, **kwargs)
 
 
-def write_dataframe_to_csv(
-    dataframe: pd.DataFrame, file_pointer: FilePointer, **kwargs
-):
+def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: FilePointer, **kwargs):
     """Write a pandas DataFrame to a CSV file
 
     Args:
@@ -102,9 +98,7 @@ def read_parquet_metadata(file_pointer: FilePointer, **kwargs) -> pq.FileMetaDat
     return pq.read_metadata(file_pointer, **kwargs)
 
 
-def write_parquet_metadata(
-    schema: Any, file_pointer: FilePointer, metadata_collector: list = None, **kwargs
-):
+def write_parquet_metadata(schema: Any, file_pointer: FilePointer, metadata_collector: list = None, **kwargs):
     """Write a metadata only parquet file from a schema
 
     Args:
@@ -113,9 +107,7 @@ def write_parquet_metadata(
         metadata_collector: where to collect metadata information
         **kwargs: additional arguments to be passed to pyarrow.parquet.write_metadata
     """
-    pq.write_metadata(
-        schema, file_pointer, metadata_collector=metadata_collector, **kwargs
-    )
+    pq.write_metadata(schema, file_pointer, metadata_collector=metadata_collector, **kwargs)
 
 
 def read_fits_image(map_file_pointer: FilePointer):

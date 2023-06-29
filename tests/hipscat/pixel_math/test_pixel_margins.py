@@ -128,10 +128,7 @@ def test_edge_negative_value():
     with pytest.raises(ValueError) as value_error:
         pm.get_edge(2, 5, -1)
 
-    assert (
-        str(value_error.value)
-        == "edge can only be values between 0 and 7 (see docstring)"
-    )
+    assert str(value_error.value) == "edge can only be values between 0 and 7 (see docstring)"
 
 
 def test_edge_greater_than_7():
@@ -139,10 +136,7 @@ def test_edge_greater_than_7():
     with pytest.raises(ValueError) as value_error:
         pm.get_edge(2, 5, 8)
 
-    assert (
-        str(value_error.value)
-        == "edge can only be values between 0 and 7 (see docstring)"
-    )
+    assert str(value_error.value) == "edge can only be values between 0 and 7 (see docstring)"
 
 
 def test_pixel_is_polar_north():

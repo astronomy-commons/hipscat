@@ -32,9 +32,7 @@ def test_pixel_tree_small_sky(small_sky_catalog, small_sky_pixels):
 
 def test_pixel_tree_small_sky_order1(small_sky_order1_catalog, small_sky_order1_pixels):
     """test pixel tree on small sky order1"""
-    pixel_tree = PixelTreeBuilder.from_partition_info_df(
-        small_sky_order1_catalog.get_pixels()
-    )
+    pixel_tree = PixelTreeBuilder.from_partition_info_df(small_sky_order1_catalog.get_pixels())
     assert_pixel_tree_has_nodes_in_catalog(pixel_tree, small_sky_order1_catalog)
     first_pixel = pixel_tree.get_node(small_sky_order1_pixels[0])
     second_pixel = pixel_tree.get_node(small_sky_order1_pixels[1])
@@ -96,13 +94,9 @@ def test_pixel_builder_retrieve_added_node():
     assert tree_builder.get_node((order, pixel)).parent == tree_builder.root_pixel
     assert tree_builder.get_node((order, pixel)).hp_order == order
     assert tree_builder.get_node((order, pixel)).hp_pixel == pixel
-    assert tree_builder.get_node(HealpixPixel(order, pixel)) == tree_builder.get_node(
-        (order, pixel)
-    )
+    assert tree_builder.get_node(HealpixPixel(order, pixel)) == tree_builder.get_node((order, pixel))
     assert tree_builder[(order, pixel)] == tree_builder.get_node((order, pixel))
-    assert tree_builder[HealpixPixel(order, pixel)] == tree_builder.get_node(
-        (order, pixel)
-    )
+    assert tree_builder[HealpixPixel(order, pixel)] == tree_builder.get_node((order, pixel))
 
 
 def test_pixel_builder_retrieve_none_node():

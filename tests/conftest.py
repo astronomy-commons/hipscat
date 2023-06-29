@@ -6,9 +6,7 @@ import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo
-from hipscat.catalog.association_catalog.association_catalog_info import (
-    AssociationCatalogInfo,
-)
+from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo

@@ -74,14 +74,7 @@ def test_catalogs_filters(default_almanac):
     assert len(default_almanac.catalogs(include_deprecated=True)) == 9
 
     ## all object and source (skip association/index/etc)
-    assert (
-        len(
-            default_almanac.catalogs(
-                include_deprecated=True, types=["object", "source"]
-            )
-        )
-        == 6
-    )
+    assert len(default_almanac.catalogs(include_deprecated=True, types=["object", "source"])) == 6
 
     ## all active object and source
     assert len(default_almanac.catalogs(types=["object", "source"])) == 5
@@ -98,9 +91,7 @@ def test_linked_catalogs_object(default_almanac):
     source_almanac = object_almanac.sources[0]
     assert source_almanac.catalog_name == "small_sky_source_catalog"
 
-    source_almanac = default_almanac.get_almanac_info(
-        object_almanac.sources[0].catalog_name
-    )
+    source_almanac = default_almanac.get_almanac_info(object_almanac.sources[0].catalog_name)
     assert source_almanac.catalog_name == "small_sky_source_catalog"
 
     ## TODO - this could use some more direct API.
@@ -121,9 +112,7 @@ def test_linked_catalogs_source(default_almanac, test_data_dir):
 
     ## This source catalog has no object catalog, *and that's ok*
     new_almanac = Almanac(
-        dirs=os.path.join(
-            test_data_dir, "almanac_exception", "standalone_source_catalog.yml"
-        )
+        dirs=os.path.join(test_data_dir, "almanac_exception", "standalone_source_catalog.yml")
     )
     source_almanac = new_almanac.get_almanac_info("just_the_small_sky_source_catalog")
     assert len(source_almanac.objects) == 0
@@ -132,9 +121,7 @@ def test_linked_catalogs_source(default_almanac, test_data_dir):
 def test_linked_catalogs_association(default_almanac):
     """Check that read almanac entries are fully linked to one another."""
 
-    association_almanac = default_almanac.get_almanac_info(
-        "small_sky_to_small_sky_order1"
-    )
+    association_almanac = default_almanac.get_almanac_info("small_sky_to_small_sky_order1")
     assert association_almanac.catalog_name == "small_sky_to_small_sky_order1"
 
     primary_almanac = association_almanac.primary_link
@@ -185,9 +172,7 @@ def test_get_catalog(default_almanac):
 
 def test_get_catalog_exceptions(test_data_dir):
     """Test that we can create almanac entries, where catalogs might not exist."""
-    bad_catalog_path_file = os.path.join(
-        test_data_dir, "almanac_exception", "bad_catalog_path.yml"
-    )
+    bad_catalog_path_file = os.path.join(test_data_dir, "almanac_exception", "bad_catalog_path.yml")
 
     bad_links = Almanac(include_default_dir=False, dirs=bad_catalog_path_file)
     assert len(bad_links.catalogs()) == 1

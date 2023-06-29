@@ -48,9 +48,7 @@ class PixelNode:
             if parent is None:
                 raise ValueError("Inner and leaf nodes must have a parent")
             if pixel.order < 0 or pixel.pixel < 0:
-                raise ValueError(
-                    "Inner and leaf nodes must have an order and pixel number >= 0"
-                )
+                raise ValueError("Inner and leaf nodes must have an order and pixel number >= 0")
 
         if parent is not None and parent.hp_order != pixel.order - 1:
             raise ValueError("Parent node must be at order one less than current node")
@@ -90,16 +88,12 @@ class PixelNode:
             OverflowError: The node already has the maximum amount of children
         """
         if not child.parent == self:
-            raise ValueError(
-                "Child node to add must have the node it is adding to as its parent"
-            )
+            raise ValueError("Child node to add must have the node it is adding to as its parent")
 
         if len(self.children) >= self._NODE_TYPE_MAX_CHILDREN[self.node_type]:
             raise OverflowError("Node already has the maximum amount of children")
 
-        insert_index = bisect(
-            list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel
-        )
+        insert_index = bisect(list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel)
         self.children.insert(insert_index, child)
 
     def get_all_leaf_descendants(self) -> List[PixelNode]:

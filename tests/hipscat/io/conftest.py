@@ -40,8 +40,7 @@ def assert_text_file_matches():
         ), f"files not the same length ({len(contents)} vs {len(expected_lines)})"
         for i, expected in enumerate(expected_lines):
             assert re.match(expected, contents[i]), (
-                f"files do not match at line {i+1} "
-                f"(actual: [{contents[i]}] vs expected: [{expected}])"
+                f"files do not match at line {i+1} " f"(actual: [{contents[i]}] vs expected: [{expected}])"
             )
 
         metadata_file.close()

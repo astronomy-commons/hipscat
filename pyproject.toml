@@ -62,3 +62,11 @@ write_to = "src/hipscat/_version.py"
 
 [tool.coverage.run]
 omit=["src/hipscat/_version.py"]
+
+[tool.black]
+line-length = 110
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 110

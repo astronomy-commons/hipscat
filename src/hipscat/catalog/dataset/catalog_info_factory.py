@@ -1,16 +1,12 @@
 import dataclasses
 from typing import Optional
 
-from hipscat.catalog.association_catalog.association_catalog_info import (
-    AssociationCatalogInfo,
-)
+from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.catalog.index.index_catalog_info import IndexCatalogInfo
-from hipscat.catalog.margin_cache.margin_cache_catalog_info import (
-    MarginCacheCatalogInfo,
-)
+from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCatalogInfo
 from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
 from hipscat.io import FilePointer, file_io, paths
 
@@ -24,9 +20,7 @@ CATALOG_TYPE_TO_INFO_CLASS = {
 """Map of catalog types to their expected subclass of BaseCatalogInfo."""
 
 
-def create_catalog_info(
-    keywords: dict, catalog_type: Optional[CatalogType] = None
-) -> BaseCatalogInfo:
+def create_catalog_info(keywords: dict, catalog_type: Optional[CatalogType] = None) -> BaseCatalogInfo:
     """Generate a typed catalog info object from the type specified explicitly or
     using ``catalog_type`` keyword.
 
