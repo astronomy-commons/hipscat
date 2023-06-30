@@ -3,14 +3,15 @@
 import os
 import shutil
 
-import hipscat.io.file_io as file_io
-import hipscat.io.write_metadata as io
-import hipscat.pixel_math as hist
 import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+
+import hipscat.io.file_io as file_io
+import hipscat.io.write_metadata as io
+import hipscat.pixel_math as hist
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
@@ -95,7 +96,9 @@ def test_write_provenance_info(assert_text_file_matches, tmp_path, catalog_info)
         "input_file_names": ["file1", "file2", "file3"],
     }
 
-    io.write_provenance_info(catalog_base_dir=catalog_base_dir, dataset_info=catalog_info, tool_args=tool_args)
+    io.write_provenance_info(
+        catalog_base_dir=catalog_base_dir, dataset_info=catalog_info, tool_args=tool_args
+    )
     metadata_filename = os.path.join(catalog_base_dir, "provenance_info.json")
     assert_text_file_matches(expected_lines, metadata_filename)
 
@@ -144,9 +147,7 @@ def test_write_partition_info_float(assert_text_file_matches, tmp_path):
     assert_text_file_matches(expected_lines, metadata_filename)
 
 
-def test_write_parquet_metadata(
-    tmp_path, small_sky_dir, basic_catalog_parquet_metadata
-):
+def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_metadata):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = os.path.join(tmp_path, "catalog")
     shutil.copytree(
@@ -154,9 +155,7 @@ def test_write_parquet_metadata(
         catalog_base_dir,
     )
     io.write_parquet_metadata(catalog_base_dir)
-    check_parquet_schema(
-        os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata
-    )
+    check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(catalog_base_dir, "_common_metadata"),
@@ -165,9 +164,7 @@ def test_write_parquet_metadata(
     )
     ## Re-write - should still have the same properties.
     io.write_parquet_metadata(catalog_base_dir)
-    check_parquet_schema(
-        os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata
-    )
+    check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(catalog_base_dir, "_common_metadata"),
@@ -176,9 +173,7 @@ def test_write_parquet_metadata(
     )
 
 
-def test_write_parquet_metadata_order1(
-    tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata
-):
+def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
     temp_path = os.path.join(tmp_path, "catalog")
@@ -219,9 +214,7 @@ def test_write_index_parquet_metadata(tmp_path):
     )
 
     io.write_parquet_metadata(temp_path)
-    check_parquet_schema(
-        os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata
-    )
+    check_parquet_schema(os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(tmp_path, "index", "_common_metadata"),

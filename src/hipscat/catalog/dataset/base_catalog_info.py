@@ -62,6 +62,4 @@ class BaseCatalogInfo:
         fields_dict = dataclasses.asdict(self)
         for field_name in self.required_fields:
             if field_name not in fields_dict or fields_dict[field_name] is None:
-                raise ValueError(
-                    f"{field_name} is required in the Catalog Info and a value must be provided"
-                )
+                raise ValueError(f"{field_name} is required in the Catalog Info and a value must be provided")

@@ -10,9 +10,7 @@ def test_catalog_info(catalog_info_data, assert_catalog_info_matches_dict):
     assert_catalog_info_matches_dict(info, catalog_info_data)
 
 
-def test_catalog_info_defaults(
-    base_catalog_info_data, assert_catalog_info_matches_dict
-):
+def test_catalog_info_defaults(base_catalog_info_data, assert_catalog_info_matches_dict):
     info = CatalogInfo(**base_catalog_info_data)
     actual_catalog_info = base_catalog_info_data.copy()
     actual_catalog_info["epoch"] = "J2000"

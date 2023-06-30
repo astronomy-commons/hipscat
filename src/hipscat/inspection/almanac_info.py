@@ -42,20 +42,10 @@ class AlmanacInfo:
 
     def __post_init__(self):
         if len(self.catalog_info):
-            self.catalog_info_object = catalog_info_factory.create_catalog_info(
-                self.catalog_info
-            )
-            if (
-                self.catalog_info
-                and "primary_catalog" in self.catalog_info
-                and not self.primary
-            ):
+            self.catalog_info_object = catalog_info_factory.create_catalog_info(self.catalog_info)
+            if self.catalog_info and "primary_catalog" in self.catalog_info and not self.primary:
                 self.primary = self.catalog_info["primary_catalog"]
-            if (
-                self.catalog_info
-                and "join_catalog" in self.catalog_info
-                and not self.join
-            ):
+            if self.catalog_info and "join_catalog" in self.catalog_info and not self.join:
                 self.join = self.catalog_info["join_catalog"]
 
         ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
@@ -84,9 +74,7 @@ class AlmanacInfo:
     @classmethod
     def from_catalog_dir(cls, catalog_base_dir: str) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
-        catalog_info = catalog_info_factory.from_catalog_dir(
-            catalog_base_dir=catalog_base_dir
-        )
+        catalog_info = catalog_info_factory.from_catalog_dir(catalog_base_dir=catalog_base_dir)
         args = {
             "catalog_path": catalog_base_dir,
             "catalog_name": catalog_info.catalog_name,

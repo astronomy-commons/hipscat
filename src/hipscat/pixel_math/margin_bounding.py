@@ -46,18 +46,14 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     """
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
-    corners = hp.vec2dir(
-        hp.boundaries(2**pixel_order, pix, step=1, nest=True), lonlat=True
-    )
+    corners = hp.vec2dir(hp.boundaries(2**pixel_order, pix, step=1, nest=True), lonlat=True)
 
     min_ra = corners[0][1]  # western corner
     max_ra = corners[0][3]  # eastern corner
     min_dec = corners[1][2]  # southern corner
     max_dec = corners[1][0]  #  northern corner
 
-    pixel_boundaries = hp.vec2dir(
-        hp.boundaries(2**pixel_order, pix, step=step, nest=True), lonlat=True
-    )
+    pixel_boundaries = hp.vec2dir(hp.boundaries(2**pixel_order, pix, step=step, nest=True), lonlat=True)
 
     # if the eastern corner is less than the western corner, then we've hit the
     # ra rollover and need to normalize to 0 -> 360.
@@ -75,9 +71,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
     translate_lon = centroid_lon - (centroid_lon * scale)
     translate_lat = centroid_lat - (centroid_lat * scale)
 
-    affine_matrix = np.array(
-        [[scale, 0, translate_lon], [0, scale, translate_lat], [0, 0, 1]]
-    )
+    affine_matrix = np.array([[scale, 0, translate_lon], [0, scale, translate_lat], [0, 0, 1]])
 
     # convert the orignal boundary coordinates into
     # a homogenous coordinate space (3-dim)
@@ -147,9 +141,7 @@ def get_margin_bounds_and_wcs(pixel_order, pix, scale, step=10):
         wcs_margin.wcs.cdelt = [pix_size, pix_size]
         wcs_margin.array_shape = [ra_naxis, dec_naxis]
 
-        vertices = SkyCoord(
-            transformed_bounding_box[0], transformed_bounding_box[1], unit="deg"
-        )
+        vertices = SkyCoord(transformed_bounding_box[0], transformed_bounding_box[1], unit="deg")
         sky_region = PolygonSkyRegion(vertices=vertices)
         polygon_region = sky_region.to_pixel(wcs_margin)
         polygons = [(polygon_region, wcs_margin)]
@@ -180,9 +172,7 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
     sky_coords = SkyCoord(r_asc, dec, unit="deg")
     bound_vals = []
     for poly, wcs in poly_and_wcs:
-        x_coords, y_coords = world_coordinate_system.utils.skycoord_to_pixel(
-            sky_coords, wcs
-        )
+        x_coords, y_coords = world_coordinate_system.utils.skycoord_to_pixel(sky_coords, wcs)
         pix_coords = PixCoord(x_coords, y_coords)
         vals = poly.contains(pix_coords)
         bound_vals.append(vals)
@@ -190,9 +180,7 @@ def check_margin_bounds(r_asc, dec, poly_and_wcs):
 
 
 # pylint: disable=too-many-locals
-def check_polar_margin_bounds(
-    r_asc, dec, order, pix, margin_order, margin_threshold, step=1000
-):
+def check_polar_margin_bounds(r_asc, dec, order, pix, margin_order, margin_threshold, step=1000):
     """Given a set of ra and dec values that are around one of the poles,
         determine if they are within `margin_threshold` of a provided
         partition pixel. This method helps us solve the edge cases that
@@ -227,9 +215,7 @@ def check_polar_margin_bounds(
     # get the approximate number of boundary samples to cover a highest_k pixel
     # on the boundary of the main pixel
     boundary_range = int((marg_pix_res / part_pix_res) * step)
-    pixel_boundaries = hp.vec2dir(
-        hp.boundaries(2**order, pix, step=step, nest=True), lonlat=True
-    )
+    pixel_boundaries = hp.vec2dir(hp.boundaries(2**order, pix, step=step, nest=True), lonlat=True)
 
     # to optimize our code, we only want to take boundary samples from the part
     # of the pixel that directly abuts the polar margin pixels.

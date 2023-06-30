@@ -4,8 +4,7 @@ import json
 import pytest
 
 from hipscat.catalog.catalog_type import CatalogType
-from hipscat.catalog.source_catalog.source_catalog_info import \
-    SourceCatalogInfo
+from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
 from hipscat.io import file_io
 
 

@@ -1,8 +1,7 @@
 """Methods for creating partitioned data paths"""
 from __future__ import annotations
 
-from hipscat.io.file_io.file_pointer import (FilePointer,
-                                             append_paths_to_pointer)
+from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
 
 ORDER_DIRECTORY_PREFIX = "Norder"
 DIR_DIRECTORY_PREFIX = "Dir"
@@ -47,9 +46,7 @@ def pixel_directory(
     """
     norder = int(pixel_order)
     if pixel_number is None and directory_number is None:
-        raise ValueError(
-            "One of pixel_number or directory_number is required to create pixel directory"
-        )
+        raise ValueError("One of pixel_number or directory_number is required to create pixel directory")
     if directory_number is not None:
         ndir = directory_number
     else:
@@ -62,9 +59,7 @@ def pixel_directory(
     )
 
 
-def pixel_catalog_file(
-    catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int
-) -> FilePointer:
+def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int) -> FilePointer:
     """Create path *pointer* for a pixel catalog file. This will not create the directory or file.
 
     The catalog file name will take the HiPS standard form of:
@@ -201,15 +196,12 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
             correspond to the token name parts.
     """
     partition_tokens = [
-        f"{name}={value}"
-        for name, value in zip(partition_token_names, partition_token_values)
+        f"{name}={value}" for name, value in zip(partition_token_names, partition_token_values)
     ]
     return append_paths_to_pointer(base_dir, *partition_tokens)
 
 
-def create_hive_parquet_file_name(
-    base_dir, partition_token_names, partition_token_values
-):
+def create_hive_parquet_file_name(base_dir, partition_token_names, partition_token_values):
     """Create path *pointer* for a single parquet with hive partitioning naming.
 
     The file name will have the form of:
@@ -223,8 +215,7 @@ def create_hive_parquet_file_name(
             correspond to the token name parts.
     """
     partition_tokens = [
-        f"{name}={value}"
-        for name, value in zip(partition_token_names, partition_token_values)
+        f"{name}={value}" for name, value in zip(partition_token_names, partition_token_values)
     ]
     return f"{append_paths_to_pointer(base_dir, *partition_tokens)}.parquet"
 

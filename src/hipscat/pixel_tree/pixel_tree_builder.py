@@ -5,11 +5,10 @@ from __future__ import annotations
 import pandas as pd
 
 from hipscat.catalog.partition_info import PartitionInfo
+from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_math.healpix_pixel_convertor import (HealpixInputTypes,
-                                                        get_healpix_pixel)
 
 
 class PixelTreeBuilder:
@@ -102,9 +101,7 @@ class PixelTreeBuilder:
                 PixelNodeType.LEAF,
             )
 
-    def create_node_and_parent_if_not_exist(
-        self, pixel: HealpixInputTypes, node_type: PixelNodeType
-    ):
+    def create_node_and_parent_if_not_exist(self, pixel: HealpixInputTypes, node_type: PixelNodeType):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
         node if parent does not exist
 
@@ -115,9 +112,7 @@ class PixelTreeBuilder:
         """
         pixel = get_healpix_pixel(pixel)
         if self.contains(pixel):
-            raise ValueError(
-                "Incorrectly configured catalog: catalog contains duplicate pixels"
-            )
+            raise ValueError("Incorrectly configured catalog: catalog contains duplicate pixels")
 
         if pixel.order == 0:
             self.create_node(pixel, node_type, self.root_pixel)
@@ -126,23 +121,18 @@ class PixelTreeBuilder:
         parent_order = pixel.order - 1
         parent_pixel = pixel.pixel >> 2
         if not self.contains((parent_order, parent_pixel)):
-            self.create_node_and_parent_if_not_exist(
-                (parent_order, parent_pixel), PixelNodeType.INNER
-            )
+            self.create_node_and_parent_if_not_exist((parent_order, parent_pixel), PixelNodeType.INNER)
 
         parent = self.pixels[parent_order][parent_pixel]
 
         if parent.node_type != PixelNodeType.INNER:
             raise ValueError(
-                "Incorrectly configured catalog: catalog contains pixels defined at "
-                "multiple orders"
+                "Incorrectly configured catalog: catalog contains pixels defined at multiple orders"
             )
 
         self.create_node(pixel, node_type, parent)
 
-    def create_node(
-        self, pixel: HealpixInputTypes, node_type: PixelNodeType, parent: PixelNode
-    ):
+    def create_node(self, pixel: HealpixInputTypes, node_type: PixelNodeType, parent: PixelNode):
         """Create a node and add to `self.pixels` in the tree
 
         Args:

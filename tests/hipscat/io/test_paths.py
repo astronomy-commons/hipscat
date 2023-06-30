@@ -15,9 +15,7 @@ def test_pixel_directory():
 def test_pixel_directory_number():
     """Simple case with sensical inputs"""
     expected = "/foo/Norder=0/Dir=0"
-    result = paths.pixel_directory(
-        "/foo", pixel_order=0, pixel_number=5, directory_number=0
-    )
+    result = paths.pixel_directory("/foo", pixel_order=0, pixel_number=5, directory_number=0)
     assert result == expected
 
     result = paths.pixel_directory("/foo", pixel_order=0, directory_number=0)

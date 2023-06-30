@@ -22,9 +22,7 @@ class HealpixPixel:
             pixel: HEALPix pixel number in NESTED ordering scheme
         """
         if self.order > HIPSCAT_ID_HEALPIX_ORDER:
-            raise ValueError(
-                f"HEALPix order cannot be greater than {HIPSCAT_ID_HEALPIX_ORDER}"
-            )
+            raise ValueError(f"HEALPix order cannot be greater than {HIPSCAT_ID_HEALPIX_ORDER}")
 
     def __str__(self) -> str:
         return f"Order: {self.order}, Pixel: {self.pixel}"

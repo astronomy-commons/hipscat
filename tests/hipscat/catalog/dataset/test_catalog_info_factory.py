@@ -1,18 +1,11 @@
 import pytest
 
-from hipscat.catalog.association_catalog.association_catalog_info import (
-    AssociationCatalogInfo,
-)
+from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.catalog.dataset.catalog_info_factory import (
-    create_catalog_info,
-    from_catalog_dir,
-)
+from hipscat.catalog.dataset.catalog_info_factory import create_catalog_info, from_catalog_dir
 from hipscat.catalog.index.index_catalog_info import IndexCatalogInfo
-from hipscat.catalog.margin_cache.margin_cache_catalog_info import (
-    MarginCacheCatalogInfo,
-)
+from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCatalogInfo
 from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
 
 
@@ -45,9 +38,7 @@ def test_create_catalog_info_association(association_catalog_info_data):
     assert isinstance(catalog_info, AssociationCatalogInfo)
 
 
-def test_create_catalog_info_source(
-    source_catalog_info, source_catalog_info_with_extra
-):
+def test_create_catalog_info_source(source_catalog_info, source_catalog_info_with_extra):
     catalog_info = create_catalog_info(source_catalog_info)
     assert catalog_info.catalog_name == "test_source"
     assert isinstance(catalog_info, BaseCatalogInfo)
@@ -106,9 +97,7 @@ def test_from_catalog_dir_index(index_catalog_info_file):
     assert isinstance(catalog_info, IndexCatalogInfo)
 
 
-def test_from_catalog_dir_association(
-    association_catalog_path, association_catalog_info_file
-):
+def test_from_catalog_dir_association(association_catalog_path, association_catalog_info_file):
     catalog_info = from_catalog_dir(association_catalog_path)
     assert catalog_info.catalog_name == "small_sky_to_small_sky_order1"
     assert isinstance(catalog_info, BaseCatalogInfo)

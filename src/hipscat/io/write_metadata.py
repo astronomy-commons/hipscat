@@ -8,6 +8,7 @@ from importlib.metadata import version
 import numpy as np
 import pandas as pd
 import pyarrow.dataset as pds
+
 from hipscat.io import file_io, paths
 
 
@@ -35,9 +36,7 @@ def write_catalog_info(catalog_base_dir, dataset_info):
     write_json_file(metadata, catalog_info_pointer)
 
 
-def write_provenance_info(
-    catalog_base_dir:file_io.FilePointer, dataset_info, tool_args: dict
-):
+def write_provenance_info(catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
@@ -77,9 +76,7 @@ def write_partition_info(
         "Norder",
         "Npix",
     ]
-    data_frame["num_rows"] = [
-        pixel_info[0] for pixel_info in destination_healpix_pixel_map.values()
-    ]
+    data_frame["num_rows"] = [pixel_info[0] for pixel_info in destination_healpix_pixel_map.values()]
     data_frame["Dir"] = [int(x / 10_000) * 10_000 for x in data_frame["Npix"]]
 
     # Reorder the columns to match full path, and force to integer types.

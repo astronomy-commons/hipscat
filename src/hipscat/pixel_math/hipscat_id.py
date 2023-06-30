@@ -38,9 +38,7 @@ def compute_hipscat_id(ra_values, dec_values):
 
     ## Construct the bit-shifted healpix segment
     value_count = len(ra_values)
-    mapped_pixels = hp.ang2pix(
-        2**HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True
-    )
+    mapped_pixels = hp.ang2pix(2**HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
 
     ## We sort to put pixels next to each other that will need to be counted.
     ## This simplifies the counter logic, as we can subtract the index where
@@ -49,17 +47,13 @@ def compute_hipscat_id(ra_values, dec_values):
     mapped_pixels = mapped_pixels[sort_index]
 
     ## Construct the counter.
-    _, unique_indices, unique_inverse = np.unique(
-        mapped_pixels, return_inverse=True, return_index=True
-    )
+    _, unique_indices, unique_inverse = np.unique(mapped_pixels, return_inverse=True, return_index=True)
     unique_indices = unique_indices.astype(np.uint64)
     boring_number_index = np.arange(value_count, dtype=np.uint64)
     offset_counter = boring_number_index - unique_indices[unique_inverse]
 
     ## Add counter to shifted pixel, and map back to the original, unsorted, values
-    shifted_pixels = mapped_pixels.astype(np.uint64) << (
-        64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER)
-    )
+    shifted_pixels = mapped_pixels.astype(np.uint64) << (64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
     shifted_pixels = shifted_pixels + offset_counter
 
     unsort_index = np.argsort(sort_index, kind="stable")
