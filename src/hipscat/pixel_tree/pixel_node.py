@@ -105,8 +105,14 @@ class PixelNode:
         self.children.insert(insert_index, child)
 
     def remove_child_node(self, node):
+        """Remove a child node from the node. This removes it from the list of children, but does
+        not delete the node
+
+        Args:
+            node: the node object to remove
+        """
         if node not in self.children:
-            raise ValueError(f"Node not a child node, cannot remove")
+            raise ValueError("Node not a child node, cannot remove")
         self.children.remove(node)
 
     def get_all_leaf_descendants(self) -> List[PixelNode]:
