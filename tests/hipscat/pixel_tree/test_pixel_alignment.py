@@ -1,20 +1,38 @@
-from hipscat.pixel_tree.pixel_alignment import PixelAlignment
-from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
+from hipscat.pixel_tree.pixel_alignment import align_trees
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
-def test_pixel_tree_alignment():
-    left_tree_builder = PixelTreeBuilder()
-    left_tree_builder.create_node((0, 0), PixelNodeType.INNER)
-    left_tree_builder.create_node((0, 1), PixelNodeType.LEAF)
-    left_tree_builder.create_node((1, 0), PixelNodeType.LEAF)
-    right_tree_builder = PixelTreeBuilder()
-    right_tree_builder.create_node((0, 0), PixelNodeType.LEAF)
-    right_tree_builder.create_node((0, 1), PixelNodeType.INNER)
-    right_tree_builder.create_node((1, 4), PixelNodeType.LEAF)
-    left_tree = left_tree_builder.build()
-    right_tree = right_tree_builder.build()
-    aligned_tree = PixelAlignment.align_trees(left_tree, right_tree, alignment_type=PixelAlignmentType.INNER)
-    print(aligned_tree.pixel_tree.pixels)
-    print(aligned_tree.pixel_mapping)
+def assert_trees_equal(tree1: PixelTree, tree2: PixelTree):
+    assert len(tree1.pixels) == len(tree2.pixels)
+    for order, nodes_at_order in tree1.pixels.items():
+        assert order in tree2.pixels
+        assert len(tree2.pixels[order]) == len(nodes_at_order)
+        for pixel, node in nodes_at_order.items():
+            assert (order, pixel) in tree2
+            tree2_node = tree2[(order, pixel)]
+            assert node.node_type == tree2_node.node_type
+
+
+def test_pixel_tree_alignment_same_tree(pixel_tree_1):
+    alignment = align_trees(pixel_tree_1, pixel_tree_1, "inner")
+    assert_trees_equal(pixel_tree_1, alignment.pixel_tree)
+
+
+def test_pixel_tree_alignment_inner(pixel_tree_2, pixel_tree_3, aligned_trees_2_3_inner):
+    alignment = align_trees(pixel_tree_2, pixel_tree_3, "inner")
+    assert_trees_equal(alignment.pixel_tree, aligned_trees_2_3_inner)
+
+
+def test_pixel_tree_alignment_left(pixel_tree_2, pixel_tree_3, aligned_trees_2_3_left):
+    alignment = align_trees(pixel_tree_2, pixel_tree_3, "left")
+    assert_trees_equal(alignment.pixel_tree, aligned_trees_2_3_left)
+
+
+def test_pixel_tree_alignment_right(pixel_tree_2, pixel_tree_3, aligned_trees_2_3_right):
+    alignment = align_trees(pixel_tree_2, pixel_tree_3, "right")
+    assert_trees_equal(alignment.pixel_tree, aligned_trees_2_3_right)
+
+
+def test_pixel_tree_alignment_outer(pixel_tree_2, pixel_tree_3, aligned_trees_2_3_outer):
+    alignment = align_trees(pixel_tree_2, pixel_tree_3, "outer")
+    assert_trees_equal(alignment.pixel_tree, aligned_trees_2_3_outer)
