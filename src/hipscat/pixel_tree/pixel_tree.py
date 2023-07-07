@@ -101,13 +101,15 @@ class PixelTree:
         if self.contains(pixel):
             node_in_tree = self.get_node(pixel)
             return node_in_tree.get_all_leaf_descendants()
-        node_in_tree = self.find_first_lower_order_leaf_node_in_tree(pixel)
+        node_in_tree = self._find_first_lower_order_leaf_node_in_tree(pixel)
         if node_in_tree is None:
             return []
         return [node_in_tree]
 
-    def find_first_lower_order_leaf_node_in_tree(self, pixel: HealpixInputTypes) -> PixelNode | None:
-        """todo: write doc"""
+    def _find_first_lower_order_leaf_node_in_tree(
+            self,
+            pixel: HealpixInputTypes
+    ) -> PixelNode | None:
         pixel = get_healpix_pixel(pixel)
         for delta_order in range(1, pixel.order + 1):
             lower_pixel = pixel.convert_to_lower_order(delta_order)

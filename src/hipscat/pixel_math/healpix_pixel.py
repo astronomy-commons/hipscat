@@ -35,6 +35,21 @@ class HealpixPixel:
         return self.__str__()
 
     def convert_to_lower_order(self, delta_order: int) -> HealpixPixel:
+        """Returns the HEALPix pixel that contains the pixel at a lower order
+
+        Args:
+            delta_order: the difference in order to be subtracted from the current order to generate
+                the pixel at a lower order
+
+        Returns:
+            A new `HealpixPixel` at the current order - `delta_order` which contains the current
+            pixel
+
+        Raises:
+            ValueError: If delta_order is greater than the current order, a pixel cannot be
+                generated at a negative order
+
+        """
         if self.order - delta_order < 0:
             raise ValueError("Pixel Order cannot be below zero")
         new_order = self.order - delta_order
@@ -42,6 +57,20 @@ class HealpixPixel:
         return HealpixPixel(new_order, new_pixel)
 
     def convert_to_higher_order(self, delta_order: int) -> List[HealpixPixel]:
+        """Returns a list of HEALPix pixels making up the current pixel at a higher order
+
+        Args:
+            delta_order: the difference in order to be added to the current order to generate the
+                pixels at a higher order
+
+        Returns:
+            A new `HealpixPixel` at the current order - `delta_order` which contains the current
+            pixel
+
+        Raises:
+            ValueError: If delta_order + current order is greater than the maximum HEALPix order,
+                pixels cannot be  generated
+        """
         if self.order + delta_order > HIPSCAT_ID_HEALPIX_ORDER:
             raise ValueError(
                 f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}"

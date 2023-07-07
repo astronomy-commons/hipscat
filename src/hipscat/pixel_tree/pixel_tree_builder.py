@@ -145,7 +145,6 @@ class PixelTreeBuilder:
             pixel: HealpixInputTypes,
             node_type: PixelNodeType,
             parent: PixelNode = None,
-            split_leaf_parent=False,
             replace_existing_node=False,
     ):
         """Create a node and add to `self.pixels` in the tree
@@ -156,9 +155,6 @@ class PixelTreeBuilder:
             node_type: Node type of the node to create
             parent: (Default: None) Parent node of the node to create. If None, will get parent from
                 existing node in tree at correct position based on pixel
-            split_leaf_parent: (Default: False) If True and parent is of node type leaf, the parent
-                node in the tree will be changed to an inner node and leaf nodes for all child
-                pixels will be created.
             replace_existing_node: (Default: False) If True and node at `pixel` already exists,
                 the existing node will be removed and replaced with the new node.
         """
@@ -175,15 +171,10 @@ class PixelTreeBuilder:
                     )
                 parent = self[parent_pixel]
         if parent.node_type == PixelNodeType.LEAF:
-            if not split_leaf_parent:
-                raise ValueError(
-                    f"Cannot create node at {str(pixel)}, "
-                    f"parent node at {str(parent_pixel)} has node type leaf"
-                )
-            parent.node_type = PixelNodeType.INNER
-            for child_pixel in parent.pixel.convert_to_higher_order(delta_order=1):
-                if child_pixel != pixel:
-                    self.create_node(child_pixel, PixelNodeType.LEAF, parent=parent)
+            raise ValueError(
+                f"Cannot create node at {str(pixel)}, "
+                f"parent node at {str(parent_pixel)} has node type leaf"
+            )
         if pixel in self:
             if not replace_existing_node:
                 raise ValueError(
@@ -197,6 +188,17 @@ class PixelTreeBuilder:
         self.pixels[pixel.order][pixel.pixel] = node
 
     def remove_node(self, pixel: HealpixInputTypes):
+        """Remove node in tree
+
+        Removes a node at a specified pixel in the tree. Raises a `ValueError` if no node at
+        specified pixel.
+
+        Args:
+            pixel: HEALPix pixel to remove the node at
+
+        Raises:
+            ValueError: No node in tree at pixel
+        """
         pixel = get_healpix_pixel(pixel)
         if pixel not in self:
             raise ValueError(f"No node at pixel {str(pixel)}")
@@ -206,40 +208,58 @@ class PixelTreeBuilder:
         if len(self.pixels[pixel.order]) == 0:
             self.pixels.pop(pixel.order)
 
-    def add_all_children_from_node(
+    def add_all_descendants_from_node(
             self,
-            tree: PixelTree,
-            pixel: HealpixInputTypes,
-            split_leaf_parent=False,
-            replace_existing_node=False
+            node: PixelNode
     ):
-        pixel = get_healpix_pixel(pixel)
-        nodes_to_add = [child for child in tree[pixel].children]
+        """Adds all descendents from a given node to the current tree
+
+        Used to make the current tree being built mirror the subtree from the specified node in
+        another tree.
+
+        A node at the specified position must exist in the current tree with the correct node type.
+
+        Args:
+            node: The node from another tree to match
+
+        Raises:
+            ValueError: No node exists in the current tree at the same location as the specified
+            node
+        """
+        if node.pixel not in self:
+            raise ValueError("No node in tree matching given node")
+        nodes_to_add = list(node.children)
         while len(nodes_to_add) > 0:
             node = nodes_to_add.pop(0)
             nodes_to_add += node.children
             self.create_node(
                 node.pixel,
-                node.node_type,
-                split_leaf_parent=split_leaf_parent,
-                replace_existing_node=replace_existing_node
+                node.node_type
             )
 
-    def remove_empty_inner_nodes(self):
-        nodes_to_check = [child for child in self.root_pixel.children]
-        for node in nodes_to_check:
-            self._remove_node_if_no_leaf_children(node)
+    def split_leaf_to_match_partitioning(
+            self,
+            node_to_match: PixelNode
+    ):
+        """Split a given leaf node into higher order nodes to match another node's partitioning
 
-    def _remove_node_if_no_leaf_children(self, node: PixelNode) -> bool:
-        if node.node_type == PixelNodeType.LEAF:
-            return True
-        if len(node.children) == 0:
-            self.remove_node(node.pixel)
-            return False
-        has_leaf_children = False
-        nodes_to_check = [child for child in node.children]
-        for child in nodes_to_check:
-            has_leaf_children = has_leaf_children or self._remove_node_if_no_leaf_children(child)
-        if not has_leaf_children:
-            self.remove_node(node.pixel)
-        return has_leaf_children
+        Args:
+            node_to_match: The node in another tree to match the partitioning of
+
+        Raises:
+            ValueError if no node in tree at the same position as node_to_match,
+             or node in tree isn't a leaf node.
+        """
+        if node_to_match.pixel not in self:
+            raise ValueError("No node in tree matching given node")
+        if self[node_to_match.pixel].node_type != PixelNodeType.LEAF:
+            raise ValueError("Node in tree is not a leaf node")
+        nodes_to_add = list(node_to_match.children)
+        while len(nodes_to_add) > 0:
+            node = nodes_to_add.pop(0)
+            nodes_to_add += node.children
+            parent_node = self[node.parent.pixel]
+            if parent_node.node_type == PixelNodeType.LEAF:
+                parent_node.node_type = PixelNodeType.INNER
+                for child_pixel in parent_node.pixel.convert_to_higher_order(delta_order=1):
+                    self.create_node(child_pixel, PixelNodeType.LEAF, parent=parent_node)
