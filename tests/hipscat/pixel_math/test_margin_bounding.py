@@ -68,9 +68,10 @@ def test_get_margin_bounds_and_wcs():
     test_ra3 = 50.61225197
     test_dec3 = 14.4767556
 
-    test_sc = SkyCoord(
-        np.array([test_ra1, test_ra2, test_ra3]), np.array([test_dec1, test_dec2, test_dec3]), unit="deg"
-    )
+    test_ra = np.array([test_ra1, test_ra2, test_ra3])
+    test_dec = np.array([test_dec1, test_dec2, test_dec3])
+
+    test_sc = SkyCoord(test_ra, test_dec, unit="deg")
 
     scale = pm.get_margin_scale(3, 0.1)
     polygon, wcs_margin = pm.get_margin_bounds_and_wcs(3, 4, scale)[0]
@@ -78,9 +79,12 @@ def test_get_margin_bounds_and_wcs():
     assert polygon.area == pytest.approx(756822775.0000424, 0.001)
 
     coord_x, coord_y = wcs_margin.world_to_pixel(test_sc)
-    expected = np.array([False, True, True])
+    expected_pixel_coord = PixCoord(coord_x, coord_y)
+    expected_contains_checks = np.array([False, True, True])
 
-    npt.assert_array_equal(polygon.contains(PixCoord(coord_x, coord_y)), expected)
+    contains_checks = polygon.contains(expected_pixel_coord)
+
+    npt.assert_array_equal(contains_checks, expected_contains_checks)
 
 
 def get_checks_for_bounds(bounds, test_sky_coords):
