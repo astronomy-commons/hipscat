@@ -2,7 +2,7 @@ from typing import Tuple, Union
 
 import pandas as pd
 
-from hipscat.catalog import CatalogType
+from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.dataset.dataset import Dataset
