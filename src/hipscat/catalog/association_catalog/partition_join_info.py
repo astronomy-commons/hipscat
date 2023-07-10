@@ -7,8 +7,8 @@ from hipscat.io import FilePointer, file_io
 class PartitionJoinInfo:
     """Association catalog metadata with which partitions matches occur in the join"""
 
-    PRIMARY_ORDER_COLUMN_NAME = "primary_Norder"
-    PRIMARY_PIXEL_COLUMN_NAME = "primary_Npix"
+    PRIMARY_ORDER_COLUMN_NAME = "Norder"
+    PRIMARY_PIXEL_COLUMN_NAME = "Npix"
     JOIN_ORDER_COLUMN_NAME = "join_Norder"
     JOIN_PIXEL_COLUMN_NAME = "join_Npix"
 

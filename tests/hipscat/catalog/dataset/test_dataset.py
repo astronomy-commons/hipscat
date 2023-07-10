@@ -20,9 +20,7 @@ def test_dataset_wrong_catalog_info(base_catalog_info_data):
         Dataset(base_catalog_info_data)
 
 
-def test_read_from_hipscat(
-        dataset_path, base_catalog_info_file, assert_catalog_info_matches_dict
-):
+def test_read_from_hipscat(dataset_path, base_catalog_info_file, assert_catalog_info_matches_dict):
     dataset = Dataset.read_from_hipscat(dataset_path)
     assert dataset.on_disk
     assert dataset.catalog_path == dataset_path

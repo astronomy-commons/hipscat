@@ -2,11 +2,9 @@ from typing import Tuple, Union
 
 import pandas as pd
 
-from hipscat.catalog.catalog_type import CatalogType
-from hipscat.catalog.association_catalog.association_catalog_info import \
-    AssociationCatalogInfo
-from hipscat.catalog.association_catalog.partition_join_info import \
-    PartitionJoinInfo
+from hipscat.catalog import CatalogType
+from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
+from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.io import FilePointer, paths
 
@@ -25,15 +23,13 @@ class AssociationCatalog(Dataset):
     JoinPixelInputTypes = Union[list, pd.DataFrame, PartitionJoinInfo]
 
     def __init__(
-            self,
-            catalog_info: CatalogInfoClass,
-            join_pixels: JoinPixelInputTypes,
-            catalog_path=None,
+        self,
+        catalog_info: CatalogInfoClass,
+        join_pixels: JoinPixelInputTypes,
+        catalog_path=None,
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
-            raise ValueError(
-                "Catalog info `catalog_type` must be 'association'"
-            )
+            raise ValueError("Catalog info `catalog_type` must be 'association'")
         super().__init__(catalog_info, catalog_path)
         self.join_info = self._get_partition_join_info_from_pixels(join_pixels)
 
@@ -47,9 +43,7 @@ class AssociationCatalog(Dataset):
         return self.join_info.data_frame
 
     @staticmethod
-    def _get_partition_join_info_from_pixels(
-            join_pixels: JoinPixelInputTypes
-    ) -> PartitionJoinInfo:
+    def _get_partition_join_info_from_pixels(join_pixels: JoinPixelInputTypes) -> PartitionJoinInfo:
         if isinstance(join_pixels, PartitionJoinInfo):
             return join_pixels
         if isinstance(join_pixels, pd.DataFrame):
@@ -57,9 +51,7 @@ class AssociationCatalog(Dataset):
         raise TypeError("join_pixels must be of type PartitionJoinInfo or DataFrame")
 
     @classmethod
-    def _read_args(
-            cls, catalog_base_dir: FilePointer
-    ) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:
+    def _read_args(cls, catalog_base_dir: FilePointer) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:
         args = super()._read_args(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_file(partition_join_info_file)

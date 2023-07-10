@@ -10,7 +10,11 @@ class Dataset:
     """A base HiPSCat dataset
 
     A base dataset contains a catalog_info metadata file and the data contained in parquet files
+
+    TODO - create factory methods to get appropriately-typed datasets for
+    some catalog info or catalog directory
     """
+
     CatalogInfoClass: Type[BaseCatalogInfo] = BaseCatalogInfo
 
     def __init__(
@@ -67,6 +71,4 @@ class Dataset:
             raise FileNotFoundError(f"No directory exists at {str(catalog_base_dir)}")
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(catalog_info_file):
-            raise FileNotFoundError(
-                f"No catalog info found where expected: {str(catalog_info_file)}"
-            )
+            raise FileNotFoundError(f"No catalog info found where expected: {str(catalog_info_file)}")

@@ -18,14 +18,12 @@ class PixelTree:
 
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
-             order then pixel number
+            order then pixel number
         root_pixel: Root node of the tree. Its children are a subset of the
-        12 base HEALPix pixels
+            12 base HEALPix pixels
     """
 
-    def __init__(
-        self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]
-    ) -> None:
+    def __init__(self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:

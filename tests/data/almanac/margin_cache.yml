@@ -1,0 +1,9 @@
+catalog_path: $HIPSCAT_DEFAULT_DIR/margin_cache
+catalog_name: margin_cache
+catalog_type: margin
+catalog_info:
+  catalog_name: margin_cache
+  catalog_type: margin
+  total_rows: 100
+  primary_catalog: catalog
+  margin_threshold: 0.5

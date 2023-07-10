@@ -3,6 +3,7 @@ import os
 from typing import List, NewType
 
 FilePointer = NewType("FilePointer", str)
+"""Unified type for references to files."""
 
 
 def get_file_pointer_from_path(path: str) -> FilePointer:

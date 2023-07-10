@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from hipscat.catalog.association_catalog.partition_join_info import \
-    PartitionJoinInfo
+from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.io import file_io
 
 

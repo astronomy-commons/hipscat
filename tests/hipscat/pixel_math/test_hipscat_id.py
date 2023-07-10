@@ -4,8 +4,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from hipscat.pixel_math.hipscat_id import (compute_hipscat_id,
-                                           hipscat_id_to_healpix)
+from hipscat.pixel_math.hipscat_id import compute_hipscat_id, hipscat_id_to_healpix
 
 
 def test_single():
@@ -51,9 +50,7 @@ def test_list():
     Interspersed are points at (1,1), which will start at
     5476738131329810432 (0x4C0148503DC00000)
     """
-    result = compute_hipscat_id(
-        [5, 5, 5, 1, 5, 5, 5, 1, 5], [5, 5, 5, 1, 5, 5, 5, 1, 5]
-    )
+    result = compute_hipscat_id([5, 5, 5, 1, 5, 5, 5, 1, 5], [5, 5, 5, 1, 5, 5, 5, 1, 5])
     expected = [
         5482513871577022464,
         5482513871577022465,

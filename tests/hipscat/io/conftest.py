@@ -6,8 +6,6 @@ import re
 import pyarrow as pa
 import pytest
 
-from hipscat.catalog.catalog_parameters import CatalogParameters
-
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 
@@ -42,22 +40,12 @@ def assert_text_file_matches():
         ), f"files not the same length ({len(contents)} vs {len(expected_lines)})"
         for i, expected in enumerate(expected_lines):
             assert re.match(expected, contents[i]), (
-                f"files do not match at line {i+1} "
-                f"(actual: [{contents[i]}] vs expected: [{expected}])"
+                f"files do not match at line {i+1} " f"(actual: [{contents[i]}] vs expected: [{expected}])"
             )
 
         metadata_file.close()
 
     return assert_text_file_matches
-
-
-@pytest.fixture
-def basic_catalog_info(tmp_path):
-    return CatalogParameters(
-        catalog_name="small_sky",
-        output_path=tmp_path,
-        total_rows=131,
-    )
 
 
 @pytest.fixture
