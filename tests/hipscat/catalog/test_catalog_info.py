@@ -40,6 +40,6 @@ def test_read_from_file(catalog_info_file, assert_catalog_info_matches_dict):
     ]:
         assert column in dataclasses.asdict(catalog_info)
 
-    with open(catalog_info_file, "r") as cat_info_file:
+    with open(catalog_info_file, "r", encoding="utf-8") as cat_info_file:
         catalog_info_json = json.load(cat_info_file)
         assert_catalog_info_matches_dict(catalog_info, catalog_info_json)

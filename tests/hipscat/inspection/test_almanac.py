@@ -94,7 +94,6 @@ def test_linked_catalogs_object(default_almanac):
     source_almanac = default_almanac.get_almanac_info(object_almanac.sources[0].catalog_name)
     assert source_almanac.catalog_name == "small_sky_source_catalog"
 
-    ## TODO - this could use some more direct API.
     source_catalog = default_almanac.get_catalog(object_almanac.sources[0].catalog_name)
     assert source_catalog.catalog_name == "small_sky_source_catalog"
 

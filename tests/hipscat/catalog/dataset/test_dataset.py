@@ -25,7 +25,7 @@ def test_read_from_hipscat(dataset_path, base_catalog_info_file, assert_catalog_
     assert dataset.on_disk
     assert dataset.catalog_path == dataset_path
     assert str(dataset.catalog_base_dir) == dataset_path
-    with open(base_catalog_info_file, "r") as cat_info_file:
+    with open(base_catalog_info_file, "r", encoding="utf-8") as cat_info_file:
         catalog_info_json = json.load(cat_info_file)
         assert_catalog_info_matches_dict(dataset.catalog_info, catalog_info_json)
 

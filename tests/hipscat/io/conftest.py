@@ -28,11 +28,7 @@ def assert_text_file_matches():
             file_name (str): fully-specified path of the file to read
         """
         assert os.path.exists(file_name), f"file not found [{file_name}]"
-        with open(
-            file_name,
-            "r",
-            encoding="utf-8",
-        ) as metadata_file:
+        with open(file_name, "r", encoding="utf-8") as metadata_file:
             contents = metadata_file.readlines()
 
         assert len(expected_lines) == len(
