@@ -56,7 +56,7 @@ def align_trees(
 ) -> PixelAlignment:
     """Generate a `PixelAlignment` object from two pixel trees
 
-    A `PixelAlignment` represents how two pixel trees align with eachother, meaning which pixels
+    A `PixelAlignment` represents how two pixel trees align with each other, meaning which pixels
     match or overlap between the catalogs, and includes a new tree with the smallest pixels from
     each tree
 
