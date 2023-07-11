@@ -12,7 +12,7 @@ from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 # pylint: disable=R0903
 class PixelAlignment:
-    """Represents how two pixel trees align with eachother, meaning which pixels match
+    """Represents how two pixel trees align with each other, meaning which pixels match
     or overlap between the catalogs, and a new tree with the smallest pixels from each tree
 
     Attributes:
