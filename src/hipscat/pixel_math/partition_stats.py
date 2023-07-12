@@ -207,9 +207,9 @@ def compute_pixel_map(histogram, highest_order=10, lowest_order=0, threshold=1_0
         nested_sums.append(histogram.reshape(-1, explosion_factor).sum(axis=1))
     nested_sums.append(histogram)
 
-    ## Determine the highest order that does not exceed the threshold
-    orders_at_threshold = [0 if 0 < k <= threshold else None for k in nested_sums[0]]
-    for order in range(lowest_order, highest_order + 1):
+    ## Determine the lowest order that does not exceed the threshold
+    orders_at_threshold = [lowest_order if 0 < k <= threshold else None for k in nested_sums[lowest_order]]
+    for order in range(lowest_order + 1, highest_order + 1):
         new_orders_at_threshold = np.array(
             [order if 0 < k <= threshold else None for k in nested_sums[order]]
         )

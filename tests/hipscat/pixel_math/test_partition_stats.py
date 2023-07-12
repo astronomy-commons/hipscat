@@ -273,3 +273,29 @@ def test_generate_constant_pixel_map_invalid_inputs():
     ## Order doesn't match histogram length
     with pytest.raises(ValueError, match="histogram is not the right size"):
         hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=2)
+
+
+def test_destination_map_matching_behavior():
+    """Test that we get the same size destination pixel map, whether we compute
+    directly, or from an existing alignment."""
+    raw_histogram = hist.empty_histogram(2)
+    raw_histogram[0:6] = 22946
+    raw_histogram[64:79] = 185670
+
+    alignment = hist.generate_alignment(
+        raw_histogram,
+        highest_order=2,
+        threshold=1_000_000,
+    )
+    destination_pixel_map_a = hist.compute_pixel_map(
+        raw_histogram,
+        highest_order=2,
+        threshold=1_000_000,
+    )
+
+    destination_pixel_map_b = hist.generate_destination_pixel_map(
+        raw_histogram,
+        alignment,
+    )
+
+    assert len(destination_pixel_map_a) == len(destination_pixel_map_b)
