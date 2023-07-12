@@ -23,7 +23,7 @@ dependencies = [
     "pyarrow",
     "astropy",
     "regions",
-    "typing-extensions"
+    "typing-extensions>=4.3.0",
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
@@ -46,8 +46,6 @@ dev = [
     "ipykernel", # Also used in building notebooks into Sphinx
     "ipython", # Also used in building notebooks into Sphinx
     "myst_parser", # Renders markdown alongside RST
-    "matplotlib", # Used in sample notebook intro_notebook.ipynb
-    "numpy", # Used in sample notebook intro_notebook.ipynb
 ]
 
 [build-system]
