@@ -99,6 +99,64 @@ def test_pixel_builder_retrieve_added_node():
     assert tree_builder[HealpixPixel(order, pixel)] == tree_builder.get_node((order, pixel))
 
 
+def test_pixel_builder_remove_added_node():
+    tree_builder = PixelTreeBuilder()
+    order = 0
+    pixel = 0
+    node_type = PixelNodeType.LEAF
+    tree_builder.create_node((order, pixel), node_type, tree_builder.root_pixel)
+    assert (order, pixel) in tree_builder
+    assert order in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 1
+    assert tree_builder.root_pixel.children[0] == tree_builder[(order, pixel)]
+    tree_builder.remove_node((order, pixel))
+    assert (order, pixel) not in tree_builder
+    assert order not in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 0
+
+
+def test_pixel_builder_remove_nodes_descendents():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.INNER, tree_builder.root_pixel)
+    tree_builder.create_node((1, 0), PixelNodeType.INNER)
+    tree_builder.create_node((2, 0), PixelNodeType.LEAF)
+    for order in [0, 1, 2]:
+        assert (order, 0) in tree_builder
+        assert order in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 1
+    assert tree_builder.root_pixel.children[0] == tree_builder[(0, 0)]
+    tree_builder.remove_node((0, 0))
+    for order in [0, 1, 2]:
+        assert (order, 0) not in tree_builder
+        assert order not in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 0
+
+
+def test_pixel_builder_not_remove_node_order():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.LEAF)
+    tree_builder.create_node((0, 1), PixelNodeType.LEAF)
+    assert (0, 0) in tree_builder
+    assert (0, 1) in tree_builder
+    assert 0 in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 2
+    assert tree_builder.root_pixel.children[0] == tree_builder[(0, 0)]
+    assert tree_builder.root_pixel.children[1] == tree_builder[(0, 1)]
+    tree_builder.remove_node((0, 0))
+    assert (0, 0) not in tree_builder
+    assert (0, 1) in tree_builder
+    assert 0 in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 1
+    assert tree_builder.root_pixel.children[0] == tree_builder[(0, 1)]
+
+
+def test_remove_missing_node_errors():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.LEAF)
+    with pytest.raises(ValueError):
+        tree_builder.remove_node((1, 1))
+
+
 def test_pixel_builder_retrieve_none_node():
     tree_builder = PixelTreeBuilder()
     assert tree_builder.get_node((10, 10)) is None

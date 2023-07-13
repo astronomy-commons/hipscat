@@ -96,9 +96,9 @@ class PixelNode:
         insert_index = bisect(list(map(lambda node: node.hp_pixel, self.children)), child.hp_pixel)
         self.children.insert(insert_index, child)
 
-    def remove_child_node(self, node):
-        """Remove a child node from the node. This removes it from the list of children, but does
-        not delete the node
+    def remove_child_link(self, node):
+        """Remove a link to a child node from the node. This removes it from the list of children,
+        but does not delete the node
 
         Args:
             node: the node object to remove

@@ -5,6 +5,7 @@ from __future__ import annotations
 import pandas as pd
 
 from hipscat.catalog.partition_info import PartitionInfo
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.healpix_pixel_convertor import (
     HealpixInputTypes,
     get_healpix_pixel,
@@ -176,7 +177,7 @@ class PixelTreeBuilder:
                     f"Cannot create node at {str(pixel)}, node already exists"
                 )
             node_to_delete = self[pixel]
-            parent.remove_child_node(node_to_delete)
+            parent.remove_child_link(node_to_delete)
         node = PixelNode(pixel, node_type, parent)
         if pixel.order not in self.pixels:
             self.pixels[pixel.order] = {}
@@ -198,10 +199,15 @@ class PixelTreeBuilder:
         if pixel not in self:
             raise ValueError(f"No node at pixel {str(pixel)}")
         node = self[pixel]
-        node.parent.remove_child_node(node)
-        self.pixels[pixel.order].pop(pixel.pixel)
+        node.parent.remove_child_link(node)
+        self._remove_node_and_children_from_tree(pixel)
+
+    def _remove_node_and_children_from_tree(self, pixel: HealpixPixel):
+        node = self.pixels[pixel.order].pop(pixel.pixel)
         if len(self.pixels[pixel.order]) == 0:
             self.pixels.pop(pixel.order)
+        for child_node in node.children:
+            self._remove_node_and_children_from_tree(child_node.pixel)
 
     def add_all_descendants_from_node(self, node: PixelNode):
         """Adds all descendents from a given node to the current tree

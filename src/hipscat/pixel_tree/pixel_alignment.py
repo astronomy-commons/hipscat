@@ -9,6 +9,10 @@ from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
+LEFT_TREE_KEY = "left"
+RIGHT_TREE_KEY = "right"
+
+
 # pylint: disable=R0903
 class PixelAlignment:
     """Represents how two pixel trees align with each other, meaning which pixels match
@@ -94,10 +98,10 @@ def align_trees(
                     )
             else:
                 if left_node.node_type == PixelNodeType.LEAF:
-                    tree_with_leaf_node = "left"
+                    tree_with_leaf_node = LEFT_TREE_KEY
                     inner_node = right_node
                 else:
-                    tree_with_leaf_node = "right"
+                    tree_with_leaf_node = RIGHT_TREE_KEY
                     inner_node = left_node
                 if _should_include_all_pixels_from_tree(
                     tree_with_leaf_node, alignment_type
@@ -112,13 +116,13 @@ def align_trees(
                     )
                     tree_builder.add_all_descendants_from_node(inner_node)
         elif search_pixel in left and search_pixel not in right:
-            if _should_include_all_pixels_from_tree("left", alignment_type):
+            if _should_include_all_pixels_from_tree(LEFT_TREE_KEY, alignment_type):
                 tree_builder.create_node_and_parent_if_not_exist(
                     search_pixel, left[search_pixel].node_type
                 )
                 tree_builder.add_all_descendants_from_node(left[search_pixel])
         elif search_pixel in right and search_pixel not in left:
-            if _should_include_all_pixels_from_tree("right", alignment_type):
+            if _should_include_all_pixels_from_tree(RIGHT_TREE_KEY, alignment_type):
                 tree_builder.create_node_and_parent_if_not_exist(
                     search_pixel, right[search_pixel].node_type
                 )
@@ -131,6 +135,19 @@ def align_trees(
 def _get_children_pixels_from_trees(
     trees: List[PixelTree], pixel: HealpixInputTypes
 ) -> List[HealpixPixel]:
+    """Returns the combined HEALPix pixels that have child nodes of the given pixel from trees
+
+    This returns a list of HEALPix pixels, not the actual child nodes, and does not contain
+    duplicate pixels if a pixel appears in multiple trees.
+
+    Args:
+        trees (List[PixelTree]): The list of trees to search for children from
+        pixel (HealpixPixel | tuple[int,int]): The pixel to search for children at in all trees
+
+    Returns:
+        (List[HealpixPixel]) The list of all HEALPix pixels which have children of the given pixel
+        in any of the trees.
+    """
     pixel = get_healpix_pixel(pixel)
     pixels_to_add = set()
     for tree in trees:
@@ -143,13 +160,39 @@ def _get_children_pixels_from_trees(
 def _should_include_all_pixels_from_tree(
     tree_type: str, alignment_type: PixelAlignmentType
 ) -> bool:
+    """If for a given alignment type, the left or right tree should include all pixels or just the
+    ones that overlap with the other tree.
+
+    Args:
+        tree_type (str): 'left' for the left tree and 'right' for the right tree
+        alignment_type (PixelAlignmentType): The type of alignment being performed
+
+    Returns:
+        A boolean indicating if the given tree type should include all pixels
+    """
     left_add_types = [PixelAlignmentType.OUTER, PixelAlignmentType.LEFT]
     right_add_types = [PixelAlignmentType.OUTER, PixelAlignmentType.RIGHT]
-    return (tree_type == "left" and alignment_type in left_add_types) or \
-        (tree_type == "right" and alignment_type in right_add_types)
+    return (tree_type == LEFT_TREE_KEY and alignment_type in left_add_types) or \
+        (tree_type == RIGHT_TREE_KEY and alignment_type in right_add_types)
 
 
-def _generate_pixel_mapping_from_tree(left, right, tree):
+def _generate_pixel_mapping_from_tree(
+        left: PixelTree, right: PixelTree, aligned: PixelTree
+) -> pd.DataFrame:
+    """Generates a pixel mapping dataframe from two trees and their aligned tree
+
+    The pixel mapping dataframe contains columns for the order and pixel of overlapping pixels in
+    the left, right and aligned trees. The trees are searched through and this table is generated
+
+    Args:
+        left (PixelTree): the left tree used to generate the alignment
+        right (PixelTree): the right tree used to generate the alignment
+        aligned (PixelTree): the aligned tree as a result of aligning the left and right trees
+
+    Returns:
+        (pd.DataFrame) The pixel mapping dataframe where each row contains a pixel from the aligned
+        tree and the pixels in the left and right tree that overlap with it
+    """
     pixel_mapping_dict = {
         PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: [],
         PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: [],
@@ -158,7 +201,7 @@ def _generate_pixel_mapping_from_tree(left, right, tree):
         PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: [],
         PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: [],
     }
-    for leaf_node in tree.root_pixel.get_all_leaf_descendants():
+    for leaf_node in aligned.root_pixel.get_all_leaf_descendants():
         left_leaf_nodes = left.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
         right_leaf_nodes = right.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
         if len(left_leaf_nodes) == 0:
