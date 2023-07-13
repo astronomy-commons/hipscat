@@ -99,8 +99,13 @@ class PixelTree:
         pixel = get_healpix_pixel(pixel)
 
         if self.contains(pixel):
+            # Pixel exists in tree. Either a leaf node with an exact match for the search pixel,
+            # or an inner node, so the search pixel will contain leaf nodes at higher orders
             node_in_tree = self.get_node(pixel)
             return node_in_tree.get_all_leaf_descendants()
+        # if the pixel doesn't exist in the tree, it's either because the tree doesn't cover the
+        # pixel, or the pixel is at a higher order than the tree at that location, so we search for
+        # lower order nodes in the tree
         node_in_tree = self._find_first_lower_order_leaf_node_in_tree(pixel)
         if node_in_tree is None:
             return []
@@ -115,6 +120,8 @@ class PixelTree:
             if self.contains(lower_pixel):
                 lower_node = self.get_node(lower_pixel)
                 if lower_node.node_type == PixelNodeType.LEAF:
+                    # If the catalog doesn't fully cover the sky, it's possible we encounter an
+                    # inner node whose leaf children don't cover the search pixel.
                     return lower_node
                 return None
         return None
