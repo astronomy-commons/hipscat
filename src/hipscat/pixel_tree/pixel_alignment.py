@@ -18,6 +18,9 @@ class PixelAlignment:
     """Represents how two pixel trees align with each other, meaning which pixels match
     or overlap between the catalogs, and a new tree with the smallest pixels from each tree
 
+    For more information on the pixel alignment algorithm, view this document:
+    https://docs.google.com/document/d/1YFAQsGCgeEyEZ1IRIam9BbWdN5h2onV6ndO3VM-qjn0/edit?usp=sharing
+
     Attributes:
         pixel_mapping: A dataframe where each row contains a pixel from each tree that match, and
             which pixel in the aligned tree they match with
@@ -62,6 +65,9 @@ def align_trees(
     A `PixelAlignment` represents how two pixel trees align with each other, meaning which pixels
     match or overlap between the catalogs, and includes a new tree with the smallest pixels from
     each tree
+
+    For more information on the pixel alignment algorithm, view this document:
+    https://docs.google.com/document/d/1YFAQsGCgeEyEZ1IRIam9BbWdN5h2onV6ndO3VM-qjn0/edit?usp=sharing
 
     Args:
         left: The left tree to align
