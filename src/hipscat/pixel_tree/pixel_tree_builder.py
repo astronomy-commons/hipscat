@@ -171,17 +171,27 @@ class PixelTreeBuilder:
                 f"Cannot create node at {str(pixel)}, "
                 f"parent node at {str(parent_pixel)} has node type leaf"
             )
+        node_to_replace = None
         if pixel in self:
             if not replace_existing_node:
                 raise ValueError(
                     f"Cannot create node at {str(pixel)}, node already exists"
                 )
-            node_to_delete = self[pixel]
-            parent.remove_child_link(node_to_delete)
+            node_to_replace = self[pixel]
+            parent.remove_child_link(node_to_replace)
         node = PixelNode(pixel, node_type, parent)
         if pixel.order not in self.pixels:
             self.pixels[pixel.order] = {}
         self.pixels[pixel.order][pixel.pixel] = node
+        if node_to_replace is not None:
+            if node.node_type != PixelNodeType.LEAF:
+                for child in node_to_replace.children:
+                    child.parent = node
+                    node.add_child_node(child)
+            else:
+                for child in node_to_replace.children:
+                    self._remove_node_and_children_from_tree(child.pixel)
+
 
     def remove_node(self, pixel: HealpixInputTypes):
         """Remove node in tree

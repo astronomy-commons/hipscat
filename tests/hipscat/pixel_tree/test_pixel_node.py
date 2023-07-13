@@ -146,3 +146,17 @@ def test_get_leaf_descendants_with_multiple_leafs(root_pixel_node, leaf_pixel_no
     )
     second_leaf = PixelNode(**leaf_pixel_node_data)
     assert root_pixel_node.get_all_leaf_descendants() == [leaf_pixel_node, second_leaf]
+
+
+def test_remove_child_link(root_pixel_node, inner_pixel_node):
+    assert inner_pixel_node in root_pixel_node.children
+    assert len(root_pixel_node.children) == 1
+    root_pixel_node.remove_child_link(inner_pixel_node)
+    assert inner_pixel_node not in root_pixel_node.children
+    assert len(root_pixel_node.children) == 0
+
+
+def test_remove_child_link_wrong_node_errors(root_pixel_node, leaf_pixel_node):
+    assert leaf_pixel_node not in root_pixel_node.children
+    with pytest.raises(ValueError):
+        leaf_pixel_node.remove_child_link(leaf_pixel_node)
