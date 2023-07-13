@@ -5,7 +5,10 @@ from __future__ import annotations
 import pandas as pd
 
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel_convertor import (
+    HealpixInputTypes,
+    get_healpix_pixel,
+)
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
@@ -133,11 +136,11 @@ class PixelTreeBuilder:
         self.create_node(pixel, node_type, parent)
 
     def create_node(
-            self,
-            pixel: HealpixInputTypes,
-            node_type: PixelNodeType,
-            parent: PixelNode = None,
-            replace_existing_node=False,
+        self,
+        pixel: HealpixInputTypes,
+        node_type: PixelNodeType,
+        parent: PixelNode = None,
+        replace_existing_node=False,
     ):
         """Create a node and add to `self.pixels` in the tree
 
@@ -200,10 +203,7 @@ class PixelTreeBuilder:
         if len(self.pixels[pixel.order]) == 0:
             self.pixels.pop(pixel.order)
 
-    def add_all_descendants_from_node(
-            self,
-            node: PixelNode
-    ):
+    def add_all_descendants_from_node(self, node: PixelNode):
         """Adds all descendents from a given node to the current tree
 
         Used to make the current tree being built mirror the subtree from the specified node in
@@ -224,15 +224,9 @@ class PixelTreeBuilder:
         while len(nodes_to_add) > 0:
             node = nodes_to_add.pop(0)
             nodes_to_add += node.children
-            self.create_node(
-                node.pixel,
-                node.node_type
-            )
+            self.create_node(node.pixel, node.node_type)
 
-    def split_leaf_to_match_partitioning(
-            self,
-            node_to_match: PixelNode
-    ):
+    def split_leaf_to_match_partitioning(self, node_to_match: PixelNode):
         """Split a given leaf node into higher order nodes to match another node's partitioning
 
         Args:
@@ -253,5 +247,9 @@ class PixelTreeBuilder:
             parent_node = self[node.parent.pixel]
             if parent_node.node_type == PixelNodeType.LEAF:
                 parent_node.node_type = PixelNodeType.INNER
-                for child_pixel in parent_node.pixel.convert_to_higher_order(delta_order=1):
-                    self.create_node(child_pixel, PixelNodeType.LEAF, parent=parent_node)
+                for child_pixel in parent_node.pixel.convert_to_higher_order(
+                    delta_order=1
+                ):
+                    self.create_node(
+                        child_pixel, PixelNodeType.LEAF, parent=parent_node
+                    )

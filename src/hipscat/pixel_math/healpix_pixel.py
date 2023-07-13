@@ -79,6 +79,8 @@ class HealpixPixel:
             raise ValueError("delta order cannot be below zero")
         pixels = []
         new_order = self.order + delta_order
-        for new_pixel in range(self.pixel * 4**delta_order, (self.pixel + 1) * 4**delta_order):
+        for new_pixel in range(
+            self.pixel * 4**delta_order, (self.pixel + 1) * 4**delta_order
+        ):
             pixels.append(HealpixPixel(new_order, new_pixel))
         return pixels
