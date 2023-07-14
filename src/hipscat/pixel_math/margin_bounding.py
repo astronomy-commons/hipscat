@@ -89,8 +89,9 @@ def check_margin_bounds(
 
     return margin_check
 
+# numba jit compiler doesn't count for coverage tests, so we'll set no cover.
 @njit("double(double[:], double[:], double)")
-def _find_minimum_distance(separations, distances, margin_threshold):
+def _find_minimum_distance(separations, distances, margin_threshold): # pragma: no cover
     """Find the minimum distance between a given datapoint and a healpixel"""
     minimum_index = np.argmin(separations)
 

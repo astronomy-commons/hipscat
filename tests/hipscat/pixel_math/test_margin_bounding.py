@@ -2,6 +2,7 @@
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 import hipscat.pixel_math as pm
 
@@ -79,3 +80,24 @@ def test_check_polar_margin_bounds_south():
     expected = np.array([True, True, False])
 
     npt.assert_array_equal(vals, expected)
+
+def test_check_margin_bounds_uneven():
+    """Ensure check_margin_bounds fails when ra and dec arrays are unbalanced."""
+
+    ras = np.array([42.4704538, 56.25, 56.25, 50.61225197])
+    decs = np.array([1.4593925, 9.6, 10.])
+
+    with pytest.raises(ValueError, match="length of r_asc"):
+        pm.check_margin_bounds(ras, decs, 3, 4, 360.0)
+
+def test_check_margin_bounds_empty():
+    """Ensure check_margin_bounds works when passed empty coordinate arrays."""
+
+    ras = np.array([])
+    decs = np.array([])
+
+    checks = pm.check_margin_bounds(ras, decs, 3, 4, 360.0)
+
+    expected = np.array([])
+
+    npt.assert_array_equal(checks, expected)
