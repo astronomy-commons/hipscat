@@ -160,68 +160,39 @@ Because of the nature of spherical coordinate systems, hipscat runs into some tr
 #### Algorithm
 In the ring id scheme for `healpix`, the first and last 4 pixels are the polar pixels. To determine whether a nest scheme pixel is at the poles, all we have to do is convert the pixel into the ring scheme and determine if it falls at the beginning or end of the range 0 -> npix. So, if in the ring scheme the pix is `<= 3`, or `>= npix - 4`, we can safely assume that it is a polar pixel.
 
-### get_truncated_margin_pixels
-For pixels that are at the poles, our margin bounding box isn't set up to handle the data that is on the other side of the hemisphere from the partition. So when we calculate the boundaries, we truncate declination values outside of the range -90 -> 90. However, we obviously still want to include neighbor margin data that is affected by this truncation, namely the 3 margin pixels that are also polar pixels.
-
-#### Algorithm
-We want to find the 3 pixels at the healpix order of our margins that are polar. This is all of the pixels around the given pole _except_ the one that is contained within our partition pixel. 
-
-For the north pole, this is straightforwardly done by converting our partition pixel into the ring id scheme and returning the values between 0 and 3 that aren't equal to it.
-
-For the south pole, we have to do a little more complicated math, due to the fact that the southern polar pixels aren't the same values at any healpix order. To find the at polar pixel at the `margin_order` that is contained by the partition pixel (and therefore to be excluded), we can take advantage of the fact that in the nest scheme the southern partition of a pixel is equal to `4 * pix` (see the algorithm section of `get_edge` above for more info), so to get the excluded southern pixel all we have to do is find the difference between `order` and `margin_order`, and multiply our `pix` value by `4 ** d_order`.
-
 ## Margin Bounding
-After constraining our data points using the `get_margin` code in `pixel_margins`, we then move on to our more accurate bound checking by building bounding boxes that include a region approximately one `margin_threshold` wide around the original healpixel.
+After constraining our data points using the `get_margin` code in `pixel_margins`, we then move on to our more accurate bound checking by calculating the distance between a given data point and the boundaries of the healpixel.
 
-To get this bounding box, we
-- find a `scale` factor to apply to the original healpixel boundaries that increases the resolution by one `margin_threshold`
-- sample a set of points along the boundary of a healpixel
-- apply an affine transformation to these points to center them on the original healpixel
+To approximate this distance, we get the perpendicular bisector of the triangle made with the datapoint and the two closest boundary points. To find the the perpendicular bisector of this triangle (which is approximately the shortest distance between the data point and the healpix polygon), we will have to find
 
-resulting in a box that covers a border region of one `margin_threshold` around the original healpixel.
+$\sin(a) = \sin(A)\sin(x)$
 
-We then can input these points into an astropy `regions.PolygonPixelRegion` object that we can the use to quickly check different datapoints against, resulting in a set of data for the final `neighbors.parquet` file.
+$a = \arcsin(\sin(A),\sin(x))$
 
-### get_margin_scale
-Finds the scale factor that we want to use to scale up the healpixel bounds by to include the neighbor margin.
+where $a$ is the bisector, $x$ is the arc between our data point and one of the boundary points, and $A$ is the angle between that arc and the arc of the healpix boundary.
 
-#### Algorithm
-- get the resolution of our `pixel_order` (sqrt of the pixel area)
-- add the `margin_threshold` to the resolution and square it.
-- divide this new area against the original pixel area to find the scale factor.
+this identity comes from [Napier's rules for right spherical triangles](https://en.wikipedia.org/wiki/Spherical_trigonometry#Napier's_rules_for_right_spherical_triangles).
 
-### get_margin_bounds_and_wcs
-Given a healpixel and a scale factor, generate a `regions.PolygonPixelRegion` polygon and an `astropy.wcs.WCS` object containing the points of the healpixel scaled around the centroid by a factor of `scale`. Used in conjunction with `get_margin_scale` to perform an affine transform on a set of coordinates sampled from the boundaries of a healpixel.
+we already have $x$ from our separation calculations, but we're going to need to calculate the angle $A$. to do this, we can make use of the [spherical law of cosines](https://en.wikipedia.org/wiki/Spherical_law_of_cosines). let's use the identity
 
-By returning it as a pixel region along with a wcs object, we can quickly check data points against our polygon.
+$\cos(y) = \cos(x)\cos(z) + \sin(x)\sin(z)\cos(A)$
 
-In the case where `pixel_order` is less than 2, we divide the polygon into 4 or 16 different polygon regions (orders **0** and **1** respectively), each with their own `WCS` object. We do this because `PolygonPixelRegions` start to break down with large bounding boxes at the granular coordinate spaces that we're using.
+from there we can solve for A with
 
-#### Algorithm
-- get a sample of the healpixel boundaries (4 * `step`)
-- find the centroid of the boundary coordinates, apply the `scale` to it, and find the difference from the original to find the translation values.
-    - this translation keeps the bounding box centered on the orignal healpixel, as an affine transform scales from the origin of the coordinate system.
-- build the [affine transform](https://en.wikipedia.org/wiki/Affine_transformation#Image_transformation) matrix.
-- convert the boundary coordinates into [homogeneous coordinates](https://en.wikipedia.org/wiki/Homogeneous_coordinates).
-- apply the affine transform to the now homogeneous coordinates.
-- build the polygon(s) and wcs object(s) for the now transformed points.
+$\sin(x)\sin(z)\cos(A) = \cos(y) - \cos(x)\cos(z)$
 
+$\cos(A) = {\cos(y) - \cos(x)\cos(z) \over \sin(x)\sin(z)}$
+
+$A = {\arccos({\cos(y) - \cos(x)\cos(z) \over \sin(x)\sin(z)})}$
+
+and now we have all the information to find the bisector and compare it to our margin threshold! 
 ### check_margin_bounds
-Given a set of ra and dec coordinates as well as a list of `regions.PolygonPixelRegion` and `astropy.wcs.WCS` tuples (see `get_margin_bounds_and_wcs` above), return a 1-dimmensional array of booleans on whether a given ra and dec coordinate pair are contained within any of the given bounding boxes.
+Given a set of ra and dec coordinates as well as the healpixel, healpix order, margin threshold, and the step value of sampled `healpy` boundaries, return a 1-dimmensional array of booleans on whether a given ra and dec coordinate pair are contained within any of the given bounding boxes.
 
 #### Implementation
-For ever entry into `poly_and_wcs`, we convert our set of coordinates into pixel values using the `astropy.wcs.utils.skycoord_to_pixel` function then use the built in `contains` function to return the list of bound checks.
+We take a chunk of our points and generate a set matrix of points with a shape (size_of_chunk, number_of_boundary_points) with all of our data points repeated along the first axis. Then, we generate a matrix of the same shape with the boundary points repeated as well and then put both of those matrices into a `SkyCoord` so that we can calculate the separations between all of them. We also find all of the distances between adjacent boundary points, so that we can find know the distance of each boundary segment. For each data point, we find the boundary point with the minimum separation, and then find which of the two adjacent boundary points has the smaller separation from the datapoint. From there, we can do the above calculations to get the perpendicular bisector and compare this against the `margin_threshold`.
 
-### check_polar_margin_bounds
-For healpixels that surround the poles, the affine transform math breaks down directly around the poles, making it much harder for us to properly check margin data on the opposite hemisphere to our pixel. To solve this problem, we can use the `get_truncated_pixels` to find out what margin data falls around the poles, and then manually check the angular distance between those points and the boundaries of the given partition pixel to find out if the data point falls within a `margin_threshold` distance. While this sort of N^2 calculation isn't practical or desired for the larger dataset, this edge case usually only affects a small amount of the total potential margin cache data for a given catalog.
-
-#### Algorithm
-- Find the ratio of the `margin_order` (i.e. the order that our margin pixels are at) to the `order` of the larger partition pixel so that we can find the approximate range of samples to take from the `hp.boundaries` of our healpixel, giving us a set of points that define the border of the pixel along the poles.
-    - Even at very high `step` values, this generally doesn't return a large number of points to check against, since even having a small difference between `order` and `margin_order` leads to exponentially smaller values of this ratio.
-    - Higher `step` values didn't meaningfully increase the accuracy for `margin_threshold` checks so the default is value 1000, but we've left `step` as variable so that should more granularity be needed a user can adjust this value.
-- Make sure none of these `polar_boundaries` values fall outside of the range -90 -> 90 declination, as sometimes `hp.boundaries` can return values a few millionths lower or higher at highly granular `step` values.
-- Get the angular distance of our `r_asc` and `dec` values and our boundary values.
-- Return `True` for any coordinates that have a distance less than or equal to `margin_threshold`.
+To speed up our calculations, the inner loops of calculations is compiled with the `numba` JIT compiler.
 
 ## HiPSCat ID
 

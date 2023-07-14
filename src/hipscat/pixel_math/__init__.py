@@ -3,12 +3,7 @@
 from .healpix_pixel import HealpixPixel
 from .healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
 from .hipscat_id import compute_hipscat_id, hipscat_id_to_healpix
-from .margin_bounding import (
-    check_margin_bounds,
-    check_polar_margin_bounds,
-    get_margin_bounds_and_wcs,
-    get_margin_scale,
-)
+from .margin_bounding import check_margin_bounds
 from .partition_stats import (
     compute_pixel_map,
     empty_histogram,
