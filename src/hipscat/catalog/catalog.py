@@ -1,6 +1,7 @@
 """Container class to hold catalog metadata and partition iteration"""
 from __future__ import annotations
 
+import dataclasses
 from typing import Tuple, Union
 
 import pandas as pd
@@ -10,6 +11,7 @@ from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
+from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
@@ -96,3 +98,21 @@ class Catalog(Dataset):
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(partition_info_file):
             raise FileNotFoundError(f"No partition info found where expected: {str(partition_info_file)}")
+
+    def filter_by_cone(self, ra: float, dec: float, radius: float) -> Catalog:
+        """Filter the pixels in the catalog to only include the pixels that overlap with a cone
+
+        Args:
+            ra (float): Right Ascension of the center of the cone in degrees
+            dec (float): Declination of the center of the cone in degrees
+            radius (float): Radius of the cone in degrees
+
+        Returns:
+            A new catalog with only the pixels that overlap with the specified cone
+        """
+        filtered_cone_pixels = filter_pixels_by_cone(self.pixel_tree, ra, dec, radius)
+        filtered_catalog_info = dataclasses.replace(
+            self.catalog_info,
+            total_rows=None,
+        )
+        return Catalog(filtered_catalog_info, filtered_cone_pixels)

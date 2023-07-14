@@ -73,6 +73,30 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
     assert len(cat.get_pixels()) == 4
 
 
+def test_cone_filter(small_sky_order1_catalog):
+    filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 0.1)
+    assert len(filtered_catalog.partition_info.data_frame) == 1
+    assert filtered_catalog.partition_info.data_frame[PartitionInfo.METADATA_PIXEL_COLUMN_NAME][0] == 44
+    assert filtered_catalog.partition_info.data_frame[PartitionInfo.METADATA_ORDER_COLUMN_NAME][0] == 1
+    assert (1, 44) in filtered_catalog.pixel_tree
+    assert len(filtered_catalog.pixel_tree.pixels[1]) == 1
+
+
+def test_cone_filter_big(small_sky_order1_catalog):
+    filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 30)
+    assert len(filtered_catalog.partition_info.data_frame) == 4
+    assert (1, 44) in filtered_catalog.pixel_tree
+    assert (1, 45) in filtered_catalog.pixel_tree
+    assert (1, 46) in filtered_catalog.pixel_tree
+    assert (1, 47) in filtered_catalog.pixel_tree
+
+
+def test_cone_filter_empty(small_sky_order1_catalog):
+    filtered_catalog = small_sky_order1_catalog.filter_by_cone(0, 0, 0.1)
+    assert len(filtered_catalog.partition_info.data_frame) == 0
+    assert len(filtered_catalog.pixel_tree) == 1
+
+
 def test_empty_directory(tmp_path):
     """Test loading empty or incomplete data"""
     ## Path doesn't exist
