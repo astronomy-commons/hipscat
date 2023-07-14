@@ -3,15 +3,14 @@ import numpy as np
 import pandas as pd
 
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.pixel_tree import align_trees, PixelAlignmentType, PixelAlignment
+from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-def filter_pixels_by_cone(
-        pixel_tree: PixelTree, ra: float, dec: float, radius: float
-) -> pd.DataFrame:
-    """Filter the pixels in a pixel tree to return a partition_info dataframe
+def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: float) -> PixelTree:
+    """Filter the leaf pixels in a pixel tree to return a partition_info dataframe with the pixels
+    that overlap with a cone
 
     Args:
         ra (float): Right Ascension of the center of the cone in degrees
@@ -19,21 +18,26 @@ def filter_pixels_by_cone(
         radius (float): Radius of the cone in degrees
 
     Returns:
-        A new catalog with only the pixels that overlap with the specified cone
+        A catalog_info dataframe with only the pixels that overlap with the specified cone
     """
     max_order = max(pixel_tree.pixels.keys())
-    cone_tree = _generate_cone_pixel_tree(dec, radius, ra, max_order)
+    cone_tree = _generate_cone_pixel_tree(ra, dec, radius, max_order)
     cone_alignment = align_trees(pixel_tree, cone_tree, alignment_type=PixelAlignmentType.INNER)
-    pixels_df = cone_alignment.pixel_mapping[[PixelAlignment.PRIMARY_ORDER_COLUMN_NAME, PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME]]
+    pixels_df = cone_alignment.pixel_mapping[
+        [PixelAlignment.PRIMARY_ORDER_COLUMN_NAME, PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME]
+    ]
     filtered_pixels_df = pixels_df.drop_duplicates()
-    partition_info_df = filtered_pixels_df.rename(columns={
-        PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: PartitionInfo.METADATA_ORDER_COLUMN_NAME,
-        PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: PartitionInfo.METADATA_PIXEL_COLUMN_NAME,
-    })
+    partition_info_df = filtered_pixels_df.rename(
+        columns={
+            PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: PartitionInfo.METADATA_ORDER_COLUMN_NAME,
+            PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: PartitionInfo.METADATA_PIXEL_COLUMN_NAME,
+        }
+    )
     return partition_info_df.reset_index(drop=True)
 
 
-def _generate_cone_pixel_tree(dec: float, radius: float, ra: float, order: int):
+def _generate_cone_pixel_tree(ra: float, dec: float, radius: float, order: int):
+    """Generates a pixel_tree filled with leaf nodes at a given order that overlap with a cone"""
     n_side = hp.order2nside(order)
     center_vec = hp.ang2vec(ra, dec, lonlat=True)
     radius_radians = np.radians(radius)

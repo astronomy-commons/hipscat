@@ -6,10 +6,7 @@ import pandas as pd
 
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.healpix_pixel_convertor import (
-    HealpixInputTypes,
-    get_healpix_pixel,
-)
+from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
@@ -174,9 +171,7 @@ class PixelTreeBuilder:
         node_to_replace = None
         if pixel in self:
             if not replace_existing_node:
-                raise ValueError(
-                    f"Cannot create node at {str(pixel)}, node already exists"
-                )
+                raise ValueError(f"Cannot create node at {str(pixel)}, node already exists")
             node_to_replace = self[pixel]
             parent.remove_child_link(node_to_replace)
         node = PixelNode(pixel, node_type, parent)
@@ -191,7 +186,6 @@ class PixelTreeBuilder:
             else:
                 for child in node_to_replace.children:
                     self._remove_node_and_children_from_tree(child.pixel)
-
 
     def remove_node(self, pixel: HealpixInputTypes):
         """Remove node in tree
@@ -263,9 +257,5 @@ class PixelTreeBuilder:
             parent_node = self[node.parent.pixel]
             if parent_node.node_type == PixelNodeType.LEAF:
                 parent_node.node_type = PixelNodeType.INNER
-                for child_pixel in parent_node.pixel.convert_to_higher_order(
-                    delta_order=1
-                ):
-                    self.create_node(
-                        child_pixel, PixelNodeType.LEAF, parent=parent_node
-                    )
+                for child_pixel in parent_node.pixel.convert_to_higher_order(delta_order=1):
+                    self.create_node(child_pixel, PixelNodeType.LEAF, parent=parent_node)
