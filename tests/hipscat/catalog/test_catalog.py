@@ -2,6 +2,7 @@
 
 import os
 
+import pandas as pd
 import pandas.testing
 import pytest
 
@@ -80,6 +81,7 @@ def test_cone_filter(small_sky_order1_catalog):
     assert filtered_catalog.partition_info.data_frame[PartitionInfo.METADATA_ORDER_COLUMN_NAME][0] == 1
     assert (1, 44) in filtered_catalog.pixel_tree
     assert len(filtered_catalog.pixel_tree.pixels[1]) == 1
+    assert filtered_catalog.catalog_info.total_rows is None
 
 
 def test_cone_filter_big(small_sky_order1_catalog):
@@ -89,6 +91,20 @@ def test_cone_filter_big(small_sky_order1_catalog):
     assert (1, 45) in filtered_catalog.pixel_tree
     assert (1, 46) in filtered_catalog.pixel_tree
     assert (1, 47) in filtered_catalog.pixel_tree
+
+
+def test_cone_filter_multiple_order(catalog_info):
+    partition_info_df = pd.DataFrame.from_dict(
+        {
+            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [6, 7, 7],
+            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [30, 124, 5000],
+        }
+    )
+    catalog = Catalog(catalog_info, partition_info_df)
+    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)
+    assert len(filtered_catalog.partition_info.data_frame) == 2
+    assert (6, 30) in filtered_catalog.pixel_tree
+    assert (7, 124) in filtered_catalog.pixel_tree
 
 
 def test_cone_filter_empty(small_sky_order1_catalog):
