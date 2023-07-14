@@ -210,6 +210,7 @@ def test_split_leaf_to_match_partitioning():
     builder2.create_node((2, 0), PixelNodeType.LEAF)
     builder1.split_leaf_to_match_partitioning(builder2[(0, 0)])
     assert builder1[(0, 0)].node_type == PixelNodeType.INNER
+    assert builder1[(1, 0)].node_type == PixelNodeType.INNER
     for pixel in [(1, 1), (1, 2), (1, 3)]:
         assert pixel in builder1
         assert builder1[pixel].node_type == PixelNodeType.LEAF
@@ -247,9 +248,10 @@ def test_add_all_descendants_from_node():
     builder1.create_node((0, 0), PixelNodeType.INNER)
     builder2.create_node((0, 0), PixelNodeType.INNER)
     builder2.create_node((1, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 1), PixelNodeType.LEAF)
     builder2.create_node((2, 0), PixelNodeType.LEAF)
     builder1.add_all_descendants_from_node(builder2[(0, 0)])
-    for pixel in [(1, 0), (2, 0)]:
+    for pixel in [(1, 0), (1, 1), (2, 0)]:
         assert pixel in builder1
         assert builder1[pixel].node_type == builder2[pixel].node_type
 
