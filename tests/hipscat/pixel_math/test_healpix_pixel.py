@@ -1,6 +1,7 @@
 import pytest
 
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
+from hipscat.pixel_math.hipscat_id import HIPSCAT_ID_HEALPIX_ORDER
 
 
 def test_pixels_equal():
@@ -38,3 +39,54 @@ def test_pixel_str_and_repr():
     pix = HealpixPixel(order=order, pixel=pixel)
     assert str(pix) == test_string
     assert repr(pix) == test_string
+
+
+def test_convert_lower_order():
+    test_cases = [(3,10,2,2),(6,1033,5,258),(4,0,3,0),(5,400,2,6),(2,4,0,0),(3,10,3,10)]
+    for order, pixel, final_order, final_pixel in test_cases:
+        delta = order - final_order
+        pixel = HealpixPixel(order, pixel)
+        final_pix = pixel.convert_to_lower_order(delta)
+        assert final_pix.order == final_order
+        assert final_pix.pixel == final_pixel
+
+
+def test_convert_lower_order_fails_below_zero():
+    order = 4
+    pixel = 3
+    pixel = HealpixPixel(order, pixel)
+    with pytest.raises(ValueError):
+        pixel.convert_to_lower_order(order + 1)
+
+
+def test_convert_lower_order_fails_negative():
+    order = 4
+    pixel = 3
+    pixel = HealpixPixel(order, pixel)
+    with pytest.raises(ValueError):
+        pixel.convert_to_lower_order(-1)
+
+
+def test_convert_higher_order():
+    test_cases = [(3,10,1),(6,1033,3),(4,0,1),(5,400,2),(2,4,0),(0,10,2)]
+    for order, pixel, delta_order in test_cases:
+        converted_pixels = HealpixPixel(order, pixel).convert_to_higher_order(delta_order)
+        final_order = order + delta_order
+        for final_pixel in range(pixel * 4**delta_order, (pixel+1) * 4**delta_order):
+            assert HealpixPixel(final_order, final_pixel) in converted_pixels
+
+
+def test_convert_higher_order_fails_above_limit():
+    order = 4
+    pixel = 3
+    pixel = HealpixPixel(order, pixel)
+    with pytest.raises(ValueError):
+        pixel.convert_to_higher_order(HIPSCAT_ID_HEALPIX_ORDER - order + 1)
+
+
+def test_convert_higher_order_fails_negative():
+    order = 4
+    pixel = 3
+    pixel = HealpixPixel(order, pixel)
+    with pytest.raises(ValueError):
+        pixel.convert_to_higher_order(-1)

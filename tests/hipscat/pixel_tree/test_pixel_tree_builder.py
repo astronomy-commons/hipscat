@@ -99,12 +99,172 @@ def test_pixel_builder_retrieve_added_node():
     assert tree_builder[HealpixPixel(order, pixel)] == tree_builder.get_node((order, pixel))
 
 
+def test_create_node_no_parent_node_errors():
+    tree_builder = PixelTreeBuilder()
+    with pytest.raises(ValueError, match="no parent node exists"):
+        tree_builder.create_node((10, 0), PixelNodeType.LEAF)
+
+
+def test_create_node_leaf_parent_node_errors():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.LEAF)
+    with pytest.raises(ValueError, match="has node type leaf"):
+        tree_builder.create_node((1, 0), PixelNodeType.LEAF)
+
+
+def test_create_node_existing_errors():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.INNER)
+    with pytest.raises(ValueError, match="node already exists"):
+        tree_builder.create_node((0, 0), PixelNodeType.LEAF)
+
+
+def test_create_node_replace_existing():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.INNER)
+    tree_builder.create_node((1, 0), PixelNodeType.LEAF)
+    assert tree_builder[(1, 0)].node_type == PixelNodeType.LEAF
+    tree_builder.create_node((1, 0), PixelNodeType.INNER, replace_existing_node=True)
+    assert tree_builder[(1, 0)].node_type == PixelNodeType.INNER
+    node = tree_builder[(0, 0)]
+    tree_builder.create_node((0, 0), PixelNodeType.INNER, replace_existing_node=True)
+    assert tree_builder[(0, 0)] is not node
+    assert tree_builder[(1, 0)].parent is tree_builder[(0, 0)]
+    assert tree_builder[(1, 0)] in tree_builder[(0, 0)].children
+    tree_builder.create_node((0, 0), PixelNodeType.LEAF, replace_existing_node=True)
+    assert (1, 0) not in tree_builder
+
+
+def test_pixel_builder_remove_added_node():
+    tree_builder = PixelTreeBuilder()
+    order = 0
+    pixel = 0
+    node_type = PixelNodeType.LEAF
+    tree_builder.create_node((order, pixel), node_type, tree_builder.root_pixel)
+    assert (order, pixel) in tree_builder
+    assert order in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 1
+    assert tree_builder.root_pixel.children[0] == tree_builder[(order, pixel)]
+    tree_builder.remove_node((order, pixel))
+    assert (order, pixel) not in tree_builder
+    assert order not in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 0
+
+
+def test_pixel_builder_remove_nodes_descendents():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.INNER, tree_builder.root_pixel)
+    tree_builder.create_node((1, 0), PixelNodeType.INNER)
+    tree_builder.create_node((2, 0), PixelNodeType.LEAF)
+    for order in [0, 1, 2]:
+        assert (order, 0) in tree_builder
+        assert order in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 1
+    assert tree_builder.root_pixel.children[0] == tree_builder[(0, 0)]
+    tree_builder.remove_node((0, 0))
+    for order in [0, 1, 2]:
+        assert (order, 0) not in tree_builder
+        assert order not in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 0
+
+
+def test_pixel_builder_not_remove_node_order():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.LEAF)
+    tree_builder.create_node((0, 1), PixelNodeType.LEAF)
+    assert (0, 0) in tree_builder
+    assert (0, 1) in tree_builder
+    assert 0 in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 2
+    assert tree_builder.root_pixel.children[0] == tree_builder[(0, 0)]
+    assert tree_builder.root_pixel.children[1] == tree_builder[(0, 1)]
+    tree_builder.remove_node((0, 0))
+    assert (0, 0) not in tree_builder
+    assert (0, 1) in tree_builder
+    assert 0 in tree_builder.pixels
+    assert len(tree_builder.root_pixel.children) == 1
+    assert tree_builder.root_pixel.children[0] == tree_builder[(0, 1)]
+
+
+def test_remove_missing_node_errors():
+    tree_builder = PixelTreeBuilder()
+    tree_builder.create_node((0, 0), PixelNodeType.LEAF)
+    with pytest.raises(ValueError):
+        tree_builder.remove_node((1, 1))
+
+
 def test_pixel_builder_retrieve_none_node():
     tree_builder = PixelTreeBuilder()
     assert tree_builder.get_node((10, 10)) is None
     assert tree_builder.get_node(HealpixPixel(10, 10)) is None
     assert tree_builder[(10, 10)] is None
     assert tree_builder[HealpixPixel(10, 10)] is None
+
+
+def test_split_leaf_to_match_partitioning():
+    builder1 = PixelTreeBuilder()
+    builder2 = PixelTreeBuilder()
+    builder1.create_node((0, 0), PixelNodeType.LEAF)
+    builder2.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 0), PixelNodeType.INNER)
+    builder2.create_node((2, 0), PixelNodeType.LEAF)
+    builder1.split_leaf_to_match_partitioning(builder2[(0, 0)])
+    assert builder1[(0, 0)].node_type == PixelNodeType.INNER
+    assert builder1[(1, 0)].node_type == PixelNodeType.INNER
+    for pixel in [(1, 1), (1, 2), (1, 3)]:
+        assert pixel in builder1
+        assert builder1[pixel].node_type == PixelNodeType.LEAF
+    for pixel in [(2, 0), (2, 1), (2, 2), (2, 3)]:
+        assert pixel in builder1
+        assert builder1[pixel].node_type == PixelNodeType.LEAF
+
+
+def test_split_leaf_not_exist_errors():
+    builder1 = PixelTreeBuilder()
+    builder2 = PixelTreeBuilder()
+    builder2.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 0), PixelNodeType.INNER)
+    builder2.create_node((2, 0), PixelNodeType.LEAF)
+    assert (0, 0) not in builder1
+    with pytest.raises(ValueError, match="No node in tree"):
+        builder1.split_leaf_to_match_partitioning(builder2[(0, 0)])
+
+
+def test_split_leaf_not_leaf_errors():
+    builder1 = PixelTreeBuilder()
+    builder2 = PixelTreeBuilder()
+    builder1.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 0), PixelNodeType.INNER)
+    builder2.create_node((2, 0), PixelNodeType.LEAF)
+    assert builder1[(0, 0)].node_type == PixelNodeType.INNER
+    with pytest.raises(ValueError, match="is not a leaf node"):
+        builder1.split_leaf_to_match_partitioning(builder2[(0, 0)])
+
+
+def test_add_all_descendants_from_node():
+    builder1 = PixelTreeBuilder()
+    builder2 = PixelTreeBuilder()
+    builder1.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 1), PixelNodeType.LEAF)
+    builder2.create_node((2, 0), PixelNodeType.LEAF)
+    builder1.add_all_descendants_from_node(builder2[(0, 0)])
+    for pixel in [(1, 0), (1, 1), (2, 0)]:
+        assert pixel in builder1
+        assert builder1[pixel].node_type == builder2[pixel].node_type
+
+
+def test_add_all_descendants_from_node_missing_node_errors():
+    builder1 = PixelTreeBuilder()
+    builder2 = PixelTreeBuilder()
+    builder2.create_node((0, 0), PixelNodeType.INNER)
+    builder2.create_node((1, 0), PixelNodeType.INNER)
+    builder2.create_node((2, 0), PixelNodeType.LEAF)
+    assert (0, 0) not in builder1
+    with pytest.raises(ValueError, match="No node in tree"):
+        builder1.add_all_descendants_from_node(builder2[(0, 0)])
 
 
 def test_built_pixel_tree_contains_same_nodes_as_builder():
