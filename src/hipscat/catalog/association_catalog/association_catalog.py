@@ -2,11 +2,9 @@ from typing import Tuple, Union
 
 import pandas as pd
 
-from hipscat.catalog.catalog_type import CatalogType
-from hipscat.catalog.association_catalog.association_catalog_info import (
-    AssociationCatalogInfo,
-)
+from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
+from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.io import FilePointer, paths
 
@@ -59,8 +57,6 @@ class AssociationCatalog(Dataset):
         cls, catalog_base_dir: FilePointer
     ) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:
         args = super()._read_args(catalog_base_dir)
-        partition_join_info_file = paths.get_partition_join_info_pointer(
-            catalog_base_dir
-        )
+        partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_file(partition_join_info_file)
         return args + (partition_join_info,)

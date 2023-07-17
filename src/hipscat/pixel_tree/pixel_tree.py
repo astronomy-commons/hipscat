@@ -78,9 +78,7 @@ class PixelTree:
     def __getitem__(self, item):
         return self.get_node(item)
 
-    def get_leaf_nodes_at_healpix_pixel(
-        self, pixel: HealpixInputTypes
-    ) -> List[PixelNode]:
+    def get_leaf_nodes_at_healpix_pixel(self, pixel: HealpixInputTypes) -> List[PixelNode]:
         """Lookup all leaf nodes that contain or are within a given HEALPix pixel
 
         - Exact matches will return a list with only the matching pixel
@@ -111,9 +109,7 @@ class PixelTree:
             return []
         return [node_in_tree]
 
-    def _find_first_lower_order_leaf_node_in_tree(
-        self, pixel: HealpixInputTypes
-    ) -> PixelNode | None:
+    def _find_first_lower_order_leaf_node_in_tree(self, pixel: HealpixInputTypes) -> PixelNode | None:
         pixel = get_healpix_pixel(pixel)
         for delta_order in range(1, pixel.order + 1):
             lower_pixel = pixel.convert_to_lower_order(delta_order)
