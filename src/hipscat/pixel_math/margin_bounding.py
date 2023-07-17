@@ -22,7 +22,7 @@ def check_margin_bounds(
         pixel (int): the healpixel to be checked against.
         margin_threshold (double): the size of the margin cache in arcseconds.
         step (int): the amount of samples we'll get from the healpixel boundary
-            to test the datapoints against. the more higher the step the more
+            to test the datapoints against. the higher the step the more
             granular the point checking and therefore the more accurate, however
             using a smaller step value might be helpful for super large datasets
             to save compute time if accuracy is less important.

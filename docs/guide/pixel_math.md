@@ -171,7 +171,7 @@ $a = \arcsin(\sin(A),\sin(x))$
 
 where $a$ is the bisector, $x$ is the arc between our data point and one of the boundary points, and $A$ is the angle between that arc and the arc of the healpix boundary.
 
-this identity comes from [Napier's rules for right spherical triangles](https://en.wikipedia.org/wiki/Spherical_trigonometry#Napier's_rules_for_right_spherical_triangles).
+This identity comes from [Napier's rules for right spherical triangles](https://en.wikipedia.org/wiki/Spherical_trigonometry#Napier's_rules_for_right_spherical_triangles).
 
 we already have $x$ from our separation calculations, but we're going to need to calculate the angle $A$. to do this, we can make use of the [spherical law of cosines](https://en.wikipedia.org/wiki/Spherical_law_of_cosines). let's use the identity
 
