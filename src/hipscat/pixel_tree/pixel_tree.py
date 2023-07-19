@@ -83,9 +83,9 @@ class PixelTree:
 
         - Exact matches will return a list with only the matching pixel
         - A pixel that is within a lower order pixel in the tree will return a list with the lower
-        order pixel
+          order pixel
         - A pixel that has higher order pixels within found in the tree will return a list with all
-        higher order pixels
+          higher order pixels
         - A pixel with no matching leaf nodes in the tree will return an empty list
 
         Args:
