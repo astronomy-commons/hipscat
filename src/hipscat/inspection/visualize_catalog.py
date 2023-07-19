@@ -7,7 +7,7 @@ import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
 
-from hipscat.catalog import Catalog, PartitionInfo
+from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
 
 
