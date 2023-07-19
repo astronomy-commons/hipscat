@@ -72,15 +72,11 @@ class HealpixPixel:
                 pixels cannot be  generated. Or if delta_order is negative
         """
         if self.order + delta_order > HIPSCAT_ID_HEALPIX_ORDER:
-            raise ValueError(
-                f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}"
-            )
+            raise ValueError(f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}")
         if delta_order < 0:
             raise ValueError("delta order cannot be below zero")
         pixels = []
         new_order = self.order + delta_order
-        for new_pixel in range(
-            self.pixel * 4**delta_order, (self.pixel + 1) * 4**delta_order
-        ):
+        for new_pixel in range(self.pixel * 4**delta_order, (self.pixel + 1) * 4**delta_order):
             pixels.append(HealpixPixel(new_order, new_pixel))
         return pixels

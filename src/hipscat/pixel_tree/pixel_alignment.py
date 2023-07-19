@@ -214,5 +214,5 @@ def _generate_pixel_mapping_from_tree(left: PixelTree, right: PixelTree, aligned
                 right_pixel = right_node.hp_pixel if right_node is not None else None
                 pixel_mapping_dict[PixelAlignment.JOIN_ORDER_COLUMN_NAME].append(right_order)
                 pixel_mapping_dict[PixelAlignment.JOIN_PIXEL_COLUMN_NAME].append(right_pixel)
-    pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict)
+    pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict).astype(pd.Int64Dtype())
     return pixel_mapping

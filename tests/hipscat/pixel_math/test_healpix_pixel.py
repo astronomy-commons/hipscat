@@ -42,7 +42,14 @@ def test_pixel_str_and_repr():
 
 
 def test_convert_lower_order():
-    test_cases = [(3,10,2,2),(6,1033,5,258),(4,0,3,0),(5,400,2,6),(2,4,0,0),(3,10,3,10)]
+    test_cases = [
+        (3, 10, 2, 2),
+        (6, 1033, 5, 258),
+        (4, 0, 3, 0),
+        (5, 400, 2, 6),
+        (2, 4, 0, 0),
+        (3, 10, 3, 10),
+    ]
     for order, pixel, final_order, final_pixel in test_cases:
         delta = order - final_order
         pixel = HealpixPixel(order, pixel)
@@ -68,11 +75,11 @@ def test_convert_lower_order_fails_negative():
 
 
 def test_convert_higher_order():
-    test_cases = [(3,10,1),(6,1033,3),(4,0,1),(5,400,2),(2,4,0),(0,10,2)]
+    test_cases = [(3, 10, 1), (6, 1033, 3), (4, 0, 1), (5, 400, 2), (2, 4, 0), (0, 10, 2)]
     for order, pixel, delta_order in test_cases:
         converted_pixels = HealpixPixel(order, pixel).convert_to_higher_order(delta_order)
         final_order = order + delta_order
-        for final_pixel in range(pixel * 4**delta_order, (pixel+1) * 4**delta_order):
+        for final_pixel in range(pixel * 4**delta_order, (pixel + 1) * 4**delta_order):
             assert HealpixPixel(final_order, final_pixel) in converted_pixels
 
 
