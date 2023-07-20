@@ -7,7 +7,7 @@ import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
 
-from hipscat.catalog import Catalog, PartitionInfo
+from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
 
 
@@ -55,23 +55,20 @@ def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
             - cart - Cartesian projection
             - orth - Orthographic projection
     """
-    pixels = catalog.get_pixels()
-
-    catalog_orders = pixels[PartitionInfo.METADATA_ORDER_COLUMN_NAME].unique()
-    catalog_orders.sort()
-    max_order = catalog_orders[-1]
+    pixels = catalog.partition_info.get_healpix_pixels()
+    max_order = catalog.partition_info.get_highest_order()
 
     order_map = np.full(hp.order2npix(max_order), hp.pixelfunc.UNSEEN)
 
-    for _, pixel in pixels.iterrows():
-        explosion_factor = 4 ** (max_order - pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME])
+    for pixel in pixels:
+        explosion_factor = 4 ** (max_order - pixel.order)
         exploded_pixels = [
             *range(
-                pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME] * explosion_factor,
-                (pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME] + 1) * explosion_factor,
+                pixel.pixel * explosion_factor,
+                (pixel.pixel + 1) * explosion_factor,
             )
         ]
-        order_map[exploded_pixels] = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
+        order_map[exploded_pixels] = pixel.order
     _plot_healpix_map(
         order_map,
         projection,

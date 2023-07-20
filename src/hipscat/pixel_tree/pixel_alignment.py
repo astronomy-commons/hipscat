@@ -28,11 +28,11 @@ class PixelAlignment:
             and 7, would result in the smaller order 1 pixels in the aligned tree.
         alignment_type: The type of alignment describing how to handle nodes which exist in one tree
             but not the other. Options are:
-            inner - only use pixels that appear in both catalogs
-            left - use all pixels that appear in the left catalog and any overlapping from the right
-            right - use all pixels that appear in the right catalog and any overlapping from the
-                left
-            outer - use all pixels from both catalogs
+
+                - inner - only use pixels that appear in both catalogs
+                - left - use all pixels that appear in the left catalog and any overlapping from the right
+                - right - use all pixels that appear in the right catalog and any overlapping from the left
+                - outer - use all pixels from both catalogs
     """
 
     PRIMARY_ORDER_COLUMN_NAME = "primary_Norder"
@@ -73,11 +73,12 @@ def align_trees(
         right: The right tree to align
         alignment_type: The type of alignment describing how to handle nodes which exist in one tree
             but not the other. Options are:
-            inner - only use pixels that appear in both catalogs
-            left - use all pixels that appear in the left catalog and any overlapping from the right
-            right - use all pixels that appear in the right catalog and any overlapping from the
-                left
-            outer - use all pixels from both catalogs
+            
+                - inner - only use pixels that appear in both catalogs
+                - left - use all pixels that appear in the left catalog and any overlapping from the right
+                - right - use all pixels that appear in the right catalog and any overlapping from the left
+                - outer - use all pixels from both catalogs
+
     Returns:
         The `PixelAlignment` object with the alignment from the two trees
     """
@@ -214,5 +215,5 @@ def _generate_pixel_mapping_from_tree(left: PixelTree, right: PixelTree, aligned
                 right_pixel = right_node.hp_pixel if right_node is not None else None
                 pixel_mapping_dict[PixelAlignment.JOIN_ORDER_COLUMN_NAME].append(right_order)
                 pixel_mapping_dict[PixelAlignment.JOIN_PIXEL_COLUMN_NAME].append(right_pixel)
-    pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict)
+    pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict).astype(pd.Int64Dtype())
     return pixel_mapping
