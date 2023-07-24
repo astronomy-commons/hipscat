@@ -26,6 +26,10 @@ def check_margin_bounds(
             granular the point checking and therefore the more accurate, however
             using a smaller step value might be helpful for super large datasets
             to save compute time if accuracy is less important.
+        chunk_size (int): the size of the chunk of data points we process on a single
+            thread at any given time. We only process a certain amount of the data
+            at once as trying to check all data points at once can lead to
+            memory issues.
     Returns:
         :obj:`numpy.array` of boolean values corresponding to the ra and dec
             coordinates checked against whether a given point is within any of the
@@ -115,7 +119,7 @@ def _find_minimum_distance(separations, distances, margin_threshold): # pragma: 
     if (
         0 in (minimum_index, other_index)
     ) and (
-        num_seps in (minimum_index, other_index)
+        num_seps - 1 in (minimum_index, other_index)
     ):
         side_z = distances[-1]
     else:
