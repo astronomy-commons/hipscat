@@ -28,7 +28,6 @@ class PixelNode:
         pixel: HealpixInputTypes,
         node_type: PixelNodeType,
         parent: PixelNode | None,
-        children: List[PixelNode] | None = None,
     ) -> None:
         """Inits PixelNode with its attributes
 
@@ -57,10 +56,6 @@ class PixelNode:
         self.node_type = node_type
         self.parent = parent
         self.children = []
-
-        if children is not None:
-            for child in children:
-                self.add_child_node(child)
 
         if self.parent is not None:
             self.parent.add_child_node(self)
