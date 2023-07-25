@@ -14,7 +14,6 @@ def root_pixel_node_data():
         "pixel": HealpixPixel(-1, -1),
         "node_type": PixelNodeType.ROOT,
         "parent": None,
-        "children": None,
     }
 
 
@@ -29,7 +28,6 @@ def inner_pixel_node_data(root_pixel_node):
         "pixel": HealpixPixel(0, 1),
         "node_type": PixelNodeType.INNER,
         "parent": root_pixel_node,
-        "children": None,
     }
 
 
@@ -44,7 +42,6 @@ def leaf_pixel_node_data(inner_pixel_node):
         "pixel": HealpixPixel(1, 12),
         "node_type": PixelNodeType.LEAF,
         "parent": inner_pixel_node,
-        "children": None,
     }
 
 
