@@ -138,3 +138,5 @@ dask-worker-space/
 
 # tmp directory
 tmp/
+
+**/.DS_Store

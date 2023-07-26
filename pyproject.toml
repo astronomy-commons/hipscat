@@ -22,8 +22,8 @@ dependencies = [
     "setuptools_scm",
     "pyarrow",
     "astropy",
-    "regions",
     "typing-extensions>=4.3.0",
+    "numba"
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
