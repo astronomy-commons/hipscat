@@ -39,8 +39,8 @@ class Catalog(Dataset):
         Args:
             catalog_info: CatalogInfo object with catalog metadata
             pixels: Specifies the pixels contained in the catalog. Can be either a Dataframe with
-                columns `Norder`, `Dir`, and `Npix` matching a `partition_info.csv` file, or a
-                PartitionInfo object
+                columns `Norder`, `Dir`, and `Npix` matching a `partition_info.csv` file, a
+                `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
         """
