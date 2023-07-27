@@ -68,7 +68,9 @@ class Catalog(Dataset):
             for node in pixels.root_pixel.get_all_leaf_descendants():
                 partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(node.hp_order)
                 partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(node.hp_pixel)
-                partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(int(node.hp_pixel / 10_000) * 10_000)
+                partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(
+                    int(node.hp_pixel / 10_000) * 10_000
+                )
             return PartitionInfo(pd.DataFrame.from_dict(partition_info_dict))
         raise TypeError("Pixels must be of type PartitionInfo, Dataframe, or PixelTree")
 
