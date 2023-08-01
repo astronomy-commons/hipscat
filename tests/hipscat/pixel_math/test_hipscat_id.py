@@ -1,10 +1,16 @@
 """Test construction (and de-construction) of the hipscat ID"""
 
 import numpy as np
+import healpy as hp
 import numpy.testing as npt
 import pytest
 
-from hipscat.pixel_math.hipscat_id import compute_hipscat_id, hipscat_id_to_healpix
+from hipscat.pixel_math.hipscat_id import (
+    compute_hipscat_id,
+    hipscat_id_to_healpix,
+    HIPSCAT_ID_HEALPIX_ORDER,
+    healpix_to_hipscat_id,
+)
 
 
 def test_single():
@@ -109,3 +115,46 @@ def test_hipscat_id_to_healpix():
     ]
 
     npt.assert_array_equal(result, expected)
+
+
+def test_healpix_to_hipscat_id_single():
+    orders = [3, 3, 4, 1]
+    pixels = [0, 12, 1231, 11]
+    pixels_at_high_order = [
+        p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)
+    ]
+    lon, lat = hp.pix2ang(
+        [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
+    )
+    actual_hipscat_ids = compute_hipscat_id(lon, lat)
+    test_hipscat_ids = [healpix_to_hipscat_id(o, p) for o, p in zip(orders, pixels)]
+    assert np.all(test_hipscat_ids == actual_hipscat_ids)
+
+
+def test_healpix_to_hipscat_id_array():
+    orders = [3, 3, 4, 1]
+    pixels = [0, 12, 1231, 11]
+    pixels_at_high_order = [
+        p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)
+    ]
+    lon, lat = hp.pix2ang(
+        [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
+    )
+    actual_hipscat_ids = compute_hipscat_id(lon, lat)
+    test_hipscat_ids = healpix_to_hipscat_id(orders, pixels)
+    assert np.all(test_hipscat_ids == actual_hipscat_ids)
+
+
+def test_healpix_to_hipscat_id_offset():
+    orders = [3, 3, 4, 1]
+    pixels = [0, 0, 1231, 11]
+    offsets = [0, 1, 0, 0]
+    pixels_at_high_order = [
+        p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)
+    ]
+    lon, lat = hp.pix2ang(
+        [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
+    )
+    actual_hipscat_ids = compute_hipscat_id(lon, lat)
+    test_hipscat_ids = healpix_to_hipscat_id(orders, pixels, offsets)
+    assert np.all(test_hipscat_ids == actual_hipscat_ids)

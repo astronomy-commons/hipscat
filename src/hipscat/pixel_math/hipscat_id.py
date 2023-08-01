@@ -53,11 +53,16 @@ def compute_hipscat_id(ra_values, dec_values):
     offset_counter = boring_number_index - unique_indices[unique_inverse]
 
     ## Add counter to shifted pixel, and map back to the original, unsorted, values
-    shifted_pixels = mapped_pixels.astype(np.uint64) << (64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
-    shifted_pixels = shifted_pixels + offset_counter
+    shifted_pixels = _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter)
 
     unsort_index = np.argsort(sort_index, kind="stable")
     return shifted_pixels[unsort_index]
+
+
+def _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter):
+    shifted_pixels = mapped_pixels.astype(np.uint64) << np.uint64(64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
+    shifted_pixels = shifted_pixels + offset_counter
+    return shifted_pixels
 
 
 def hipscat_id_to_healpix(ids):
@@ -70,3 +75,26 @@ def hipscat_id_to_healpix(ids):
         list of order 19 pixels from the hipscat id
     """
     return np.asarray(ids, dtype=np.uint64) >> (64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
+
+
+def healpix_to_hipscat_id(order: int, pixel: int, counter: int = 0) -> int:
+    """Convert a healpix pixel to a hipscat_id
+
+    This maps the healpix pixel to the lowest pixel number within that pixel at order 19,
+    then shifts and adds the given counter to get a hipscat_id.
+
+    Useful for operations such as filtering by hipscat_id.
+
+    Args:
+        order (int64 | list[int64]): order of pixel to convert
+        pixel (int64 | list[int64]): pixel number in nested ordering of pixel to convert
+        counter (int64 | list[int64]) (Default: 0): counter value in converted hipscat id
+    Returns:
+        list of hipscat ids
+    """
+    order = np.uint64(order)
+    pixel = np.uint64(pixel)
+    counter = np.uint64(counter)
+    pixel_higher_order = pixel * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - order))
+    hipscat_id = _compute_hipscat_id_from_mapped_pixels(pixel_higher_order, counter)
+    return hipscat_id
