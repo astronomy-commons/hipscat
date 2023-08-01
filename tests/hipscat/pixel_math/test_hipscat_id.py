@@ -128,8 +128,7 @@ def test_healpix_to_hipscat_id_single():
     )
     actual_hipscat_ids = compute_hipscat_id(lon, lat)
     test_hipscat_ids = [healpix_to_hipscat_id(o, p) for o, p in zip(orders, pixels)]
-    assert np.all( test_hipscat_ids == actual_hipscat_ids)
-    assert comparison.all()
+    assert np.all(test_hipscat_ids == actual_hipscat_ids)
 
 
 def test_healpix_to_hipscat_id_array():
@@ -143,8 +142,7 @@ def test_healpix_to_hipscat_id_array():
     )
     actual_hipscat_ids = compute_hipscat_id(lon, lat)
     test_hipscat_ids = healpix_to_hipscat_id(orders, pixels)
-    comparison = test_hipscat_ids == actual_hipscat_ids
-    assert comparison.all()
+    assert np.all(test_hipscat_ids == actual_hipscat_ids)
 
 
 def test_healpix_to_hipscat_id_offset():
