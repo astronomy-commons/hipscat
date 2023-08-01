@@ -120,7 +120,7 @@ def test_healpix_to_hipscat_id_single():
     lon, lat = hp.pix2ang([2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True)
     actual_hipscat_ids = compute_hipscat_id(lon, lat)
     test_hipscat_ids = [healpix_to_hipscat_id(o,p) for o,p in zip(orders, pixels)]
-    comparison = test_hipscat_ids == actual_hipscat_ids
+    assert np.all( test_hipscat_ids == actual_hipscat_ids)
     assert comparison.all()
 
 
