@@ -6,7 +6,9 @@ from astropy.coordinates import SkyCoord
 from numba import njit
 
 
-def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=100, chunk_size=1000):
+def check_margin_bounds(
+        r_asc, dec, pixel_order, pixel, margin_threshold, step=100, chunk_size=1000
+    ):
     # pylint: disable=too-many-locals
     """Check a set of points in ra and dec space to see if they fall within the
         `margin_threshold` of a given healpixel.
@@ -43,11 +45,13 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
     if num_points == 0:
         return np.array([])
 
-    bounds = hp.vec2dir(hp.boundaries(2**pixel_order, pixel, step=step, nest=True), lonlat=True)
+    bounds = hp.vec2dir(
+        hp.boundaries(2**pixel_order, pixel, step=step, nest=True), lonlat=True
+    )
     margin_check = np.full((num_points,), False)
 
     distances = _get_boundary_point_distances(pixel_order, pixel, step)
-    margin_threshold_deg = margin_threshold / 3600.0
+    margin_threshold_deg = margin_threshold / 3600.
 
     num_bounds = step * 4
     ra_chunks = np.array_split(r_asc, chunk_size)
@@ -66,7 +70,9 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
             bounds_dec_matrix = np.repeat(np.array([bounds[1]]), len(dec_chunk), axis=0)
 
             points_coords = SkyCoord(ra=ra_matrix, dec=dec_matrix, unit="deg")
-            bounds_coords = SkyCoord(ra=bounds_ra_matrix, dec=bounds_dec_matrix, unit="deg")
+            bounds_coords = SkyCoord(
+                ra=bounds_ra_matrix, dec=bounds_dec_matrix, unit="deg"
+            )
 
             separations = points_coords.separation(bounds_coords)
 
@@ -75,9 +81,9 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
                 1,
                 separations,
                 distances=distances,
-                margin_threshold=margin_threshold_deg,
+                margin_threshold=margin_threshold_deg
             )
-            margin_check[index : index + chunk_len] = bisectors <= margin_threshold_deg
+            margin_check[index:index+chunk_len] = bisectors <= margin_threshold_deg
             index += chunk_len
 
             del ra_matrix, dec_matrix, bounds_ra_matrix, bounds_dec_matrix
@@ -87,10 +93,9 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
 
     return margin_check
 
-
 # numba jit compiler doesn't count for coverage tests, so we'll set no cover.
 @njit("double(double[:], double[:], double)")
-def _find_minimum_distance(separations, distances, margin_threshold):  # pragma: no cover
+def _find_minimum_distance(separations, distances, margin_threshold): # pragma: no cover
     """Find the minimum distance between a given datapoint and a healpixel"""
     minimum_index = np.argmin(separations)
 
@@ -111,21 +116,32 @@ def _find_minimum_distance(separations, distances, margin_threshold):  # pragma:
 
     side_x = np.radians(separations[minimum_index])
     side_y = np.radians(separations[other_index])
-    if (0 in (minimum_index, other_index)) and (num_seps - 1 in (minimum_index, other_index)):
+    if (
+        0 in (minimum_index, other_index)
+    ) and (
+        num_seps - 1 in (minimum_index, other_index)
+    ):
         side_z = distances[-1]
     else:
         side_z = distances[min(minimum_index, other_index)]
     side_z *= np.pi / 180.0
 
-    ang = np.arccos((np.cos(side_y) - (np.cos(side_x) * np.cos(side_z))) / (np.sin(side_x) * np.sin(side_z)))
+    ang = np.arccos(
+            (
+                np.cos(side_y) - (np.cos(side_x) * np.cos(side_z))
+            ) / (
+                np.sin(side_x) * np.sin(side_z)
+            )
+        )
     bisector = np.degrees(np.arcsin(np.sin(ang) * np.sin(side_x)))
 
     return bisector
 
-
 def _get_boundary_point_distances(order, pixel, step):
     """Get the distance of the segments between healpixel boundary points"""
-    boundary_points = hp.vec2dir(hp.boundaries(2**order, pixel, step=step, nest=True), lonlat=True)
+    boundary_points = hp.vec2dir(
+        hp.boundaries(2**order, pixel, step=step, nest=True), lonlat=True
+    )
 
     # shift forward all the coordinates by one
     shift_ra = np.roll(boundary_points[0], 1)
