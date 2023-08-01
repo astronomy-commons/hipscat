@@ -95,6 +95,6 @@ def healpix_to_hipscat_id(order: int, pixel: int, counter: int = 0) -> int:
     order = np.uint64(order)
     pixel = np.uint64(pixel)
     counter = np.uint64(counter)
-    pixel_higher_order = pixel * (4**(HIPSCAT_ID_HEALPIX_ORDER-order))
+    pixel_higher_order = pixel * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - order))
     hipscat_id = _compute_hipscat_id_from_mapped_pixels(pixel_higher_order, counter)
     return hipscat_id
