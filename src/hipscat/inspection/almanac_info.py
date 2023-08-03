@@ -20,10 +20,10 @@ class AlmanacInfo:
     catalog_path: str = ""
     catalog_name: str = ""
     catalog_type: str = ""
-    primary: str = None
-    join: str = None
-    primary_link: Self = None
-    join_link: Self = None
+    primary: str | None = None
+    join: str | None = None
+    primary_link: Self | None = None
+    join_link: Self | None = None
     sources: List[Self] = field(default_factory=list)
     objects: List[Self] = field(default_factory=list)
     margins: List[Self] = field(default_factory=list)
@@ -38,7 +38,7 @@ class AlmanacInfo:
 
     catalog_info: dict = field(default_factory=dict)
 
-    catalog_info_object: BaseCatalogInfo = None
+    catalog_info_object: BaseCatalogInfo | None = None
 
     def __post_init__(self):
         if len(self.catalog_info):
@@ -74,7 +74,9 @@ class AlmanacInfo:
     @classmethod
     def from_catalog_dir(cls, catalog_base_dir: str) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
-        catalog_info = catalog_info_factory.from_catalog_dir(catalog_base_dir=catalog_base_dir)
+        catalog_info = catalog_info_factory.from_catalog_dir(
+            catalog_base_dir=file_io.get_file_pointer_from_path(catalog_base_dir)
+        )
         args = {
             "catalog_path": catalog_base_dir,
             "catalog_name": catalog_info.catalog_name,
