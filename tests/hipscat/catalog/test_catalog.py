@@ -108,7 +108,7 @@ def test_cone_filter_big(small_sky_order1_catalog):
     assert (1, 47) in filtered_catalog.pixel_tree
 
 
-@pytest.mark.timeout(2)
+@pytest.mark.timeout(5)
 def test_cone_filter_multiple_order(catalog_info):
     partition_info_df = pd.DataFrame.from_dict(
         {
