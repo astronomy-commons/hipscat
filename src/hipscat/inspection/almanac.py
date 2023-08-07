@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import os
 import warnings
@@ -178,7 +180,7 @@ class Almanac:
             else:  # pragma: no cover
                 warnings.warn(f"Unknown catalog type {catalog_entry.catalog_type}")
 
-    def _get_linked_catalog(self, linked_text, namespace) -> AlmanacInfo:
+    def _get_linked_catalog(self, linked_text, namespace) -> AlmanacInfo | None:
         """Find a catalog to be used for linking catalogs within the almanac.
 
         e.g. for an association table, we will have a primary and join catalog.
@@ -214,7 +216,7 @@ class Almanac:
                 return None
         return self.entries[resolved_name]
 
-    def catalogs(self, include_deprecated=False, types: List[str] = None):
+    def catalogs(self, include_deprecated=False, types: List[str] | None = None):
         """Get names of catalogs in the almanac, matching the provided conditions.
 
         Catalogs must meet all criteria provided in order to be returned (e.g.

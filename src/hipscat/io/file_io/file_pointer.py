@@ -49,7 +49,7 @@ def is_regular_file(pointer: FilePointer) -> bool:
     return os.path.isfile(pointer)
 
 
-def find_files_matching_path(*paths: str) -> List[FilePointer]:
+def find_files_matching_path(pointer: FilePointer, *paths: str) -> List[FilePointer]:
     """Find files or directories matching the provided path parts.
 
     Args:
@@ -58,7 +58,7 @@ def find_files_matching_path(*paths: str) -> List[FilePointer]:
     Returns:
         New file pointers to files found matching the path
     """
-    matcher = append_paths_to_pointer(*paths)
+    matcher = append_paths_to_pointer(pointer, *paths)
     return [get_file_pointer_from_path(x) for x in glob.glob(matcher)]
 
 

@@ -45,13 +45,13 @@ def pixel_directory(
         FilePointer directory name
     """
     norder = int(pixel_order)
-    if pixel_number is None and directory_number is None:
-        raise ValueError("One of pixel_number or directory_number is required to create pixel directory")
     if directory_number is not None:
         ndir = directory_number
-    else:
+    elif pixel_number is not None:
         npix = int(pixel_number)
         ndir = int(npix / 10_000) * 10_000
+    else:
+        raise ValueError("One of pixel_number or directory_number is required to create pixel directory")
     return create_hive_directory_name(
         catalog_base_dir,
         [ORDER_DIRECTORY_PREFIX, DIR_DIRECTORY_PREFIX],

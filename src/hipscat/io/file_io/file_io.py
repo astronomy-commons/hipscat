@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import shutil
@@ -98,7 +100,9 @@ def read_parquet_metadata(file_pointer: FilePointer, **kwargs) -> pq.FileMetaDat
     return pq.read_metadata(file_pointer, **kwargs)
 
 
-def write_parquet_metadata(schema: Any, file_pointer: FilePointer, metadata_collector: list = None, **kwargs):
+def write_parquet_metadata(
+    schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None, **kwargs
+):
     """Write a metadata only parquet file from a schema
 
     Args:
