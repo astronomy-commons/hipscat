@@ -151,8 +151,9 @@ def test_alignment_small_sky_order2():
     npt.assert_array_equal(result, expected)
 
 
+@pytest.mark.timeout(2)
 def test_alignment_even_sky():
-    """Create alignment from an even distribution at order 8"""
+    """Create alignment from an even distribution at order 7"""
     initial_histogram = np.full(hp.order2npix(7), 40)
     result = hist.generate_alignment(initial_histogram, highest_order=7, threshold=1_000)
     # everything maps to order 5, given the density
@@ -205,6 +206,7 @@ def test_compute_pixel_map_order1():
 
     npt.assert_array_equal(result, expected)
 
+
 @pytest.mark.timeout(2)
 def test_compute_pixel_map_even_sky():
     """Create alignment from an even distribution at order 6"""
@@ -213,6 +215,7 @@ def test_compute_pixel_map_even_sky():
     # everything maps to order 5, given the density
     for mapping in result:
         assert mapping.order == 5
+
 
 @pytest.mark.timeout(2)
 def test_compute_pixel_map_even_sky_enforce_lowest():
