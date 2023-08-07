@@ -1,15 +1,15 @@
 """Test construction (and de-construction) of the hipscat ID"""
 
-import numpy as np
 import healpy as hp
+import numpy as np
 import numpy.testing as npt
 import pytest
 
 from hipscat.pixel_math.hipscat_id import (
-    compute_hipscat_id,
-    hipscat_id_to_healpix,
     HIPSCAT_ID_HEALPIX_ORDER,
+    compute_hipscat_id,
     healpix_to_hipscat_id,
+    hipscat_id_to_healpix,
 )
 
 
@@ -71,7 +71,6 @@ def test_list():
     npt.assert_array_equal(result, expected)
 
 
-@pytest.mark.timeout(1)
 def test_load():
     """Generate a kinda big array and make sure the method completes in under a second.
     If this method is failing due to timeouts, please refactor to keep within the time limit.

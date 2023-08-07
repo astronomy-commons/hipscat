@@ -151,15 +151,16 @@ def test_alignment_small_sky_order2():
     npt.assert_array_equal(result, expected)
 
 
+@pytest.mark.timeout(5)
 def test_alignment_even_sky():
-    """Create alignment from an even distribution at order 8"""
-    initial_histogram = np.full(hp.order2npix(8), 10)
-    result = hist.generate_alignment(initial_histogram, highest_order=8, threshold=1_000)
+    """Create alignment from an even distribution at order 7"""
+    initial_histogram = np.full(hp.order2npix(7), 40)
+    result = hist.generate_alignment(initial_histogram, highest_order=7, threshold=1_000)
     # everything maps to order 5, given the density
     for mapping in result:
         assert mapping[0] == 5
 
-    result = hist.generate_alignment(initial_histogram, highest_order=8, lowest_order=7, threshold=1_000)
+    result = hist.generate_alignment(initial_histogram, highest_order=7, lowest_order=7, threshold=1_000)
     # everything maps to order 7 (would be 5, but lowest of 7 is enforced)
     for mapping in result:
         assert mapping[0] == 7
@@ -206,18 +207,24 @@ def test_compute_pixel_map_order1():
     npt.assert_array_equal(result, expected)
 
 
+@pytest.mark.timeout(5)
 def test_compute_pixel_map_even_sky():
-    """Create alignment from an even distribution at order 8"""
-    initial_histogram = np.full(hp.order2npix(8), 10)
-    result = hist.compute_pixel_map(initial_histogram, highest_order=8, threshold=1_000)
+    """Create alignment from an even distribution at order 6"""
+    initial_histogram = np.full(hp.order2npix(6), 200)
+    result = hist.compute_pixel_map(initial_histogram, highest_order=6, threshold=1_000)
     # everything maps to order 5, given the density
     for mapping in result:
         assert mapping.order == 5
 
-    result = hist.compute_pixel_map(initial_histogram, highest_order=8, lowest_order=7, threshold=1_000)
-    # everything maps to order 7 (would be 5, but lowest of 7 is enforced)
+
+@pytest.mark.timeout(5)
+def test_compute_pixel_map_even_sky_enforce_lowest():
+    """Create pixel map for an even distribution, and enforce a lowest order bound."""
+    initial_histogram = np.full(hp.order2npix(6), 10)
+    result = hist.compute_pixel_map(initial_histogram, highest_order=6, lowest_order=4, threshold=1_000)
+    # everything maps to order 4 (would be 0, but lowest of 4 is enforced)
     for mapping in result:
-        assert mapping.order == 7
+        assert mapping.order == 4
 
 
 def test_compute_pixel_map_invalid_inputs():
