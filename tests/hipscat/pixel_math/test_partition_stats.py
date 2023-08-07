@@ -205,6 +205,7 @@ def test_compute_pixel_map_order1():
 
     npt.assert_array_equal(result, expected)
 
+@pytest.mark.timeout(2)
 def test_compute_pixel_map_even_sky():
     """Create alignment from an even distribution at order 6"""
     initial_histogram = np.full(hp.order2npix(6), 200)
@@ -213,6 +214,7 @@ def test_compute_pixel_map_even_sky():
     for mapping in result:
         assert mapping.order == 5
 
+@pytest.mark.timeout(2)
 def test_compute_pixel_map_even_sky_enforce_lowest():
     """Create pixel map for an even distribution, and enforce a lowest order bound."""
     initial_histogram = np.full(hp.order2npix(6), 10)
