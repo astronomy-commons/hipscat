@@ -78,6 +78,17 @@ def load_csv_to_pandas(file_pointer: FilePointer, **kwargs) -> pd.DataFrame:
     """
     return pd.read_csv(file_pointer, **kwargs)
 
+def load_parquet_to_pandas(file_pointer: FilePointer, **kwargs) -> pd.DataFrame:
+    """Load a parquet file to a pandas dataframe
+
+    Args:
+        file_pointer: location of parquet file to load
+        **kwargs: arguments to pass to pandas `read_parquet` loading method
+    Returns:
+        pandas dataframe loaded from parquet
+    """
+    return pd.read_parquet(file_pointer, **kwargs)
+
 
 def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: FilePointer, **kwargs):
     """Write a pandas DataFrame to a CSV file

@@ -9,11 +9,13 @@ from hipscat.io.file_io import (
     get_file_pointer_from_path,
     load_csv_to_pandas,
     load_json_file,
+    load_parquet_to_pandas,
     make_directory,
     remove_directory,
     write_dataframe_to_csv,
     write_string_to_file,
 )
+from hipscat.io.paths import pixel_catalog_file
 
 
 def test_make_directory(tmp_path):
@@ -90,6 +92,12 @@ def test_load_csv_to_pandas(small_sky_dir):
     partition_info_pointer = get_file_pointer_from_path(partition_info_path)
     loaded_df = load_csv_to_pandas(partition_info_pointer)
     pd.testing.assert_frame_equal(csv_df, loaded_df)
+
+def test_load_parquet_to_pandas(small_sky_dir):
+    pixel_data_path = pixel_catalog_file(small_sky_dir, 0, 11)
+    parquet_df = pd.read_parquet(pixel_data_path)
+    loaded_df = load_parquet_to_pandas(pixel_data_path)
+    pd.testing.assert_frame_equal(parquet_df, loaded_df)
 
 
 def test_write_df_to_csv(tmp_path):
