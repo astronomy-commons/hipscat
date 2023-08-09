@@ -58,3 +58,25 @@ class PartitionInfo:
 
         data_frame = file_io.load_csv_to_pandas(partition_info_file)
         return cls(data_frame)
+
+    @classmethod
+    def from_healpix(cls, healpix_pixels: List[HealpixPixel]):
+        """Create a partition info object from a list of constituent healpix pixels.
+
+        Args:
+            healpix_pixels: list of healpix pixels
+        Returns:
+            A `PartitionInfo` object with the same healpix pixels
+        """
+        partition_info_dict = {
+            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
+            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],
+            PartitionInfo.METADATA_DIR_COLUMN_NAME: [],
+        }
+        for pixel in healpix_pixels:
+            partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(pixel.order)
+            partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(pixel.pixel)
+            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(
+                int(pixel.pixel / 10_000) * 10_000
+            )
+        return cls(pd.DataFrame.from_dict(partition_info_dict))

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 import pandas as pd
 
@@ -11,6 +11,7 @@ from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
@@ -25,7 +26,7 @@ class Catalog(Dataset):
     """
 
     CatalogInfoClass = CatalogInfo
-    PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree]
+    PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
     def __init__(
@@ -60,19 +61,15 @@ class Catalog(Dataset):
         if isinstance(pixels, pd.DataFrame):
             return PartitionInfo(pixels)
         if isinstance(pixels, PixelTree):
-            partition_info_dict = {
-                PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
-                PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],
-                PartitionInfo.METADATA_DIR_COLUMN_NAME: [],
-            }
-            for node in pixels.root_pixel.get_all_leaf_descendants():
-                partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(node.hp_order)
-                partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(node.hp_pixel)
-                partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(
-                    int(node.hp_pixel / 10_000) * 10_000
-                )
-            return PartitionInfo(pd.DataFrame.from_dict(partition_info_dict))
-        raise TypeError("Pixels must be of type PartitionInfo, Dataframe, or PixelTree")
+            return PartitionInfo.from_healpix(
+                [
+                    HealpixPixel(node.hp_order, node.hp_pixel)
+                    for node in pixels.root_pixel.get_all_leaf_descendants()
+                ]
+            )
+        if pd.api.types.is_list_like(pixels):
+            return PartitionInfo.from_healpix(pixels)
+        raise TypeError("Pixels must be of type PartitionInfo, Dataframe, PixelTree, or List[HealpixPixel]")
 
     @staticmethod
     def _get_pixel_tree_from_pixels(pixels: PixelInputTypes) -> PixelTree:
@@ -82,7 +79,9 @@ class Catalog(Dataset):
             return PixelTreeBuilder.from_partition_info_df(pixels)
         if isinstance(pixels, PixelTree):
             return pixels
-        raise TypeError("Pixels must be of type PartitionInfo, Dataframe, or PixelTree")
+        if pd.api.types.is_list_like(pixels):
+            return PixelTreeBuilder.from_healpix(pixels)
+        raise TypeError("Pixels must be of type PartitionInfo, Dataframe, PixelTree, or List[HealpixPixel]")
 
     def get_pixels(self):
         """Get all healpix pixels that are contained in the catalog

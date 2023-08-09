@@ -11,11 +11,11 @@ from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-def test_catalog_load(catalog_info, catalog_pixels):
-    catalog = Catalog(catalog_info, catalog_pixels)
-    assert len(catalog.get_pixels()) == catalog_pixels.shape[0]
+def test_catalog_load(catalog_info, catalog_pixels_df):
+    catalog = Catalog(catalog_info, catalog_pixels_df)
+    assert len(catalog.get_pixels()) == catalog_pixels_df.shape[0]
     assert catalog.catalog_name == catalog_info.catalog_name
-    for _, pixel in catalog_pixels.iterrows():
+    for _, pixel in catalog_pixels_df.iterrows():
         order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
         pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
         assert (order, pixel) in catalog.pixel_tree
@@ -33,12 +33,12 @@ def test_catalog_wrong_catalog_type(catalog_info, catalog_pixels):
         Catalog(catalog_info, catalog_pixels)
 
 
-def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
-    partition_info = PartitionInfo(catalog_pixels)
+def test_partition_info_pixel_input_types(catalog_info, catalog_pixels_df):
+    partition_info = PartitionInfo(catalog_pixels_df)
     catalog = Catalog(catalog_info, partition_info)
-    assert len(catalog.get_pixels()) == catalog_pixels.shape[0]
-    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == catalog_pixels.shape[0]
-    for _, pixel in catalog_pixels.iterrows():
+    assert len(catalog.get_pixels()) == catalog_pixels_df.shape[0]
+    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == catalog_pixels_df.shape[0]
+    for _, pixel in catalog_pixels_df.iterrows():
         order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
         pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
         assert (order, pixel) in catalog.pixel_tree
@@ -46,16 +46,22 @@ def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
 
 
 def test_tree_pixel_input(catalog_info, catalog_pixels):
-    partition_info = PartitionInfo(catalog_pixels)
-    tree = PixelTreeBuilder.from_partition_info_df(partition_info.data_frame)
+    tree = PixelTreeBuilder.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, tree)
-    assert len(catalog.get_pixels()) == catalog_pixels.shape[0]
-    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == catalog_pixels.shape[0]
-    for _, pixel in catalog_pixels.iterrows():
-        order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
-        pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
-        assert (order, pixel) in catalog.pixel_tree
-        assert catalog.pixel_tree[(order, pixel)].node_type == PixelNodeType.LEAF
+    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
+    for pixel in catalog_pixels:
+        assert pixel in catalog.pixel_tree
+        assert catalog.pixel_tree[pixel].node_type == PixelNodeType.LEAF
+
+
+def test_tree_pixel_input_list(catalog_info, catalog_pixels):
+    catalog = Catalog(catalog_info, catalog_pixels)
+    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
+    for pixel in catalog_pixels:
+        assert pixel in catalog.pixel_tree
+        assert catalog.pixel_tree[pixel].node_type == PixelNodeType.LEAF
 
 
 def test_wrong_pixel_input_type(catalog_info):
@@ -67,10 +73,16 @@ def test_wrong_pixel_input_type(catalog_info):
         Catalog._get_partition_info_from_pixels("test")
 
 
-def test_get_pixels(catalog_info, catalog_pixels):
-    catalog = Catalog(catalog_info, catalog_pixels)
+def test_get_pixels(catalog_info, catalog_pixels_df):
+    catalog = Catalog(catalog_info, catalog_pixels_df)
     pixels = catalog.get_pixels()
-    pandas.testing.assert_frame_equal(pixels, catalog_pixels)
+    pandas.testing.assert_frame_equal(pixels, catalog_pixels_df)
+
+
+def test_get_pixels_list(catalog_info, catalog_pixels):
+    catalog = Catalog(catalog_info, catalog_pixels)
+    pixels = catalog.partition_info.get_healpix_pixels()
+    assert pixels == catalog_pixels
 
 
 def test_load_catalog_small_sky(small_sky_dir):
