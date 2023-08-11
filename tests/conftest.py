@@ -1,6 +1,7 @@
 import dataclasses
 import os
 import os.path
+from typing import List
 
 import pandas as pd
 import pytest
@@ -11,6 +12,7 @@ from hipscat.catalog.association_catalog.partition_join_info import PartitionJoi
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.inspection.almanac import Almanac
+from hipscat.pixel_math import HealpixPixel
 
 DATA_DIR_NAME = "data"
 ALMANAC_DIR_NAME = "almanac"
@@ -187,7 +189,7 @@ def catalog_info(catalog_info_data) -> CatalogInfo:
 
 
 @pytest.fixture
-def catalog_pixels() -> pd.DataFrame:
+def catalog_pixels_df() -> pd.DataFrame:
     return pd.DataFrame.from_dict(
         {
             PartitionInfo.METADATA_ORDER_COLUMN_NAME: [1, 1, 2],
@@ -195,6 +197,11 @@ def catalog_pixels() -> pd.DataFrame:
             PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [0, 1, 8],
         }
     )
+
+
+@pytest.fixture
+def catalog_pixels() -> List[HealpixPixel]:
+    return [HealpixPixel(1, 0), HealpixPixel(1, 1), HealpixPixel(2, 8)]
 
 
 @pytest.fixture

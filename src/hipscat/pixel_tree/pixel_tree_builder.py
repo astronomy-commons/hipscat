@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import List
+
 import pandas as pd
 
 from hipscat.catalog.partition_info import PartitionInfo
@@ -47,6 +49,21 @@ class PixelTreeBuilder:
         builder = PixelTreeBuilder()
         # pylint: disable=protected-access
         builder._create_tree_from_partition_info_df(partition_info_df)
+        return builder.build()
+
+    @staticmethod
+    def from_healpix(healpix_pixels: List[HealpixPixel]) -> PixelTree:
+        """Build a tree from a list of constituent healpix pixels
+
+        Args:
+            healpix_pixels: list of healpix pixels
+
+        Returns:
+            The pixel tree with the leaf pixels specified in the list
+        """
+        builder = PixelTreeBuilder()
+        for pixel in healpix_pixels:
+            builder.create_node_and_parent_if_not_exist((pixel.order, pixel.pixel), PixelNodeType.LEAF)
         return builder.build()
 
     def contains(self, pixel: HealpixInputTypes) -> bool:
