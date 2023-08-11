@@ -139,4 +139,9 @@ dask-worker-space/
 # tmp directory
 tmp/
 
-**/.DS_Store
+# Mac OS
+.DS_Store
+
+# Airspeed Velocity performance results
+_results/
+_html/
