@@ -1,4 +1,4 @@
-# This workflow will run daily at 06:45.
+# This workflow will run daily at 06:45 UTC.
 # It will run benchmarks with airspeed velocity (asv)
 # and compare performance with the previous nightly build.
 
