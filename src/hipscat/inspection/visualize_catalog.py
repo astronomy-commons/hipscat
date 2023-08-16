@@ -55,7 +55,7 @@ def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
             - cart - Cartesian projection
             - orth - Orthographic projection
     """
-    pixels = catalog.partition_info.get_healpix_pixels()
+    pixels = catalog.get_healpix_pixels()
     max_order = catalog.partition_info.get_highest_order()
 
     order_map = np.full(hp.order2npix(max_order), hp.pixelfunc.UNSEEN)
