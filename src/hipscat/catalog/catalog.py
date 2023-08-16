@@ -97,6 +97,14 @@ class Catalog(Dataset):
         """
         return self.partition_info.data_frame
 
+    def get_healpix_pixels(self) -> List[HealpixPixel]:
+        """Get healpix pixel objects for all pixels contained in the catalog.
+
+        Returns:
+            List of HealpixPixel
+        """
+        return self.partition_info.get_healpix_pixels()
+
     @classmethod
     def _read_args(cls, catalog_base_dir: FilePointer) -> Tuple[CatalogInfoClass, PartitionInfo]:
         args = super()._read_args(catalog_base_dir)
