@@ -25,9 +25,11 @@ class Catalog(Dataset):
     `Norder=/Dir=/Npix=.parquet`
     """
 
-    CatalogInfoClass = CatalogInfo
     PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
+
+    CatalogInfoClass = CatalogInfo
+    catalog_info: CatalogInfo
 
     def __init__(
         self,

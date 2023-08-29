@@ -20,6 +20,8 @@ class AssociationCatalog(Dataset):
     """
 
     CatalogInfoClass = AssociationCatalogInfo
+    catalog_info: AssociationCatalogInfo
+
     JoinPixelInputTypes = Union[list, pd.DataFrame, PartitionJoinInfo]
 
     def __init__(
