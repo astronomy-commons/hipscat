@@ -24,6 +24,8 @@ dependencies = [
     "astropy",
     "typing-extensions>=4.3.0",
     "numba",
+    "fsspec",
+    "adlfs",
     "ipykernel", # Support for Jupyter notebooks
 ]
 

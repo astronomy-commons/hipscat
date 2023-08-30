@@ -10,6 +10,10 @@ from .file_io import (
     write_fits_image,
     write_parquet_metadata,
     write_string_to_file,
+    copy_tree_fs_to_fs,
+    read_parquet_dataset,
+    read_parquet_file,
+    write_dataframe_to_parquet
 )
 from .file_pointer import (
     FilePointer,
