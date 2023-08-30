@@ -21,7 +21,7 @@ class AssociationCatalog(Dataset):
     """
 
     CatalogInfoClass: TypeAlias = AssociationCatalogInfo
-    catalog_info: AssociationCatalogInfo
+    catalog_info: CatalogInfoClass
 
     JoinPixelInputTypes = Union[list, pd.DataFrame, PartitionJoinInfo]
 

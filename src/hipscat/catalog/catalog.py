@@ -30,7 +30,7 @@ class Catalog(Dataset):
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
     CatalogInfoClass: TypeAlias = CatalogInfo
-    catalog_info: CatalogInfo
+    catalog_info: CatalogInfoClass
 
     def __init__(
         self,
