@@ -5,6 +5,7 @@ import dataclasses
 from typing import List, Tuple, Union
 
 import pandas as pd
+from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
@@ -28,7 +29,7 @@ class Catalog(Dataset):
     PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
-    CatalogInfoClass = CatalogInfo
+    CatalogInfoClass: TypeAlias = CatalogInfo
     catalog_info: CatalogInfo
 
     def __init__(

@@ -1,6 +1,7 @@
 from typing import Tuple, Union
 
 import pandas as pd
+from typing_extensions import TypeAlias
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
@@ -19,7 +20,7 @@ class AssociationCatalog(Dataset):
     Catalog, corresponding to each pair of partitions in each catalog that contain rows to join.
     """
 
-    CatalogInfoClass = AssociationCatalogInfo
+    CatalogInfoClass: TypeAlias = AssociationCatalogInfo
     catalog_info: AssociationCatalogInfo
 
     JoinPixelInputTypes = Union[list, pd.DataFrame, PartitionJoinInfo]
