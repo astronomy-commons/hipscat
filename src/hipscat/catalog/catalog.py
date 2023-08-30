@@ -29,6 +29,8 @@ class Catalog(Dataset):
     PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
+    # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
+    # set the catalog info to the correct type
     CatalogInfoClass: TypeAlias = CatalogInfo
     catalog_info: CatalogInfoClass
 

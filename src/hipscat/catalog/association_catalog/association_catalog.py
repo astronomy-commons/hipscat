@@ -20,6 +20,8 @@ class AssociationCatalog(Dataset):
     Catalog, corresponding to each pair of partitions in each catalog that contain rows to join.
     """
 
+    # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
+    # set the catalog info to the correct type
     CatalogInfoClass: TypeAlias = AssociationCatalogInfo
     catalog_info: CatalogInfoClass
 
