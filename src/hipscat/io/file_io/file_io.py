@@ -291,7 +291,7 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer):
     folder_name = fs1_pointer.split("/")[-1]
     destination_folder = ospathjoin(fs2_pointer, folder_name)
     if not fs2.exists(destination_folder):
-        #print(f"creating destination: {destination_folder}")
+        print(f"creating destination: {destination_folder}")
         fs2.makedirs(destination_folder, exist_ok=True) 
 
     dir_contents = fs1.listdir(fs1_pointer)
@@ -301,10 +301,14 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer):
         source_fname = f["name"]
         pure_fname = source_fname.split("/")[-1]
         destination_fname = ospathjoin(destination_folder, pure_fname)
-        #print(f"copying: {source_fname}->{destination_fname}")
+        print(f"copying: {source_fname}->{destination_fname}")
         with fs1.open(source_fname, "rb") as source_file:
-            with fs2.open(destination_fname, "wb") as destination_file:
-                destination_file.write(source_file.read())
+            with fs2.open(destination_fname, "ab") as destination_file:
+                while True:
+                    chunk = source_file.read(20000)
+                    if not chunk:
+                        break
+                    destination_file.write(chunk)
 
     dirs = [x for x in dir_contents if x["type"] == "directory"]
     for d in dirs:
