@@ -47,6 +47,7 @@ dev = [
     "ipykernel", # Also used in building notebooks into Sphinx
     "ipython", # Also used in building notebooks into Sphinx
     "myst_parser", # Renders markdown alongside RST
+    "asv", # Used to compute performance benchmarks
 ]
 
 [build-system]

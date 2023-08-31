@@ -1,4 +1,4 @@
-# This workflow will run daily at 06:45 UTC.
+# This workflow will run daily at 06:45.
 # It will run benchmarks with airspeed velocity (asv)
 # and compare performance with the previous nightly build.
 
@@ -43,7 +43,7 @@ jobs:
         run: |
           sudo apt-get update
           python -m pip install --upgrade pip
-          pip install asv virtualenv
+          pip install asv==0.5.1 virtualenv
 
       - name: Create ASV machine config file
         run: asv machine --machine gh-runner --yes
