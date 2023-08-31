@@ -1,0 +1,35 @@
+{
+    "benchmarks.time_test_alignment_even_sky": {
+        "code": "def time_test_alignment_even_sky():\n    \"\"\"Create alignment from an even distribution at order 7\"\"\"\n    initial_histogram = np.full(hp.order2npix(7), 40)\n    result = hist.generate_alignment(initial_histogram, highest_order=7, threshold=1_000)\n    # everything maps to order 5, given the density\n    for mapping in result:\n        assert mapping[0] == 5",
+        "min_run_count": 2,
+        "name": "benchmarks.time_test_alignment_even_sky",
+        "number": 0,
+        "param_names": [],
+        "params": [],
+        "repeat": 0,
+        "rounds": 2,
+        "sample_time": 0.01,
+        "timeout": 60.0,
+        "type": "time",
+        "unit": "seconds",
+        "version": "c4d4cd79963d85a8084022a7439520a28a2bd2b3f63e581aeb1604b2d4f3d2ac",
+        "warmup_time": -1
+    },
+    "benchmarks.time_test_cone_filter_multiple_order": {
+        "code": "def time_test_cone_filter_multiple_order():\n    \"\"\"Create a catalog cone filter where we have multiple orders in the catalog\"\"\"\n    catalog_info = CatalogInfo(\n        **{\n            \"catalog_name\": \"test_name\",\n            \"catalog_type\": \"object\",\n            \"total_rows\": 10,\n            \"epoch\": \"J2000\",\n            \"ra_column\": \"ra\",\n            \"dec_column\": \"dec\",\n        }\n    )\n    partition_info_df = pd.DataFrame.from_dict(\n        {\n            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [6, 7, 7],\n            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [30, 124, 5000],\n        }\n    )\n    catalog = Catalog(catalog_info, partition_info_df)\n    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)\n    assert len(filtered_catalog.partition_info.data_frame) == 2\n    assert (6, 30) in filtered_catalog.pixel_tree\n    assert (7, 124) in filtered_catalog.pixel_tree",
+        "min_run_count": 2,
+        "name": "benchmarks.time_test_cone_filter_multiple_order",
+        "number": 0,
+        "param_names": [],
+        "params": [],
+        "repeat": 0,
+        "rounds": 2,
+        "sample_time": 0.01,
+        "timeout": 60.0,
+        "type": "time",
+        "unit": "seconds",
+        "version": "cc6648c47a6ef6e16a69a17abcfb56b39c62d3b6dbe0c1c5ce31e0c21ebdacac",
+        "warmup_time": -1
+    },
+    "version": 2
+}
