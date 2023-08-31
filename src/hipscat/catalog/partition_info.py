@@ -49,6 +49,7 @@ class PartitionInfo:
 
         Args:
             partition_info_file: FilePointer to the `partition_info.csv` file
+            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionInfo` object with the data from the file

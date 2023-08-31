@@ -34,6 +34,7 @@ class PartitionJoinInfo:
 
         Args:
             partition_join_info_file: FilePointer to the `partition_join_info.csv` file
+            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file

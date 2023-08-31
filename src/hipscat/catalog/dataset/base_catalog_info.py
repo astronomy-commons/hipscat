@@ -47,6 +47,7 @@ class BaseCatalogInfo:
 
         Args:
             catalog_info_file: FilePointer pointing to the `catalog_info.json` file
+            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             A CatalogInfo object with the data from the `catalog_info.json` file

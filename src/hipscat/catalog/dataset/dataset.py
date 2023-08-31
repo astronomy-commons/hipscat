@@ -29,6 +29,7 @@ class Dataset:
             catalog_info: A catalog_info object with the catalog metadata
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
+            storage_options: dictionary that contains abstract filesystem credentials
         """
         if not isinstance(catalog_info, self.CatalogInfoClass):
             raise TypeError(f"catalog_info type must be {self.CatalogInfoClass}")
@@ -47,6 +48,7 @@ class Dataset:
 
         Args:
             catalog_path: path to the root directory of the catalog
+            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             The initialized catalog object

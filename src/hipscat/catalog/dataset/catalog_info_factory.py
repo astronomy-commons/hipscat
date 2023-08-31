@@ -58,6 +58,8 @@ def from_catalog_dir(catalog_base_dir: FilePointer, storage_options: dict={}):
     Args:
         catalog_base_dir: a path pointing to the base directory of a catalog,
             or may point to a ``catalog_info.json`` file directly.
+        storage_options: dictionary that contains abstract filesystem credentials
+        
     Returns:
         populated BaseCatalogInfo of appropriate type.
     """
