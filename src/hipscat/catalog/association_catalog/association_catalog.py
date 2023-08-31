@@ -27,10 +27,11 @@ class AssociationCatalog(Dataset):
         catalog_info: CatalogInfoClass,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
+        storage_options: dict={}
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
-        super().__init__(catalog_info, catalog_path)
+        super().__init__(catalog_info, catalog_path, storage_options=storage_options)
         self.join_info = self._get_partition_join_info_from_pixels(join_pixels)
 
     def get_join_pixels(self) -> pd.DataFrame:
@@ -54,9 +55,9 @@ class AssociationCatalog(Dataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer
+        cls, catalog_base_dir: FilePointer, storage_options: dict={}
     ) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:  # type: ignore[override]
-        args = super()._read_args(catalog_base_dir)
+        args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
-        partition_join_info = PartitionJoinInfo.read_from_file(partition_join_info_file)
+        partition_join_info = PartitionJoinInfo.read_from_file(partition_join_info_file, storage_options=storage_options)
         return args + (partition_join_info,)
