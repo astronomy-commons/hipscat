@@ -2,6 +2,7 @@ from .file_io import (
     load_csv_to_pandas,
     load_json_file,
     load_parquet_to_pandas,
+    load_text_file,
     make_directory,
     read_fits_image,
     read_parquet_metadata,

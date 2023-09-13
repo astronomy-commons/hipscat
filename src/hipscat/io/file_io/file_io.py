@@ -82,8 +82,8 @@ def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     with fs.open(file_pointer, "r", encoding=encoding) as _text_file:
         text_file = _text_file.readlines()
 
-    print(type(text_file))
     return text_file
+
 
 def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: dict = {}) -> dict:
     """Load a json file to a dictionary
@@ -114,7 +114,9 @@ def load_csv_to_pandas(file_pointer: FilePointer, storage_options: dict = {}, **
     Returns:
         pandas dataframe loaded from CSV
     """
+    
     return pd.read_csv(file_pointer, storage_options=storage_options, **kwargs)
+
 
 def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: dict = {}, **kwargs) -> pd.DataFrame:
     """Load a parquet file to a pandas dataframe
@@ -170,11 +172,12 @@ def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict={}, *
         **kwargs: additional arguments to be passed to pyarrow.parquet.read_metadata
     """
     fs, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
-    with tempfile.NamedTemporaryFile() as _tmp_file:
-        with fs.open(file_pointer, "rb") as _parquet_file:
-            parquet_data = _parquet_file.read()
-            _tmp_file.write(parquet_data)
-            parquet_file = pq.read_metadata(_tmp_file, **kwargs)
+
+    if fs.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
+        file_pointer = file_pointer[1:]
+    parquet_file = pq.read_metadata(
+        file_pointer, filesystem=fs, **kwargs
+    )
     return parquet_file
 
 
@@ -186,13 +189,24 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = {}):
         storage_options: dictionary that contains abstract filesystem credentials
     """
 
+    ignore_prefixes = [
+        "intermediate", 
+        "_common_metadata", 
+        "_metadata",
+    ]
+
     fs, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
+
+    #pyarrow.dataset requires the pointer not lead with a slash
+    if fs.protocol != "file" and len(dir_pointer) and dir_pointer[0] == "/":
+        dir_pointer = dir_pointer[1:]
+
     dataset = pds.dataset(
         dir_pointer,
         filesystem=fs,
-        format="parquet",
         exclude_invalid_files=True,
-        ignore_prefixes=["intermediate", "_common_metadata", "_metadata"],
+        format="parquet",
+        ignore_prefixes=ignore_prefixes,
     )
     return dataset
 
@@ -222,11 +236,11 @@ def write_parquet_metadata(
     """
 
     fs, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
-    with tempfile.NamedTemporaryFile() as _tmp_file:
-        with fs.open(file_pointer, "wb") as _parquet_file:
-            pq.write_metadata(schema, _tmp_file.name, metadata_collector=metadata_collector, **kwargs)
-            _parquet_file.write(_tmp_file.read())
-    #pq.write_metadata(schema, file_pointer, metadata_collector=metadata_collector, **kwargs)
+
+    if fs.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
+        file_pointer = file_pointer[1:]
+    
+    pq.write_metadata(schema, file_pointer, metadata_collector=metadata_collector, filesystem=fs, **kwargs)
 
 
 def read_fits_image(map_file_pointer: FilePointer, storage_options: dict = {}):
@@ -279,7 +293,7 @@ def copy_tree_fs_to_fs(fs1_source: FilePointer, fs2_destination: FilePointer, st
     copy_dir(fs1, fp1, fs2, fp2)
 
 
-def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer):
+def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
     """Recursive method to copy directories and their contents.
 
     Args:
@@ -290,8 +304,9 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer):
     """
     folder_name = fs1_pointer.split("/")[-1]
     destination_folder = ospathjoin(fs2_pointer, folder_name)
+    if destination_folder[-1] != "/":
+        destination_folder += "/"
     if not fs2.exists(destination_folder):
-        print(f"creating destination: {destination_folder}")
         fs2.makedirs(destination_folder, exist_ok=True) 
 
     dir_contents = fs1.listdir(fs1_pointer)
@@ -301,11 +316,10 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer):
         source_fname = f["name"]
         pure_fname = source_fname.split("/")[-1]
         destination_fname = ospathjoin(destination_folder, pure_fname)
-        print(f"copying: {source_fname}->{destination_fname}")
         with fs1.open(source_fname, "rb") as source_file:
-            with fs2.open(destination_fname, "ab") as destination_file:
+            with fs2.open(destination_fname, "wb") as destination_file:
                 while True:
-                    chunk = source_file.read(20000)
+                    chunk = source_file.read(chunksize)
                     if not chunk:
                         break
                     destination_file.write(chunk)

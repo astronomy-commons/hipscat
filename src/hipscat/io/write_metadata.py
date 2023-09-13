@@ -109,6 +109,7 @@ def write_parquet_metadata(catalog_path, storage_options: dict={}):
     dataset = file_io.read_parquet_dataset(catalog_path, storage_options=storage_options)
     metadata_collector = []
 
+
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)

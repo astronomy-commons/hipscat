@@ -26,15 +26,9 @@ def get_file_protocol(pointer: FilePointer) -> str:
 
     if not isinstance(pointer, str):
         pointer = str(pointer)
-    protocol_attempt = pointer.split("://")
 
-    if len(protocol_attempt) == 2:
-        protocol = protocol_attempt[0]
-    elif len(protocol_attempt) == 1:
-        protocol = "file"
-    else:
-        raise NotImplementedError("Multiple protocols is not supported for hipscat!")
-    
+    protocol = fsspec.utils.get_protocol(pointer)
+
     if protocol not in SUPPORTED_PROTOCOLS:
         raise NotImplementedError(f"{protocol} is not supported for hipscat!")
     return protocol
@@ -75,12 +69,10 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
             fp = file_pointer
     if protocol == "abfs":
         #return the path minus protocol+account name
-        fp_attempt = file_pointer.split("abfs://")[1].split("/")[1:]
-        fp = os.path.join(*fp_attempt)
+        fp = file_pointer.split("abfs://")[1]
     if protocol == "s3":
         #just strip the protocol, and keep the bucket name
-        fp_attempt = file_pointer.split("s3://")[1]
-        fp = fp_attempt
+        fp = file_pointer.split("s3://")[1]
 
     return FilePointer(fp)
 
@@ -88,11 +80,7 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
 def get_full_file_pointer(incomplete_path: str, protocol_path: str) -> FilePointer:
     """Rebuilds the file_pointer with the protocol and account name if required"""
     protocol = get_file_protocol(protocol_path)
-    if protocol == "abfs":
-        account_name = protocol_path.split("abfs://")[1].split("/")[0]
-        return f"{protocol}://{account_name}/{incomplete_path}"
-    else:
-        return f"{protocol}://{incomplete_path}"
+    return f"{protocol}://{incomplete_path}"
     
 
 def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePointer:
