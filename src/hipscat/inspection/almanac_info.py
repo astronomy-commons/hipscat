@@ -69,7 +69,7 @@ class AlmanacInfo:
 
             $HIPSCAT_ALMANAC_DIR=$HIPSCAT_DEFAULT_DIR/almanacs/
         """
-        default_dir = os.getenv("HIPSCAT_ALMANAC_DIR", "")
+        default_dir = os.environ.get("HIPSCAT_ALMANAC_DIR", "")
         if default_dir:
             default_dir = os.path.expandvars(default_dir)
         return default_dir

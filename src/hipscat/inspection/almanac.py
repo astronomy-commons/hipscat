@@ -54,6 +54,7 @@ class Almanac:
         """
         if include_default_dir:
             default_dir = AlmanacInfo.get_default_dir()
+            print(default_dir)
             if default_dir:
                 self._add_files_to_namespace(default_dir)
         if pd.api.types.is_dict_like(dirs):
@@ -87,6 +88,7 @@ class Almanac:
             input_paths.sort()
             files.extend(input_paths)
 
+        print(directory, files)
         if namespace in self.files:
             self.files[namespace].extend(files)
         else:
@@ -246,9 +248,9 @@ class Almanac:
         """Fetch the almanac info for a single catalog."""
         return self.entries[catalog_name]
 
-    def get_catalog(self, catalog_name: str, storage_options: dict = {}) -> Dataset:
+    def get_catalog(self, catalog_name: str) -> Dataset:
         """Fetch the fully-populated hipscat metadata for the catalog name.
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path, storage_options=storage_options)
+        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path, storage_options=self.storage_options)
