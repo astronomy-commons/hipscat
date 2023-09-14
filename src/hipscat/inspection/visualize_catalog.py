@@ -11,7 +11,7 @@ from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
 
 
-def _read_point_map(catalog_base_dir):
+def _read_point_map(catalog_base_dir, storage_options: dict = {}):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
@@ -21,10 +21,10 @@ def _read_point_map(catalog_base_dir):
         corresponds to the number of objects found at the healpix pixel.
     """
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
-    return file_io.read_fits_image(map_file_pointer)
+    return file_io.read_fits_image(map_file_pointer, storage_options=storage_options)
 
 
-def plot_points(catalog: Catalog, projection="moll", draw_map=True):
+def plot_points(catalog: Catalog, projection="moll", draw_map=True, storage_options: dict = {}):
     """Create a visual map of the input points of the catalog.
 
     Args:
@@ -35,7 +35,7 @@ def plot_points(catalog: Catalog, projection="moll", draw_map=True):
             - cart - Cartesian projection
             - orth - Orthographic projection
     """
-    point_map = _read_point_map(catalog.catalog_base_dir)
+    point_map = _read_point_map(catalog.catalog_base_dir, storage_options=storage_options)
     _plot_healpix_map(
         point_map,
         projection,

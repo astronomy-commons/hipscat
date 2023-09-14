@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 import pyarrow.dataset as pds
 import tempfile
 import io
+import yaml
 from os.path import join as ospathjoin
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs
@@ -278,6 +279,18 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, stora
             _map_file.write(_tmp_file.read())
 
 
+def read_yaml(file_handle: FilePointer, storage_options: dict = {}):
+    """Reads yaml file from filesystem.
+
+    Args:
+        file_handle: location of yaml file
+        storage_options: dictionary that contains abstract filesystem credentials
+    """
+    fs, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
+    with fs.open(file_handle, "r", encoding="utf-8") as _file:
+        metadata = yaml.safe_load(_file)
+    return metadata
+
 def copy_tree_fs_to_fs(fs1_source: FilePointer, fs2_destination: FilePointer, storage_options1: dict={}, storage_options2: dict={}):
     """Recursive Copies directory from one filesystem to the other.
 
@@ -328,3 +341,7 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
     for d in dirs:
         source_dir = d["name"]
         copy_dir(fs1, source_dir, fs2, destination_folder)
+
+def delete_file(file_handle: FilePointer, storage_options: dict = {}):
+    fs, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
+    fs.rm(file_handle)

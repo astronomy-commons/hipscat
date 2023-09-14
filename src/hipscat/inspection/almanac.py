@@ -10,7 +10,7 @@ import pandas as pd
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.inspection.almanac_info import AlmanacInfo
-
+from hipscat.io.file_io import file_io, file_pointer
 
 class Almanac:
     """Single instance of an almanac, and available catalogs within namespaces
@@ -32,11 +32,12 @@ class Almanac:
               catalogs.
     """
 
-    def __init__(self, include_default_dir=True, dirs=None):
+    def __init__(self, include_default_dir=True, dirs=None, storage_options: dict={}):
         """Create new almanac."""
         self.files = {}
         self.entries = {}
         self.dir_to_catalog_name = {}
+        self.storage_options = storage_options
         self._init_files(include_default_dir=include_default_dir, dirs=dirs)
         self._init_catalog_objects()
         self._init_catalog_links()
@@ -80,7 +81,9 @@ class Almanac:
                 files.append(input_path)
                 continue
 
-            input_paths = glob.glob(f"{input_path}/**.yml")
+            path_contents = file_pointer.get_directory_contents(input_path, append_paths=False, storage_options=self.storage_options)
+            path_contents = [file_pointer.get_full_file_pointer(x, protocol_path=input_path) for x in path_contents]
+            input_paths = [x for x in path_contents if str(x).endswith(".yml")]
             input_paths.sort()
             files.extend(input_paths)
 
@@ -94,7 +97,7 @@ class Almanac:
         in the previous steps."""
         for namespace, files in self.files.items():
             for file in files:
-                catalog_info = AlmanacInfo.from_file(file)
+                catalog_info = AlmanacInfo.from_file(file, storage_options=self.storage_options)
                 catalog_info.namespace = namespace
                 if namespace:
                     full_name = f"{namespace}:{catalog_info.catalog_name}"
@@ -243,9 +246,9 @@ class Almanac:
         """Fetch the almanac info for a single catalog."""
         return self.entries[catalog_name]
 
-    def get_catalog(self, catalog_name: str) -> Dataset:
+    def get_catalog(self, catalog_name: str, storage_options: dict = {}) -> Dataset:
         """Fetch the fully-populated hipscat metadata for the catalog name.
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path)
+        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path, storage_options=storage_options)
