@@ -24,7 +24,7 @@ def _read_point_map(catalog_base_dir, storage_options: dict = {}):
     return file_io.read_fits_image(map_file_pointer, storage_options=storage_options)
 
 
-def plot_points(catalog: Catalog, projection="moll", draw_map=True, storage_options: dict = {}):
+def plot_points(catalog: Catalog, projection="moll", draw_map=True):
     """Create a visual map of the input points of the catalog.
 
     Args:
@@ -35,7 +35,7 @@ def plot_points(catalog: Catalog, projection="moll", draw_map=True, storage_opti
             - cart - Cartesian projection
             - orth - Orthographic projection
     """
-    point_map = _read_point_map(catalog.catalog_base_dir, storage_options=storage_options)
+    point_map = _read_point_map(catalog.catalog_base_dir, storage_options=catalog.storage_options)
     _plot_healpix_map(
         point_map,
         projection,
