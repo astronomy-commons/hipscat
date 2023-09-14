@@ -60,6 +60,12 @@ class PixelNode:
         if self.parent is not None:
             self.parent.add_child_node(self)
 
+    def __str__(self) -> str:
+        return f"{self.node_type} Order: {self.pixel.order}, Pixel: {self.pixel.pixel}"
+
+    def __repr__(self):
+        return self.__str__()
+
     @property
     def hp_order(self):
         """The order of the HealpixPixel the node is at"""
