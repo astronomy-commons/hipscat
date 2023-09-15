@@ -2,12 +2,12 @@
 
 import dataclasses
 import json
-from datetime import datetime
-from importlib.metadata import version
 
 import numpy as np
 import pandas as pd
 
+from datetime import datetime
+from importlib.metadata import version
 from hipscat.io import file_io, paths
 
 

@@ -1,7 +1,6 @@
-from typing import Tuple, Union
-
 import pandas as pd
 from typing_extensions import TypeAlias
+from typing import Tuple, Union
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo

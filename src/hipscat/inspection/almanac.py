@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import glob
 import os
 import warnings
-from typing import List
-
 import pandas as pd
+from typing import List
 
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset

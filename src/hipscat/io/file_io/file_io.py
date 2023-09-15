@@ -5,7 +5,6 @@ import io
 import yaml
 import os 
 import json
-from typing import Any
 
 import healpy as hp
 import numpy as np
@@ -14,6 +13,7 @@ import pyarrow.parquet as pq
 import pyarrow.dataset as pds
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs
+from typing import Any
 
 
 def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_options: dict = {}):

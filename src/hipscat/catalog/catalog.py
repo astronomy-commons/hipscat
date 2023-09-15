@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import List, Tuple, Union
 
 import pandas as pd
-from typing_extensions import TypeAlias
 
+from typing_extensions import TypeAlias
+from typing import List, Tuple, Union
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
