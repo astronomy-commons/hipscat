@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import tempfile
+import io
+import yaml
+import os 
 import json
 from typing import Any
 
@@ -8,10 +12,6 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 import pyarrow.dataset as pds
-import tempfile
-import io
-import yaml
-import os 
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs
 

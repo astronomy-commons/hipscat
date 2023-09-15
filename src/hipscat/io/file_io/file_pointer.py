@@ -1,7 +1,7 @@
+import fsspec
 import glob
 import os
 from typing import List, NewType
-import fsspec
 
 SUPPORTED_PROTOCOLS = ["file", "abfs", "s3"]
 
