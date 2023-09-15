@@ -1,10 +1,11 @@
 from __future__ import annotations
+from typing import Any
 
 import tempfile
 import io
-import yaml
 import os 
 import json
+import yaml
 
 import healpy as hp
 import numpy as np
@@ -13,7 +14,6 @@ import pyarrow.parquet as pq
 import pyarrow.dataset as pds
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs
-from typing import Any
 
 
 def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_options: dict = {}):
@@ -179,6 +179,7 @@ def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict={}, *
 
     if fs.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
         file_pointer = file_pointer[1:]
+        
     parquet_file = pq.read_metadata(
         file_pointer, filesystem=fs, **kwargs
     )
