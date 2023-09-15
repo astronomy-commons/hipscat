@@ -7,7 +7,6 @@ from importlib.metadata import version
 
 import numpy as np
 import pandas as pd
-import pyarrow.dataset as pds
 
 from hipscat.io import file_io, paths
 

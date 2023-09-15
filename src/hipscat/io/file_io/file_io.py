@@ -11,7 +11,7 @@ import pyarrow.dataset as pds
 import tempfile
 import io
 import yaml
-from os.path import join as ospathjoin
+import os 
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs
 
@@ -323,7 +323,7 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
         fs2_pointer: destination directory for copied contents
     """
     folder_name = fs1_pointer.split("/")[-1]
-    destination_folder = ospathjoin(fs2_pointer, folder_name)
+    destination_folder = os.path.join(fs2_pointer, folder_name)
     if destination_folder[-1] != "/":
         destination_folder += "/"
     if not fs2.exists(destination_folder):
@@ -335,7 +335,7 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
     for f in files:
         source_fname = f["name"]
         pure_fname = source_fname.split("/")[-1]
-        destination_fname = ospathjoin(destination_folder, pure_fname)
+        destination_fname = os.path.join(destination_folder, pure_fname)
         with fs1.open(source_fname, "rb") as source_file:
             with fs2.open(destination_fname, "wb") as destination_file:
                 while True:
