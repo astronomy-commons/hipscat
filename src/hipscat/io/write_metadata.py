@@ -3,11 +3,11 @@
 import dataclasses
 import json
 
+from importlib.metadata import version
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from datetime import datetime
-from importlib.metadata import version
 from hipscat.io import file_io, paths
 
 
@@ -126,14 +126,14 @@ def write_parquet_metadata(catalog_path, storage_options: dict={}):
     common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
     file_io.write_parquet_metadata(
-        dataset.schema, 
-        metadata_file_pointer, 
-        metadata_collector=metadata_collector, 
+        dataset.schema,
+        metadata_file_pointer,
+        metadata_collector=metadata_collector,
         storage_options=storage_options
     )
     file_io.write_parquet_metadata(
-        dataset.schema, 
-        common_metadata_file_pointer, 
+        dataset.schema,
+        common_metadata_file_pointer,
         storage_options=storage_options
     )
 

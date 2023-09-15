@@ -3,7 +3,7 @@ from typing import Any
 
 import tempfile
 import io
-import os 
+import os
 import json
 import yaml
 
@@ -31,8 +31,8 @@ def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_op
     Raises:
         OSError
     """
-    fs, file_pointer = get_fs(file_pointer, storage_options=storage_options)
-    fs.makedirs(file_pointer, exist_ok=exist_ok)
+    file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
+    file_system.makedirs(file_pointer, exist_ok=exist_ok)
 
 
 def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_options: dict = {}):
@@ -44,15 +44,15 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_opt
         storage_options: dictionary that contains abstract filesystem credentials
     """
 
-    fs, file_pointer = get_fs(file_pointer, storage_options)
+    file_system, file_pointer = get_fs(file_pointer, storage_options)
     if ignore_errors:
         try:
-            fs.rm(file_pointer, recursive=True)
+            file_system.rm(file_pointer, recursive=True)
         except:
             #fsspec doesn't have a "ignore_errors" field in the rm method
-            pass    
+            pass
     else:
-        fs.rm(file_pointer, recursive=True)
+        file_system.rm(file_pointer, recursive=True)
 
 
 def write_string_to_file(
@@ -66,8 +66,8 @@ def write_string_to_file(
         encoding: Default: 'utf-8', encoding method to write to file with
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    fs, file_pointer = get_fs(file_pointer, storage_options)
-    with fs.open(file_pointer, "w", encoding=encoding) as _file:
+    file_system, file_pointer = get_fs(file_pointer, storage_options)
+    with file_system.open(file_pointer, "w", encoding=encoding) as _file:
         _file.write(string)
 
 
@@ -81,8 +81,8 @@ def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     Returns:
         dictionary of key value pairs loaded from the JSON file
     """
-    fs, file_pointer = get_fs(file_pointer, storage_options)
-    with fs.open(file_pointer, "r", encoding=encoding) as _text_file:
+    file_system, file_pointer = get_fs(file_pointer, storage_options)
+    with file_system.open(file_pointer, "r", encoding=encoding) as _text_file:
         text_file = _text_file.readlines()
 
     return text_file
@@ -100,8 +100,8 @@ def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     """
 
     json_dict = None
-    fs, file_pointer = get_fs(file_pointer, storage_options)
-    with fs.open(file_pointer, "r", encoding=encoding) as json_file:
+    file_system, file_pointer = get_fs(file_pointer, storage_options)
+    with file_system.open(file_pointer, "r", encoding=encoding) as json_file:
         json_dict = json.load(json_file)
 
     return json_dict
@@ -117,7 +117,6 @@ def load_csv_to_pandas(file_pointer: FilePointer, storage_options: dict = {}, **
     Returns:
         pandas dataframe loaded from CSV
     """
-    
     return pd.read_csv(file_pointer, storage_options=storage_options, **kwargs)
 
 
@@ -145,7 +144,6 @@ def write_dataframe_to_csv(
         storage_options: dictionary that contains abstract filesystem credentials
         **kwargs: args to pass to pandas `to_csv` method
     """
-    
     output = io.StringIO()
     output = dataframe.to_csv(**kwargs)
     write_string_to_file(file_pointer, output, storage_options=storage_options)
@@ -160,9 +158,9 @@ def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict={}
         storage_options: dictionary that contains abstract filesystem credentials
     """
 
-    fs, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
+    file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
     with tempfile.NamedTemporaryFile() as _tmp_file:
-        with fs.open(file_pointer, "wb") as _parquet_file:
+        with file_system.open(file_pointer, "wb") as _parquet_file:
             dataframe.to_parquet(_tmp_file.name)
             _parquet_file.write(_tmp_file.read())
 
@@ -175,13 +173,13 @@ def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict={}, *
         storage_options: dictionary that contains abstract filesystem credentials
         **kwargs: additional arguments to be passed to pyarrow.parquet.read_metadata
     """
-    fs, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
+    file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
 
-    if fs.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
+    if file_system.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
         file_pointer = file_pointer[1:]
-        
+
     parquet_file = pq.read_metadata(
-        file_pointer, filesystem=fs, **kwargs
+        file_pointer, filesystem=file_system, **kwargs
     )
     return parquet_file
 
@@ -200,15 +198,15 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = {}):
         "_metadata",
     ]
 
-    fs, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
+    file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
     #pyarrow.dataset requires the pointer not lead with a slash
-    if fs.protocol != "file" and len(dir_pointer) and dir_pointer[0] == "/":
+    if file_system.protocol != "file" and len(dir_pointer) and dir_pointer[0] == "/":
         dir_pointer = dir_pointer[1:]
 
     dataset = pds.dataset(
         dir_pointer,
-        filesystem=fs,
+        filesystem=file_system,
         exclude_invalid_files=True,
         format="parquet",
         ignore_prefixes=ignore_prefixes,
@@ -223,12 +221,12 @@ def read_parquet_file(file_pointer: FilePointer, storage_options: dict = {}):
         file_pointer: location of file to read metadata from
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    fs, file_pointer = get_fs(file_pointer, storage_options=storage_options)
-    return pq.ParquetFile(file_pointer, filesystem=fs)
+    file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
+    return pq.ParquetFile(file_pointer, filesystem=file_system)
 
 
 def write_parquet_metadata(
-    schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None, 
+    schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None,
     storage_options: dict = {}, **kwargs
 ):
     """Write a metadata only parquet file from a schema
@@ -241,12 +239,14 @@ def write_parquet_metadata(
         **kwargs: additional arguments to be passed to pyarrow.parquet.write_metadata
     """
 
-    fs, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
+    file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
 
-    if fs.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
+    if file_system.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
         file_pointer = file_pointer[1:]
     
-    pq.write_metadata(schema, file_pointer, metadata_collector=metadata_collector, filesystem=fs, **kwargs)
+    pq.write_metadata(
+        schema, file_pointer, metadata_collector=metadata_collector, filesystem=file_system, **kwargs
+    )
 
 
 def read_fits_image(map_file_pointer: FilePointer, storage_options: dict = {}):
@@ -259,9 +259,9 @@ def read_fits_image(map_file_pointer: FilePointer, storage_options: dict = {}):
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
     """
-    fs, map_file_pointer = get_fs(file_pointer=map_file_pointer, storage_options=storage_options)
+    file_system, map_file_pointer = get_fs(file_pointer=map_file_pointer, storage_options=storage_options)
     with tempfile.NamedTemporaryFile() as _tmp_file:
-        with fs.open(map_file_pointer, "rb") as _map_file:
+        with file_system.open(map_file_pointer, "rb") as _map_file:
             map_data = _map_file.read()
             _tmp_file.write(map_data)
             map_fits_image = hp.read_map(_tmp_file.name)
@@ -277,9 +277,9 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, stora
         file_pointer: location of file to be written
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    fs, map_file_pointer = get_fs(file_pointer=map_file_pointer, storage_options=storage_options)
+    file_system, map_file_pointer = get_fs(file_pointer=map_file_pointer, storage_options=storage_options)
     with tempfile.NamedTemporaryFile() as _tmp_file:
-        with fs.open(map_file_pointer, "wb") as _map_file:
+        with file_system.open(map_file_pointer, "wb") as _map_file:
             hp.write_map(_tmp_file.name, histogram, overwrite=True, dtype=np.int64)
             _map_file.write(_tmp_file.read())
 
@@ -291,13 +291,13 @@ def read_yaml(file_handle: FilePointer, storage_options: dict = {}):
         file_handle: location of yaml file
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    fs, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
-    with fs.open(file_handle, "r", encoding="utf-8") as _file:
+    file_system, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
+    with file_system.open(file_handle, "r", encoding="utf-8") as _file:
         metadata = yaml.safe_load(_file)
     return metadata
 
 def copy_tree_fs_to_fs(
-        fs1_source: FilePointer, fs2_destination: FilePointer, 
+        fs1_source: FilePointer, fs2_destination: FilePointer,
         storage_options1: dict={}, storage_options2: dict={}
     ):
     """Recursive Copies directory from one filesystem to the other.
@@ -309,12 +309,12 @@ def copy_tree_fs_to_fs(
         storage_options2: dictionary that contains abstract filesystem2 credentials
     """
 
-    fs1, fp1 = get_fs(fs1_source, storage_options=storage_options1)
-    fs2, fp2 = get_fs(fs2_destination, storage_options=storage_options2)
-    copy_dir(fs1, fp1, fs2, fp2)
+    source_fs, source_fp = get_fs(fs1_source, storage_options=storage_options1)
+    destination_fs, desintation_fp = get_fs(fs2_destination, storage_options=storage_options2)
+    copy_dir(source_fs, source_fp, destination_fs, desintation_fp)
 
 
-def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
+def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=1024*1024):
     """Recursive method to copy directories and their contents.
 
     Args:
@@ -323,22 +323,22 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
         fs2: fsspec.filesytem for destination directory
         fs2_pointer: destination directory for copied contents
     """
-    folder_name = fs1_pointer.split("/")[-1]
-    destination_folder = os.path.join(fs2_pointer, folder_name)
+    folder_name = source_fp.split("/")[-1]
+    destination_folder = os.path.join(desintation_fp, folder_name)
     if destination_folder[-1] != "/":
         destination_folder += "/"
-    if not fs2.exists(destination_folder):
-        fs2.makedirs(destination_folder, exist_ok=True) 
-
-    dir_contents = fs1.listdir(fs1_pointer)
+    if not destination_fs.exists(destination_folder):
+        destination_fs.makedirs(destination_folder, exist_ok=True)
+    
+    dir_contents = source_fs.listdir(source_fp)
     files = [x for x in dir_contents if x["type"] == "file"]
 
-    for f in files:
-        source_fname = f["name"]
+    for _file in files:
+        source_fname = _file["name"]
         pure_fname = source_fname.split("/")[-1]
         destination_fname = os.path.join(destination_folder, pure_fname)
-        with fs1.open(source_fname, "rb") as source_file:
-            with fs2.open(destination_fname, "wb") as destination_file:
+        with source_fs.open(source_fname, "rb") as source_file:
+            with destination_fs.open(destination_fname, "wb") as destination_file:
                 while True:
                     chunk = source_file.read(chunksize)
                     if not chunk:
@@ -346,9 +346,10 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
                     destination_file.write(chunk)
 
     dirs = [x for x in dir_contents if x["type"] == "directory"]
-    for d in dirs:
-        source_dir = d["name"]
-        copy_dir(fs1, source_dir, fs2, destination_folder)
+    for _dir in dirs:
+        source_dir = _dir["name"]
+        copy_dir(source_fs, source_dir, destination_fs, destination_folder)
+
 
 def delete_file(file_handle: FilePointer, storage_options: dict = {}):
     """Deletes file from filesystem.
@@ -357,5 +358,5 @@ def delete_file(file_handle: FilePointer, storage_options: dict = {}):
         file_handle: location of file pointer
         storage_options: dictionary that contains filesystem credentials
     """
-    fs, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
-    fs.rm(file_handle)
+    file_system, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
+    file_system.rm(file_handle)

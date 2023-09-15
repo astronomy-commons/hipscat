@@ -1,9 +1,9 @@
 from __future__ import annotations
+from typing import List
 
 import os
 import warnings
 import pandas as pd
-from typing import List
 
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
@@ -81,8 +81,8 @@ class Almanac:
                 continue
 
             path_contents = file_pointer.get_directory_contents(
-                input_path, 
-                append_paths=False, 
+                input_path,
+                append_paths=False,
                 storage_options=self.storage_options
             )
             path_contents = [
@@ -258,6 +258,6 @@ class Almanac:
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
         return Dataset.read_from_hipscat(
-            self.get_almanac_info(catalog_name=catalog_name).catalog_path, 
+            self.get_almanac_info(catalog_name=catalog_name).catalog_path,
             storage_options=self.storage_options
         )

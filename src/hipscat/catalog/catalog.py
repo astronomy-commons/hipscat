@@ -1,12 +1,12 @@
 """Container class to hold catalog metadata and partition iteration"""
 from __future__ import annotations
+from typing import List, Tuple, Union
 
 import dataclasses
 
 import pandas as pd
 
 from typing_extensions import TypeAlias
-from typing import List, Tuple, Union
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
@@ -115,8 +115,7 @@ class Catalog(Dataset):
     @classmethod
     def _read_args(
         cls, catalog_base_dir: FilePointer, storage_options: dict={}
-    ) -> Tuple[CatalogInfoClass, PartitionInfo]:
-        
+    ) -> Tuple[CatalogInfoClass, PartitionInfo]: 
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         partition_info = PartitionInfo.read_from_file(partition_info_file, storage_options=storage_options)

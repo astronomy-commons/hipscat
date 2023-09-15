@@ -1,6 +1,6 @@
+from typing import Tuple, Union
 import pandas as pd
 from typing_extensions import TypeAlias
-from typing import Tuple, Union
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
@@ -64,7 +64,7 @@ class AssociationCatalog(Dataset):
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_file(
-            partition_join_info_file, 
+            partition_join_info_file,
             storage_options=storage_options
         )
         return args + (partition_join_info,)

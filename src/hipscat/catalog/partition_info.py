@@ -1,4 +1,5 @@
 """Container class to hold per-partition metadata"""
+from typing import List
 
 import numpy as np
 import pandas as pd

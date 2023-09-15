@@ -1,7 +1,7 @@
-import fsspec
+from typing import List, NewType
 import glob
 import os
-from typing import List, NewType
+import fsspec
 
 SUPPORTED_PROTOCOLS = ["file", "abfs", "s3"]
 
@@ -10,11 +10,11 @@ FilePointer = NewType("FilePointer", str)
 
 
 def get_file_protocol(pointer: FilePointer) -> str:
-    f"""Method to parse filepointer for the filesystem protocol.
+    """Method to parse filepointer for the filesystem protocol.
         if it doesn't follow the pattern of protocol://pathway/to/file, then it 
         assumes that it is a localfilesystem.
     
-    Supported protocols: {SUPPORTED_PROTOCOLS}
+    Supported protocols: ["file", "abfs", "s3"]
 
     Args:
         pointer: filesystem pathway pointer
@@ -64,24 +64,24 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
     if protocol == "file":
         #return the entire filepath for local files
         if "file://" in file_pointer:
-            fp = file_pointer.split("file://")[1]
+            split_pointer = file_pointer.split("file://")[1]
         else:
-            fp = file_pointer
+            split_pointer = file_pointer
     if protocol == "abfs":
         #return the path minus protocol+account name
-        fp = file_pointer.split("abfs://")[1]
+        split_pointer = file_pointer.split("abfs://")[1]
     if protocol == "s3":
         #just strip the protocol, and keep the bucket name
-        fp = file_pointer.split("s3://")[1]
+        split_pointer = file_pointer.split("s3://")[1]
 
-    return FilePointer(fp)
+    return FilePointer(split_pointer)
 
 
 def get_full_file_pointer(incomplete_path: str, protocol_path: str) -> FilePointer:
     """Rebuilds the file_pointer with the protocol and account name if required"""
     protocol = get_file_protocol(protocol_path)
     return f"{protocol}://{incomplete_path}"
-    
+
 
 def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePointer:
     """Returns a file pointer from a path string"""
@@ -114,8 +114,8 @@ def does_file_or_directory_exist(pointer: FilePointer, storage_options: dict = {
     Returns:
         True if file or directory at `pointer` exists, False if not
     """
-    fs, pointer = get_fs(pointer, storage_options)
-    return fs.exists(pointer)
+    file_system, pointer = get_fs(pointer, storage_options)
+    return file_system.exists(pointer)
 
 
 def is_regular_file(pointer: FilePointer, storage_options: dict = {}) -> bool:
@@ -128,8 +128,8 @@ def is_regular_file(pointer: FilePointer, storage_options: dict = {}) -> bool:
     Returns:
         True if regular file at `pointer` exists, False if not or is a directory
     """
-    fs, pointer = get_fs(pointer, storage_options)
-    return fs.isfile(pointer)
+    file_system, pointer = get_fs(pointer, storage_options)
+    return file_system.isfile(pointer)
 
 
 def find_files_matching_path(pointer: FilePointer, *paths: str) -> List[FilePointer]:
@@ -173,8 +173,8 @@ def get_directory_contents(
     Returns:
         New file pointers to files or subdirectories below this directory.
     """
-    fs, pointer = get_fs(pointer, storage_options)
-    contents = fs.listdir(pointer)
+    file_system, pointer = get_fs(pointer, storage_options)
+    contents = file_system.listdir(pointer)
     contents = [x['name'] for x in contents]
     if len(contents) == 0:
         return []

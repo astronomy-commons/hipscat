@@ -1,12 +1,12 @@
 from __future__ import annotations
+from typing import List
 
 import dataclasses
 import os
+from dataclasses import dataclass, field
 import yaml
 
 from typing_extensions import Self
-from dataclasses import dataclass, field
-from typing import List
 
 from hipscat.catalog.dataset import catalog_info_factory
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
