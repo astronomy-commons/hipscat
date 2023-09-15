@@ -4,7 +4,6 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from typing import List
 from hipscat.io import FilePointer, file_io
 from hipscat.pixel_math import HealpixPixel
 

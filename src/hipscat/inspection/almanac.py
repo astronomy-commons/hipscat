@@ -261,3 +261,4 @@ class Almanac:
             self.get_almanac_info(catalog_name=catalog_name).catalog_path,
             storage_options=self.storage_options
         )
+    

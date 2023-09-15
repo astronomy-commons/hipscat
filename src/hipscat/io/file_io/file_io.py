@@ -175,8 +175,8 @@ def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict={}, *
     """
     file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
 
-    if file_system.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
-        file_pointer = file_pointer[1:]
+    if file_system.protocol != "file" and str(file_pointer).startswith("/"):
+        file_pointer = str(file_pointer).replace("/", "", 1)
 
     parquet_file = pq.read_metadata(
         file_pointer, filesystem=file_system, **kwargs
@@ -201,8 +201,8 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = {}):
     file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
     #pyarrow.dataset requires the pointer not lead with a slash
-    if file_system.protocol != "file" and len(dir_pointer) and dir_pointer[0] == "/":
-        dir_pointer = dir_pointer[1:]
+    if file_system.protocol != "file" and str(dir_pointer).startswith("/"):
+        dir_pointer = str(dir_pointer).replace("/", "", 1)
 
     dataset = pds.dataset(
         dir_pointer,
@@ -241,9 +241,8 @@ def write_parquet_metadata(
 
     file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
 
-    if file_system.protocol != "file" and len(file_pointer) and file_pointer[0] == "/":
-        file_pointer = file_pointer[1:]
-    
+    if file_system.protocol != "file" and str(file_pointer).startswith("/"):
+        file_pointer = str(file_pointer).replace("/", "", 1)
     pq.write_metadata(
         schema, file_pointer, metadata_collector=metadata_collector, filesystem=file_system, **kwargs
     )
@@ -329,7 +328,7 @@ def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=102
         destination_folder += "/"
     if not destination_fs.exists(destination_folder):
         destination_fs.makedirs(destination_folder, exist_ok=True)
-    
+
     dir_contents = source_fs.listdir(source_fp)
     files = [x for x in dir_contents if x["type"] == "file"]
 
