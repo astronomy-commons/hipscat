@@ -100,7 +100,10 @@ class Catalog(Dataset):
         return self.partition_info.data_frame
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: FilePointer, storage_options: dict={}) -> Tuple[CatalogInfoClass, PartitionInfo]:
+    def _read_args(
+        cls, catalog_base_dir: FilePointer, storage_options: dict={}
+    ) -> Tuple[CatalogInfoClass, PartitionInfo]:
+        
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         partition_info = PartitionInfo.read_from_file(partition_info_file, storage_options=storage_options)

@@ -39,7 +39,9 @@ class PartitionJoinInfo:
         Returns:
             A `PartitionJoinInfo` object with the data from the file
         """
-        if not file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options):
+        if not file_io.does_file_or_directory_exist(
+            partition_join_info_file, storage_options=storage_options
+        ):
             raise FileNotFoundError(
                 f"No partition info found where expected: {str(partition_join_info_file)}"
             )

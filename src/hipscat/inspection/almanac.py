@@ -10,7 +10,7 @@ import pandas as pd
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.inspection.almanac_info import AlmanacInfo
-from hipscat.io.file_io import file_io, file_pointer
+from hipscat.io.file_io import file_pointer
 
 class Almanac:
     """Single instance of an almanac, and available catalogs within namespaces
@@ -82,8 +82,14 @@ class Almanac:
                 files.append(input_path)
                 continue
 
-            path_contents = file_pointer.get_directory_contents(input_path, append_paths=False, storage_options=self.storage_options)
-            path_contents = [file_pointer.get_full_file_pointer(x, protocol_path=input_path) for x in path_contents]
+            path_contents = file_pointer.get_directory_contents(
+                input_path, 
+                append_paths=False, 
+                storage_options=self.storage_options
+            )
+            path_contents = [
+                file_pointer.get_full_file_pointer(x, protocol_path=input_path) for x in path_contents
+            ]
             input_paths = [x for x in path_contents if str(x).endswith(".yml")]
             input_paths.sort()
             files.extend(input_paths)
@@ -253,4 +259,7 @@ class Almanac:
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path, storage_options=self.storage_options)
+        return Dataset.read_from_hipscat(
+            self.get_almanac_info(catalog_name=catalog_name).catalog_path, 
+            storage_options=self.storage_options
+        )

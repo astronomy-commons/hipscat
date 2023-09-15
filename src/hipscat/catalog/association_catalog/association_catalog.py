@@ -59,5 +59,8 @@ class AssociationCatalog(Dataset):
     ) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
-        partition_join_info = PartitionJoinInfo.read_from_file(partition_join_info_file, storage_options=storage_options)
+        partition_join_info = PartitionJoinInfo.read_from_file(
+            partition_join_info_file, 
+            storage_options=storage_options
+        )
         return args + (partition_join_info,)

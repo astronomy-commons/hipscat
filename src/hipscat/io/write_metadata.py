@@ -38,7 +38,9 @@ def write_catalog_info(catalog_base_dir, dataset_info, storage_options: dict={})
     write_json_file(metadata, catalog_info_pointer, storage_options=storage_options)
 
 
-def write_provenance_info(catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict, storage_options: dict={}):
+def write_provenance_info(
+        catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict, storage_options: dict={}
+    ):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
@@ -94,7 +96,9 @@ def write_partition_info(
         ]
     ].astype(int)
 
-    file_io.write_dataframe_to_csv(data_frame, partition_info_pointer, index=False, storage_options=storage_options)
+    file_io.write_dataframe_to_csv(
+        data_frame, partition_info_pointer, index=False, storage_options=storage_options
+    )
 
 
 def write_parquet_metadata(catalog_path, storage_options: dict={}):
@@ -123,9 +127,16 @@ def write_parquet_metadata(catalog_path, storage_options: dict={}):
     common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
     file_io.write_parquet_metadata(
-        dataset.schema, metadata_file_pointer, metadata_collector=metadata_collector, storage_options=storage_options
+        dataset.schema, 
+        metadata_file_pointer, 
+        metadata_collector=metadata_collector, 
+        storage_options=storage_options
     )
-    file_io.write_parquet_metadata(dataset.schema, common_metadata_file_pointer, storage_options=storage_options)
+    file_io.write_parquet_metadata(
+        dataset.schema, 
+        common_metadata_file_pointer, 
+        storage_options=storage_options
+    )
 
 
 def write_fits_map(catalog_path, histogram: np.ndarray, storage_options: dict={}):

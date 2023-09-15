@@ -62,7 +62,9 @@ class Dataset:
     @classmethod
     def _read_args(cls, catalog_base_dir: FilePointer, storage_options: dict={}) -> Tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
-        catalog_info = cls.CatalogInfoClass.read_from_metadata_file(catalog_info_file, storage_options=storage_options)
+        catalog_info = cls.CatalogInfoClass.read_from_metadata_file(
+            catalog_info_file, storage_options=storage_options
+        )
         return (catalog_info,)
 
     @classmethod

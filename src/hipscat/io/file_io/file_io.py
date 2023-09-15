@@ -55,7 +55,9 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_opt
         fs.rm(file_pointer, recursive=True)
 
 
-def write_string_to_file(file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: dict = {}):
+def write_string_to_file(
+        file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: dict = {}
+    ):
     """Write a string to a text file
 
     Args:
@@ -132,7 +134,9 @@ def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: dict = {}
     return pd.read_parquet(file_pointer, storage_options=storage_options, **kwargs)
 
 
-def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: dict = {}, **kwargs):
+def write_dataframe_to_csv(
+        dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: dict = {}, **kwargs
+    ):
     """Write a pandas DataFrame to a CSV file
 
     Args:
@@ -147,14 +151,13 @@ def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: FilePointer, s
     write_string_to_file(file_pointer, output, storage_options=storage_options)
 
 
-def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict={}, **kwargs):
+def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict={}):
     """Write a pandas DataFrame to a parquet file
 
     Args:
         dataframe: DataFrame to write
         file_pointer: location of file to write to
         storage_options: dictionary that contains abstract filesystem credentials
-        **kwargs: args to pass to pandas `to_csv` method
     """
 
     fs, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
@@ -224,7 +227,8 @@ def read_parquet_file(file_pointer: FilePointer, storage_options: dict = {}):
 
 
 def write_parquet_metadata(
-    schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None, storage_options: dict = {}, **kwargs
+    schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None, 
+    storage_options: dict = {}, **kwargs
 ):
     """Write a metadata only parquet file from a schema
 
@@ -291,7 +295,10 @@ def read_yaml(file_handle: FilePointer, storage_options: dict = {}):
         metadata = yaml.safe_load(_file)
     return metadata
 
-def copy_tree_fs_to_fs(fs1_source: FilePointer, fs2_destination: FilePointer, storage_options1: dict={}, storage_options2: dict={}):
+def copy_tree_fs_to_fs(
+        fs1_source: FilePointer, fs2_destination: FilePointer, 
+        storage_options1: dict={}, storage_options2: dict={}
+    ):
     """Recursive Copies directory from one filesystem to the other.
 
     Args:
@@ -343,5 +350,11 @@ def copy_dir(fs1, fs1_pointer, fs2, fs2_pointer, chunksize=1024*1024):
         copy_dir(fs1, source_dir, fs2, destination_folder)
 
 def delete_file(file_handle: FilePointer, storage_options: dict = {}):
+    """Deletes file from filesystem.
+
+    Args:
+        file_handle: location of file pointer
+        storage_options: dictionary that contains filesystem credentials
+    """
     fs, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
     fs.rm(file_handle)

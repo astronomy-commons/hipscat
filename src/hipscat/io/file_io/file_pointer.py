@@ -159,7 +159,9 @@ def directory_has_contents(pointer: FilePointer) -> bool:
     return len(find_files_matching_path(pointer, "*")) > 0
 
 
-def get_directory_contents(pointer: FilePointer, append_paths=True, storage_options: dict = {}) -> List[FilePointer]:
+def get_directory_contents(
+        pointer: FilePointer, append_paths=True, storage_options: dict = {}
+    ) -> List[FilePointer]:
     """Finds all files and directories in the specified directory.
 
     NBL This is not recursive, and will return only the first level of directory contents.
