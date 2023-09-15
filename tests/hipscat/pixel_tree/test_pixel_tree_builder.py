@@ -11,7 +11,7 @@ from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 def assert_pixel_tree_has_nodes_in_catalog(tree, catalog):
     """assert tree contains the same nodes as the catalog"""
     assert tree.contains((-1, -1))
-    for pixel in catalog.partition_info.get_healpix_pixels():
+    for pixel in catalog.get_healpix_pixels():
         assert tree.contains((pixel.order, pixel.pixel))
 
 

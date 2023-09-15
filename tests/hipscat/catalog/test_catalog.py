@@ -9,17 +9,18 @@ import pytest
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
+from hipscat.pixel_math import HealpixPixel
 
 
-def test_catalog_load(catalog_info, catalog_pixels_df):
+def test_catalog_load(catalog_info, catalog_pixels_df, catalog_pixels):
     catalog = Catalog(catalog_info, catalog_pixels_df)
-    assert len(catalog.get_pixels()) == catalog_pixels_df.shape[0]
+    pandas.testing.assert_frame_equal(catalog.get_pixels(), catalog_pixels_df)
     assert catalog.catalog_name == catalog_info.catalog_name
-    for _, pixel in catalog_pixels_df.iterrows():
-        order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
-        pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
-        assert (order, pixel) in catalog.pixel_tree
-        assert catalog.pixel_tree[(order, pixel)].node_type == PixelNodeType.LEAF
+
+    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    for hp_pixel in catalog_pixels:
+        assert hp_pixel in catalog.pixel_tree
+        assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
 def test_catalog_load_wrong_catalog_info(base_catalog_info, catalog_pixels):
@@ -33,16 +34,14 @@ def test_catalog_wrong_catalog_type(catalog_info, catalog_pixels):
         Catalog(catalog_info, catalog_pixels)
 
 
-def test_partition_info_pixel_input_types(catalog_info, catalog_pixels_df):
-    partition_info = PartitionInfo(catalog_pixels_df)
+def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
+    partition_info = PartitionInfo.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, partition_info)
-    assert len(catalog.get_pixels()) == catalog_pixels_df.shape[0]
-    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == catalog_pixels_df.shape[0]
-    for _, pixel in catalog_pixels_df.iterrows():
-        order = pixel[PartitionInfo.METADATA_ORDER_COLUMN_NAME]
-        pixel = pixel[PartitionInfo.METADATA_PIXEL_COLUMN_NAME]
-        assert (order, pixel) in catalog.pixel_tree
-        assert catalog.pixel_tree[(order, pixel)].node_type == PixelNodeType.LEAF
+    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
+    for hp_pixel in catalog_pixels:
+        assert hp_pixel in catalog.pixel_tree
+        assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
 def test_tree_pixel_input(catalog_info, catalog_pixels):
@@ -81,7 +80,7 @@ def test_get_pixels(catalog_info, catalog_pixels_df):
 
 def test_get_pixels_list(catalog_info, catalog_pixels):
     catalog = Catalog(catalog_info, catalog_pixels)
-    pixels = catalog.partition_info.get_healpix_pixels()
+    pixels = catalog.get_healpix_pixels()
     assert pixels == catalog_pixels
 
 
@@ -103,9 +102,11 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
 
 def test_cone_filter(small_sky_order1_catalog):
     filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 0.1)
-    assert len(filtered_catalog.partition_info.data_frame) == 1
-    assert filtered_catalog.partition_info.data_frame[PartitionInfo.METADATA_PIXEL_COLUMN_NAME][0] == 44
-    assert filtered_catalog.partition_info.data_frame[PartitionInfo.METADATA_ORDER_COLUMN_NAME][0] == 1
+    filtered_pixels = filtered_catalog.get_healpix_pixels()
+
+    assert len(filtered_pixels) == 1
+    assert filtered_pixels == [HealpixPixel(1, 44)]
+
     assert (1, 44) in filtered_catalog.pixel_tree
     assert len(filtered_catalog.pixel_tree.pixels[1]) == 1
     assert filtered_catalog.catalog_info.total_rows is None
@@ -113,7 +114,7 @@ def test_cone_filter(small_sky_order1_catalog):
 
 def test_cone_filter_big(small_sky_order1_catalog):
     filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 30)
-    assert len(filtered_catalog.partition_info.data_frame) == 4
+    assert len(filtered_catalog.get_healpix_pixels()) == 4
     assert (1, 44) in filtered_catalog.pixel_tree
     assert (1, 45) in filtered_catalog.pixel_tree
     assert (1, 46) in filtered_catalog.pixel_tree

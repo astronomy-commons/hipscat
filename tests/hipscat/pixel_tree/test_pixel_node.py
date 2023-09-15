@@ -160,3 +160,13 @@ def test_remove_child_link_wrong_node_errors(root_pixel_node, leaf_pixel_node):
     assert leaf_pixel_node not in root_pixel_node.children
     with pytest.raises(ValueError):
         leaf_pixel_node.remove_child_link(leaf_pixel_node)
+
+
+def test_node_string(root_pixel_node, leaf_pixel_node):
+    root_string = "PixelNodeType.ROOT Order: -1, Pixel: -1"
+    assert str(root_pixel_node) == root_string
+    assert repr(root_pixel_node) == root_string
+
+    leaf_string = "PixelNodeType.LEAF Order: 1, Pixel: 12"
+    assert str(leaf_pixel_node) == leaf_string
+    assert repr(leaf_pixel_node) == leaf_string

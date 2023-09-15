@@ -1,6 +1,6 @@
-from typing import Tuple, Type
+from typing import Tuple
 
-from typing_extensions import Self
+from typing_extensions import Self, TypeAlias
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.io import FilePointer, file_io, paths
@@ -15,7 +15,7 @@ class Dataset:
     some catalog info or catalog directory
     """
 
-    CatalogInfoClass: Type[BaseCatalogInfo] = BaseCatalogInfo
+    CatalogInfoClass: TypeAlias = BaseCatalogInfo
 
     def __init__(
         self,

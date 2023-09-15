@@ -5,6 +5,7 @@ import dataclasses
 from typing import List, Tuple, Union
 
 import pandas as pd
+from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
@@ -25,9 +26,13 @@ class Catalog(Dataset):
     `Norder=/Dir=/Npix=.parquet`
     """
 
-    CatalogInfoClass = CatalogInfo
     PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
+
+    # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
+    # set the catalog info to the correct type
+    CatalogInfoClass: TypeAlias = CatalogInfo
+    catalog_info: CatalogInfoClass
 
     def __init__(
         self,
@@ -98,6 +103,14 @@ class Catalog(Dataset):
             - num_objects: the number of rows in the pixel's partition
         """
         return self.partition_info.data_frame
+
+    def get_healpix_pixels(self) -> List[HealpixPixel]:
+        """Get healpix pixel objects for all pixels contained in the catalog.
+
+        Returns:
+            List of HealpixPixel
+        """
+        return self.partition_info.get_healpix_pixels()
 
     @classmethod
     def _read_args(

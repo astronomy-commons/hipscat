@@ -41,21 +41,23 @@ def test_pixel_str_and_repr():
     assert repr(pix) == test_string
 
 
-def test_convert_lower_order():
-    test_cases = [
+@pytest.mark.parametrize(
+    "order, pixel, final_order, final_pixel",
+    [
         (3, 10, 2, 2),
         (6, 1033, 5, 258),
         (4, 0, 3, 0),
         (5, 400, 2, 6),
         (2, 4, 0, 0),
         (3, 10, 3, 10),
-    ]
-    for order, pixel, final_order, final_pixel in test_cases:
-        delta = order - final_order
-        pixel = HealpixPixel(order, pixel)
-        final_pix = pixel.convert_to_lower_order(delta)
-        assert final_pix.order == final_order
-        assert final_pix.pixel == final_pixel
+    ],
+)
+def test_convert_lower_order(order, pixel, final_order, final_pixel):
+    delta = order - final_order
+    pixel = HealpixPixel(order, pixel)
+    final_pix = pixel.convert_to_lower_order(delta)
+    assert final_pix.order == final_order
+    assert final_pix.pixel == final_pixel
 
 
 def test_convert_lower_order_fails_below_zero():
@@ -74,13 +76,14 @@ def test_convert_lower_order_fails_negative():
         pixel.convert_to_lower_order(-1)
 
 
-def test_convert_higher_order():
-    test_cases = [(3, 10, 1), (6, 1033, 3), (4, 0, 1), (5, 400, 2), (2, 4, 0), (0, 10, 2)]
-    for order, pixel, delta_order in test_cases:
-        converted_pixels = HealpixPixel(order, pixel).convert_to_higher_order(delta_order)
-        final_order = order + delta_order
-        for final_pixel in range(pixel * 4**delta_order, (pixel + 1) * 4**delta_order):
-            assert HealpixPixel(final_order, final_pixel) in converted_pixels
+@pytest.mark.parametrize(
+    "order, pixel, delta_order", [(3, 10, 1), (6, 1033, 3), (4, 0, 1), (5, 400, 2), (2, 4, 0), (0, 10, 2)]
+)
+def test_convert_higher_order(order, pixel, delta_order):
+    converted_pixels = HealpixPixel(order, pixel).convert_to_higher_order(delta_order)
+    final_order = order + delta_order
+    for final_pixel in range(pixel * 4**delta_order, (pixel + 1) * 4**delta_order):
+        assert HealpixPixel(final_order, final_pixel) in converted_pixels
 
 
 def test_convert_higher_order_fails_above_limit():
