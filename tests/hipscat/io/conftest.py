@@ -64,15 +64,3 @@ def basic_catalog_parquet_metadata():
             pa.field("__index_level_0__", pa.int64()),
         ]
     )
-
-@pytest.fixture
-def example_abstract_file_path():
-    return "abfs://treasuremap/hipscat/pytests"
-
-@pytest.fixture
-def example_abstract_file_path_storage_options():
-    storage_options = {
-        "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
-        "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
-    }
-    return storage_options
