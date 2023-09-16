@@ -42,7 +42,7 @@ class BaseCatalogInfo:
         return formatted_string
 
     @classmethod
-    def read_from_metadata_file(cls, catalog_info_file: FilePointer, storage_options: dict={}) -> Self:
+    def read_from_metadata_file(cls, catalog_info_file: FilePointer, storage_options: dict = {}) -> Self:
         """Read catalog info from the `catalog_info.json` metadata file
 
         Args:

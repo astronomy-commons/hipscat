@@ -43,7 +43,7 @@ class Dataset:
         self.catalog_base_dir = file_io.get_file_pointer_from_path(self.catalog_path)
 
     @classmethod
-    def read_from_hipscat(cls, catalog_path: str, storage_options: dict={}) -> Self:
+    def read_from_hipscat(cls, catalog_path: str, storage_options: dict = {}) -> Self:
         """Reads a HiPSCat Catalog from a HiPSCat directory
 
         Args:
@@ -60,7 +60,7 @@ class Dataset:
         return cls(*args, **kwargs)
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: FilePointer, storage_options: dict={}) -> Tuple[CatalogInfoClass]:
+    def _read_args(cls, catalog_base_dir: FilePointer, storage_options: dict = {}) -> Tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         catalog_info = cls.CatalogInfoClass.read_from_metadata_file(
             catalog_info_file, storage_options=storage_options
@@ -68,11 +68,11 @@ class Dataset:
         return (catalog_info,)
 
     @classmethod
-    def _read_kwargs(cls, catalog_base_dir: FilePointer, storage_options: dict={}) -> dict:
+    def _read_kwargs(cls, catalog_base_dir: FilePointer, storage_options: dict = {}) -> dict:
         return {"catalog_path": str(catalog_base_dir), "storage_options": storage_options}
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict={}):
+    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = {}):
         if not file_io.does_file_or_directory_exist(catalog_base_dir, storage_options=storage_options):
             raise FileNotFoundError(f"No directory exists at {str(catalog_base_dir)}")
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)

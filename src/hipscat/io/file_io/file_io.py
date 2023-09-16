@@ -48,7 +48,7 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_opt
     if ignore_errors:
         try:
             file_system.rm(file_pointer, recursive=True)
-        except:
+        except Exception: # pylint: disable=broad-except
             #fsspec doesn't have a "ignore_errors" field in the rm method
             pass
     else:
@@ -149,7 +149,7 @@ def write_dataframe_to_csv(
     write_string_to_file(file_pointer, output, storage_options=storage_options)
 
 
-def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict={}):
+def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict = {}):
     """Write a pandas DataFrame to a parquet file
 
     Args:
@@ -165,7 +165,7 @@ def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict={}
             _parquet_file.write(_tmp_file.read())
 
 
-def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict={}, **kwargs) -> pq.FileMetaData:
+def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict = {}, **kwargs) -> pq.FileMetaData:
     """Read FileMetaData from footer of a single Parquet file.
 
     Args:
@@ -322,21 +322,18 @@ def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=102
         fs2: fsspec.filesytem for destination directory
         fs2_pointer: destination directory for copied contents
     """
-    folder_name = source_fp.split("/")[-1]
-    destination_folder = os.path.join(desintation_fp, folder_name)
+    destination_folder = os.path.join(desintation_fp, source_fp.split("/")[-1])
     if destination_folder[-1] != "/":
         destination_folder += "/"
     if not destination_fs.exists(destination_folder):
         destination_fs.makedirs(destination_folder, exist_ok=True)
 
     dir_contents = source_fs.listdir(source_fp)
-    files = [x for x in dir_contents if x["type"] == "file"]
+    files = [x for x in source_fs.listdir(source_fp) if x["type"] == "file"]
 
     for _file in files:
-        source_fname = _file["name"]
-        pure_fname = source_fname.split("/")[-1]
-        destination_fname = os.path.join(destination_folder, pure_fname)
-        with source_fs.open(source_fname, "rb") as source_file:
+        destination_fname = os.path.join(destination_folder, _file["name"].split("/")[-1])
+        with source_fs.open(_file["name"], "rb") as source_file:
             with destination_fs.open(destination_fname, "wb") as destination_file:
                 while True:
                     chunk = source_file.read(chunksize)
@@ -346,8 +343,7 @@ def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=102
 
     dirs = [x for x in dir_contents if x["type"] == "directory"]
     for _dir in dirs:
-        source_dir = _dir["name"]
-        copy_dir(source_fs, source_dir, destination_fs, destination_folder)
+        copy_dir(source_fs, _dir["name"], destination_fs, destination_folder)
 
 
 def delete_file(file_handle: FilePointer, storage_options: dict = {}):
