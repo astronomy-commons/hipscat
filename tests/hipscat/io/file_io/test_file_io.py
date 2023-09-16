@@ -14,6 +14,7 @@ from hipscat.io.file_io import (
     remove_directory,
     write_dataframe_to_csv,
     write_string_to_file,
+    delete_file
 )
 from hipscat.io.file_io.file_pointer import (
     does_file_or_directory_exist,
@@ -78,6 +79,8 @@ def test_write_string_to_file(tmp_path):
     with open(test_file_path, "r", encoding="utf-8") as file:
         data = file.read()
         assert data == test_string
+    delete_file(test_file_pointer)
+    assert not does_file_or_directory_exist(test_file_pointer)
 
 
 def test_load_json(small_sky_dir):

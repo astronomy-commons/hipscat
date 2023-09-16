@@ -1,4 +1,5 @@
 import os
+import pytest
 
 from hipscat.io.file_io import (
     append_paths_to_pointer,
@@ -8,6 +9,9 @@ from hipscat.io.file_io import (
     get_directory_contents,
     get_file_pointer_from_path,
     is_regular_file,
+    get_file_pointer_for_fs,
+    get_file_protocol,
+    strip_leading_slash_for_pyarrow
 )
 
 
@@ -80,3 +84,21 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     assert small_sky_contents == expected
 
     assert len(get_directory_contents(tmp_path)) == 0
+
+def test_get_file_pointer_for_fs():
+    test_abfs_protocol_path = get_file_pointer_from_path("abfs:///container/path/to/parquet/file")
+    assert get_file_pointer_for_fs("abfs", file_pointer=test_abfs_protocol_path) == "/container/path/to/parquet/file"
+    test_s3_protocol_path = get_file_pointer_from_path("s3:///bucket/path/to/catalog.json")
+    assert get_file_pointer_for_fs("s3", file_pointer=test_s3_protocol_path) == "/bucket/path/to/catalog.json"
+    test_local_path = get_file_pointer_from_path("/path/to/file")
+    assert get_file_pointer_for_fs("file", file_pointer=test_local_path) == test_local_path
+    test_local_protocol_path = get_file_pointer_from_path("file:///path/to/file")
+    assert get_file_pointer_for_fs("file", file_pointer=test_local_protocol_path) == "/path/to/file"
+
+    with pytest.raises(NotImplementedError):
+        get_file_protocol("invalid:///path/to/file")
+
+    test_leading_slash_filename = get_file_pointer_from_path("/bucket/path/test.txt")
+    assert strip_leading_slash_for_pyarrow(test_leading_slash_filename, protocol="abfs") == "bucket/path/test.txt"
+    test_non_leading_slash_filenaem = get_file_pointer_from_path("bucket/path/test.txt")
+    assert strip_leading_slash_for_pyarrow(test_non_leading_slash_filenaem, protocol="abfs") == "bucket/path/test.txt"

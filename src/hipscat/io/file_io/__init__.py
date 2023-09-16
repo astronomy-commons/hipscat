@@ -14,7 +14,8 @@ from .file_io import (
     copy_tree_fs_to_fs,
     read_parquet_dataset,
     read_parquet_file,
-    write_dataframe_to_parquet
+    write_dataframe_to_parquet,
+    delete_file
 )
 from .file_pointer import (
     FilePointer,
@@ -25,4 +26,7 @@ from .file_pointer import (
     get_directory_contents,
     get_file_pointer_from_path,
     is_regular_file,
+    get_file_pointer_for_fs,
+    get_file_protocol,
+    strip_leading_slash_for_pyarrow
 )

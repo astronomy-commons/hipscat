@@ -89,6 +89,14 @@ def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePoi
         path = get_full_file_pointer(path, include_protocol)
     return FilePointer(path)
 
+def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> FilePointer:
+    """Strips the leading slash for pyarrow read/write functions.
+        This is required for their filesystem abstractiosn
+    """
+    if protocol != "file" and str(pointer).startswith("/"):
+        pointer = FilePointer(str(pointer).replace("/", "", 1))
+    return pointer
+
 
 def append_paths_to_pointer(pointer: FilePointer, *paths: str) -> FilePointer:
     """Append directories and/or a file name to a specified file pointer.

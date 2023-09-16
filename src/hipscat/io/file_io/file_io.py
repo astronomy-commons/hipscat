@@ -13,7 +13,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 import pyarrow.dataset as pds
 
-from hipscat.io.file_io.file_pointer import FilePointer, get_fs
+from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 
 
 def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_options: dict = {}):
@@ -175,8 +175,7 @@ def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict = {},
     """
     file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
 
-    if file_system.protocol != "file" and str(file_pointer).startswith("/"):
-        file_pointer = str(file_pointer).replace("/", "", 1)
+    file_pointer = strip_leading_slash_for_pyarrow(file_pointer, protocol=file_system.protocol)
 
     parquet_file = pq.read_metadata(
         file_pointer, filesystem=file_system, **kwargs
@@ -201,8 +200,7 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = {}):
     file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
     #pyarrow.dataset requires the pointer not lead with a slash
-    if file_system.protocol != "file" and str(dir_pointer).startswith("/"):
-        dir_pointer = str(dir_pointer).replace("/", "", 1)
+    dir_pointer = strip_leading_slash_for_pyarrow(dir_pointer, file_system.protocol)
 
     dataset = pds.dataset(
         dir_pointer,
@@ -241,8 +239,7 @@ def write_parquet_metadata(
 
     file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
 
-    if file_system.protocol != "file" and str(file_pointer).startswith("/"):
-        file_pointer = str(file_pointer).replace("/", "", 1)
+    file_pointer = strip_leading_slash_for_pyarrow(file_pointer, protocol=file_system.protocol)
     pq.write_metadata(
         schema, file_pointer, metadata_collector=metadata_collector, filesystem=file_system, **kwargs
     )
