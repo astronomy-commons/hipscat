@@ -43,7 +43,7 @@ class PartitionInfo:
         return highest_order
 
     @classmethod
-    def read_from_file(cls, partition_info_file: FilePointer, storage_options: dict = {}):
+    def read_from_file(cls, partition_info_file: FilePointer, storage_options: dict = None):
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:

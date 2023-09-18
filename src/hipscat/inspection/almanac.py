@@ -30,7 +30,7 @@ class Almanac:
               catalogs.
     """
 
-    def __init__(self, include_default_dir=True, dirs=None, storage_options: dict = {}):
+    def __init__(self, include_default_dir=True, dirs=None, storage_options: dict = None):
         """Create new almanac."""
         self.files = {}
         self.entries = {}

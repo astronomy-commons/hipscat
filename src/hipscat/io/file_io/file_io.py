@@ -16,7 +16,7 @@ import pyarrow.dataset as pds
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 
 
-def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_options: dict = {}):
+def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_options: dict = None):
     """Make a directory at a given file pointer
 
     Will raise an error if a directory already exists, unless `exist_ok` is True in which case
@@ -35,7 +35,7 @@ def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_op
     file_system.makedirs(file_pointer, exist_ok=exist_ok)
 
 
-def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_options: dict = {}):
+def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_options: dict = None):
     """Remove a directory, and all contents, recursively.
 
     Args:
@@ -56,7 +56,7 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_opt
 
 
 def write_string_to_file(
-        file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: dict = {}
+        file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: dict = None
     ):
     """Write a string to a text file
 
@@ -71,7 +71,7 @@ def write_string_to_file(
         _file.write(string)
 
 
-def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: dict = {}):
+def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: dict = None):
     """Load a json file to a dictionary
 
     Args:
@@ -88,7 +88,7 @@ def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     return text_file
 
 
-def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: dict = {}) -> dict:
+def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: dict = None) -> dict:
     """Load a json file to a dictionary
 
     Args:
@@ -107,7 +107,7 @@ def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     return json_dict
 
 
-def load_csv_to_pandas(file_pointer: FilePointer, storage_options: dict = {}, **kwargs) -> pd.DataFrame:
+def load_csv_to_pandas(file_pointer: FilePointer, storage_options: dict = None, **kwargs) -> pd.DataFrame:
     """Load a csv file to a pandas dataframe
 
     Args:
@@ -120,7 +120,7 @@ def load_csv_to_pandas(file_pointer: FilePointer, storage_options: dict = {}, **
     return pd.read_csv(file_pointer, storage_options=storage_options, **kwargs)
 
 
-def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: dict = {}, **kwargs) -> pd.DataFrame:
+def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: dict = None, **kwargs) -> pd.DataFrame:
     """Load a parquet file to a pandas dataframe
 
     Args:
@@ -134,7 +134,7 @@ def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: dict = {}
 
 
 def write_dataframe_to_csv(
-        dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: dict = {}, **kwargs
+        dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: dict = None, **kwargs
     ):
     """Write a pandas DataFrame to a CSV file
 
@@ -149,7 +149,7 @@ def write_dataframe_to_csv(
     write_string_to_file(file_pointer, output, storage_options=storage_options)
 
 
-def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict = {}):
+def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict = None):
     """Write a pandas DataFrame to a parquet file
 
     Args:
@@ -165,7 +165,9 @@ def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict = 
             _parquet_file.write(_tmp_file.read())
 
 
-def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict = {}, **kwargs) -> pq.FileMetaData:
+def read_parquet_metadata(
+        file_pointer: FilePointer, storage_options: dict = None, **kwargs
+    ) -> pq.FileMetaData:
     """Read FileMetaData from footer of a single Parquet file.
 
     Args:
@@ -183,7 +185,7 @@ def read_parquet_metadata(file_pointer: FilePointer, storage_options: dict = {},
     return parquet_file
 
 
-def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = {}):
+def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = None):
     """Read parquet dataset from directory pointer.
 
     Args:
@@ -212,7 +214,7 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = {}):
     return dataset
 
 
-def read_parquet_file(file_pointer: FilePointer, storage_options: dict = {}):
+def read_parquet_file(file_pointer: FilePointer, storage_options: dict = None):
     """Read parquet file from file pointer.
 
     Args:
@@ -225,7 +227,7 @@ def read_parquet_file(file_pointer: FilePointer, storage_options: dict = {}):
 
 def write_parquet_metadata(
     schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None,
-    storage_options: dict = {}, **kwargs
+    storage_options: dict = None, **kwargs
 ):
     """Write a metadata only parquet file from a schema
 
@@ -245,7 +247,7 @@ def write_parquet_metadata(
     )
 
 
-def read_fits_image(map_file_pointer: FilePointer, storage_options: dict = {}):
+def read_fits_image(map_file_pointer: FilePointer, storage_options: dict = None):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
@@ -264,7 +266,7 @@ def read_fits_image(map_file_pointer: FilePointer, storage_options: dict = {}):
     return map_fits_image
 
 
-def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, storage_options: dict = {}):
+def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, storage_options: dict = None):
     """Write the object spatial distribution information to a healpix FITS file.
 
     Args:
@@ -280,7 +282,7 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, stora
             _map_file.write(_tmp_file.read())
 
 
-def read_yaml(file_handle: FilePointer, storage_options: dict = {}):
+def read_yaml(file_handle: FilePointer, storage_options: dict = None):
     """Reads yaml file from filesystem.
 
     Args:
@@ -294,7 +296,7 @@ def read_yaml(file_handle: FilePointer, storage_options: dict = {}):
 
 def copy_tree_fs_to_fs(
         fs1_source: FilePointer, fs2_destination: FilePointer,
-        storage_options1: dict={}, storage_options2: dict={}
+        storage_options1: dict = None, storage_options2: dict = None
     ):
     """Recursive Copies directory from one filesystem to the other.
 
@@ -343,7 +345,7 @@ def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=102
         copy_dir(source_fs, _dir["name"], destination_fs, destination_folder)
 
 
-def delete_file(file_handle: FilePointer, storage_options: dict = {}):
+def delete_file(file_handle: FilePointer, storage_options: dict = None):
     """Deletes file from filesystem.
 
     Args:

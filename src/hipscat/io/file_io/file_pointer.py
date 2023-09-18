@@ -34,13 +34,15 @@ def get_file_protocol(pointer: FilePointer) -> str:
     return protocol
 
 
-def get_fs(file_pointer: FilePointer, storage_options: dict = {}) -> fsspec.filesystem:
+def get_fs(file_pointer: FilePointer, storage_options: dict = None) -> fsspec.filesystem:
     """Create the abstract filesystem
     
     Args:
         file_pointer: filesystem pathway
         storage_options: dictionary that contains abstract filesystem credentials
     """
+    if storage_options is None:
+        storage_options = {}
     protocol = get_file_protocol(file_pointer)
     file_pointer = get_file_pointer_for_fs(protocol, file_pointer)
     return fsspec.filesystem(protocol, **storage_options), file_pointer
@@ -89,6 +91,7 @@ def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePoi
         path = get_full_file_pointer(path, include_protocol)
     return FilePointer(path)
 
+
 def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> FilePointer:
     """Strips the leading slash for pyarrow read/write functions.
         This is required for their filesystem abstractiosn
@@ -112,7 +115,7 @@ def append_paths_to_pointer(pointer: FilePointer, *paths: str) -> FilePointer:
     return FilePointer(os.path.join(pointer, *paths))
 
 
-def does_file_or_directory_exist(pointer: FilePointer, storage_options: dict = {}) -> bool:
+def does_file_or_directory_exist(pointer: FilePointer, storage_options: dict = None) -> bool:
     """Checks if a file or directory exists for a given file pointer
 
     Args:
@@ -126,7 +129,7 @@ def does_file_or_directory_exist(pointer: FilePointer, storage_options: dict = {
     return file_system.exists(pointer)
 
 
-def is_regular_file(pointer: FilePointer, storage_options: dict = {}) -> bool:
+def is_regular_file(pointer: FilePointer, storage_options: dict = None) -> bool:
     """Checks if a regular file (NOT a directory) exists for a given file pointer.
 
     Args:
@@ -168,7 +171,7 @@ def directory_has_contents(pointer: FilePointer) -> bool:
 
 
 def get_directory_contents(
-        pointer: FilePointer, append_paths=True, storage_options: dict = {}
+        pointer: FilePointer, append_paths=True, storage_options: dict = None
     ) -> List[FilePointer]:
     """Finds all files and directories in the specified directory.
 

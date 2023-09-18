@@ -31,7 +31,7 @@ class AssociationCatalog(Dataset):
         catalog_info: CatalogInfoClass,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
-        storage_options: dict={}
+        storage_options: dict=None
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
@@ -59,7 +59,7 @@ class AssociationCatalog(Dataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: dict={}
+        cls, catalog_base_dir: FilePointer, storage_options: dict = None
     ) -> Tuple[CatalogInfoClass, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)

@@ -39,7 +39,7 @@ class Catalog(Dataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: dict = {}
+        storage_options: dict = None
     ) -> None:
         """Initializes a Catalog
 
@@ -114,7 +114,7 @@ class Catalog(Dataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: dict = {}
+        cls, catalog_base_dir: FilePointer, storage_options: dict = None
     ) -> Tuple[CatalogInfoClass, PartitionInfo]:
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
@@ -122,7 +122,7 @@ class Catalog(Dataset):
         return args + (partition_info,)
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = {}):
+    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
