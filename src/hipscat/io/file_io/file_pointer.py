@@ -1,4 +1,4 @@
-from typing import List, NewType
+from typing import List, NewType, Tuple
 import glob
 import os
 import fsspec
@@ -34,7 +34,9 @@ def get_file_protocol(pointer: FilePointer) -> str:
     return protocol
 
 
-def get_fs(file_pointer: FilePointer, storage_options: dict = None) -> fsspec.filesystem:
+def get_fs(
+        file_pointer: FilePointer, storage_options: dict = None
+    ) -> Tuple[fsspec.filesystem, FilePointer]:
     """Create the abstract filesystem
     
     Args:
@@ -59,7 +61,6 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
         file_pointer: filesystem pathway
     
     """
-
     if not isinstance(file_pointer, str):
         file_pointer = str(file_pointer)
 
@@ -69,12 +70,11 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
             split_pointer = file_pointer.split("file://")[1]
         else:
             split_pointer = file_pointer
-    if protocol == "abfs":
-        #return the path minus protocol+account name
-        split_pointer = file_pointer.split("abfs://")[1]
-    if protocol == "s3":
-        #just strip the protocol, and keep the bucket name
-        split_pointer = file_pointer.split("s3://")[1]
+    elif protocol in ["abfs", "s3"]:
+        #return the path minus protocol://
+        split_pointer = file_pointer.split(f"{protocol}://")[1]
+    else:
+        raise NotImplementedError(f"{protocol} is not supported for hipscat!")
 
     return FilePointer(split_pointer)
 
@@ -82,7 +82,7 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
 def get_full_file_pointer(incomplete_path: str, protocol_path: str) -> FilePointer:
     """Rebuilds the file_pointer with the protocol and account name if required"""
     protocol = get_file_protocol(protocol_path)
-    return f"{protocol}://{incomplete_path}"
+    return FilePointer(f"{protocol}://{incomplete_path}")
 
 
 def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePointer:
@@ -94,7 +94,7 @@ def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePoi
 
 def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> FilePointer:
     """Strips the leading slash for pyarrow read/write functions.
-        This is required for their filesystem abstractiosn
+        This is required for their filesystem abstraction
     """
     if protocol != "file" and str(pointer).startswith("/"):
         pointer = FilePointer(str(pointer).replace("/", "", 1))
@@ -188,7 +188,7 @@ def get_directory_contents(
     """
     file_system, file_pointer = get_fs(pointer, storage_options)
     contents = file_system.listdir(file_pointer)
-    contents = [x['name'] for x in contents]
+    contents = [FilePointer(x['name']) for x in contents]
     if len(contents) == 0:
         return []
     contents.sort()
