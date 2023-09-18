@@ -171,7 +171,7 @@ def directory_has_contents(pointer: FilePointer) -> bool:
 
 
 def get_directory_contents(
-        pointer: FilePointer, append_paths=True, storage_options: dict = None
+        pointer: FilePointer, include_protocol=False, storage_options: dict = None
     ) -> List[FilePointer]:
     """Finds all files and directories in the specified directory.
 
@@ -179,19 +179,19 @@ def get_directory_contents(
 
     Args:
         pointer: File Pointer in which to find contents
-        append_paths: boolean that determines if the full directory path will be appended
-            to the file_contents filenames
+        include_protocol: boolean on whether or not to include the filesystem protocol in the
+            returned directory contents
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         New file pointers to files or subdirectories below this directory.
     """
-    file_system, pointer = get_fs(pointer, storage_options)
-    contents = file_system.listdir(pointer)
+    file_system, file_pointer = get_fs(pointer, storage_options)
+    contents = file_system.listdir(file_pointer)
     contents = [x['name'] for x in contents]
     if len(contents) == 0:
         return []
     contents.sort()
-    if append_paths:
-        return [append_paths_to_pointer(pointer, x) for x in contents]
+    if include_protocol:
+        contents = [get_full_file_pointer(x, protocol_path=pointer) for x in contents]
     return contents

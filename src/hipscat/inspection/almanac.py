@@ -81,12 +81,9 @@ class Almanac:
 
             path_contents = file_pointer.get_directory_contents(
                 input_path,
-                append_paths=False,
+                include_protocol=True,
                 storage_options=self.storage_options
             )
-            path_contents = [
-                file_pointer.get_full_file_pointer(x, protocol_path=input_path) for x in path_contents
-            ]
             input_paths = [x for x in path_contents if str(x).endswith(".yml")]
             input_paths.sort()
             files.extend(input_paths)
