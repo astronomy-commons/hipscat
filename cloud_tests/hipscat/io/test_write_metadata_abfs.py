@@ -146,11 +146,11 @@ def test_write_partition_info_float(assert_text_file_matches, example_abfs_path,
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_abfs_storage_options)
 
 
-def test_write_parquet_metadata(example_abfs_path, small_sky_dir, basic_catalog_parquet_metadata, example_abfs_storage_options):
+def test_write_parquet_metadata(example_abfs_path, small_sky_dir, basic_catalog_parquet_metadata, example_abfs_storage_options, copy_tree_fs_to_fs):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = os.path.join(example_abfs_path)
    
-    file_io.copy_tree_fs_to_fs(
+    copy_tree_fs_to_fs(
         small_sky_dir,
         example_abfs_path,
         {},
@@ -180,11 +180,11 @@ def test_write_parquet_metadata(example_abfs_path, small_sky_dir, basic_catalog_
     )
 
 
-def test_write_parquet_metadata_order1(example_abfs_path, small_sky_order1_dir, basic_catalog_parquet_metadata, example_abfs_storage_options):
+def test_write_parquet_metadata_order1(example_abfs_path, small_sky_order1_dir, basic_catalog_parquet_metadata, example_abfs_storage_options, copy_tree_fs_to_fs):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
     
-    file_io.copy_tree_fs_to_fs(
+    copy_tree_fs_to_fs(
         small_sky_order1_dir,
         example_abfs_path,
         {},

@@ -75,6 +75,7 @@ def small_sky_order1_catalog_abfs(example_abfs_path, example_abfs_storage_option
     )
     return Catalog.read_from_hipscat(small_sky_order1_dir, storage_options=example_abfs_storage_options)
 
+
 @pytest.fixture()
 def small_sky_order1_pixels():
     return [
@@ -95,19 +96,5 @@ def example_abfs_storage_options():
     storage_options = {
         "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
         "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
-    }
-    return storage_options
-
-
-@pytest.fixture
-def example_s3_file_path():
-    return "s3://hipscat/pytests"
-
-
-@pytest.fixture
-def example_s3_storage_options():
-    storage_options = {
-        "key" : os.environ.get("AWS_S3_HIPSCAT_ACCOUNT_KEY"),
-        "secret" : os.environ.get("AWS_S3_HIPSCAT_ACCOUNT_SECRET")
     }
     return storage_options

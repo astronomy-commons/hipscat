@@ -179,6 +179,8 @@ def get_directory_contents(
 
     Args:
         pointer: File Pointer in which to find contents
+        append_paths: boolean that determines if the full directory path will be appended
+            to the file_contents filenames
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:

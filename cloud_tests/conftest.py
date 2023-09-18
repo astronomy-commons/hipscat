@@ -266,20 +266,6 @@ def example_abfs_storage_options():
 
 
 @pytest.fixture
-def example_s3_file_path():
-    return "s3://hipscat/pytests"
-
-
-@pytest.fixture
-def example_s3_storage_options():
-    storage_options = {
-        "key" : os.environ.get("AWS_S3_HIPSCAT_ACCOUNT_KEY"),
-        "secret" : os.environ.get("AWS_S3_HIPSCAT_ACCOUNT_SECRET")
-    }
-    return storage_options
-
-
-@pytest.fixture
 def default_almanac(almanac_dir, test_data_dir):
     """Set up default environment variables and fetch default almanac data."""
     os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir

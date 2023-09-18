@@ -146,10 +146,10 @@ def test_write_partition_info_float(assert_text_file_matches, tmp_path):
     assert_text_file_matches(expected_lines, metadata_filename)
 
 
-def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_metadata):
+def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_metadata, copy_tree_fs_to_fs):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = os.path.join(tmp_path, "catalog")
-    file_io.copy_tree_fs_to_fs(
+    copy_tree_fs_to_fs(
         small_sky_dir,
         catalog_base_dir,
     )
@@ -172,11 +172,11 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_m
     )
 
 
-def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata):
+def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata, copy_tree_fs_to_fs):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
     temp_path = os.path.join(tmp_path, "catalog")
-    file_io.copy_tree_fs_to_fs(
+    copy_tree_fs_to_fs(
         small_sky_order1_dir,
         temp_path,
     )

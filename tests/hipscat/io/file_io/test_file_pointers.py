@@ -85,6 +85,7 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
 
     assert len(get_directory_contents(tmp_path)) == 0
 
+
 def test_get_file_pointer_for_fs():
     test_abfs_protocol_path = get_file_pointer_from_path("abfs:///container/path/to/parquet/file")
     assert get_file_pointer_for_fs("abfs", file_pointer=test_abfs_protocol_path) == "/container/path/to/parquet/file"
@@ -98,6 +99,8 @@ def test_get_file_pointer_for_fs():
     with pytest.raises(NotImplementedError):
         get_file_protocol("invalid:///path/to/file")
 
+
+def test_strip_leading_slash_for_pyarrow():
     test_leading_slash_filename = get_file_pointer_from_path("/bucket/path/test.txt")
     assert strip_leading_slash_for_pyarrow(test_leading_slash_filename, protocol="abfs") == "bucket/path/test.txt"
     test_non_leading_slash_filenaem = get_file_pointer_from_path("bucket/path/test.txt")

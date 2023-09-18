@@ -7,6 +7,8 @@ import pyarrow as pa
 import pytest
 
 from hipscat.io.file_io.file_pointer import (
+    FilePointer,
+    get_fs,
     does_file_or_directory_exist
 )
 from hipscat.io.file_io.file_io import (
@@ -36,8 +38,6 @@ def assert_text_file_matches():
         """
         assert does_file_or_directory_exist(file_name, storage_options=storage_options), f"file not found [{file_name}]"
         contents = load_text_file(file_name, storage_options=storage_options)
-        #with open(file_name, "r", encoding="utf-8") as metadata_file:
-        #    contents = metadata_file.readlines()
 
         assert len(expected_lines) == len(
             contents
@@ -47,10 +47,62 @@ def assert_text_file_matches():
                 f"files do not match at line {i+1} " f"(actual: [{contents[i]}] vs expected: [{expected}])"
             )
 
-        #metadata_file.close()
-
     return assert_text_file_matches
 
+
+@pytest.fixture
+def copy_tree_fs_to_fs():
+    def copy_tree_fs_to_fs(
+            fs1_source: FilePointer, fs2_destination: FilePointer,
+            storage_options1: dict = None, storage_options2: dict = None
+        ):
+        """Recursive Copies directory from one filesystem to the other.
+
+        Args:
+            fs1_source: location of source directory to copy
+            fs2_destination: location of destination directory to for fs1 to be written two
+            storage_options1: dictionary that contains abstract filesystem1 credentials
+            storage_options2: dictionary that contains abstract filesystem2 credentials
+        """
+
+        source_fs, source_fp = get_fs(fs1_source, storage_options=storage_options1)
+        destination_fs, desintation_fp = get_fs(fs2_destination, storage_options=storage_options2)
+        copy_dir(source_fs, source_fp, destination_fs, desintation_fp)
+
+
+    def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=1024*1024):
+        """Recursive method to copy directories and their contents.
+
+        Args:
+            fs1: fsspec.filesystem for the source directory contents
+            fs1_pointer: source directory to copy content files
+            fs2: fsspec.filesytem for destination directory
+            fs2_pointer: destination directory for copied contents
+        """
+        destination_folder = os.path.join(desintation_fp, source_fp.split("/")[-1])
+        if destination_folder[-1] != "/":
+            destination_folder += "/"
+        if not destination_fs.exists(destination_folder):
+            destination_fs.makedirs(destination_folder, exist_ok=True)
+
+        dir_contents = source_fs.listdir(source_fp)
+        files = [x for x in source_fs.listdir(source_fp) if x["type"] == "file"]
+
+        for _file in files:
+            destination_fname = os.path.join(destination_folder, _file["name"].split("/")[-1])
+            with source_fs.open(_file["name"], "rb") as source_file:
+                with destination_fs.open(destination_fname, "wb") as destination_file:
+                    while True:
+                        chunk = source_file.read(chunksize)
+                        if not chunk:
+                            break
+                        destination_file.write(chunk)
+
+        dirs = [x for x in dir_contents if x["type"] == "directory"]
+        for _dir in dirs:
+            copy_dir(source_fs, _dir["name"], destination_fs, destination_folder, chunksize=chunksize)
+
+    return copy_tree_fs_to_fs
 
 @pytest.fixture
 def basic_catalog_parquet_metadata():

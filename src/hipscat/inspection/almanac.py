@@ -52,7 +52,6 @@ class Almanac:
         """
         if include_default_dir:
             default_dir = AlmanacInfo.get_default_dir()
-            print(default_dir)
             if default_dir:
                 self._add_files_to_namespace(default_dir)
         if pd.api.types.is_dict_like(dirs):
@@ -92,7 +91,6 @@ class Almanac:
             input_paths.sort()
             files.extend(input_paths)
 
-        print(directory, files)
         if namespace in self.files:
             self.files[namespace].extend(files)
         else:

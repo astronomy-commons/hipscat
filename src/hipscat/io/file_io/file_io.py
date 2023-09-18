@@ -72,14 +72,14 @@ def write_string_to_file(
 
 
 def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: dict = None):
-    """Load a json file to a dictionary
+    """Load a text file content to a list of strings.
 
     Args:
         file_pointer: location of file to read
         encoding: string encoding method used by the file
         storage_options: dictionary that contains abstract filesystem credentials
     Returns:
-        dictionary of key value pairs loaded from the JSON file
+        text contents of file.
     """
     file_system, file_pointer = get_fs(file_pointer, storage_options)
     with file_system.open(file_pointer, "r", encoding=encoding) as _text_file:
@@ -144,12 +144,11 @@ def write_dataframe_to_csv(
         storage_options: dictionary that contains abstract filesystem credentials
         **kwargs: args to pass to pandas `to_csv` method
     """
-    output = io.StringIO()
     output = dataframe.to_csv(**kwargs)
     write_string_to_file(file_pointer, output, storage_options=storage_options)
 
 
-def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict = None):
+def write_dataframe_to_parquet(dataframe : pd.DataFrame, file_pointer, storage_options: dict = None):
     """Write a pandas DataFrame to a parquet file
 
     Args:
@@ -157,12 +156,7 @@ def write_dataframe_to_parquet(dataframe, file_pointer, storage_options: dict = 
         file_pointer: location of file to write to
         storage_options: dictionary that contains abstract filesystem credentials
     """
-
-    file_system, file_pointer = get_fs(file_pointer=file_pointer, storage_options=storage_options)
-    with tempfile.NamedTemporaryFile() as _tmp_file:
-        with file_system.open(file_pointer, "wb") as _parquet_file:
-            dataframe.to_parquet(_tmp_file.name)
-            _parquet_file.write(_tmp_file.read())
+    dataframe.to_parquet(file_pointer, storage_options=storage_options)
 
 
 def read_parquet_metadata(
@@ -293,56 +287,6 @@ def read_yaml(file_handle: FilePointer, storage_options: dict = None):
     with file_system.open(file_handle, "r", encoding="utf-8") as _file:
         metadata = yaml.safe_load(_file)
     return metadata
-
-def copy_tree_fs_to_fs(
-        fs1_source: FilePointer, fs2_destination: FilePointer,
-        storage_options1: dict = None, storage_options2: dict = None
-    ):
-    """Recursive Copies directory from one filesystem to the other.
-
-    Args:
-        fs1_source: location of source directory to copy
-        fs2_destination: location of destination directory to for fs1 to be written two
-        storage_options1: dictionary that contains abstract filesystem1 credentials
-        storage_options2: dictionary that contains abstract filesystem2 credentials
-    """
-
-    source_fs, source_fp = get_fs(fs1_source, storage_options=storage_options1)
-    destination_fs, desintation_fp = get_fs(fs2_destination, storage_options=storage_options2)
-    copy_dir(source_fs, source_fp, destination_fs, desintation_fp)
-
-
-def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=1024*1024):
-    """Recursive method to copy directories and their contents.
-
-    Args:
-        fs1: fsspec.filesystem for the source directory contents
-        fs1_pointer: source directory to copy content files
-        fs2: fsspec.filesytem for destination directory
-        fs2_pointer: destination directory for copied contents
-    """
-    destination_folder = os.path.join(desintation_fp, source_fp.split("/")[-1])
-    if destination_folder[-1] != "/":
-        destination_folder += "/"
-    if not destination_fs.exists(destination_folder):
-        destination_fs.makedirs(destination_folder, exist_ok=True)
-
-    dir_contents = source_fs.listdir(source_fp)
-    files = [x for x in source_fs.listdir(source_fp) if x["type"] == "file"]
-
-    for _file in files:
-        destination_fname = os.path.join(destination_folder, _file["name"].split("/")[-1])
-        with source_fs.open(_file["name"], "rb") as source_file:
-            with destination_fs.open(destination_fname, "wb") as destination_file:
-                while True:
-                    chunk = source_file.read(chunksize)
-                    if not chunk:
-                        break
-                    destination_file.write(chunk)
-
-    dirs = [x for x in dir_contents if x["type"] == "directory"]
-    for _dir in dirs:
-        copy_dir(source_fs, _dir["name"], destination_fs, destination_folder)
 
 
 def delete_file(file_handle: FilePointer, storage_options: dict = None):
