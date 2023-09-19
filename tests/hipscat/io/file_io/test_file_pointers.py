@@ -98,6 +98,8 @@ def test_get_file_pointer_for_fs():
 
     with pytest.raises(NotImplementedError):
         get_file_protocol("invalid:///path/to/file")
+    with pytest.raises(NotImplementedError):
+        get_file_pointer_for_fs("invalid", get_file_pointer_from_path("/path/to/file"))
 
 
 def test_strip_leading_slash_for_pyarrow():
