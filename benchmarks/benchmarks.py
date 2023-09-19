@@ -10,6 +10,8 @@ import pandas as pd
 import hipscat.pixel_math as hist
 from hipscat.catalog import Catalog, PartitionInfo
 from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
+
 
 def time_test_alignment_even_sky():
     """Create alignment from an even distribution at order 7"""
@@ -43,3 +45,16 @@ def time_test_cone_filter_multiple_order():
     assert len(filtered_catalog.partition_info.data_frame) == 2
     assert (6, 30) in filtered_catalog.pixel_tree
     assert (7, 124) in filtered_catalog.pixel_tree
+
+
+class Suite:
+    def setup(self):
+        self.partition_info_df = pd.DataFrame.from_dict(
+            {
+                PartitionInfo.METADATA_ORDER_COLUMN_NAME: np.full(100000, 8),
+                PartitionInfo.METADATA_PIXEL_COLUMN_NAME: np.arange(100000),
+            }
+        )
+
+    def time_pixel_tree_creation(self):
+        PixelTreeBuilder.from_partition_info_df(self.partition_info_df)
