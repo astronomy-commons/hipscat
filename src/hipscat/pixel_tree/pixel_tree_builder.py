@@ -136,10 +136,23 @@ class PixelTreeBuilder:
             self.create_node(pixel, node_type, self.root_pixel)
             return
 
+        parents_to_add = []
+        for delta_order in range(1, pixel.order + 1):
+            parent_order = pixel.order - delta_order
+            parent_pixel = pixel.pixel >> (2 * delta_order)
+            if not self.contains((parent_order, parent_pixel)):
+                parents_to_add.insert(0, (parent_order, parent_pixel))
+            else:
+                break
+
+        for add_order, add_pixel in parents_to_add:
+            parent_order = add_order - 1
+            parent_pixel = add_pixel >> 2 if add_order > 0 else -1
+            self.create_node(
+                (add_order, add_pixel), PixelNodeType.INNER, self.pixels[parent_order][parent_pixel]
+            )
         parent_order = pixel.order - 1
-        parent_pixel = pixel.pixel >> 2
-        if not self.contains((parent_order, parent_pixel)):
-            self.create_node_and_parent_if_not_exist((parent_order, parent_pixel), PixelNodeType.INNER)
+        parent_pixel = pixel.pixel >> 2 if pixel.order > 0 else -1
 
         parent = self.pixels[parent_order][parent_pixel]
 
