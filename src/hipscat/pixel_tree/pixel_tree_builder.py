@@ -76,8 +76,12 @@ class PixelTreeBuilder:
         Returns:
             True if the tree contains the pixel, False if not
         """
-        pixel = get_healpix_pixel(pixel)
-        return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+        if isinstance(pixel, HealpixPixel):
+            return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+        elif isinstance(pixel, tuple):
+            return pixel[0] in self.pixels and pixel[1] in self.pixels[pixel[0]]
+        else:
+            raise TypeError("pixel must be either a HealpixPixel object or a Tuple of (order, pixel)")
 
     def __contains__(self, item):
         return self.contains(item)
@@ -110,11 +114,13 @@ class PixelTreeBuilder:
         Args:
             partition_info_df: Dataframe loaded from the partition_info metadata
         """
-        for _, row in partition_info_df.iterrows():
+        orders = partition_info_df[PartitionInfo.METADATA_ORDER_COLUMN_NAME].to_numpy()
+        pixels = partition_info_df[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].to_numpy()
+        for i in range(len(partition_info_df)):
             self.create_node_and_parent_if_not_exist(
                 (
-                    row[PartitionInfo.METADATA_ORDER_COLUMN_NAME],
-                    row[PartitionInfo.METADATA_PIXEL_COLUMN_NAME],
+                    orders[i],
+                    pixels[i],
                 ),
                 PixelNodeType.LEAF,
             )
