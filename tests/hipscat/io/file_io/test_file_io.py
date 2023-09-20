@@ -93,6 +93,7 @@ def test_load_csv_to_pandas(small_sky_dir):
     loaded_df = load_csv_to_pandas(partition_info_pointer)
     pd.testing.assert_frame_equal(csv_df, loaded_df)
 
+
 def test_load_parquet_to_pandas(small_sky_dir):
     pixel_data_path = pixel_catalog_file(small_sky_dir, 0, 11)
     parquet_df = pd.read_parquet(pixel_data_path)
