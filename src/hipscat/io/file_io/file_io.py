@@ -78,6 +78,7 @@ def load_csv_to_pandas(file_pointer: FilePointer, **kwargs) -> pd.DataFrame:
     """
     return pd.read_csv(file_pointer, **kwargs)
 
+
 def load_parquet_to_pandas(file_pointer: FilePointer, **kwargs) -> pd.DataFrame:
     """Load a parquet file to a pandas dataframe
 

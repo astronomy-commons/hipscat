@@ -11,6 +11,18 @@ def get_file_pointer_from_path(path: str) -> FilePointer:
     return FilePointer(path)
 
 
+def get_basename_from_filepointer(pointer: FilePointer) -> str:
+    """Returns the base name of a regular file. May return empty string if the file is a directory.
+
+    Args:
+        pointer: `FilePointer` object to find a basename within
+
+    Returns:
+        string representation of the basename of a file.
+    """
+    return os.path.basename(pointer)
+
+
 def append_paths_to_pointer(pointer: FilePointer, *paths: str) -> FilePointer:
     """Append directories and/or a file name to a specified file pointer.
 

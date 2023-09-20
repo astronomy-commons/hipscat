@@ -17,6 +17,7 @@ from .file_pointer import (
     directory_has_contents,
     does_file_or_directory_exist,
     find_files_matching_path,
+    get_basename_from_filepointer,
     get_directory_contents,
     get_file_pointer_from_path,
     is_regular_file,
