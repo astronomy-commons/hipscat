@@ -90,6 +90,12 @@ def test_tree_builder_contains_root_node():
     assert HealpixPixel(10, 10) not in tree_builder
 
 
+def test_tree_builder_contains_fails_wrong_type():
+    tree_builder = PixelTreeBuilder()
+    with pytest.raises(TypeError):
+        assert tree_builder.contains(-1)
+
+
 def test_pixel_builder_contains_added_node():
     tree_builder = PixelTreeBuilder()
     assert not tree_builder.contains((0, 0))
