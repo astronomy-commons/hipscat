@@ -113,16 +113,17 @@ class PixelTreeBuilder:
         Args:
             partition_info_df: Dataframe loaded from the partition_info metadata
         """
-        orders = partition_info_df[PartitionInfo.METADATA_ORDER_COLUMN_NAME].to_numpy()
-        pixels = partition_info_df[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].to_numpy()
-        for i in range(len(partition_info_df)):
-            self.create_node_and_parent_if_not_exist(
-                (
-                    orders[i],
-                    pixels[i],
-                ),
-                PixelNodeType.LEAF,
-            )
+        if len(partition_info_df) > 0:
+            orders = partition_info_df[PartitionInfo.METADATA_ORDER_COLUMN_NAME].to_numpy()
+            pixels = partition_info_df[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].to_numpy()
+            for i in range(len(partition_info_df)):
+                self.create_node_and_parent_if_not_exist(
+                    (
+                        orders[i],
+                        pixels[i],
+                    ),
+                    PixelNodeType.LEAF,
+                )
 
     def create_node_and_parent_if_not_exist(self, pixel: HealpixInputTypes, node_type: PixelNodeType):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
