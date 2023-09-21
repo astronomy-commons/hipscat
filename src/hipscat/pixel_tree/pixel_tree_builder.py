@@ -78,10 +78,9 @@ class PixelTreeBuilder:
         """
         if isinstance(pixel, HealpixPixel):
             return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
-        elif isinstance(pixel, tuple):
+        if isinstance(pixel, tuple):
             return pixel[0] in self.pixels and pixel[1] in self.pixels[pixel[0]]
-        else:
-            raise TypeError("pixel must be either a HealpixPixel object or a Tuple of (order, pixel)")
+        raise TypeError("pixel must be either a HealpixPixel object or a Tuple of (order, pixel)")
 
     def __contains__(self, item):
         return self.contains(item)
