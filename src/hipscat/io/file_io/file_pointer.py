@@ -92,6 +92,18 @@ def get_file_pointer_from_path(path: str, include_protocol: str=None) -> FilePoi
     return FilePointer(path)
 
 
+def get_basename_from_filepointer(pointer: FilePointer) -> str:
+    """Returns the base name of a regular file. May return empty string if the file is a directory.
+
+    Args:
+        pointer: `FilePointer` object to find a basename within
+
+    Returns:
+        string representation of the basename of a file.
+    """
+    return os.path.basename(pointer)
+
+
 def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> FilePointer:
     """Strips the leading slash for pyarrow read/write functions.
         This is required for their filesystem abstraction

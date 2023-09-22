@@ -6,6 +6,7 @@ from hipscat.io.file_io import (
     directory_has_contents,
     does_file_or_directory_exist,
     find_files_matching_path,
+    get_basename_from_filepointer,
     get_directory_contents,
     get_file_pointer_from_path,
     is_regular_file,
@@ -18,6 +19,12 @@ from hipscat.io.file_io import (
 def test_get_pointer_from_path(tmp_path):
     tmp_pointer = get_file_pointer_from_path(str(tmp_path))
     assert str(tmp_pointer) == str(tmp_path)
+
+
+def test_get_basename_from_filepointer(tmp_path):
+    catalog_info_string = os.path.join(tmp_path, "catalog_info.json")
+    catalog_info_pointer = get_file_pointer_from_path(catalog_info_string)
+    assert get_basename_from_filepointer(catalog_info_pointer) == "catalog_info.json"
 
 
 def test_file_or_dir_exist(small_sky_dir):
