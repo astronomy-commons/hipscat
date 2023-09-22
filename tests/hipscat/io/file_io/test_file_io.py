@@ -14,7 +14,8 @@ from hipscat.io.file_io import (
     remove_directory,
     write_dataframe_to_csv,
     write_string_to_file,
-    delete_file
+    delete_file,
+    read_parquet_file_to_pandas
 )
 from hipscat.io.file_io.file_pointer import (
     does_file_or_directory_exist,
@@ -115,3 +116,12 @@ def test_write_df_to_csv(tmp_path):
     write_dataframe_to_csv(random_df, test_file_pointer, index=False)
     loaded_df = pd.read_csv(test_file_path)
     pd.testing.assert_frame_equal(loaded_df, random_df)
+
+
+def test_read_parquet_data(tmp_path):
+    random_df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
+    test_file_path = os.path.join(tmp_path, "test.parquet")
+    random_df.to_parquet(test_file_path)
+    file_pointer = get_file_pointer_from_path(test_file_path)
+    dataframe = read_parquet_file_to_pandas(file_pointer)
+    pd.testing.assert_frame_equal(dataframe, random_df)

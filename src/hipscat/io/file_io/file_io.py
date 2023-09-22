@@ -296,3 +296,18 @@ def delete_file(file_handle: FilePointer, storage_options: dict = None):
     """
     file_system, file_handle = get_fs(file_pointer=file_handle, storage_options=storage_options)
     file_system.rm(file_handle)
+
+
+def read_parquet_file_to_pandas(
+        file_pointer: FilePointer, storage_options: dict = None, **kwargs
+    ) -> pd.DataFrame:
+    """Reads a parquet file to a pandas DataFrame
+
+    Args:
+        file_pointer (FilePointer): File Pointer to a parquet file
+        **kwargs: Additional arguments to pass to pandas read_parquet method
+
+    Returns:
+        Pandas DataFrame with the data from the parquet file
+    """
+    return pd.read_parquet(file_pointer, storage_options=storage_options, **kwargs)

@@ -14,6 +14,7 @@ from .file_io import (
     read_parquet_dataset,
     read_parquet_file,
     write_dataframe_to_parquet,
+    read_parquet_file_to_pandas,
     delete_file
 )
 from .file_pointer import (
