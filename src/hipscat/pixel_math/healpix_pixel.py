@@ -32,11 +32,6 @@ class HealpixPixel:
     def __repr__(self):
         return self.__str__()
 
-    def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, HealpixPixel):
-            return False
-        return self.order == __value.order and self.pixel == __value.pixel
-
     def convert_to_lower_order(self, delta_order: int) -> HealpixPixel:
         """Returns the HEALPix pixel that contains the pixel at a lower order
 

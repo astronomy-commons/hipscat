@@ -175,8 +175,7 @@ class Catalog(Dataset):
                 if node.node_type == PixelNodeType.LEAF:
                     leaf_pixels.append(pixel)
                 else:
-                    for child in node.children:
-                        next_order_children.append(child)
+                    next_order_children.extend(node.children)
 
             zero_leafs = np.argwhere(covered_orders[order] == 0).flatten()
             for pix in zero_leafs:
