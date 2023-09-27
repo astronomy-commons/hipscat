@@ -24,8 +24,6 @@ dependencies = [
     "astropy",
     "typing-extensions>=4.3.0",
     "numba",
-    "fsspec",
-    "adlfs",
     "ipykernel", # Support for Jupyter notebooks
 ]
 
@@ -50,6 +48,9 @@ dev = [
     "ipython", # Also used in building notebooks into Sphinx
     "myst_parser", # Renders markdown alongside RST
     "asv", # Used to compute performance benchmarks
+    "fsspec", # Used for abstract filesystems
+    "adlfs", # abfs filesytem support
+    "s3fs", # s3 filesystem support
 ]
 
 [build-system]
