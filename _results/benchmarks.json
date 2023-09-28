@@ -1,4 +1,20 @@
 {
+    "benchmarks.Suite.time_pixel_tree_creation": {
+        "code": "class Suite:\n    def time_pixel_tree_creation(self):\n        PixelTreeBuilder.from_partition_info_df(self.partition_info_df)\n\n    def setup(self):\n        self.partition_info_df = pd.DataFrame.from_dict(\n            {\n                PartitionInfo.METADATA_ORDER_COLUMN_NAME: np.full(100000, 8),\n                PartitionInfo.METADATA_PIXEL_COLUMN_NAME: np.arange(100000),\n            }\n        )",
+        "min_run_count": 2,
+        "name": "benchmarks.Suite.time_pixel_tree_creation",
+        "number": 0,
+        "param_names": [],
+        "params": [],
+        "repeat": 0,
+        "rounds": 2,
+        "sample_time": 0.01,
+        "timeout": 60.0,
+        "type": "time",
+        "unit": "seconds",
+        "version": "8bf760a61b72bab11beafeba6de2dd0f7ae55026fe32317da4b96ad7291560f9",
+        "warmup_time": -1
+    },
     "benchmarks.time_test_alignment_even_sky": {
         "code": "def time_test_alignment_even_sky():\n    \"\"\"Create alignment from an even distribution at order 7\"\"\"\n    initial_histogram = np.full(hp.order2npix(7), 40)\n    result = hist.generate_alignment(initial_histogram, highest_order=7, threshold=1_000)\n    # everything maps to order 5, given the density\n    for mapping in result:\n        assert mapping[0] == 5",
         "min_run_count": 2,
