@@ -5,18 +5,16 @@ import pytest
 from hipscat.inspection.almanac import Almanac
 
 
-def test_default(example_abfs_path, example_abfs_storage_options):
+def test_default(almanac_dir_abfs, test_data_dir_abfs, example_abfs_storage_options):
     """Test loading from a default directory"""
-    test_dir = os.path.join(example_abfs_path, "data")
-    almanac_dir = os.path.join(example_abfs_path, "data", "almanac")
 
     os.environ["HIPSCAT_ALMANAC_DIR"] = ""
-    os.environ["HIPSCAT_DEFAULT_DIR"] = test_dir
+    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir_abfs
 
     alms = Almanac(include_default_dir=True, storage_options=example_abfs_storage_options)
     assert len(alms.catalogs()) == 0
 
-    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
+    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir_abfs
     alms = Almanac(include_default_dir=True, storage_options=example_abfs_storage_options)
     assert len(alms.catalogs()) == 8
 
@@ -25,55 +23,50 @@ def test_default(example_abfs_path, example_abfs_storage_options):
     assert len(alms.catalogs()) == 0
 
 
-def test_non_default(example_abfs_path, example_abfs_storage_options):
+def test_non_default(almanac_dir_abfs, test_data_dir_abfs, example_abfs_storage_options):
     """Test loading with explicit (non-default) almanac base directory."""
-    test_data_dir = os.path.join(example_abfs_path, "data")
-    almanac_dir = os.path.join(example_abfs_path, "data", "almanac")
 
-    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
+    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir_abfs
 
     alms = Almanac(include_default_dir=False, storage_options=example_abfs_storage_options)
     assert len(alms.catalogs()) == 0
 
-    alms = Almanac(include_default_dir=False, dirs=almanac_dir, storage_options=example_abfs_storage_options)
+    alms = Almanac(include_default_dir=False, dirs=almanac_dir_abfs, storage_options=example_abfs_storage_options)
     assert len(alms.catalogs()) == 8
 
-    alms = Almanac(include_default_dir=False, dirs=[almanac_dir], storage_options=example_abfs_storage_options)
+    alms = Almanac(include_default_dir=False, dirs=[almanac_dir_abfs], storage_options=example_abfs_storage_options)
     assert len(alms.catalogs()) == 8
 
     alms = Almanac(
         include_default_dir=False,
         dirs=[
-            os.path.join(almanac_dir, "catalog.yml"),
-            os.path.join(almanac_dir, "dataset.yml"),
+            os.path.join(almanac_dir_abfs, "catalog.yml"),
+            os.path.join(almanac_dir_abfs, "dataset.yml"),
         ],
         storage_options=example_abfs_storage_options
     )
     assert len(alms.catalogs()) == 2
 
 
-def test_namespaced(example_abfs_path, example_abfs_storage_options):
+def test_namespaced(test_data_dir_abfs, almanac_dir_abfs, example_abfs_storage_options):
     """Test that we can add duplicate catalogs, so long as we add a namespace."""
 
-    test_data_dir = os.path.join(example_abfs_path, "data")
-    almanac_dir = os.path.join(example_abfs_path, "data", "almanac")
-
-    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
-    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
+    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir_abfs
+    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir_abfs
 
     with pytest.warns(match="Duplicate"):
-        Almanac(include_default_dir=True, dirs=almanac_dir, storage_options=example_abfs_storage_options)
+        Almanac(include_default_dir=True, dirs=almanac_dir_abfs, storage_options=example_abfs_storage_options)
 
     alms = Almanac(
         include_default_dir=True,
-        dirs={"custom": almanac_dir},
+        dirs={"custom": almanac_dir_abfs},
         storage_options=example_abfs_storage_options
     )
     assert len(alms.catalogs()) == 16
 
     alms = Almanac(
         include_default_dir=False,
-        dirs={"custom": almanac_dir, "custom2": almanac_dir},
+        dirs={"custom": almanac_dir_abfs, "custom2": almanac_dir_abfs},
         storage_options=example_abfs_storage_options
     )
     assert len(alms.catalogs()) == 16
@@ -112,9 +105,8 @@ def test_linked_catalogs_object(default_almanac_abfs):
     assert source_catalog.catalog_name == "small_sky_source_catalog"
 
 
-def test_linked_catalogs_source(default_almanac_abfs, example_abfs_path, example_abfs_storage_options):
+def test_linked_catalogs_source(default_almanac_abfs, test_data_dir_abfs, example_abfs_storage_options):
     """Check that we can access the affiliated catalogs"""
-    test_data_dir = os.path.join(example_abfs_path, "data")
     source_almanac = default_almanac_abfs.get_almanac_info("small_sky_source_catalog")
     assert len(source_almanac.objects) == 1
 
@@ -126,7 +118,7 @@ def test_linked_catalogs_source(default_almanac_abfs, example_abfs_path, example
 
     ## This source catalog has no object catalog, *and that's ok*
     new_almanac = Almanac(
-        dirs=os.path.join(test_data_dir, "almanac_exception", "standalone_source_catalog.yml"),
+        dirs=os.path.join(test_data_dir_abfs, "almanac_exception", "standalone_source_catalog.yml"),
         storage_options=example_abfs_storage_options
     )
     source_almanac = new_almanac.get_almanac_info("just_the_small_sky_source_catalog")
@@ -185,10 +177,9 @@ def test_get_catalog(default_almanac_abfs):
         assert catalog.catalog_name == catalog_name
 
 
-def test_get_catalog_exceptions(example_abfs_path, example_abfs_storage_options):
+def test_get_catalog_exceptions(test_data_dir_abfs, example_abfs_storage_options):
     """Test that we can create almanac entries, where catalogs might not exist."""
-    test_data_dir = os.path.join(example_abfs_path, "data")
-    bad_catalog_path_file = os.path.join(test_data_dir, "almanac_exception", "bad_catalog_path.yml")
+    bad_catalog_path_file = os.path.join(test_data_dir_abfs, "almanac_exception", "bad_catalog_path.yml")
 
     bad_links = Almanac(include_default_dir=False, dirs=bad_catalog_path_file, storage_options=example_abfs_storage_options)
     assert len(bad_links.catalogs()) == 1
@@ -222,10 +213,9 @@ def test_get_catalog_exceptions(example_abfs_path, example_abfs_storage_options)
         ),
     ],
 )
-def test_almanac_creation(example_abfs_path, example_abfs_storage_options, file_name, expected_error_match):
+def test_almanac_creation(test_data_dir_abfs, example_abfs_storage_options, file_name, expected_error_match):
     """Test that we throw exceptions, where bad almanac data or links exist in the files."""
-    test_data_dir = os.path.join(example_abfs_path, "data")
-    bad_links_file = os.path.join(test_data_dir, "almanac_exception", file_name)
+    bad_links_file = os.path.join(test_data_dir_abfs, "almanac_exception", file_name)
 
     with pytest.warns(match=expected_error_match):
         Almanac(dirs=bad_links_file, storage_options=example_abfs_storage_options)

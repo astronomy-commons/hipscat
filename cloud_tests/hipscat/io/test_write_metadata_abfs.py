@@ -14,7 +14,7 @@ import hipscat.pixel_math as hist
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
-def test_write_json_file(assert_text_file_matches, example_abfs_path, example_abfs_storage_options):
+def test_write_json_file(assert_text_file_matches, tmp_dir_abfs, example_abfs_storage_options):
     """Test of arbitrary json dictionary with strings and numbers"""
 
     expected_lines = [
@@ -38,14 +38,14 @@ def test_write_json_file(assert_text_file_matches, example_abfs_path, example_ab
     dictionary["first_number"] = 1
     dictionary["first_five_fib"] = [1, 1, 2, 3, 5]
 
-    json_filename = os.path.join(example_abfs_path, "dictionary.json")
+    json_filename = os.path.join(tmp_dir_abfs, "dictionary.json")
     io.write_json_file(dictionary, json_filename, storage_options=example_abfs_storage_options)
     assert_text_file_matches(expected_lines, json_filename, storage_options=example_abfs_storage_options)
 
 
-def test_write_catalog_info(assert_text_file_matches, example_abfs_path, catalog_info, example_abfs_storage_options):
+def test_write_catalog_info(assert_text_file_matches, tmp_dir_abfs, catalog_info, example_abfs_storage_options):
     """Test that we accurately write out catalog metadata"""
-    catalog_base_dir = os.path.join(example_abfs_path, "test_name")
+    catalog_base_dir = os.path.join(tmp_dir_abfs, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_abfs_storage_options)
     expected_lines = [
         "{",
@@ -63,9 +63,9 @@ def test_write_catalog_info(assert_text_file_matches, example_abfs_path, catalog
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_abfs_storage_options)
 
 
-def test_write_provenance_info(assert_text_file_matches, example_abfs_path, catalog_info, example_abfs_storage_options):
+def test_write_provenance_info(assert_text_file_matches, tmp_dir_abfs, catalog_info, example_abfs_storage_options):
     """Test that we accurately write out tool-provided generation metadata"""
-    catalog_base_dir = os.path.join(example_abfs_path, "test_name")
+    catalog_base_dir = os.path.join(tmp_dir_abfs, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_abfs_storage_options)
     expected_lines = [
         "{",
@@ -102,9 +102,9 @@ def test_write_provenance_info(assert_text_file_matches, example_abfs_path, cata
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_abfs_storage_options)
 
 
-def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, example_abfs_path, example_abfs_storage_options):
+def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, tmp_dir_abfs, example_abfs_storage_options):
     """Test that we accurately write out the partition stats for overloaded input"""
-    catalog_base_dir = os.path.join(example_abfs_path, "test_name")
+    catalog_base_dir = os.path.join(tmp_dir_abfs, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_abfs_storage_options)
     expected_lines = [
         "Norder,Dir,Npix,num_rows",
@@ -131,10 +131,10 @@ def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, exampl
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_abfs_storage_options)
 
 
-def test_write_partition_info_float(assert_text_file_matches, example_abfs_path, example_abfs_storage_options):
+def test_write_partition_info_float(assert_text_file_matches, tmp_dir_abfs, example_abfs_storage_options):
     """Test that we accurately write out the individual partition stats
     even when the input is floats instead of ints"""
-    catalog_base_dir = os.path.join(example_abfs_path, "test_name")
+    catalog_base_dir = os.path.join(tmp_dir_abfs, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_abfs_storage_options)
     expected_lines = [
         "Norder,Dir,Npix,num_rows",
@@ -146,18 +146,19 @@ def test_write_partition_info_float(assert_text_file_matches, example_abfs_path,
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_abfs_storage_options)
 
 
-def test_write_parquet_metadata(example_abfs_path, small_sky_dir, basic_catalog_parquet_metadata, example_abfs_storage_options, copy_tree_fs_to_fs):
+def test_write_parquet_metadata(tmp_dir_abfs, small_sky_dir_local, basic_catalog_parquet_metadata, example_abfs_storage_options, copy_tree_fs_to_fs):
     """Copy existing catalog and create new metadata files for it"""
-    catalog_base_dir = os.path.join(example_abfs_path)
+    catalog_base_dir = os.path.join(tmp_dir_abfs)
    
     copy_tree_fs_to_fs(
-        small_sky_dir,
-        example_abfs_path,
+        small_sky_dir_local,
+        tmp_dir_abfs,
         {},
-        example_abfs_storage_options
+        example_abfs_storage_options,
+        existok=True,
     )
 
-    catalog_base_dir = os.path.join(example_abfs_path, "small_sky")
+    catalog_base_dir = os.path.join(tmp_dir_abfs, "small_sky")
 
     io.write_parquet_metadata(catalog_base_dir, storage_options=example_abfs_storage_options)
     check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata, storage_options=example_abfs_storage_options)
@@ -180,18 +181,19 @@ def test_write_parquet_metadata(example_abfs_path, small_sky_dir, basic_catalog_
     )
 
 
-def test_write_parquet_metadata_order1(example_abfs_path, small_sky_order1_dir, basic_catalog_parquet_metadata, example_abfs_storage_options, copy_tree_fs_to_fs):
+def test_write_parquet_metadata_order1(tmp_dir_abfs, small_sky_order1_dir_local, basic_catalog_parquet_metadata, example_abfs_storage_options, copy_tree_fs_to_fs):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
     
     copy_tree_fs_to_fs(
-        small_sky_order1_dir,
-        example_abfs_path,
+        small_sky_order1_dir_local,
+        tmp_dir_abfs,
         {},
-        example_abfs_storage_options
+        example_abfs_storage_options,
+        existok=True
     )
 
-    temp_path = os.path.join(example_abfs_path, "small_sky_order1")
+    temp_path = os.path.join(tmp_dir_abfs, "small_sky_order1")
     io.write_parquet_metadata(temp_path, storage_options=example_abfs_storage_options)
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
@@ -209,9 +211,9 @@ def test_write_parquet_metadata_order1(example_abfs_path, small_sky_order1_dir, 
     )
 
 
-def test_write_index_parquet_metadata(example_abfs_path, example_abfs_storage_options):
+def test_write_index_parquet_metadata(tmp_dir_abfs, example_abfs_storage_options):
     """Create an index-like catalog, and test metadata creation."""
-    temp_path = os.path.join(example_abfs_path, "test_name")
+    temp_path = os.path.join(tmp_dir_abfs, "test_name")
     file_io.make_directory(os.path.join(temp_path, "Parts=0"), storage_options=example_abfs_storage_options)
 
     index_parquet_path = os.path.join(temp_path, "Parts=0", "part_000_of_001.parquet")
@@ -266,19 +268,14 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1, 
             assert column_metadata.file_path.endswith(".parquet")
 
 
-def test_read_write_fits_point_map(example_abfs_path, example_abfs_storage_options):
+def test_read_write_fits_point_map(tmp_dir_abfs, example_abfs_storage_options):
     """Check that we write and can read a FITS file for spatial distribution."""
     initial_histogram = hist.empty_histogram(1)
     filled_pixels = [51, 29, 51, 0]
     initial_histogram[44:] = filled_pixels[:]
-    io.write_fits_map(example_abfs_path, initial_histogram, storage_options=example_abfs_storage_options)
+    io.write_fits_map(tmp_dir_abfs, initial_histogram, storage_options=example_abfs_storage_options)
 
-    output_file = os.path.join(example_abfs_path, "point_map.fits")
+    output_file = os.path.join(tmp_dir_abfs, "point_map.fits")
 
     output = file_io.read_fits_image(output_file, storage_options=example_abfs_storage_options)
     npt.assert_array_equal(output, initial_histogram)
-
-
-# def test_remove_test_direcotry(example_abfs_path, example_abfs_storage_options):
-#     file_io.remove_directory(example_abfs_path, storage_options=example_abfs_storage_options)
-#     assert not file_io.does_file_or_directory_exist(example_abfs_path, storage_options=example_abfs_storage_options)

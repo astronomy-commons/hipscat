@@ -155,7 +155,9 @@ def is_regular_file(pointer: FilePointer, storage_options: dict = None) -> bool:
     return file_system.isfile(pointer)
 
 
-def find_files_matching_path(pointer: FilePointer, *paths: str) -> List[FilePointer]:
+def find_files_matching_path(
+        pointer: FilePointer, *paths: str, storage_options: dict = None
+    ) -> List[FilePointer]:
     """Find files or directories matching the provided path parts.
 
     Args:
@@ -166,10 +168,11 @@ def find_files_matching_path(pointer: FilePointer, *paths: str) -> List[FilePoin
         New file pointers to files found matching the path
     """
     matcher = append_paths_to_pointer(pointer, *paths)
-    return [get_file_pointer_from_path(x) for x in glob.glob(matcher)]
+    file_system, pointer = get_fs(pointer, storage_options)
+    return [get_file_pointer_from_path(x) for x in file_system.glob(matcher)]
 
 
-def directory_has_contents(pointer: FilePointer) -> bool:
+def directory_has_contents(pointer: FilePointer, storage_options: dict = None) -> bool:
     """Checks if a directory already has some contents (any files or subdirectories)
 
     Args:
@@ -179,7 +182,7 @@ def directory_has_contents(pointer: FilePointer) -> bool:
     Returns:
         True if there are any files or subdirectories below this directory.
     """
-    return len(find_files_matching_path(pointer, "*")) > 0
+    return len(find_files_matching_path(pointer, "*", storage_options=storage_options)) > 0
 
 
 def get_directory_contents(
@@ -201,6 +204,10 @@ def get_directory_contents(
     file_system, file_pointer = get_fs(pointer, storage_options)
     contents = file_system.listdir(file_pointer)
     contents = [FilePointer(x['name']) for x in contents]
+    for i,c in enumerate(contents):
+        if not c.startswith("/"):
+            contents[i] = f"/{c}"
+            
     if len(contents) == 0:
         return []
     contents.sort()

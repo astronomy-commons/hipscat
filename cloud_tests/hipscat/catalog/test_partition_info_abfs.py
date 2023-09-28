@@ -8,13 +8,9 @@ from hipscat.io import file_io, paths
 from hipscat.pixel_math import HealpixPixel
 
 
-def test_load_partition_info_small_sky(example_abfs_path, example_abfs_storage_options):
+def test_load_partition_info_small_sky(small_sky_dir_abfs, example_abfs_storage_options):
     """Instantiate the partition info for catalog with 1 pixel"""
-    small_sky_dir = os.path.join(
-        example_abfs_path,
-        "data", "small_sky"
-    )
-    partition_info_file = paths.get_partition_info_pointer(small_sky_dir)
+    partition_info_file = paths.get_partition_info_pointer(small_sky_dir_abfs)
     partitions = PartitionInfo.read_from_file(partition_info_file, storage_options=example_abfs_storage_options)
 
     order_pixel_pairs = partitions.get_healpix_pixels()
@@ -23,13 +19,9 @@ def test_load_partition_info_small_sky(example_abfs_path, example_abfs_storage_o
     assert order_pixel_pairs == expected
 
 
-def test_load_partition_info_small_sky_order1(example_abfs_path, example_abfs_storage_options):
+def test_load_partition_info_small_sky_order1(small_sky_order1_dir_abfs, example_abfs_storage_options):
     """Instantiate the partition info for catalog with 4 pixels"""
-    small_sky_order1_dir = os.path.join(
-        example_abfs_path,
-        "data", "small_sky_order1"
-    )
-    partition_info_file = paths.get_partition_info_pointer(small_sky_order1_dir)
+    partition_info_file = paths.get_partition_info_pointer(small_sky_order1_dir_abfs)
     partitions = PartitionInfo.read_from_file(partition_info_file, storage_options=example_abfs_storage_options)
 
     order_pixel_pairs = partitions.get_healpix_pixels()
@@ -43,20 +35,16 @@ def test_load_partition_info_small_sky_order1(example_abfs_path, example_abfs_st
     assert order_pixel_pairs == expected
 
 
-def test_load_partition_no_file(example_abfs_path, example_abfs_storage_options):
-    wrong_path = os.path.join(example_abfs_path, "wrong.csv")
+def test_load_partition_no_file(tmp_dir_abfs, example_abfs_storage_options):
+    wrong_path = os.path.join(tmp_dir_abfs, "wrong.csv")
     wrong_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
         PartitionInfo.read_from_file(wrong_pointer, storage_options=example_abfs_storage_options)
 
 
-def test_get_highest_order(example_abfs_path, example_abfs_storage_options):
+def test_get_highest_order(small_sky_order1_dir_abfs, example_abfs_storage_options):
     """test the `get_highest_order` method"""
-    small_sky_order1_dir = os.path.join(
-        example_abfs_path,
-        "data", "small_sky_order1"
-    )
-    partition_info_file = paths.get_partition_info_pointer(small_sky_order1_dir)
+    partition_info_file = paths.get_partition_info_pointer(small_sky_order1_dir_abfs)
     partitions = PartitionInfo.read_from_file(partition_info_file, storage_options=example_abfs_storage_options)
 
     highest_order = partitions.get_highest_order()

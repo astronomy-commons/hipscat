@@ -55,7 +55,8 @@ def assert_text_file_matches():
 def copy_tree_fs_to_fs():
     def copy_tree_fs_to_fs(
             fs1_source: FilePointer, fs2_destination: FilePointer,
-            storage_options1: dict = None, storage_options2: dict = None
+            storage_options1: dict = None, storage_options2: dict = None,
+            existok = False, chunksize=1024*1024, verbose=False
         ):
         """Recursive Copies directory from one filesystem to the other.
 
@@ -68,10 +69,10 @@ def copy_tree_fs_to_fs():
 
         source_fs, source_fp = get_fs(fs1_source, storage_options=storage_options1)
         destination_fs, desintation_fp = get_fs(fs2_destination, storage_options=storage_options2)
-        copy_dir(source_fs, source_fp, destination_fs, desintation_fp)
+        copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=chunksize, existok=existok, verbose=verbose)
 
 
-    def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=1024*1024):
+    def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=1024*1024, existok=False, verbose=False):
         """Recursive method to copy directories and their contents.
 
         Args:
@@ -91,13 +92,16 @@ def copy_tree_fs_to_fs():
 
         for _file in files:
             destination_fname = os.path.join(destination_folder, _file["name"].split("/")[-1])
-            with source_fs.open(_file["name"], "rb") as source_file:
-                with destination_fs.open(destination_fname, "wb") as destination_file:
-                    while True:
-                        chunk = source_file.read(chunksize)
-                        if not chunk:
-                            break
-                        destination_file.write(chunk)
+            if not (destination_fs.exists(destination_fname) and existok):
+                if verbose:
+                    print(f"Creating destination folder: {destination_folder}")
+                with source_fs.open(_file["name"], "rb") as source_file:
+                    with destination_fs.open(destination_fname, "wb") as destination_file:
+                        while True:
+                            chunk = source_file.read(chunksize)
+                            if not chunk:
+                                break
+                            destination_file.write(chunk)
 
         dirs = [x for x in dir_contents if x["type"] == "directory"]
         for _dir in dirs:
@@ -118,15 +122,3 @@ def basic_catalog_parquet_metadata():
             pa.field("__index_level_0__", pa.int64()),
         ]
     )
-
-@pytest.fixture
-def example_abfs_path():
-    return "abfs:///hipscat/pytests"
-
-@pytest.fixture
-def example_abfs_storage_options():
-    storage_options = {
-        "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
-        "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
-    }
-    return storage_options

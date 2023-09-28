@@ -9,27 +9,17 @@ from hipscat.catalog import Catalog, PartitionInfo
 from hipscat.io.file_io import file_io
 
 
-def test_load_catalog_small_sky(example_abfs_path, example_abfs_storage_options):
+def test_load_catalog_small_sky(small_sky_dir_abfs, example_abfs_storage_options):
     """Instantiate a catalog with 1 pixel"""
-    small_sky_dir = os.path.join(
-        example_abfs_path, 
-        "data",
-        "small_sky"
-    )
-    cat = Catalog.read_from_hipscat(small_sky_dir, storage_options=example_abfs_storage_options)
+    cat = Catalog.read_from_hipscat(small_sky_dir_abfs, storage_options=example_abfs_storage_options)
 
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_pixels()) == 1
 
 
-def test_load_catalog_small_sky_order1(example_abfs_path, example_abfs_storage_options):
+def test_load_catalog_small_sky_order1(small_sky_order1_dir_abfs, example_abfs_storage_options):
     """Instantiate a catalog with 4 pixels"""
-    small_sky_order1_dir = os.path.join(
-        example_abfs_path, 
-        "data",
-        "small_sky_order1"
-    )
-    cat = Catalog.read_from_hipscat(small_sky_order1_dir, storage_options=example_abfs_storage_options)
+    cat = Catalog.read_from_hipscat(small_sky_order1_dir_abfs, storage_options=example_abfs_storage_options)
 
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_pixels()) == 4
@@ -60,9 +50,9 @@ def test_cone_filter_empty(small_sky_order1_catalog_abfs):
     assert len(filtered_catalog.pixel_tree) == 1
 
 
-def test_empty_directory(example_abfs_path, example_abfs_storage_options):
+def test_empty_directory(tmp_dir_abfs, example_abfs_storage_options):
     """Test loading empty or incomplete data"""
-    catalog_path = os.path.join(example_abfs_path, "empty")
+    catalog_path = os.path.join(tmp_dir_abfs, "empty")
 
     ## Path exists but there's nothing there
     with pytest.raises(FileNotFoundError):

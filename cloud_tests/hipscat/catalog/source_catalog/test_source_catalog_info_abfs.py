@@ -3,12 +3,8 @@ import os
 from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
 from hipscat.io import file_io
 
-def test_read_from_file(example_abfs_path, example_abfs_storage_options, assert_catalog_info_matches_dict):
-    source_catalog_info_file = os.path.join(
-        example_abfs_path, "data",
-         "small_sky_source", "catalog_info.json"
-    )
-    cat_info_fp = file_io.get_file_pointer_from_path(source_catalog_info_file)
+def test_read_from_file(source_catalog_info_file_abfs, example_abfs_storage_options, assert_catalog_info_matches_dict):
+    cat_info_fp = file_io.get_file_pointer_from_path(source_catalog_info_file_abfs)
     catalog_info = SourceCatalogInfo.read_from_metadata_file(cat_info_fp, storage_options=example_abfs_storage_options)
     for column in [
         "catalog_name",
@@ -18,5 +14,5 @@ def test_read_from_file(example_abfs_path, example_abfs_storage_options, assert_
     ]:
         assert column in dataclasses.asdict(catalog_info)
 
-    catalog_info_json = file_io.file_io.load_json_file(source_catalog_info_file, storage_options=example_abfs_storage_options)
+    catalog_info_json = file_io.file_io.load_json_file(source_catalog_info_file_abfs, storage_options=example_abfs_storage_options)
     assert_catalog_info_matches_dict(catalog_info, catalog_info_json)

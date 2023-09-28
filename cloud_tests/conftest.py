@@ -23,6 +23,113 @@ TEST_DIR = os.path.dirname(__file__)
 
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
+@pytest.fixture
+def example_abfs_path():
+    return "abfs:///hipscat/pytests/hipscat"
+
+
+@pytest.fixture
+def example_abfs_storage_options():
+    storage_options = {
+        "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
+        "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
+    }
+    return storage_options
+
+
+@pytest.fixture
+def tmp_dir_abfs(example_abfs_path):
+    return os.path.join(example_abfs_path, "tmp")
+
+
+@pytest.fixture
+def test_data_dir_abfs(example_abfs_path):
+    return os.path.join(example_abfs_path, DATA_DIR_NAME)
+
+
+@pytest.fixture
+def almanac_dir_abfs(test_data_dir_abfs):
+    return os.path.join(test_data_dir_abfs, ALMANAC_DIR_NAME)
+
+
+@pytest.fixture
+def small_sky_dir_abfs(test_data_dir_abfs):
+    return os.path.join(test_data_dir_abfs, SMALL_SKY_DIR_NAME)
+
+
+@pytest.fixture
+def small_sky_order1_dir_abfs(test_data_dir_abfs):
+    return os.path.join(test_data_dir_abfs, SMALL_SKY_ORDER1_DIR_NAME)
+
+
+@pytest.fixture
+def small_sky_to_small_sky_order1_dir_abfs(test_data_dir_abfs):
+    return os.path.join(test_data_dir_abfs, SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME)
+
+
+@pytest.fixture
+def catalog_pixels() -> List[HealpixPixel]:
+    return [HealpixPixel(1, 0), HealpixPixel(1, 1), HealpixPixel(2, 8)]
+
+
+@pytest.fixture
+def association_catalog_path_abfs(test_data_dir_abfs) -> str:
+    return os.path.join(test_data_dir_abfs, "small_sky_to_small_sky_order1")
+
+
+@pytest.fixture
+def association_catalog_info_file_abfs(association_catalog_path_abfs) -> str:
+    return os.path.join(association_catalog_path_abfs, "catalog_info.json")
+
+
+@pytest.fixture
+def index_catalog_info_file_abfs(test_data_dir_abfs) -> str:
+    return os.path.join(test_data_dir_abfs, "index_catalog", "catalog_info.json")
+
+
+@pytest.fixture
+def margin_cache_catalog_info_file_abfs(test_data_dir_abfs) -> str:
+    return os.path.join(test_data_dir_abfs, "margin_cache", "catalog_info.json")
+
+
+@pytest.fixture
+def source_catalog_info_file_abfs(test_data_dir_abfs) -> str:
+    return os.path.join(test_data_dir_abfs, "small_sky_source", "catalog_info.json")
+
+
+@pytest.fixture
+def association_catalog_info(association_catalog_info_data) -> AssociationCatalogInfo:
+    return AssociationCatalogInfo(**association_catalog_info_data)
+
+
+@pytest.fixture
+def association_catalog_partition_join_file_abfs(association_catalog_path_abfs) -> str:
+    return os.path.join(association_catalog_path_abfs, "partition_join_info.csv")
+
+
+@pytest.fixture
+def dataset_path_abfs(test_data_dir_abfs) -> str:
+    return os.path.join(test_data_dir_abfs, "dataset")
+
+
+@pytest.fixture
+def base_catalog_info_file_abfs(dataset_path_abfs) -> str:
+    return os.path.join(dataset_path_abfs, "catalog_info.json")
+
+
+@pytest.fixture
+def base_catalog_info(base_catalog_info_data) -> BaseCatalogInfo:
+    return BaseCatalogInfo(**base_catalog_info_data)
+
+
+@pytest.fixture
+def catalog_path_abfs(test_data_dir_abfs) -> str:
+    return os.path.join(test_data_dir_abfs, "catalog")
+
+
+@pytest.fixture
+def catalog_info_file_abfs(catalog_path_abfs) -> str:
+    return os.path.join(catalog_path_abfs, "catalog_info.json")
 
 @pytest.fixture
 def test_data_dir():
@@ -30,23 +137,13 @@ def test_data_dir():
 
 
 @pytest.fixture
-def almanac_dir(test_data_dir):
-    return os.path.join(test_data_dir, ALMANAC_DIR_NAME)
-
-
-@pytest.fixture
-def small_sky_dir(test_data_dir):
+def small_sky_dir_local(test_data_dir):
     return os.path.join(test_data_dir, SMALL_SKY_DIR_NAME)
 
 
 @pytest.fixture
-def small_sky_order1_dir(test_data_dir):
+def small_sky_order1_dir_local(test_data_dir):
     return os.path.join(test_data_dir, SMALL_SKY_ORDER1_DIR_NAME)
-
-
-@pytest.fixture
-def small_sky_to_small_sky_order1_dir(test_data_dir):
-    return os.path.join(test_data_dir, SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME)
 
 
 @pytest.fixture
@@ -158,30 +255,6 @@ def index_catalog_info_with_extra() -> dict:
     }
 
 
-@pytest.fixture
-def dataset_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "dataset")
-
-
-@pytest.fixture
-def base_catalog_info_file(dataset_path) -> str:
-    return os.path.join(dataset_path, "catalog_info.json")
-
-
-@pytest.fixture
-def base_catalog_info(base_catalog_info_data) -> BaseCatalogInfo:
-    return BaseCatalogInfo(**base_catalog_info_data)
-
-
-@pytest.fixture
-def catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "catalog")
-
-
-@pytest.fixture
-def catalog_info_file(catalog_path) -> str:
-    return os.path.join(catalog_path, "catalog_info.json")
-
 
 @pytest.fixture
 def catalog_info(catalog_info_data) -> CatalogInfo:
@@ -200,46 +273,6 @@ def catalog_pixels_df() -> pd.DataFrame:
 
 
 @pytest.fixture
-def catalog_pixels() -> List[HealpixPixel]:
-    return [HealpixPixel(1, 0), HealpixPixel(1, 1), HealpixPixel(2, 8)]
-
-
-@pytest.fixture
-def association_catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_to_small_sky_order1")
-
-
-@pytest.fixture
-def association_catalog_info_file(association_catalog_path) -> str:
-    return os.path.join(association_catalog_path, "catalog_info.json")
-
-
-@pytest.fixture
-def index_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "index_catalog", "catalog_info.json")
-
-
-@pytest.fixture
-def margin_cache_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "margin_cache", "catalog_info.json")
-
-
-@pytest.fixture
-def source_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_source", "catalog_info.json")
-
-
-@pytest.fixture
-def association_catalog_info(association_catalog_info_data) -> AssociationCatalogInfo:
-    return AssociationCatalogInfo(**association_catalog_info_data)
-
-
-@pytest.fixture
-def association_catalog_partition_join_file(association_catalog_path) -> str:
-    return os.path.join(association_catalog_path, "partition_join_info.csv")
-
-
-@pytest.fixture
 def association_catalog_join_pixels() -> pd.DataFrame:
     return pd.DataFrame.from_dict(
         {
@@ -249,29 +282,6 @@ def association_catalog_join_pixels() -> pd.DataFrame:
             PartitionJoinInfo.JOIN_PIXEL_COLUMN_NAME: [44, 45, 46, 47],
         }
     )
-
-
-@pytest.fixture
-def example_abfs_path():
-    return "abfs:///hipscat/pytests"
-
-
-@pytest.fixture
-def example_abfs_storage_options():
-    storage_options = {
-        "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
-        "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
-    }
-    return storage_options
-
-
-@pytest.fixture
-def default_almanac(almanac_dir, test_data_dir):
-    """Set up default environment variables and fetch default almanac data."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
-    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
-
-    return Almanac()
 
 
 @pytest.fixture
