@@ -1,5 +1,4 @@
 from typing import List, NewType, Tuple
-import glob
 import os
 import fsspec
 
@@ -204,12 +203,14 @@ def get_directory_contents(
     file_system, file_pointer = get_fs(pointer, storage_options)
     contents = file_system.listdir(file_pointer)
     contents = [FilePointer(x['name']) for x in contents]
-    for i,c in enumerate(contents):
-        if not c.startswith("/"):
-            contents[i] = f"/{c}"
-            
+
+    for i,content in enumerate(contents):
+        if not content.startswith("/"):
+            contents[i] = f"/{content}"
+
     if len(contents) == 0:
         return []
+
     contents.sort()
     if include_protocol:
         contents = [get_full_file_pointer(x, protocol_path=pointer) for x in contents]
