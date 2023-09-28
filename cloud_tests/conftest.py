@@ -23,48 +23,66 @@ TEST_DIR = os.path.dirname(__file__)
 
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
-@pytest.fixture
-def example_abfs_path():
-    return "abfs:///hipscat/pytests/hipscat"
+def pytest_addoption(parser):
+    parser.addoption("--cloud", action="store", default="abfs")
+
+
+def pytest_generate_tests(metafunc):
+    # This is called for every test. Only get/set command line arguments
+    # if the argument is specified in the list of test "fixturenames".
+    option_value = metafunc.config.option.cloud
+    if 'cloud' in metafunc.fixturenames and option_value is not None:
+        metafunc.parametrize("cloud", [option_value])
 
 
 @pytest.fixture
-def example_abfs_storage_options():
-    storage_options = {
-        "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
-        "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
-    }
-    return storage_options
+def example_cloud_path(cloud):
+    if cloud == "abfs":
+        return "abfs:///hipscat/pytests/hipscat"
+    
+    else:
+        raise NotImplementedError("Cloud format not implemented for hipscat tests!")
+
+@pytest.fixture
+def example_cloud_storage_options(cloud):
+    if cloud == "abfs":
+        storage_options = {
+            "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
+            "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
+        }
+        return storage_options
+
+    return {}
 
 
 @pytest.fixture
-def tmp_dir_abfs(example_abfs_path):
-    return os.path.join(example_abfs_path, "tmp")
+def tmp_dir_cloud(example_cloud_path):
+    return os.path.join(example_cloud_path, "tmp")
 
 
 @pytest.fixture
-def test_data_dir_abfs(example_abfs_path):
-    return os.path.join(example_abfs_path, DATA_DIR_NAME)
+def test_data_dir_cloud(example_cloud_path):
+    return os.path.join(example_cloud_path, DATA_DIR_NAME)
 
 
 @pytest.fixture
-def almanac_dir_abfs(test_data_dir_abfs):
-    return os.path.join(test_data_dir_abfs, ALMANAC_DIR_NAME)
+def almanac_dir_cloud(test_data_dir_cloud):
+    return os.path.join(test_data_dir_cloud, ALMANAC_DIR_NAME)
 
 
 @pytest.fixture
-def small_sky_dir_abfs(test_data_dir_abfs):
-    return os.path.join(test_data_dir_abfs, SMALL_SKY_DIR_NAME)
+def small_sky_dir_cloud(test_data_dir_cloud):
+    return os.path.join(test_data_dir_cloud, SMALL_SKY_DIR_NAME)
 
 
 @pytest.fixture
-def small_sky_order1_dir_abfs(test_data_dir_abfs):
-    return os.path.join(test_data_dir_abfs, SMALL_SKY_ORDER1_DIR_NAME)
+def small_sky_order1_dir_cloud(test_data_dir_cloud):
+    return os.path.join(test_data_dir_cloud, SMALL_SKY_ORDER1_DIR_NAME)
 
 
 @pytest.fixture
-def small_sky_to_small_sky_order1_dir_abfs(test_data_dir_abfs):
-    return os.path.join(test_data_dir_abfs, SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME)
+def small_sky_to_small_sky_order1_dir_cloud(test_data_dir_cloud):
+    return os.path.join(test_data_dir_cloud, SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME)
 
 
 @pytest.fixture
@@ -73,28 +91,28 @@ def catalog_pixels() -> List[HealpixPixel]:
 
 
 @pytest.fixture
-def association_catalog_path_abfs(test_data_dir_abfs) -> str:
-    return os.path.join(test_data_dir_abfs, "small_sky_to_small_sky_order1")
+def association_catalog_path_cloud(test_data_dir_cloud) -> str:
+    return os.path.join(test_data_dir_cloud, "small_sky_to_small_sky_order1")
 
 
 @pytest.fixture
-def association_catalog_info_file_abfs(association_catalog_path_abfs) -> str:
-    return os.path.join(association_catalog_path_abfs, "catalog_info.json")
+def association_catalog_info_file_cloud(association_catalog_path_cloud) -> str:
+    return os.path.join(association_catalog_path_cloud, "catalog_info.json")
 
 
 @pytest.fixture
-def index_catalog_info_file_abfs(test_data_dir_abfs) -> str:
-    return os.path.join(test_data_dir_abfs, "index_catalog", "catalog_info.json")
+def index_catalog_info_file_cloud(test_data_dir_cloud) -> str:
+    return os.path.join(test_data_dir_cloud, "index_catalog", "catalog_info.json")
 
 
 @pytest.fixture
-def margin_cache_catalog_info_file_abfs(test_data_dir_abfs) -> str:
-    return os.path.join(test_data_dir_abfs, "margin_cache", "catalog_info.json")
+def margin_cache_catalog_info_file_cloud(test_data_dir_cloud) -> str:
+    return os.path.join(test_data_dir_cloud, "margin_cache", "catalog_info.json")
 
 
 @pytest.fixture
-def source_catalog_info_file_abfs(test_data_dir_abfs) -> str:
-    return os.path.join(test_data_dir_abfs, "small_sky_source", "catalog_info.json")
+def source_catalog_info_file_cloud(test_data_dir_cloud) -> str:
+    return os.path.join(test_data_dir_cloud, "small_sky_source", "catalog_info.json")
 
 
 @pytest.fixture
@@ -103,18 +121,18 @@ def association_catalog_info(association_catalog_info_data) -> AssociationCatalo
 
 
 @pytest.fixture
-def association_catalog_partition_join_file_abfs(association_catalog_path_abfs) -> str:
-    return os.path.join(association_catalog_path_abfs, "partition_join_info.csv")
+def association_catalog_partition_join_file_cloud(association_catalog_path_cloud) -> str:
+    return os.path.join(association_catalog_path_cloud, "partition_join_info.csv")
 
 
 @pytest.fixture
-def dataset_path_abfs(test_data_dir_abfs) -> str:
-    return os.path.join(test_data_dir_abfs, "dataset")
+def dataset_path_cloud(test_data_dir_cloud) -> str:
+    return os.path.join(test_data_dir_cloud, "dataset")
 
 
 @pytest.fixture
-def base_catalog_info_file_abfs(dataset_path_abfs) -> str:
-    return os.path.join(dataset_path_abfs, "catalog_info.json")
+def base_catalog_info_file_cloud(dataset_path_cloud) -> str:
+    return os.path.join(dataset_path_cloud, "catalog_info.json")
 
 
 @pytest.fixture
@@ -123,13 +141,13 @@ def base_catalog_info(base_catalog_info_data) -> BaseCatalogInfo:
 
 
 @pytest.fixture
-def catalog_path_abfs(test_data_dir_abfs) -> str:
-    return os.path.join(test_data_dir_abfs, "catalog")
+def catalog_path_cloud(test_data_dir_cloud) -> str:
+    return os.path.join(test_data_dir_cloud, "catalog")
 
 
 @pytest.fixture
-def catalog_info_file_abfs(catalog_path_abfs) -> str:
-    return os.path.join(catalog_path_abfs, "catalog_info.json")
+def catalog_info_file_cloud(catalog_path_cloud) -> str:
+    return os.path.join(catalog_path_cloud, "catalog_info.json")
 
 @pytest.fixture
 def test_data_dir():
@@ -285,13 +303,13 @@ def association_catalog_join_pixels() -> pd.DataFrame:
 
 
 @pytest.fixture
-def default_almanac_abfs(example_abfs_path, example_abfs_storage_options):
+def default_almanac_cloud(example_cloud_path, example_cloud_storage_options):
     """Set up default environment variables and fetch default almanac data."""
 
-    test_data_dir = os.path.join(example_abfs_path, "data")
-    almanac_dir = os.path.join(example_abfs_path, "data", "almanac")
+    test_data_dir = os.path.join(example_cloud_path, "data")
+    almanac_dir = os.path.join(example_cloud_path, "data", "almanac")
 
     os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
     os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
     
-    return Almanac(storage_options=example_abfs_storage_options)
+    return Almanac(storage_options=example_cloud_storage_options)

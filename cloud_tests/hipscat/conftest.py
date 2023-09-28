@@ -64,13 +64,13 @@ def small_sky_pixels():
 
 
 @pytest.fixture
-def small_sky_order1_catalog_abfs(small_sky_order1_dir_abfs, example_abfs_storage_options):
-    return Catalog.read_from_hipscat(small_sky_order1_dir_abfs, storage_options=example_abfs_storage_options)
+def small_sky_order1_catalog_cloud(small_sky_order1_dir_cloud, example_cloud_storage_options):
+    return Catalog.read_from_hipscat(small_sky_order1_dir_cloud, storage_options=example_cloud_storage_options)
 
 
 @pytest.fixture
-def small_sky_catalog_abfs(small_sky_dir_abfs, example_abfs_storage_options):
-    return Catalog.read_from_hipscat(small_sky_dir_abfs, storage_options=example_abfs_storage_options)
+def small_sky_catalog_cloud(small_sky_dir_cloud, example_cloud_storage_options):
+    return Catalog.read_from_hipscat(small_sky_dir_cloud, storage_options=example_cloud_storage_options)
 
 
 @pytest.fixture()
