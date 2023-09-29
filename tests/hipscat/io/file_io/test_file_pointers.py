@@ -1,4 +1,5 @@
 import os
+import fsspec
 import pytest
 
 from hipscat.io.file_io import (
@@ -11,8 +12,11 @@ from hipscat.io.file_io import (
     get_file_pointer_from_path,
     is_regular_file,
     get_file_pointer_for_fs,
-    get_file_protocol,
     strip_leading_slash_for_pyarrow
+)
+
+from hipscat.io.file_io.file_pointer import (
+    get_fs
 )
 
 
@@ -92,6 +96,16 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
 
     assert len(get_directory_contents(tmp_path)) == 0
 
+def test_get_fs():
+    filesystem, _ = get_fs("file://")
+    assert filesystem.protocol == "file"
+    
+    #this will fail if the environment installs lakefs to import
+    with pytest.raises(ImportError):
+        get_fs("lakefs://")
+
+    with pytest.raises(ValueError):
+        get_fs("invalid://")
 
 def test_get_file_pointer_for_fs():
     test_abfs_protocol_path = get_file_pointer_from_path("abfs:///container/path/to/parquet/file")
@@ -102,11 +116,6 @@ def test_get_file_pointer_for_fs():
     assert get_file_pointer_for_fs("file", file_pointer=test_local_path) == test_local_path
     test_local_protocol_path = get_file_pointer_from_path("file:///path/to/file")
     assert get_file_pointer_for_fs("file", file_pointer=test_local_protocol_path) == "/path/to/file"
-
-    with pytest.raises(NotImplementedError):
-        get_file_protocol("invalid:///path/to/file")
-    with pytest.raises(NotImplementedError):
-        get_file_pointer_for_fs("invalid", get_file_pointer_from_path("/path/to/file"))
 
 
 def test_strip_leading_slash_for_pyarrow():

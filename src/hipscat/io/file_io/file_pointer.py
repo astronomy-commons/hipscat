@@ -2,8 +2,6 @@ from typing import List, NewType, Tuple
 import os
 import fsspec
 
-SUPPORTED_PROTOCOLS = ["file", "abfs", "s3"]
-
 FilePointer = NewType("FilePointer", str)
 """Unified type for references to files."""
 
@@ -12,24 +10,16 @@ def get_file_protocol(pointer: FilePointer) -> str:
     """Method to parse filepointer for the filesystem protocol.
         if it doesn't follow the pattern of protocol://pathway/to/file, then it 
         assumes that it is a localfilesystem.
-    
-    Supported protocols: ["file", "abfs", "s3"]
 
     Args:
         pointer: filesystem pathway pointer
-    
-    Raises:
-        NotImplementedError: if protocol is not supported
-        NotImplementedError: if more than one protocol is in the FilePointer
     """
 
     if not isinstance(pointer, str):
         pointer = str(pointer)
 
     protocol = fsspec.utils.get_protocol(pointer)
-
-    if protocol not in SUPPORTED_PROTOCOLS:
-        raise NotImplementedError(f"{protocol} is not supported for hipscat!")
+    
     return protocol
 
 
@@ -41,12 +31,21 @@ def get_fs(
     Args:
         file_pointer: filesystem pathway
         storage_options: dictionary that contains abstract filesystem credentials
+    Raises:
+        ImportError if environment cannot import necessary libraries for 
+            fsspec filesystems.
     """
     if storage_options is None:
         storage_options = {}
     protocol = get_file_protocol(file_pointer)
     file_pointer = get_file_pointer_for_fs(protocol, file_pointer)
-    return fsspec.filesystem(protocol, **storage_options), file_pointer
+
+    try:
+        file_system = fsspec.filesystem(protocol, **storage_options)
+    except ImportError as e:
+        raise ImportError(e)
+    
+    return file_system, file_pointer
 
 
 def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePointer:
@@ -69,11 +68,13 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
             split_pointer = file_pointer.split("file://")[1]
         else:
             split_pointer = file_pointer
-    elif protocol in ["abfs", "s3"]:
-        #return the path minus protocol://
+    else: 
         split_pointer = file_pointer.split(f"{protocol}://")[1]
-    else:
-        raise NotImplementedError(f"{protocol} is not supported for hipscat!")
+    # elif protocol in ["abfs", "s3"]:
+    #     #return the path minus protocol://
+    #     split_pointer = file_pointer.split(f"{protocol}://")[1]
+    # else:
+    #     raise NotImplementedError(f"{protocol} is not supported for hipscat!")
 
     return FilePointer(split_pointer)
 
