@@ -19,7 +19,7 @@ def get_file_protocol(pointer: FilePointer) -> str:
         pointer = str(pointer)
 
     protocol = fsspec.utils.get_protocol(pointer)
-    
+
     return protocol
 
 
@@ -42,9 +42,9 @@ def get_fs(
 
     try:
         file_system = fsspec.filesystem(protocol, **storage_options)
-    except ImportError as e:
-        raise ImportError(e)
-    
+    except ImportError as error:
+        raise ImportError from error
+
     return file_system, file_pointer
 
 
@@ -68,7 +68,7 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
             split_pointer = file_pointer.split("file://")[1]
         else:
             split_pointer = file_pointer
-    else: 
+    else:
         split_pointer = file_pointer.split(f"{protocol}://")[1]
     # elif protocol in ["abfs", "s3"]:
     #     #return the path minus protocol://
