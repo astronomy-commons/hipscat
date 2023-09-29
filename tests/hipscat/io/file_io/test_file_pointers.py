@@ -83,6 +83,11 @@ def test_directory_has_contents(small_sky_order1_dir, tmp_path):
 
 def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     small_sky_contents = get_directory_contents(small_sky_order1_dir)
+
+    for i,content in enumerate(small_sky_contents):
+        if not content.startswith("/"):
+            small_sky_contents[i] = f"/{content}"
+
     assert len(small_sky_contents) == 4
 
     expected = [

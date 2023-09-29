@@ -205,10 +205,6 @@ def get_directory_contents(
     contents = file_system.listdir(file_pointer)
     contents = [FilePointer(x['name']) for x in contents]
 
-    for i,content in enumerate(contents):
-        if not content.startswith("/"):
-            contents[i] = f"/{content}"
-
     if len(contents) == 0:
         return []
 
