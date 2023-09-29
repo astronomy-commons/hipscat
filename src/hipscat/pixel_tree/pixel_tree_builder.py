@@ -76,8 +76,11 @@ class PixelTreeBuilder:
         Returns:
             True if the tree contains the pixel, False if not
         """
-        pixel = get_healpix_pixel(pixel)
-        return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+        if isinstance(pixel, HealpixPixel):
+            return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+        if isinstance(pixel, tuple):
+            return pixel[0] in self.pixels and pixel[1] in self.pixels[pixel[0]]
+        raise TypeError("pixel must be either a HealpixPixel object or a Tuple of (order, pixel)")
 
     def __contains__(self, item):
         return self.contains(item)
@@ -110,14 +113,17 @@ class PixelTreeBuilder:
         Args:
             partition_info_df: Dataframe loaded from the partition_info metadata
         """
-        for _, row in partition_info_df.iterrows():
-            self.create_node_and_parent_if_not_exist(
-                (
-                    row[PartitionInfo.METADATA_ORDER_COLUMN_NAME],
-                    row[PartitionInfo.METADATA_PIXEL_COLUMN_NAME],
-                ),
-                PixelNodeType.LEAF,
-            )
+        if len(partition_info_df) > 0:
+            orders = partition_info_df[PartitionInfo.METADATA_ORDER_COLUMN_NAME].to_numpy()
+            pixels = partition_info_df[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].to_numpy()
+            for i in range(len(partition_info_df)):
+                self.create_node_and_parent_if_not_exist(
+                    (
+                        orders[i],
+                        pixels[i],
+                    ),
+                    PixelNodeType.LEAF,
+                )
 
     def create_node_and_parent_if_not_exist(self, pixel: HealpixInputTypes, node_type: PixelNodeType):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
@@ -136,10 +142,23 @@ class PixelTreeBuilder:
             self.create_node(pixel, node_type, self.root_pixel)
             return
 
+        parents_to_add = []
+        for delta_order in range(1, pixel.order + 1):
+            parent_order = pixel.order - delta_order
+            parent_pixel = pixel.pixel >> (2 * delta_order)
+            if not self.contains((parent_order, parent_pixel)):
+                parents_to_add.insert(0, (parent_order, parent_pixel))
+            else:
+                break
+
+        for add_order, add_pixel in parents_to_add:
+            parent_order = add_order - 1
+            parent_pixel = add_pixel >> 2 if add_order > 0 else -1
+            self.create_node(
+                (add_order, add_pixel), PixelNodeType.INNER, self.pixels[parent_order][parent_pixel]
+            )
         parent_order = pixel.order - 1
-        parent_pixel = pixel.pixel >> 2
-        if not self.contains((parent_order, parent_pixel)):
-            self.create_node_and_parent_if_not_exist((parent_order, parent_pixel), PixelNodeType.INNER)
+        parent_pixel = pixel.pixel >> 2 if pixel.order > 0 else -1
 
         parent = self.pixels[parent_order][parent_pixel]
 
