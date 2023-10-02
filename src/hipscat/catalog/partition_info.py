@@ -43,7 +43,7 @@ class PartitionInfo:
 
         return highest_order
 
-    def write_to_file(self, catalog_base_dir: file_io.FilePointer):
+    def write_to_file(self, catalog_base_dir: FilePointer):
         """Write all partition data to CSV file.
 
         Args:
