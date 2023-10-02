@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from hipscat.io import FilePointer, file_io
+from hipscat.io import FilePointer, file_io, paths
 from hipscat.pixel_math import HealpixPixel
 
 
@@ -42,6 +42,15 @@ class PartitionInfo:
         highest_order = np.max(self.data_frame[self.METADATA_ORDER_COLUMN_NAME].values)
 
         return highest_order
+
+    def write_to_file(self, catalog_base_dir: file_io.FilePointer):
+        """Write all partition data to CSV file.
+
+        Args:
+            catalog_base_dir (str): base directory for catalog, where file will be written
+        """
+        partition_info_pointer = paths.get_partition_info_pointer(catalog_base_dir)
+        file_io.write_dataframe_to_csv(self.data_frame, partition_info_pointer, index=False)
 
     @classmethod
     def read_from_file(cls, partition_info_file: FilePointer):
