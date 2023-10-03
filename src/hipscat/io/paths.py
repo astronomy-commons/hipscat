@@ -1,7 +1,6 @@
 """Methods for creating partitioned data paths"""
 from __future__ import annotations
 
-
 from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
 
 ORDER_DIRECTORY_PREFIX = "Norder"

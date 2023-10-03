@@ -4,7 +4,7 @@ import os
 import pytest
 
 from hipscat.catalog import PartitionInfo
-from hipscat.io import paths, get_file_pointer_from_path, write_catalog_info
+from hipscat.io import get_file_pointer_from_path, paths, write_catalog_info
 from hipscat.io.validation import is_valid_catalog
 
 
