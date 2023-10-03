@@ -1,6 +1,7 @@
 """Tests of partition info functionality"""
 import os
 
+import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo
@@ -50,3 +51,14 @@ def test_get_highest_order(small_sky_order1_dir):
     highest_order = partitions.get_highest_order()
 
     assert highest_order == 1
+
+
+def test_write_to_file(tmp_path, small_sky_pixels):
+    """Write out the partition info to file and make sure we can read it again."""
+    partition_info_pointer = paths.get_partition_info_pointer(tmp_path)
+    partition_info = PartitionInfo.from_healpix(small_sky_pixels)
+    partition_info.write_to_file(partition_info_pointer)
+
+    new_partition_info = PartitionInfo.read_from_file(partition_info_pointer)
+
+    pd.testing.assert_frame_equal(partition_info.data_frame, new_partition_info.data_frame)

@@ -1,7 +1,8 @@
 """Methods for creating partitioned data paths"""
 from __future__ import annotations
 
-from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer, is_regular_file
+
+from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
 
 ORDER_DIRECTORY_PREFIX = "Norder"
 DIR_DIRECTORY_PREFIX = "Dir"
@@ -295,19 +296,3 @@ def get_partition_join_info_pointer(catalog_base_dir: FilePointer) -> FilePointe
         File Pointer to the catalog's `partition_join_info.csv` association metadata file
     """
     return append_paths_to_pointer(catalog_base_dir, PARTITION_JOIN_INFO_FILENAME)
-
-
-def is_valid_catalog(pointer: FilePointer) -> bool:
-    """Checks if there is a catalog_info and a partition_info file
-    for a given base catalog pointer
-
-    Args:
-        pointer: pointer to base catalog directory
-
-    Returns:
-        True if the catalog_info and partition_info files exist for
-        the catalog, False if not
-    """
-    catalog_info_exists = is_regular_file(get_catalog_info_pointer(pointer))
-    partition_info_exists = is_regular_file(get_partition_info_pointer(pointer))
-    return catalog_info_exists and partition_info_exists
