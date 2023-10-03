@@ -48,7 +48,7 @@ class PartitionInfo:
 
         Args:
             partition_info_file: FilePointer to where the `partition_info.csv`
-            file will be written
+                file will be written
         """
         file_io.write_dataframe_to_csv(self.data_frame, partition_info_file, index=False)
 

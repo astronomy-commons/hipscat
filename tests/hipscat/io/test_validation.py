@@ -19,7 +19,8 @@ def test_is_valid_catalog(tmp_path, small_sky_catalog, small_sky_pixels):
     write_catalog_info(catalog_dir_pointer, small_sky_catalog.catalog_info)
     assert not is_valid_catalog(catalog_dir_pointer)
 
-    # The catalog is valid if both catalog_info and partition_info files exist
+    # The catalog is valid if both the catalog_info and partition_info files exist,
+    # and the catalog_info is in a valid format
     partition_info_pointer = paths.get_partition_info_pointer(catalog_dir_pointer)
     PartitionInfo.from_healpix(small_sky_pixels).write_to_file(partition_info_pointer)
     assert is_valid_catalog(catalog_dir_pointer)
@@ -29,3 +30,10 @@ def test_is_valid_catalog(tmp_path, small_sky_catalog, small_sky_pixels):
     os.remove(catalog_info_pointer)
     with pytest.raises(FileNotFoundError):
         assert not is_valid_catalog(catalog_dir_pointer)
+
+    # The catalog_info file needs to be in the correct format
+    small_sky_catalog.catalog_info.catalog_type = "invalid"
+    write_catalog_info(catalog_dir_pointer, small_sky_catalog.catalog_info)
+    with pytest.raises(ValueError):
+        assert not is_valid_catalog(catalog_dir_pointer)
+

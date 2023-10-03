@@ -4,16 +4,15 @@ from hipscat.io.file_io.file_pointer import FilePointer, is_regular_file
 
 
 def is_valid_catalog(pointer: FilePointer) -> bool:
-    """Checks if there is a catalog_info and a partition_info file
-    for a given base catalog pointer
+    """Checks if a catalog is valid for a given base catalog pointer
 
     Args:
         pointer: pointer to base catalog directory
 
     Returns:
         True if the catalog_info and partition_info files exist for
-        the catalog, False if not or if the catalog info was
-        incorrectly formatted
+        the catalog and the catalog_info file is correctly formatted,
+        False otherwise
     """
     catalog_info_pointer = get_catalog_info_pointer(pointer)
     catalog_info_exists = is_regular_file(catalog_info_pointer)
