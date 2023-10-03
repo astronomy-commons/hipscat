@@ -1,5 +1,5 @@
 from hipscat.catalog.dataset.catalog_info_factory import from_catalog_dir
-from hipscat.io import get_catalog_info_pointer, get_partition_info_pointer
+from hipscat.io import get_partition_info_pointer
 from hipscat.io.file_io.file_pointer import FilePointer, is_regular_file
 
 
@@ -24,7 +24,7 @@ def is_catalog_info_valid(pointer):
 
     Returns:
         True if the catalog_info file exists, and it is correctly formatted,
-            False otherwise
+        False otherwise
     """
     is_valid = True
     try:

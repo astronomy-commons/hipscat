@@ -31,4 +31,3 @@ def test_is_valid_catalog(tmp_path, small_sky_catalog, small_sky_pixels):
     small_sky_catalog.catalog_info.catalog_type = "invalid"
     write_catalog_info(catalog_dir_pointer, small_sky_catalog.catalog_info)
     assert not is_valid_catalog(catalog_dir_pointer)
-
