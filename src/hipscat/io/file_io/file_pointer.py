@@ -70,11 +70,6 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
             split_pointer = file_pointer
     else:
         split_pointer = file_pointer.split(f"{protocol}://")[1]
-    # elif protocol in ["abfs", "s3"]:
-    #     #return the path minus protocol://
-    #     split_pointer = file_pointer.split(f"{protocol}://")[1]
-    # else:
-    #     raise NotImplementedError(f"{protocol} is not supported for hipscat!")
 
     return FilePointer(split_pointer)
 
