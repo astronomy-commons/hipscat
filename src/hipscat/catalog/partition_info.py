@@ -43,6 +43,15 @@ class PartitionInfo:
 
         return highest_order
 
+    def write_to_file(self, partition_info_file: FilePointer):
+        """Write all partition data to CSV file.
+
+        Args:
+            partition_info_file: FilePointer to where the `partition_info.csv`
+                file will be written
+        """
+        file_io.write_dataframe_to_csv(self.data_frame, partition_info_file, index=False)
+
     @classmethod
     def read_from_file(cls, partition_info_file: FilePointer):
         """Read partition info from a `partition_info.csv` file to create an object
