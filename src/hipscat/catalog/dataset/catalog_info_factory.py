@@ -51,20 +51,22 @@ def create_catalog_info(keywords: dict, catalog_type: Optional[CatalogType] = No
     return ci_class(**catalog_info_keywords)
 
 
-def from_catalog_dir(catalog_base_dir: FilePointer):
+def from_catalog_dir(catalog_base_dir: FilePointer, storage_options: dict = None):
     """Generate a typed catalog info object from the type specified in the
     catalog info file.
 
     Args:
         catalog_base_dir: a path pointing to the base directory of a catalog,
             or may point to a ``catalog_info.json`` file directly.
+        storage_options: dictionary that contains abstract filesystem credentials
+        
     Returns:
         populated BaseCatalogInfo of appropriate type.
     """
-    if file_io.is_regular_file(catalog_base_dir):
+    if file_io.is_regular_file(catalog_base_dir, storage_options=storage_options):
         ## This might be the catalog_info.json file - try anyway
-        metadata_keywords = file_io.load_json_file(catalog_base_dir)
+        metadata_keywords = file_io.load_json_file(catalog_base_dir, storage_options=storage_options)
     else:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
-        metadata_keywords = file_io.load_json_file(catalog_info_file)
+        metadata_keywords = file_io.load_json_file(catalog_info_file, storage_options=storage_options)
     return create_catalog_info(metadata_keywords)

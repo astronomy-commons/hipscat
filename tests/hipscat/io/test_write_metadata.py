@@ -46,7 +46,7 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
 def test_write_catalog_info(assert_text_file_matches, tmp_path, catalog_info):
     """Test that we accurately write out catalog metadata"""
     catalog_base_dir = os.path.join(tmp_path, "test_name")
-    os.makedirs(catalog_base_dir)
+    file_io.make_directory(catalog_base_dir)
     expected_lines = [
         "{",
         '    "catalog_name": "test_name",',
@@ -66,7 +66,7 @@ def test_write_catalog_info(assert_text_file_matches, tmp_path, catalog_info):
 def test_write_provenance_info(assert_text_file_matches, tmp_path, catalog_info):
     """Test that we accurately write out tool-provided generation metadata"""
     catalog_base_dir = os.path.join(tmp_path, "test_name")
-    os.makedirs(catalog_base_dir)
+    file_io.make_directory(catalog_base_dir)
     expected_lines = [
         "{",
         '    "catalog_name": "test_name",',
@@ -105,7 +105,7 @@ def test_write_provenance_info(assert_text_file_matches, tmp_path, catalog_info)
 def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, tmp_path):
     """Test that we accurately write out the partition stats for overloaded input"""
     catalog_base_dir = os.path.join(tmp_path, "test_name")
-    os.makedirs(catalog_base_dir)
+    file_io.make_directory(catalog_base_dir)
     expected_lines = [
         "Norder,Dir,Npix,num_rows",
         "0,0,11,131",
@@ -135,7 +135,7 @@ def test_write_partition_info_float(assert_text_file_matches, tmp_path):
     """Test that we accurately write out the individual partition stats
     even when the input is floats instead of ints"""
     catalog_base_dir = os.path.join(tmp_path, "test_name")
-    os.makedirs(catalog_base_dir)
+    file_io.make_directory(catalog_base_dir)
     expected_lines = [
         "Norder,Dir,Npix,num_rows",
         "0,0,11,131",
@@ -201,9 +201,9 @@ def test_write_index_parquet_metadata(tmp_path):
     temp_path = os.path.join(tmp_path, "index")
 
     index_parquet_path = os.path.join(temp_path, "Parts=0", "part_000_of_001.parquet")
-    os.makedirs(os.path.join(temp_path, "Parts=0"))
+    file_io.make_directory(os.path.join(temp_path, "Parts=0"))
     basic_index = pd.DataFrame({"_hipscat_id": [4000, 4001], "ps1_objid": [700, 800]})
-    basic_index.to_parquet(index_parquet_path)
+    file_io.write_dataframe_to_parquet(basic_index, index_parquet_path)
 
     index_catalog_parquet_metadata = pa.schema(
         [
@@ -224,9 +224,9 @@ def test_write_index_parquet_metadata(tmp_path):
 
 def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
     """Check parquet schema against expectations"""
-    assert os.path.exists(file_name), f"file not found [{file_name}]"
+    assert file_io.does_file_or_directory_exist(file_name), f"file not found [{file_name}]"
 
-    single_metadata = pq.read_metadata(file_name)
+    single_metadata = file_io.read_parquet_metadata(file_name)
     schema = single_metadata.schema.to_arrow_schema()
 
     assert len(schema) == len(
@@ -237,7 +237,7 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
 
     assert schema.equals(expected_schema, check_metadata=False)
 
-    parquet_file = pq.ParquetFile(file_name)
+    parquet_file =  file_io.read_parquet_file(file_name)
     assert parquet_file.metadata.num_row_groups == expected_num_row_groups
 
     for row_index in range(0, parquet_file.metadata.num_row_groups):

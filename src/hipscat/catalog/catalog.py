@@ -1,14 +1,14 @@
 """Container class to hold catalog metadata and partition iteration"""
 from __future__ import annotations
+from typing import List, Tuple, Union
 
 import dataclasses
-from typing import List, Tuple, Union
 
 import healpy as hp
 import numpy as np
 import pandas as pd
-from typing_extensions import TypeAlias
 
+from typing_extensions import TypeAlias
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
@@ -42,6 +42,7 @@ class Catalog(Dataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
+        storage_options: dict = None
     ) -> None:
         """Initializes a Catalog
 
@@ -52,13 +53,14 @@ class Catalog(Dataset):
                 `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
+            storage_options: dictionary that contains abstract filesystem credentials
         """
         if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
             raise ValueError(
                 f"Catalog info `catalog_type` must be one of "
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
-        super().__init__(catalog_info, catalog_path)
+        super().__init__(catalog_info, catalog_path, storage_options)
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
 
@@ -114,17 +116,19 @@ class Catalog(Dataset):
         return self.partition_info.get_healpix_pixels()
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: FilePointer) -> Tuple[CatalogInfoClass, PartitionInfo]:
-        args = super()._read_args(catalog_base_dir)
+    def _read_args(
+        cls, catalog_base_dir: FilePointer, storage_options: dict = None
+    ) -> Tuple[CatalogInfoClass, PartitionInfo]:
+        args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
-        partition_info = PartitionInfo.read_from_file(partition_info_file)
+        partition_info = PartitionInfo.read_from_file(partition_info_file, storage_options=storage_options)
         return args + (partition_info,)
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer):
-        super()._check_files_exist(catalog_base_dir)
+    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
+        super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
-        if not file_io.does_file_or_directory_exist(partition_info_file):
+        if not file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
             raise FileNotFoundError(f"No partition info found where expected: {str(partition_info_file)}")
 
     def filter_by_cone(self, ra: float, dec: float, radius: float) -> Catalog:

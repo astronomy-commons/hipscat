@@ -29,19 +29,22 @@ class PartitionJoinInfo:
                 raise ValueError(f"join_info_df does not contain column {column}")
 
     @classmethod
-    def read_from_file(cls, partition_join_info_file: FilePointer) -> Self:
+    def read_from_file(cls, partition_join_info_file: FilePointer, storage_options: dict = None) -> Self:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
             partition_join_info_file: FilePointer to the `partition_join_info.csv` file
+            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
         """
-        if not file_io.does_file_or_directory_exist(partition_join_info_file):
+        if not file_io.does_file_or_directory_exist(
+            partition_join_info_file, storage_options=storage_options
+        ):
             raise FileNotFoundError(
                 f"No partition info found where expected: {str(partition_join_info_file)}"
             )
 
-        data_frame = file_io.load_csv_to_pandas(partition_join_info_file)
+        data_frame = file_io.load_csv_to_pandas(partition_join_info_file, storage_options=storage_options)
         return cls(data_frame)

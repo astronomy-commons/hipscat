@@ -1,5 +1,4 @@
 """Container class to hold per-partition metadata"""
-
 from typing import List
 
 import numpy as np
@@ -53,19 +52,20 @@ class PartitionInfo:
         file_io.write_dataframe_to_csv(self.data_frame, partition_info_file, index=False)
 
     @classmethod
-    def read_from_file(cls, partition_info_file: FilePointer):
+    def read_from_file(cls, partition_info_file: FilePointer, storage_options: dict = None):
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
             partition_info_file: FilePointer to the `partition_info.csv` file
+            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionInfo` object with the data from the file
         """
-        if not file_io.does_file_or_directory_exist(partition_info_file):
+        if not file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
             raise FileNotFoundError(f"No partition info found where expected: {str(partition_info_file)}")
 
-        data_frame = file_io.load_csv_to_pandas(partition_info_file)
+        data_frame = file_io.load_csv_to_pandas(partition_info_file, storage_options=storage_options)
         return cls(data_frame)
 
     @classmethod

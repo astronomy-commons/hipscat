@@ -1,4 +1,6 @@
 import os
+import fsspec
+import pytest
 
 from hipscat.io.file_io import (
     append_paths_to_pointer,
@@ -9,6 +11,12 @@ from hipscat.io.file_io import (
     get_directory_contents,
     get_file_pointer_from_path,
     is_regular_file,
+    get_file_pointer_for_fs,
+    strip_leading_slash_for_pyarrow
+)
+
+from hipscat.io.file_io.file_pointer import (
+    get_fs
 )
 
 
@@ -75,6 +83,11 @@ def test_directory_has_contents(small_sky_order1_dir, tmp_path):
 
 def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     small_sky_contents = get_directory_contents(small_sky_order1_dir)
+
+    for i,content in enumerate(small_sky_contents):
+        if not content.startswith("/"):
+            small_sky_contents[i] = f"/{content}"
+
     assert len(small_sky_contents) == 4
 
     expected = [
@@ -87,3 +100,31 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     assert small_sky_contents == expected
 
     assert len(get_directory_contents(tmp_path)) == 0
+
+def test_get_fs():
+    filesystem, _ = get_fs("file://")
+    assert filesystem.protocol == "file"
+    
+    #this will fail if the environment installs lakefs to import
+    with pytest.raises(ImportError):
+        get_fs("lakefs://")
+
+    with pytest.raises(ValueError):
+        get_fs("invalid://")
+
+def test_get_file_pointer_for_fs():
+    test_abfs_protocol_path = get_file_pointer_from_path("abfs:///container/path/to/parquet/file")
+    assert get_file_pointer_for_fs("abfs", file_pointer=test_abfs_protocol_path) == "/container/path/to/parquet/file"
+    test_s3_protocol_path = get_file_pointer_from_path("s3:///bucket/path/to/catalog.json")
+    assert get_file_pointer_for_fs("s3", file_pointer=test_s3_protocol_path) == "/bucket/path/to/catalog.json"
+    test_local_path = get_file_pointer_from_path("/path/to/file")
+    assert get_file_pointer_for_fs("file", file_pointer=test_local_path) == test_local_path
+    test_local_protocol_path = get_file_pointer_from_path("file:///path/to/file")
+    assert get_file_pointer_for_fs("file", file_pointer=test_local_protocol_path) == "/path/to/file"
+
+
+def test_strip_leading_slash_for_pyarrow():
+    test_leading_slash_filename = get_file_pointer_from_path("/bucket/path/test.txt")
+    assert strip_leading_slash_for_pyarrow(test_leading_slash_filename, protocol="abfs") == "bucket/path/test.txt"
+    test_non_leading_slash_filenaem = get_file_pointer_from_path("bucket/path/test.txt")
+    assert strip_leading_slash_for_pyarrow(test_non_leading_slash_filenaem, protocol="abfs") == "bucket/path/test.txt"
