@@ -20,7 +20,7 @@ dependencies = [
     "healpy",
     "pandas",
     "setuptools_scm",
-    "pyarrow",
+    "pyarrow>=10.0.0",
     "astropy",
     "typing-extensions>=4.3.0",
     "numba",
