@@ -17,42 +17,39 @@ dynamic = ["version"]
 
 requires-python = ">=3.8"
 dependencies = [
-    "healpy",
-    "pandas",
-    "setuptools_scm",
-    "pyarrow>=10.0.0",
     "astropy",
-    "typing-extensions>=4.3.0",
-    "numba",
     "fsspec", # Used for abstract filesystems
-    "ipykernel", # Support for Jupyter notebooks
+    "healpy",
+    "numba",
+    "pandas",
+    "pyarrow>=10.0.0",
+    "setuptools_scm",
+    "typing-extensions>=4.3.0"
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
 dev = [
+    "adlfs", # abfs filesytem support
+    "asv==0.5.1", # Used to compute performance benchmarks
+    "ipykernel", # Support for Jupyter notebooks
+    "ipython", # Also used in building notebooks into Sphinx
+    "matplotlib", # Used in sample notebook intro_notebook.ipynb
     "mypy", # Used for static type checking of files
-    "pylint", # Used for static linting of files
+    "myst_parser", # Renders markdown alongside RST
+    "nbconvert", # Needed for pre-commit check to clear output from Python notebooks
+    "nbsphinx", # Used to integrate Python notebooks into Sphinx documentation
+    "numpy", # Used in sample notebook intro_notebook.ipynb
     "pre-commit", # Used to run checks before finalizing a git commit
+    "pylint", # Used for static linting of files
     "pytest",
     "pytest-cov", # Used to report total code coverage
     "pytest-timeout", # Used to test for code efficiency
-    "sphinx", # Used to automatically generate documentation
-    "sphinx-rtd-theme", # Used to render documentation
-    "sphinx-autoapi", # Used to automatically generate api documentation
-    # if you add dependencies here while experimenting in a notebook and you
-    # want that notebook to render in your documentation, please add the
-    # dependencies to ./docs/requirements.txt as well.
-    "nbconvert", # Needed for pre-commit check to clear output from Python notebooks
-    "nbsphinx", # Used to integrate Python notebooks into Sphinx documentation
-    "ipykernel", # Also used in building notebooks into Sphinx
-    "ipython", # Also used in building notebooks into Sphinx
-    "myst_parser", # Renders markdown alongside RST
-    "asv", # Used to compute performance benchmarks
-    "adlfs", # abfs filesytem support
     "s3fs", # s3 filesystem support
+    "sphinx", # Used to automatically generate documentation
+    "sphinx-autoapi", # Used to automatically generate api documentation
+    "sphinx-rtd-theme" # Used to render documentation
 ]
-
 [build-system]
 requires = [
     "setuptools>=62", # Used to build and package the Python project
