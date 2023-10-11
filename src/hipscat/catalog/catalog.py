@@ -1,6 +1,6 @@
 """Container class to hold catalog metadata and partition iteration"""
 from __future__ import annotations
-from typing import List, Tuple, Union
+from typing import List
 
 import dataclasses
 
