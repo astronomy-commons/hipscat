@@ -119,9 +119,7 @@ def test_hipscat_id_to_healpix():
 def test_healpix_to_hipscat_id_single():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
-    pixels_at_high_order = [
-        p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)
-    ]
+    pixels_at_high_order = [p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
         [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
@@ -133,9 +131,7 @@ def test_healpix_to_hipscat_id_single():
 def test_healpix_to_hipscat_id_array():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
-    pixels_at_high_order = [
-        p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)
-    ]
+    pixels_at_high_order = [p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
         [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
@@ -148,9 +144,7 @@ def test_healpix_to_hipscat_id_offset():
     orders = [3, 3, 4, 1]
     pixels = [0, 0, 1231, 11]
     offsets = [0, 1, 0, 0]
-    pixels_at_high_order = [
-        p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)
-    ]
+    pixels_at_high_order = [p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
         [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )

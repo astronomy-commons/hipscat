@@ -237,7 +237,7 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
 
     assert schema.equals(expected_schema, check_metadata=False)
 
-    parquet_file =  file_io.read_parquet_file(file_name)
+    parquet_file = file_io.read_parquet_file(file_name)
     assert parquet_file.metadata.num_row_groups == expected_num_row_groups
 
     for row_index in range(0, parquet_file.metadata.num_row_groups):

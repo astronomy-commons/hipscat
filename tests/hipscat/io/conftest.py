@@ -14,7 +14,7 @@ from hipscat.io.file_io.file_pointer import FilePointer, does_file_or_directory_
 
 @pytest.fixture
 def assert_text_file_matches():
-    def assert_text_file_matches(expected_lines, file_name, storage_options: dict={}):
+    def assert_text_file_matches(expected_lines, file_name, storage_options: dict = {}):
         """Convenience method to read a text file and compare the contents, line for line.
 
         When file contents get even a little bit big, it can be difficult to see
@@ -31,7 +31,9 @@ def assert_text_file_matches():
             file_name (str): fully-specified path of the file to read
             storage_options (dict): dictionary of filesystem storage options
         """
-        assert does_file_or_directory_exist(file_name, storage_options=storage_options), f"file not found [{file_name}]"
+        assert does_file_or_directory_exist(
+            file_name, storage_options=storage_options
+        ), f"file not found [{file_name}]"
         contents = load_text_file(file_name, storage_options=storage_options)
 
         assert len(expected_lines) == len(
