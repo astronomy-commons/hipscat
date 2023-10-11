@@ -1,26 +1,23 @@
 import json
 import os
 
-import numpy as np 
+import numpy as np
 import pandas as pd
 import pytest
 
 from hipscat.io.file_io import (
+    delete_file,
     get_file_pointer_from_path,
     load_csv_to_pandas,
     load_json_file,
     load_parquet_to_pandas,
     make_directory,
+    read_parquet_file_to_pandas,
     remove_directory,
     write_dataframe_to_csv,
     write_string_to_file,
-    delete_file,
-    read_parquet_file_to_pandas
 )
-from hipscat.io.file_io.file_pointer import (
-    does_file_or_directory_exist,
-
-)
+from hipscat.io.file_io.file_pointer import does_file_or_directory_exist
 from hipscat.io.paths import pixel_catalog_file
 
 

@@ -1,4 +1,5 @@
 from typing import Tuple, Union
+
 import pandas as pd
 from typing_extensions import TypeAlias
 
@@ -6,7 +7,7 @@ from hipscat.catalog.association_catalog.association_catalog_info import Associa
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
-from hipscat.io import FilePointer, paths, file_io
+from hipscat.io import FilePointer, file_io, paths
 
 
 class AssociationCatalog(HealpixDataset):

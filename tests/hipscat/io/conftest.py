@@ -6,14 +6,9 @@ import re
 import pyarrow as pa
 import pytest
 
-from hipscat.io.file_io.file_pointer import (
-    FilePointer,
-    get_fs,
-    does_file_or_directory_exist
-)
-from hipscat.io.file_io.file_io import (
-    load_text_file
-)
+from hipscat.io.file_io.file_io import load_text_file
+from hipscat.io.file_io.file_pointer import FilePointer, does_file_or_directory_exist, get_fs
+
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 

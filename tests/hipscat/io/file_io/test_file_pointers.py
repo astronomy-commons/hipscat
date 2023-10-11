@@ -1,4 +1,5 @@
 import os
+
 import fsspec
 import pytest
 
@@ -9,15 +10,12 @@ from hipscat.io.file_io import (
     find_files_matching_path,
     get_basename_from_filepointer,
     get_directory_contents,
+    get_file_pointer_for_fs,
     get_file_pointer_from_path,
     is_regular_file,
-    get_file_pointer_for_fs,
-    strip_leading_slash_for_pyarrow
+    strip_leading_slash_for_pyarrow,
 )
-
-from hipscat.io.file_io.file_pointer import (
-    get_fs
-)
+from hipscat.io.file_io.file_pointer import get_fs
 
 
 def test_get_pointer_from_path(tmp_path):

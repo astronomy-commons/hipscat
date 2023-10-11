@@ -1,5 +1,6 @@
-from typing import List, NewType, Tuple
 import os
+from typing import List, NewType, Tuple
+
 import fsspec
 
 FilePointer = NewType("FilePointer", str)

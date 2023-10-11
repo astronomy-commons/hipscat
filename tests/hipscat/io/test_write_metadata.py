@@ -8,9 +8,9 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from hipscat.io import file_io
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
+from hipscat.io import file_io
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 

@@ -1,13 +1,13 @@
 """Container class to hold catalog metadata and partition iteration"""
 from __future__ import annotations
-from typing import List
 
 import dataclasses
+from typing import List
 
 import healpy as hp
 import numpy as np
-
 from typing_extensions import TypeAlias
+
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
