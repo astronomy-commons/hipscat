@@ -6,22 +6,17 @@ import dataclasses
 
 import healpy as hp
 import numpy as np
-import pandas as pd
 
 from typing_extensions import TypeAlias
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
-from hipscat.catalog.dataset.dataset import Dataset
-from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
-from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-class Catalog(Dataset):
+class Catalog(HealpixDataset):
     """A HiPSCat Catalog with data stored in a HEALPix Hive partitioned structure
 
     Catalogs of this type are partitioned spatially, contain `partition_info` metadata specifying
@@ -29,7 +24,6 @@ class Catalog(Dataset):
     `Norder=/Dir=/Npix=.parquet`
     """
 
-    PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
 
     # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
@@ -60,76 +54,7 @@ class Catalog(Dataset):
                 f"Catalog info `catalog_type` must be one of "
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
-        super().__init__(catalog_info, catalog_path, storage_options)
-        self.partition_info = self._get_partition_info_from_pixels(pixels)
-        self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
-
-    @staticmethod
-    def _get_partition_info_from_pixels(pixels: PixelInputTypes) -> PartitionInfo:
-        if isinstance(pixels, PartitionInfo):
-            return pixels
-        if isinstance(pixels, pd.DataFrame):
-            return PartitionInfo(pixels)
-        if isinstance(pixels, PixelTree):
-            return PartitionInfo.from_healpix(
-                [
-                    HealpixPixel(node.hp_order, node.hp_pixel)
-                    for node in pixels.root_pixel.get_all_leaf_descendants()
-                ]
-            )
-        if pd.api.types.is_list_like(pixels):
-            return PartitionInfo.from_healpix(pixels)
-        raise TypeError("Pixels must be of type PartitionInfo, Dataframe, PixelTree, or List[HealpixPixel]")
-
-    @staticmethod
-    def _get_pixel_tree_from_pixels(pixels: PixelInputTypes) -> PixelTree:
-        if isinstance(pixels, PartitionInfo):
-            return PixelTreeBuilder.from_partition_info_df(pixels.data_frame)
-        if isinstance(pixels, pd.DataFrame):
-            return PixelTreeBuilder.from_partition_info_df(pixels)
-        if isinstance(pixels, PixelTree):
-            return pixels
-        if pd.api.types.is_list_like(pixels):
-            return PixelTreeBuilder.from_healpix(pixels)
-        raise TypeError("Pixels must be of type PartitionInfo, Dataframe, PixelTree, or List[HealpixPixel]")
-
-    def get_pixels(self):
-        """Get all healpix pixels that are contained in the catalog
-
-        Returns:
-            data frame with per-pixel data.
-
-            The data frame contains the following columns:
-
-            - order: order of the destination pixel
-            - pixel: pixel number *at the above order*
-            - num_objects: the number of rows in the pixel's partition
-        """
-        return self.partition_info.data_frame
-
-    def get_healpix_pixels(self) -> List[HealpixPixel]:
-        """Get healpix pixel objects for all pixels contained in the catalog.
-
-        Returns:
-            List of HealpixPixel
-        """
-        return self.partition_info.get_healpix_pixels()
-
-    @classmethod
-    def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: dict = None
-    ) -> Tuple[CatalogInfoClass, PartitionInfo]:
-        args = super()._read_args(catalog_base_dir, storage_options=storage_options)
-        partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
-        partition_info = PartitionInfo.read_from_file(partition_info_file, storage_options=storage_options)
-        return args + (partition_info,)
-
-    @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
-        super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
-        partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
-        if not file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
-            raise FileNotFoundError(f"No partition info found where expected: {str(partition_info_file)}")
+        super().__init__(catalog_info, pixels, catalog_path, storage_options)
 
     def filter_by_cone(self, ra: float, dec: float, radius: float) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap with a cone
