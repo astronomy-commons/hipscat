@@ -1,9 +1,10 @@
-from typing import Union, List, TypeAlias, Tuple
+from typing import Union, List, Tuple
+from typing_extensions import TypeAlias
 
 import pandas as pd
 
-from hipscat.catalog import Dataset, PartitionInfo
-from hipscat.catalog.dataset import BaseCatalogInfo
+from hipscat.catalog.partition_info import PartitionInfo
+from hipscat.catalog.dataset import Dataset, BaseCatalogInfo
 from hipscat.io import FilePointer, paths, file_io
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_tree import PixelTree

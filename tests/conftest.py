@@ -240,6 +240,17 @@ def association_catalog_partition_join_file(association_catalog_path) -> str:
 
 
 @pytest.fixture
+def association_catalog_pixels() -> pd.DataFrame:
+    return pd.DataFrame.from_dict(
+        {
+            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [0],
+            PartitionInfo.METADATA_DIR_COLUMN_NAME: [0],
+            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [11]
+        }
+    )
+
+
+@pytest.fixture
 def association_catalog_join_pixels() -> pd.DataFrame:
     return pd.DataFrame.from_dict(
         {
