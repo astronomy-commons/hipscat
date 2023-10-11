@@ -24,11 +24,11 @@ class HealpixDataset(Dataset):
     catalog_info: CatalogInfoClass
 
     def __init__(
-            self,
-            catalog_info: CatalogInfoClass,
-            pixels: PixelInputTypes,
-            catalog_path: str = None,
-            storage_options: dict = None
+        self,
+        catalog_info: CatalogInfoClass,
+        pixels: PixelInputTypes,
+        catalog_path: str = None,
+        storage_options: dict = None,
     ) -> None:
         """Initializes a Catalog
 

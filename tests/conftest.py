@@ -245,7 +245,7 @@ def association_catalog_pixels() -> pd.DataFrame:
         {
             PartitionInfo.METADATA_ORDER_COLUMN_NAME: [0],
             PartitionInfo.METADATA_DIR_COLUMN_NAME: [0],
-            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [11]
+            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [11],
         }
     )
 

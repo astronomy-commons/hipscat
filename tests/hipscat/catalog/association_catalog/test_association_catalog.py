@@ -11,7 +11,9 @@ from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 def test_init_catalog(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels):
-    catalog = AssociationCatalog(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels)
+    catalog = AssociationCatalog(
+        association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
+    )
     assert catalog.catalog_name == association_catalog_info.catalog_name
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
     pd.testing.assert_frame_equal(catalog.get_pixels(), association_catalog_pixels)
@@ -19,20 +21,27 @@ def test_init_catalog(association_catalog_info, association_catalog_pixels, asso
 
     assert len(catalog.get_healpix_pixels()) == len(association_catalog_pixels)
     for hp_pixel in catalog.get_healpix_pixels():
-        assert len(
-            association_catalog_pixels.loc[
-                (association_catalog_pixels[PartitionInfo.METADATA_ORDER_COLUMN_NAME] == hp_pixel.order)
-                & (association_catalog_pixels[PartitionInfo.METADATA_PIXEL_COLUMN_NAME] == hp_pixel.pixel)
+        assert (
+            len(
+                association_catalog_pixels.loc[
+                    (association_catalog_pixels[PartitionInfo.METADATA_ORDER_COLUMN_NAME] == hp_pixel.order)
+                    & (association_catalog_pixels[PartitionInfo.METADATA_PIXEL_COLUMN_NAME] == hp_pixel.pixel)
                 ]
-        ) == 1
+            )
+            == 1
+        )
         assert hp_pixel in catalog.pixel_tree
         assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
-def test_wrong_catalog_type(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels):
+def test_wrong_catalog_type(
+    association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
+):
     association_catalog_info.catalog_type = CatalogType.OBJECT
     with pytest.raises(ValueError, match="catalog_type"):
-        AssociationCatalog(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels)
+        AssociationCatalog(
+            association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
+        )
 
 
 def test_wrong_catalog_info_type(catalog_info, association_catalog_pixels, association_catalog_join_pixels):
@@ -46,13 +55,17 @@ def test_wrong_join_pixels_type(association_catalog_info, association_catalog_pi
         AssociationCatalog(association_catalog_info, association_catalog_pixels, "test")
 
 
-def test_different_join_pixels_type(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels):
+def test_different_join_pixels_type(
+    association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
+):
     partition_join_info = PartitionJoinInfo(association_catalog_join_pixels)
     catalog = AssociationCatalog(association_catalog_info, association_catalog_pixels, partition_join_info)
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
 
 
-def test_read_from_file(association_catalog_path, association_catalog_pixels, association_catalog_join_pixels):
+def test_read_from_file(
+    association_catalog_path, association_catalog_pixels, association_catalog_join_pixels
+):
     catalog = AssociationCatalog.read_from_hipscat(association_catalog_path)
     assert catalog.on_disk
     assert catalog.catalog_path == association_catalog_path

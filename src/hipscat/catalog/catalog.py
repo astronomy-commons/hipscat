@@ -36,7 +36,7 @@ class Catalog(HealpixDataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: dict = None
+        storage_options: dict = None,
     ) -> None:
         """Initializes a Catalog
 

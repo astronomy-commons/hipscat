@@ -30,7 +30,7 @@ class AssociationCatalog(HealpixDataset):
         pixels: PixelInputTypes,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
-        storage_options: dict=None
+        storage_options: dict = None,
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
@@ -63,8 +63,7 @@ class AssociationCatalog(HealpixDataset):
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_file(
-            partition_join_info_file,
-            storage_options=storage_options
+            partition_join_info_file, storage_options=storage_options
         )
         return args + (partition_join_info,)
 
@@ -72,7 +71,9 @@ class AssociationCatalog(HealpixDataset):
     def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
-        if not file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options):
+        if not file_io.does_file_or_directory_exist(
+            partition_join_info_file, storage_options=storage_options
+        ):
             raise FileNotFoundError(
                 f"No partition join info found where expected: {str(partition_join_info_file)}"
             )

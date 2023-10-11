@@ -18,10 +18,7 @@ class Dataset:
     CatalogInfoClass: TypeAlias = BaseCatalogInfo
 
     def __init__(
-        self,
-        catalog_info: CatalogInfoClass,
-        catalog_path=None,
-        storage_options: dict = None
+        self, catalog_info: CatalogInfoClass, catalog_path=None, storage_options: dict = None
     ) -> None:
         """Initializes a Dataset
 
