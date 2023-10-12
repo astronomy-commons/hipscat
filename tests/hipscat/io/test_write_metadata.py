@@ -6,11 +6,10 @@ import shutil
 import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa
-import pyarrow.parquet as pq
 
-from hipscat.io import file_io
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
+from hipscat.io import file_io
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
@@ -237,7 +236,7 @@ def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
 
     assert schema.equals(expected_schema, check_metadata=False)
 
-    parquet_file =  file_io.read_parquet_file(file_name)
+    parquet_file = file_io.read_parquet_file(file_name)
     assert parquet_file.metadata.num_row_groups == expected_num_row_groups
 
     for row_index in range(0, parquet_file.metadata.num_row_groups):
