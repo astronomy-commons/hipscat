@@ -1,6 +1,5 @@
 import os
 
-import fsspec
 import pytest
 
 from hipscat.io.file_io import (

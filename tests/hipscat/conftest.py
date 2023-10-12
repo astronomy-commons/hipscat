@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from hipscat.catalog import Catalog

@@ -6,7 +6,6 @@ import shutil
 import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa
-import pyarrow.parquet as pq
 
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist

@@ -1,20 +1,19 @@
 """Set of convenience methods for testing file contents"""
 
-import os
 import re
 
 import pyarrow as pa
 import pytest
 
 from hipscat.io.file_io.file_io import load_text_file
-from hipscat.io.file_io.file_pointer import FilePointer, does_file_or_directory_exist, get_fs
+from hipscat.io.file_io.file_pointer import does_file_or_directory_exist
 
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 
 @pytest.fixture
 def assert_text_file_matches():
-    def assert_text_file_matches(expected_lines, file_name, storage_options: dict = {}):
+    def assert_text_file_matches(expected_lines, file_name, storage_options: dict = None):
         """Convenience method to read a text file and compare the contents, line for line.
 
         When file contents get even a little bit big, it can be difficult to see
