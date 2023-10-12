@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 
-from hipscat.catalog import PartitionInfo
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType

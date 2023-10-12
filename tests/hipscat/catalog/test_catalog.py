@@ -171,67 +171,70 @@ def test_empty_directory(tmp_path):
     catalog = Catalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == "empty"
 
+
 def test_generate_negative_tree_pixels(small_sky_order1_catalog):
     """Test generate_negative_tree_pixels on a basic catalog."""
     expected_pixels = [
-        HealpixPixel(0,0),
-        HealpixPixel(0,1),
-        HealpixPixel(0,2),
-        HealpixPixel(0,3),
-        HealpixPixel(0,4),
-        HealpixPixel(0,5),
-        HealpixPixel(0,6),
-        HealpixPixel(0,7),
-        HealpixPixel(0,8),
-        HealpixPixel(0,9),
-        HealpixPixel(0,10),
+        HealpixPixel(0, 0),
+        HealpixPixel(0, 1),
+        HealpixPixel(0, 2),
+        HealpixPixel(0, 3),
+        HealpixPixel(0, 4),
+        HealpixPixel(0, 5),
+        HealpixPixel(0, 6),
+        HealpixPixel(0, 7),
+        HealpixPixel(0, 8),
+        HealpixPixel(0, 9),
+        HealpixPixel(0, 10),
     ]
 
     negative_tree = small_sky_order1_catalog.generate_negative_tree_pixels()
 
     assert negative_tree == expected_pixels
 
+
 def test_generate_negative_tree_pixels_order_0(small_sky_catalog):
     """Test generate_negative_tree_pixels on a catalog with only order 0 pixels."""
     expected_pixels = [
-        HealpixPixel(0,0),
-        HealpixPixel(0,1),
-        HealpixPixel(0,2),
-        HealpixPixel(0,3),
-        HealpixPixel(0,4),
-        HealpixPixel(0,5),
-        HealpixPixel(0,6),
-        HealpixPixel(0,7),
-        HealpixPixel(0,8),
-        HealpixPixel(0,9),
-        HealpixPixel(0,10),
+        HealpixPixel(0, 0),
+        HealpixPixel(0, 1),
+        HealpixPixel(0, 2),
+        HealpixPixel(0, 3),
+        HealpixPixel(0, 4),
+        HealpixPixel(0, 5),
+        HealpixPixel(0, 6),
+        HealpixPixel(0, 7),
+        HealpixPixel(0, 8),
+        HealpixPixel(0, 9),
+        HealpixPixel(0, 10),
     ]
 
     negative_tree = small_sky_catalog.generate_negative_tree_pixels()
 
     assert negative_tree == expected_pixels
 
+
 def test_generate_negative_tree_pixels_multi_order(small_sky_order1_catalog):
     """Test generate_negative_tree_pixels on a catalog with
-        missing pixels on multiple order.
+    missing pixels on multiple order.
     """
     # remove one of the order 1 pixels from the catalog.
     nodes = small_sky_order1_catalog.pixel_tree.root_pixel.children[0].children
     small_sky_order1_catalog.pixel_tree.root_pixel.children[0].children = nodes[1:]
 
     expected_pixels = [
-        HealpixPixel(0,0),
-        HealpixPixel(0,1),
-        HealpixPixel(0,2),
-        HealpixPixel(0,3),
-        HealpixPixel(0,4),
-        HealpixPixel(0,5),
-        HealpixPixel(0,6),
-        HealpixPixel(0,7),
-        HealpixPixel(0,8),
-        HealpixPixel(0,9),
-        HealpixPixel(0,10),
-        HealpixPixel(1,44),
+        HealpixPixel(0, 0),
+        HealpixPixel(0, 1),
+        HealpixPixel(0, 2),
+        HealpixPixel(0, 3),
+        HealpixPixel(0, 4),
+        HealpixPixel(0, 5),
+        HealpixPixel(0, 6),
+        HealpixPixel(0, 7),
+        HealpixPixel(0, 8),
+        HealpixPixel(0, 9),
+        HealpixPixel(0, 10),
+        HealpixPixel(1, 44),
     ]
 
     negative_tree = small_sky_order1_catalog.generate_negative_tree_pixels()

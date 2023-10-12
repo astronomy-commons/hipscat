@@ -1,5 +1,4 @@
 import pytest
-import os
 
 from hipscat.catalog import Catalog
 from hipscat.pixel_math import HealpixPixel
