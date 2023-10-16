@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import pytest
 
-from hipscat.catalog import CatalogType, PartitionInfo
+from hipscat.catalog import CatalogType
 from hipscat.catalog.association_catalog.association_catalog import AssociationCatalog
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.pixel_math import HealpixPixel
