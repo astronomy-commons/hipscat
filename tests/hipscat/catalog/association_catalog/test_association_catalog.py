@@ -7,65 +7,50 @@ import pytest
 from hipscat.catalog import CatalogType, PartitionInfo
 from hipscat.catalog.association_catalog.association_catalog import AssociationCatalog
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
-def test_init_catalog(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels):
+def test_init_catalog(association_catalog_info, association_catalog_join_pixels):
     catalog = AssociationCatalog(
-        association_catalog_info, [HealpixPixel(0,11)], association_catalog_join_pixels
+        association_catalog_info, [HealpixPixel(0, 11)], association_catalog_join_pixels
     )
     assert catalog.catalog_name == association_catalog_info.catalog_name
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
-    pd.testing.assert_frame_equal(catalog.get_pixels(), association_catalog_pixels)
+    assert catalog.get_healpix_pixels() == [HealpixPixel(0, 11)]
     assert catalog.catalog_info == association_catalog_info
 
-    assert len(catalog.get_healpix_pixels()) == len(association_catalog_pixels)
+    assert len(catalog.get_healpix_pixels()) == len([HealpixPixel(0, 11)])
     for hp_pixel in catalog.get_healpix_pixels():
-        assert (
-            len(
-                association_catalog_pixels.loc[
-                    (association_catalog_pixels[PartitionInfo.METADATA_ORDER_COLUMN_NAME] == hp_pixel.order)
-                    & (association_catalog_pixels[PartitionInfo.METADATA_PIXEL_COLUMN_NAME] == hp_pixel.pixel)
-                ]
-            )
-            == 1
-        )
+        assert hp_pixel in [HealpixPixel(0, 11)]
         assert hp_pixel in catalog.pixel_tree
         assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
-def test_wrong_catalog_type(
-    association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
-):
+def test_wrong_catalog_type(association_catalog_info, association_catalog_join_pixels):
     association_catalog_info.catalog_type = CatalogType.OBJECT
     with pytest.raises(ValueError, match="catalog_type"):
-        AssociationCatalog(
-            association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
-        )
+        AssociationCatalog(association_catalog_info, [HealpixPixel(0, 11)], association_catalog_join_pixels)
 
 
-def test_wrong_catalog_info_type(catalog_info, association_catalog_pixels, association_catalog_join_pixels):
+def test_wrong_catalog_info_type(catalog_info, association_catalog_join_pixels):
     catalog_info.catalog_type = CatalogType.ASSOCIATION
     with pytest.raises(TypeError, match="catalog_info"):
-        AssociationCatalog(catalog_info, association_catalog_pixels, association_catalog_join_pixels)
+        AssociationCatalog(catalog_info, [HealpixPixel(0, 11)], association_catalog_join_pixels)
 
 
-def test_wrong_join_pixels_type(association_catalog_info, association_catalog_pixels):
+def test_wrong_join_pixels_type(association_catalog_info):
     with pytest.raises(TypeError, match="join_pixels"):
-        AssociationCatalog(association_catalog_info, association_catalog_pixels, "test")
+        AssociationCatalog(association_catalog_info, [HealpixPixel(0, 11)], "test")
 
 
-def test_different_join_pixels_type(
-    association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
-):
+def test_different_join_pixels_type(association_catalog_info, association_catalog_join_pixels):
     partition_join_info = PartitionJoinInfo(association_catalog_join_pixels)
-    catalog = AssociationCatalog(association_catalog_info, association_catalog_pixels, partition_join_info)
+    catalog = AssociationCatalog(association_catalog_info, [HealpixPixel(0, 11)], partition_join_info)
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
 
 
-def test_read_from_file(
-    association_catalog_path, association_catalog_pixels, association_catalog_join_pixels
-):
+def test_read_from_file(association_catalog_path, association_catalog_join_pixels):
     catalog = AssociationCatalog.read_from_hipscat(association_catalog_path)
     assert catalog.on_disk
     assert catalog.catalog_path == association_catalog_path
@@ -73,7 +58,7 @@ def test_read_from_file(
     assert len(catalog.get_pixels()) == 1
     assert len(catalog.get_healpix_pixels()) == 1
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
-    pd.testing.assert_frame_equal(catalog.get_pixels(), association_catalog_pixels)
+    assert catalog.get_healpix_pixels() == [HealpixPixel(0, 11)]
 
     info = catalog.catalog_info
     assert info.primary_catalog == "small_sky"
