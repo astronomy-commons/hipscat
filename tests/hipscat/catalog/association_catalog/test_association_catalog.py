@@ -12,7 +12,7 @@ from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 def test_init_catalog(association_catalog_info, association_catalog_pixels, association_catalog_join_pixels):
     catalog = AssociationCatalog(
-        association_catalog_info, association_catalog_pixels, association_catalog_join_pixels
+        association_catalog_info, [HealpixPixel(0,11)], association_catalog_join_pixels
     )
     assert catalog.catalog_name == association_catalog_info.catalog_name
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
