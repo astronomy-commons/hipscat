@@ -19,6 +19,7 @@ See the README in this directory for more information on the fiddly pixel math.
 import healpy as hp
 import numpy as np
 
+HIPSCAT_ID_COLUMN = "_hipscat_index"
 HIPSCAT_ID_HEALPIX_ORDER = 19
 
 
