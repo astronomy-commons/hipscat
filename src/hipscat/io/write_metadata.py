@@ -2,9 +2,9 @@
 
 import dataclasses
 import json
-
-from importlib.metadata import version
 from datetime import datetime
+from importlib.metadata import version
+
 import numpy as np
 import pandas as pd
 

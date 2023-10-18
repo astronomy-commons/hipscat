@@ -1,15 +1,15 @@
 from __future__ import annotations
-from typing import Any
 
-import tempfile
 import json
-import yaml
+import tempfile
+from typing import Any
 
 import healpy as hp
 import numpy as np
 import pandas as pd
-import pyarrow.parquet as pq
 import pyarrow.dataset as pds
+import pyarrow.parquet as pq
+import yaml
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 

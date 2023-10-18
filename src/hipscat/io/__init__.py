@@ -10,8 +10,6 @@ from .paths import (
     get_partition_info_pointer,
     get_point_map_file_pointer,
     get_provenance_pointer,
-    pixel_association_directory,
-    pixel_association_file,
     pixel_catalog_file,
     pixel_directory,
 )

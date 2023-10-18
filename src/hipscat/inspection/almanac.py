@@ -1,14 +1,16 @@
 from __future__ import annotations
-from typing import List
 
 import os
 import warnings
+from typing import List
+
 import pandas as pd
 
 from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.inspection.almanac_info import AlmanacInfo
 from hipscat.io.file_io import file_pointer
+
 
 class Almanac:
     """Single instance of an almanac, and available catalogs within namespaces

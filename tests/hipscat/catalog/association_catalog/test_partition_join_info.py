@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import pytest
 
@@ -22,3 +24,10 @@ def test_read_from_file(association_catalog_partition_join_file, association_cat
     file_pointer = file_io.get_file_pointer_from_path(association_catalog_partition_join_file)
     info = PartitionJoinInfo.read_from_file(file_pointer)
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
+
+
+def test_read_from_missing_file(tmp_path):
+    wrong_path = os.path.join(tmp_path, "wrong")
+    file_pointer = file_io.get_file_pointer_from_path(wrong_path)
+    with pytest.raises(FileNotFoundError):
+        PartitionJoinInfo.read_from_file(file_pointer)
