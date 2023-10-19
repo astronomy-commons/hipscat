@@ -17,7 +17,6 @@ class PartitionInfo:
 
     def __init__(self, pixel_list: List[HealpixPixel]) -> None:
         self.pixel_list = pixel_list
-        # self.data_frame = pixels
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         """Get healpix pixel objects for all pixels represented as partitions.
