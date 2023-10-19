@@ -2,7 +2,6 @@
 
 import os
 
-import pandas as pd
 import pytest
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo

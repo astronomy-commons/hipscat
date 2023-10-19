@@ -1,7 +1,6 @@
 """Tests of partition info functionality"""
 import os
 
-import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo

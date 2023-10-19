@@ -71,7 +71,11 @@ class PartitionInfo:
         return cls(pixel_list)
 
     def as_dataframe(self):
-        print("pixel_list", self.pixel_list)
+        """Construct a pandas dataframe for the partition info pixels.
+
+        Returns:
+            Dataframe with order, directory, and pixel info.
+        """
         partition_info_dict = {
             PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
             PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],

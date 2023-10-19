@@ -4,9 +4,6 @@ from __future__ import annotations
 
 from typing import List
 
-import pandas as pd
-
-from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
 from hipscat.pixel_tree.pixel_node import PixelNode

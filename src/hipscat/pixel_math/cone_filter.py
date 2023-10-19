@@ -1,8 +1,6 @@
 import healpy as hp
 import numpy as np
-import pandas as pd
 
-from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree

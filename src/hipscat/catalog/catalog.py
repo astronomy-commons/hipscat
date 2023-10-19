@@ -42,7 +42,7 @@ class Catalog(HealpixDataset):
 
         Args:
             catalog_info: CatalogInfo object with catalog metadata
-            pixels: Specifies the pixels contained in the catalog. Can be either a 
+            pixels: Specifies the pixels contained in the catalog. Can be either a
                 list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
