@@ -82,9 +82,7 @@ class Almanac:
                 continue
 
             path_contents = file_pointer.get_directory_contents(
-                input_path,
-                include_protocol=True,
-                storage_options=self.storage_options
+                input_path, include_protocol=True, storage_options=self.storage_options
             )
             input_paths = [x for x in path_contents if str(x).endswith(".yml")]
             input_paths.sort()
@@ -256,6 +254,5 @@ class Almanac:
         from disk."""
         return Dataset.read_from_hipscat(
             self.get_almanac_info(catalog_name=catalog_name).catalog_path,
-            storage_options=self.storage_options
+            storage_options=self.storage_options,
         )
-    

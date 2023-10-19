@@ -8,9 +8,9 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from hipscat.io import file_io
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
+from hipscat.io import file_io
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
@@ -43,7 +43,9 @@ def test_write_json_file(assert_text_file_matches, tmp_dir_cloud, example_cloud_
     assert_text_file_matches(expected_lines, json_filename, storage_options=example_cloud_storage_options)
 
 
-def test_write_catalog_info(assert_text_file_matches, tmp_dir_cloud, catalog_info, example_cloud_storage_options):
+def test_write_catalog_info(
+    assert_text_file_matches, tmp_dir_cloud, catalog_info, example_cloud_storage_options
+):
     """Test that we accurately write out catalog metadata"""
     catalog_base_dir = os.path.join(tmp_dir_cloud, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_cloud_storage_options)
@@ -58,12 +60,18 @@ def test_write_catalog_info(assert_text_file_matches, tmp_dir_cloud, catalog_inf
         "}",
     ]
 
-    io.write_catalog_info(dataset_info=catalog_info, catalog_base_dir=catalog_base_dir, storage_options=example_cloud_storage_options)
+    io.write_catalog_info(
+        dataset_info=catalog_info,
+        catalog_base_dir=catalog_base_dir,
+        storage_options=example_cloud_storage_options,
+    )
     metadata_filename = os.path.join(catalog_base_dir, "catalog_info.json")
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_cloud_storage_options)
 
 
-def test_write_provenance_info(assert_text_file_matches, tmp_dir_cloud, catalog_info, example_cloud_storage_options):
+def test_write_provenance_info(
+    assert_text_file_matches, tmp_dir_cloud, catalog_info, example_cloud_storage_options
+):
     """Test that we accurately write out tool-provided generation metadata"""
     catalog_base_dir = os.path.join(tmp_dir_cloud, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_cloud_storage_options)
@@ -96,13 +104,18 @@ def test_write_provenance_info(assert_text_file_matches, tmp_dir_cloud, catalog_
     }
 
     io.write_provenance_info(
-        catalog_base_dir=catalog_base_dir, dataset_info=catalog_info, tool_args=tool_args, storage_options=example_cloud_storage_options
+        catalog_base_dir=catalog_base_dir,
+        dataset_info=catalog_info,
+        tool_args=tool_args,
+        storage_options=example_cloud_storage_options,
     )
     metadata_filename = os.path.join(catalog_base_dir, "provenance_info.json")
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_cloud_storage_options)
 
 
-def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, tmp_dir_cloud, example_cloud_storage_options):
+def test_write_partition_info_healpix_pixel_map(
+    assert_text_file_matches, tmp_dir_cloud, example_cloud_storage_options
+):
     """Test that we accurately write out the partition stats for overloaded input"""
     catalog_base_dir = os.path.join(tmp_dir_cloud, "test_name")
     file_io.make_directory(catalog_base_dir, storage_options=example_cloud_storage_options)
@@ -111,7 +124,11 @@ def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, tmp_di
         "0,0,11,131",
     ]
     pixel_map = {HealpixPixel(0, 11): (131, [11])}
-    io.write_partition_info(catalog_base_dir, destination_healpix_pixel_map=pixel_map, storage_options=example_cloud_storage_options)
+    io.write_partition_info(
+        catalog_base_dir,
+        destination_healpix_pixel_map=pixel_map,
+        storage_options=example_cloud_storage_options,
+    )
     metadata_filename = os.path.join(catalog_base_dir, "partition_info.csv")
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_cloud_storage_options)
 
@@ -126,7 +143,11 @@ def test_write_partition_info_healpix_pixel_map(assert_text_file_matches, tmp_di
         HealpixPixel(1, 45): (29, [45]),
         HealpixPixel(1, 46): (51, [46]),
     }
-    io.write_partition_info(catalog_base_dir, destination_healpix_pixel_map=pixel_map, storage_options=example_cloud_storage_options)
+    io.write_partition_info(
+        catalog_base_dir,
+        destination_healpix_pixel_map=pixel_map,
+        storage_options=example_cloud_storage_options,
+    )
     metadata_filename = os.path.join(catalog_base_dir, "partition_info.csv")
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_cloud_storage_options)
 
@@ -146,10 +167,16 @@ def test_write_partition_info_float(assert_text_file_matches, tmp_dir_cloud, exa
     assert_text_file_matches(expected_lines, metadata_filename, storage_options=example_cloud_storage_options)
 
 
-def test_write_parquet_metadata(tmp_dir_cloud, small_sky_dir_local, basic_catalog_parquet_metadata, example_cloud_storage_options, copy_tree_fs_to_fs):
+def test_write_parquet_metadata(
+    tmp_dir_cloud,
+    small_sky_dir_local,
+    basic_catalog_parquet_metadata,
+    example_cloud_storage_options,
+    copy_tree_fs_to_fs,
+):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = os.path.join(tmp_dir_cloud)
-   
+
     copy_tree_fs_to_fs(
         small_sky_dir_local,
         tmp_dir_cloud,
@@ -161,36 +188,46 @@ def test_write_parquet_metadata(tmp_dir_cloud, small_sky_dir_local, basic_catalo
     catalog_base_dir = os.path.join(tmp_dir_cloud, "small_sky")
 
     io.write_parquet_metadata(catalog_base_dir, storage_options=example_cloud_storage_options)
-    check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata, storage_options=example_cloud_storage_options)
+    check_parquet_schema(
+        os.path.join(catalog_base_dir, "_metadata"),
+        basic_catalog_parquet_metadata,
+        storage_options=example_cloud_storage_options,
+    )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(catalog_base_dir, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
     ## Re-write - should still have the same properties.
     io.write_parquet_metadata(catalog_base_dir, storage_options=example_cloud_storage_options)
-    check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata, storage_options=example_cloud_storage_options)
+    check_parquet_schema(
+        os.path.join(catalog_base_dir, "_metadata"),
+        basic_catalog_parquet_metadata,
+        storage_options=example_cloud_storage_options,
+    )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(catalog_base_dir, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
 
 
-def test_write_parquet_metadata_order1(tmp_dir_cloud, small_sky_order1_dir_local, basic_catalog_parquet_metadata, example_cloud_storage_options, copy_tree_fs_to_fs):
+def test_write_parquet_metadata_order1(
+    tmp_dir_cloud,
+    small_sky_order1_dir_local,
+    basic_catalog_parquet_metadata,
+    example_cloud_storage_options,
+    copy_tree_fs_to_fs,
+):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
-    
+
     copy_tree_fs_to_fs(
-        small_sky_order1_dir_local,
-        tmp_dir_cloud,
-        {},
-        example_cloud_storage_options,
-        existok=True
+        small_sky_order1_dir_local, tmp_dir_cloud, {}, example_cloud_storage_options, existok=True
     )
 
     temp_path = os.path.join(tmp_dir_cloud, "small_sky_order1")
@@ -200,14 +237,14 @@ def test_write_parquet_metadata_order1(tmp_dir_cloud, small_sky_order1_dir_local
         os.path.join(temp_path, "_metadata"),
         basic_catalog_parquet_metadata,
         4,
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(temp_path, "_common_metadata"),
         basic_catalog_parquet_metadata,
         0,
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
 
 
@@ -217,10 +254,12 @@ def test_write_index_parquet_metadata(tmp_dir_cloud, example_cloud_storage_optio
     file_io.make_directory(os.path.join(temp_path, "Parts=0"), storage_options=example_cloud_storage_options)
 
     index_parquet_path = os.path.join(temp_path, "Parts=0", "part_000_of_001.parquet")
-    
+
     basic_index = pd.DataFrame({"_hipscat_id": [4000, 4001], "ps1_objid": [700, 800]})
-    file_io.write_dataframe_to_parquet(basic_index, index_parquet_path, storage_options=example_cloud_storage_options)
-    #basic_index.to_parquet(index_parquet_path, storage_options=example_cloud_storage_options)
+    file_io.write_dataframe_to_parquet(
+        basic_index, index_parquet_path, storage_options=example_cloud_storage_options
+    )
+    # basic_index.to_parquet(index_parquet_path, storage_options=example_cloud_storage_options)
 
     index_catalog_parquet_metadata = pa.schema(
         [
@@ -231,19 +270,20 @@ def test_write_index_parquet_metadata(tmp_dir_cloud, example_cloud_storage_optio
 
     io.write_parquet_metadata(temp_path, storage_options=example_cloud_storage_options)
     check_parquet_schema(
-        os.path.join(temp_path, "_metadata"), 
-        index_catalog_parquet_metadata, 
-        storage_options=example_cloud_storage_options)
+        os.path.join(temp_path, "_metadata"),
+        index_catalog_parquet_metadata,
+        storage_options=example_cloud_storage_options,
+    )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         os.path.join(temp_path, "_common_metadata"),
         index_catalog_parquet_metadata,
         0,
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
 
 
-def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1, storage_options: dict={}):
+def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1, storage_options: dict = {}):
     """Check parquet schema against expectations"""
     assert file_io.does_file_or_directory_exist(file_name, storage_options=storage_options)
 

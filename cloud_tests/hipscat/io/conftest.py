@@ -6,20 +6,15 @@ import re
 import pyarrow as pa
 import pytest
 
-from hipscat.io.file_io.file_pointer import (
-    does_file_or_directory_exist
-)
-from hipscat.io.file_io.file_io import (
-    FilePointer,
-    get_fs,
-    load_text_file
-)
+from hipscat.io.file_io.file_io import FilePointer, get_fs, load_text_file
+from hipscat.io.file_io.file_pointer import does_file_or_directory_exist
+
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 
 @pytest.fixture
 def assert_text_file_matches():
-    def assert_text_file_matches(expected_lines, file_name, storage_options: dict={}):
+    def assert_text_file_matches(expected_lines, file_name, storage_options: dict = {}):
         """Convenience method to read a text file and compare the contents, line for line.
 
         When file contents get even a little bit big, it can be difficult to see
@@ -36,7 +31,9 @@ def assert_text_file_matches():
             file_name (str): fully-specified path of the file to read
             storage_options (dict): dictionary of filesystem storage options
         """
-        assert does_file_or_directory_exist(file_name, storage_options=storage_options), f"file not found [{file_name}]"
+        assert does_file_or_directory_exist(
+            file_name, storage_options=storage_options
+        ), f"file not found [{file_name}]"
         contents = load_text_file(file_name, storage_options=storage_options)
 
         assert len(expected_lines) == len(
@@ -47,17 +44,22 @@ def assert_text_file_matches():
                 f"files do not match at line {i+1} " f"(actual: [{contents[i]}] vs expected: [{expected}])"
             )
 
-        #metadata_file.close()
+        # metadata_file.close()
 
     return assert_text_file_matches
+
 
 @pytest.fixture
 def copy_tree_fs_to_fs():
     def copy_tree_fs_to_fs(
-            fs1_source: FilePointer, fs2_destination: FilePointer,
-            storage_options1: dict = None, storage_options2: dict = None,
-            existok = False, chunksize=1024*1024, verbose=False
-        ):
+        fs1_source: FilePointer,
+        fs2_destination: FilePointer,
+        storage_options1: dict = None,
+        storage_options2: dict = None,
+        existok=False,
+        chunksize=1024 * 1024,
+        verbose=False,
+    ):
         """Recursive Copies directory from one filesystem to the other.
 
         Args:
@@ -69,10 +71,25 @@ def copy_tree_fs_to_fs():
 
         source_fs, source_fp = get_fs(fs1_source, storage_options=storage_options1)
         destination_fs, desintation_fp = get_fs(fs2_destination, storage_options=storage_options2)
-        copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=chunksize, existok=existok, verbose=verbose)
+        copy_dir(
+            source_fs,
+            source_fp,
+            destination_fs,
+            desintation_fp,
+            chunksize=chunksize,
+            existok=existok,
+            verbose=verbose,
+        )
 
-
-    def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, chunksize=1024*1024, existok=False, verbose=False):
+    def copy_dir(
+        source_fs,
+        source_fp,
+        destination_fs,
+        desintation_fp,
+        chunksize=1024 * 1024,
+        existok=False,
+        verbose=False,
+    ):
         """Recursive method to copy directories and their contents.
 
         Args:

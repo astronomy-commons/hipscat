@@ -1,5 +1,6 @@
-import pytest
 import os
+
+import pytest
 
 from hipscat.catalog import Catalog
 from hipscat.inspection import plot_pixels, plot_points

@@ -79,7 +79,7 @@ class AlmanacInfo:
         """Create almanac information from the catalog information found at the target directory"""
         catalog_info = catalog_info_factory.from_catalog_dir(
             catalog_base_dir=file_io.get_file_pointer_from_path(catalog_base_dir),
-            storage_options=storage_options
+            storage_options=storage_options,
         )
         args = {
             "catalog_path": catalog_base_dir,

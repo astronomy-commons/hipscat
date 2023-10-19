@@ -46,16 +46,16 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_opt
     if ignore_errors:
         try:
             file_system.rm(file_pointer, recursive=True)
-        except Exception: # pylint: disable=broad-except
-            #fsspec doesn't have a "ignore_errors" field in the rm method
+        except Exception:  # pylint: disable=broad-except
+            # fsspec doesn't have a "ignore_errors" field in the rm method
             pass
     else:
         file_system.rm(file_pointer, recursive=True)
 
 
 def write_string_to_file(
-        file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: dict = None
-    ):
+    file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: dict = None
+):
     """Write a string to a text file
 
     Args:
@@ -132,8 +132,8 @@ def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: dict = No
 
 
 def write_dataframe_to_csv(
-        dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: dict = None, **kwargs
-    ):
+    dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: dict = None, **kwargs
+):
     """Write a pandas DataFrame to a CSV file
 
     Args:
@@ -146,7 +146,7 @@ def write_dataframe_to_csv(
     write_string_to_file(file_pointer, output, storage_options=storage_options)
 
 
-def write_dataframe_to_parquet(dataframe : pd.DataFrame, file_pointer, storage_options: dict = None):
+def write_dataframe_to_parquet(dataframe: pd.DataFrame, file_pointer, storage_options: dict = None):
     """Write a pandas DataFrame to a parquet file
 
     Args:
@@ -158,8 +158,8 @@ def write_dataframe_to_parquet(dataframe : pd.DataFrame, file_pointer, storage_o
 
 
 def read_parquet_metadata(
-        file_pointer: FilePointer, storage_options: dict = None, **kwargs
-    ) -> pq.FileMetaData:
+    file_pointer: FilePointer, storage_options: dict = None, **kwargs
+) -> pq.FileMetaData:
     """Read FileMetaData from footer of a single Parquet file.
 
     Args:
@@ -171,9 +171,7 @@ def read_parquet_metadata(
 
     file_pointer = strip_leading_slash_for_pyarrow(file_pointer, protocol=file_system.protocol)
 
-    parquet_file = pq.read_metadata(
-        file_pointer, filesystem=file_system, **kwargs
-    )
+    parquet_file = pq.read_metadata(file_pointer, filesystem=file_system, **kwargs)
     return parquet_file
 
 
@@ -186,14 +184,14 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: dict = None)
     """
 
     ignore_prefixes = [
-        "intermediate", 
-        "_common_metadata", 
+        "intermediate",
+        "_common_metadata",
         "_metadata",
     ]
 
     file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
-    #pyarrow.dataset requires the pointer not lead with a slash
+    # pyarrow.dataset requires the pointer not lead with a slash
     dir_pointer = strip_leading_slash_for_pyarrow(dir_pointer, file_system.protocol)
 
     dataset = pds.dataset(
@@ -218,8 +216,11 @@ def read_parquet_file(file_pointer: FilePointer, storage_options: dict = None):
 
 
 def write_parquet_metadata(
-    schema: Any, file_pointer: FilePointer, metadata_collector: list | None = None,
-    storage_options: dict = None, **kwargs
+    schema: Any,
+    file_pointer: FilePointer,
+    metadata_collector: list | None = None,
+    storage_options: dict = None,
+    **kwargs,
 ):
     """Write a metadata only parquet file from a schema
 
@@ -299,8 +300,8 @@ def delete_file(file_handle: FilePointer, storage_options: dict = None):
 
 
 def read_parquet_file_to_pandas(
-        file_pointer: FilePointer, storage_options: dict = None, **kwargs
-    ) -> pd.DataFrame:
+    file_pointer: FilePointer, storage_options: dict = None, **kwargs
+) -> pd.DataFrame:
     """Reads a parquet file to a pandas DataFrame
 
     Args:
