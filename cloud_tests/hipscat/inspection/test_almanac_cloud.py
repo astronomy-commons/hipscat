@@ -31,10 +31,14 @@ def test_non_default(almanac_dir_cloud, test_data_dir_cloud, example_cloud_stora
     alms = Almanac(include_default_dir=False, storage_options=example_cloud_storage_options)
     assert len(alms.catalogs()) == 0
 
-    alms = Almanac(include_default_dir=False, dirs=almanac_dir_cloud, storage_options=example_cloud_storage_options)
+    alms = Almanac(
+        include_default_dir=False, dirs=almanac_dir_cloud, storage_options=example_cloud_storage_options
+    )
     assert len(alms.catalogs()) == 8
 
-    alms = Almanac(include_default_dir=False, dirs=[almanac_dir_cloud], storage_options=example_cloud_storage_options)
+    alms = Almanac(
+        include_default_dir=False, dirs=[almanac_dir_cloud], storage_options=example_cloud_storage_options
+    )
     assert len(alms.catalogs()) == 8
 
     alms = Almanac(
@@ -43,7 +47,7 @@ def test_non_default(almanac_dir_cloud, test_data_dir_cloud, example_cloud_stora
             os.path.join(almanac_dir_cloud, "catalog.yml"),
             os.path.join(almanac_dir_cloud, "dataset.yml"),
         ],
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
     assert len(alms.catalogs()) == 2
 
@@ -55,19 +59,21 @@ def test_namespaced(test_data_dir_cloud, almanac_dir_cloud, example_cloud_storag
     os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir_cloud
 
     with pytest.warns(match="Duplicate"):
-        Almanac(include_default_dir=True, dirs=almanac_dir_cloud, storage_options=example_cloud_storage_options)
+        Almanac(
+            include_default_dir=True, dirs=almanac_dir_cloud, storage_options=example_cloud_storage_options
+        )
 
     alms = Almanac(
         include_default_dir=True,
         dirs={"custom": almanac_dir_cloud},
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
     assert len(alms.catalogs()) == 16
 
     alms = Almanac(
         include_default_dir=False,
         dirs={"custom": almanac_dir_cloud, "custom2": almanac_dir_cloud},
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
     assert len(alms.catalogs()) == 16
 
@@ -119,7 +125,7 @@ def test_linked_catalogs_source(default_almanac_cloud, test_data_dir_cloud, exam
     ## This source catalog has no object catalog, *and that's ok*
     new_almanac = Almanac(
         dirs=os.path.join(test_data_dir_cloud, "almanac_exception", "standalone_source_catalog.yml"),
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
     source_almanac = new_almanac.get_almanac_info("just_the_small_sky_source_catalog")
     assert len(source_almanac.objects) == 0
@@ -181,7 +187,9 @@ def test_get_catalog_exceptions(test_data_dir_cloud, example_cloud_storage_optio
     """Test that we can create almanac entries, where catalogs might not exist."""
     bad_catalog_path_file = os.path.join(test_data_dir_cloud, "almanac_exception", "bad_catalog_path.yml")
 
-    bad_links = Almanac(include_default_dir=False, dirs=bad_catalog_path_file, storage_options=example_cloud_storage_options)
+    bad_links = Almanac(
+        include_default_dir=False, dirs=bad_catalog_path_file, storage_options=example_cloud_storage_options
+    )
     assert len(bad_links.catalogs()) == 1
     with pytest.raises(FileNotFoundError):
         bad_links.get_catalog("non_existent")
@@ -213,7 +221,9 @@ def test_get_catalog_exceptions(test_data_dir_cloud, example_cloud_storage_optio
         ),
     ],
 )
-def test_almanac_creation(test_data_dir_cloud, example_cloud_storage_options, file_name, expected_error_match):
+def test_almanac_creation(
+    test_data_dir_cloud, example_cloud_storage_options, file_name, expected_error_match
+):
     """Test that we throw exceptions, where bad almanac data or links exist in the files."""
     bad_links_file = os.path.join(test_data_dir_cloud, "almanac_exception", file_name)
 

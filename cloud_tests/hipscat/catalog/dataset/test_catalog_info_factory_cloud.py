@@ -1,5 +1,6 @@
-import pytest
 import os
+
+import pytest
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -18,33 +19,45 @@ def test_from_catalog_dir_object(small_sky_dir_cloud, example_cloud_storage_opti
 
 
 def test_from_catalog_dir_source(source_catalog_info_file_cloud, example_cloud_storage_options):
-    catalog_info = from_catalog_dir(source_catalog_info_file_cloud, storage_options=example_cloud_storage_options)
+    catalog_info = from_catalog_dir(
+        source_catalog_info_file_cloud, storage_options=example_cloud_storage_options
+    )
     assert catalog_info.catalog_name == "small_sky_source_catalog"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, SourceCatalogInfo)
 
 
 def test_from_catalog_dir_margin_cache(margin_cache_catalog_info_file_cloud, example_cloud_storage_options):
-    catalog_info = from_catalog_dir(margin_cache_catalog_info_file_cloud, storage_options=example_cloud_storage_options)
+    catalog_info = from_catalog_dir(
+        margin_cache_catalog_info_file_cloud, storage_options=example_cloud_storage_options
+    )
     assert catalog_info.catalog_name == "margin_cache"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, MarginCacheCatalogInfo)
 
 
 def test_from_catalog_dir_index(index_catalog_info_file_cloud, example_cloud_storage_options):
-    catalog_info = from_catalog_dir(index_catalog_info_file_cloud, storage_options=example_cloud_storage_options)
+    catalog_info = from_catalog_dir(
+        index_catalog_info_file_cloud, storage_options=example_cloud_storage_options
+    )
     assert catalog_info.catalog_name == "index_catalog"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, IndexCatalogInfo)
 
 
-def test_from_catalog_dir_association(association_catalog_path_cloud, association_catalog_info_file_cloud, example_cloud_storage_options):
-    catalog_info = from_catalog_dir(association_catalog_path_cloud, storage_options=example_cloud_storage_options)
+def test_from_catalog_dir_association(
+    association_catalog_path_cloud, association_catalog_info_file_cloud, example_cloud_storage_options
+):
+    catalog_info = from_catalog_dir(
+        association_catalog_path_cloud, storage_options=example_cloud_storage_options
+    )
     assert catalog_info.catalog_name == "small_sky_to_small_sky_order1"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, AssociationCatalogInfo)
 
-    catalog_info = from_catalog_dir(association_catalog_info_file_cloud, storage_options=example_cloud_storage_options)
+    catalog_info = from_catalog_dir(
+        association_catalog_info_file_cloud, storage_options=example_cloud_storage_options
+    )
     assert catalog_info.catalog_name == "small_sky_to_small_sky_order1"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, AssociationCatalogInfo)

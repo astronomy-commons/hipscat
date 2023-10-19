@@ -1,5 +1,6 @@
-import pytest
 import os
+
+import pytest
 
 from hipscat.catalog import Catalog
 from hipscat.pixel_math import HealpixPixel
@@ -65,7 +66,9 @@ def small_sky_pixels():
 
 @pytest.fixture
 def small_sky_order1_catalog_cloud(small_sky_order1_dir_cloud, example_cloud_storage_options):
-    return Catalog.read_from_hipscat(small_sky_order1_dir_cloud, storage_options=example_cloud_storage_options)
+    return Catalog.read_from_hipscat(
+        small_sky_order1_dir_cloud, storage_options=example_cloud_storage_options
+    )
 
 
 @pytest.fixture

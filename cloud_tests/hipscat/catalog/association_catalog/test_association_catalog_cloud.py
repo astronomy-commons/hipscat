@@ -9,8 +9,13 @@ from hipscat.catalog.association_catalog.association_catalog import AssociationC
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.io.file_io import file_io, file_pointer
 
-def test_read_from_file(association_catalog_path_cloud, example_cloud_storage_options, association_catalog_join_pixels):
-    catalog = AssociationCatalog.read_from_hipscat(association_catalog_path_cloud, storage_options=example_cloud_storage_options)
+
+def test_read_from_file(
+    association_catalog_path_cloud, example_cloud_storage_options, association_catalog_join_pixels
+):
+    catalog = AssociationCatalog.read_from_hipscat(
+        association_catalog_path_cloud, storage_options=example_cloud_storage_options
+    )
     assert catalog.on_disk
     assert catalog.catalog_path == association_catalog_path_cloud
     assert len(catalog.get_join_pixels()) == 4
@@ -23,7 +28,12 @@ def test_read_from_file(association_catalog_path_cloud, example_cloud_storage_op
     assert info.join_column == "id"
 
 
-def test_empty_directory(tmp_dir_cloud, example_cloud_storage_options, association_catalog_info_data, association_catalog_join_pixels):
+def test_empty_directory(
+    tmp_dir_cloud,
+    example_cloud_storage_options,
+    association_catalog_info_data,
+    association_catalog_join_pixels,
+):
     """Test loading empty or incomplete data"""
     empty_path = os.path.join(tmp_dir_cloud, "path", "empty")
     ## Path doesn't exist
@@ -39,7 +49,11 @@ def test_empty_directory(tmp_dir_cloud, example_cloud_storage_options, associati
 
     ## catalog_info file exists - getting closer
     file_name = os.path.join(catalog_path, "catalog_info.json")
-    file_io.write_string_to_file(file_pointer=file_name, string=json.dumps(association_catalog_info_data), storage_options=example_cloud_storage_options)
+    file_io.write_string_to_file(
+        file_pointer=file_name,
+        string=json.dumps(association_catalog_info_data),
+        storage_options=example_cloud_storage_options,
+    )
 
     with pytest.raises(FileNotFoundError):
         AssociationCatalog.read_from_hipscat(catalog_path, storage_options=example_cloud_storage_options)
@@ -47,13 +61,17 @@ def test_empty_directory(tmp_dir_cloud, example_cloud_storage_options, associati
     ## partition_info file exists - enough to create a catalog
     file_name = os.path.join(catalog_path, "partition_join_info.csv")
     file_io.write_dataframe_to_csv(
-        association_catalog_join_pixels,
-        file_pointer=file_name,
-        storage_options=example_cloud_storage_options
+        association_catalog_join_pixels, file_pointer=file_name, storage_options=example_cloud_storage_options
     )
 
-    catalog = AssociationCatalog.read_from_hipscat(catalog_path, storage_options=example_cloud_storage_options)
+    catalog = AssociationCatalog.read_from_hipscat(
+        catalog_path, storage_options=example_cloud_storage_options
+    )
     assert catalog.catalog_name == association_catalog_info_data["catalog_name"]
 
-    file_io.delete_file(os.path.join(catalog_path, "catalog_info.json"), storage_options=example_cloud_storage_options)
-    file_io.delete_file(os.path.join(catalog_path, "partition_join_info.csv"), storage_options=example_cloud_storage_options)
+    file_io.delete_file(
+        os.path.join(catalog_path, "catalog_info.json"), storage_options=example_cloud_storage_options
+    )
+    file_io.delete_file(
+        os.path.join(catalog_path, "partition_join_info.csv"), storage_options=example_cloud_storage_options
+    )

@@ -12,8 +12,8 @@ from hipscat.io import file_io, paths
 
 
 def write_json_file(
-        metadata_dictionary: dict, file_pointer: file_io.FilePointer, storage_options: dict = None
-    ):
+    metadata_dictionary: dict, file_pointer: file_io.FilePointer, storage_options: dict = None
+):
     """Convert metadata_dictionary to a json string and print to file.
 
     Args:
@@ -40,8 +40,8 @@ def write_catalog_info(catalog_base_dir, dataset_info, storage_options: dict = N
 
 
 def write_provenance_info(
-        catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict, storage_options: dict = None
-    ):
+    catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict, storage_options: dict = None
+):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
@@ -63,9 +63,7 @@ def write_provenance_info(
 
 
 def write_partition_info(
-    catalog_base_dir: file_io.FilePointer,
-    destination_healpix_pixel_map: dict,
-    storage_options: dict = None
+    catalog_base_dir: file_io.FilePointer, destination_healpix_pixel_map: dict, storage_options: dict = None
 ):
     """Write all partition data to CSV file.
 
@@ -114,7 +112,6 @@ def write_parquet_metadata(catalog_path, storage_options: dict = None):
     dataset = file_io.read_parquet_dataset(catalog_path, storage_options=storage_options)
     metadata_collector = []
 
-
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
@@ -131,12 +128,10 @@ def write_parquet_metadata(catalog_path, storage_options: dict = None):
         dataset.schema,
         metadata_file_pointer,
         metadata_collector=metadata_collector,
-        storage_options=storage_options
+        storage_options=storage_options,
     )
     file_io.write_parquet_metadata(
-        dataset.schema,
-        common_metadata_file_pointer,
-        storage_options=storage_options
+        dataset.schema, common_metadata_file_pointer, storage_options=storage_options
     )
 
 

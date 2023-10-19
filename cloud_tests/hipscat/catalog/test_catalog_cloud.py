@@ -63,7 +63,7 @@ def test_empty_directory(tmp_dir_cloud, example_cloud_storage_options):
     file_io.write_string_to_file(
         file_name,
         string='{"catalog_name":"empty", "catalog_type":"source"}',
-        storage_options=example_cloud_storage_options
+        storage_options=example_cloud_storage_options,
     )
 
     with pytest.raises(FileNotFoundError):
@@ -71,15 +71,14 @@ def test_empty_directory(tmp_dir_cloud, example_cloud_storage_options):
 
     ## partition_info file exists - enough to create a catalog
     file_name = os.path.join(catalog_path, "partition_info.csv")
-    file_io.write_string_to_file(
-        file_name,
-        string="foo",
-        storage_options=example_cloud_storage_options
-    )
+    file_io.write_string_to_file(file_name, string="foo", storage_options=example_cloud_storage_options)
 
     catalog = Catalog.read_from_hipscat(catalog_path, storage_options=example_cloud_storage_options)
     assert catalog.catalog_name == "empty"
 
-    file_io.delete_file(os.path.join(catalog_path, "catalog_info.json"), storage_options=example_cloud_storage_options)
-    file_io.delete_file(os.path.join(catalog_path, "partition_info.csv"), storage_options=example_cloud_storage_options)
-
+    file_io.delete_file(
+        os.path.join(catalog_path, "catalog_info.json"), storage_options=example_cloud_storage_options
+    )
+    file_io.delete_file(
+        os.path.join(catalog_path, "partition_info.csv"), storage_options=example_cloud_storage_options
+    )

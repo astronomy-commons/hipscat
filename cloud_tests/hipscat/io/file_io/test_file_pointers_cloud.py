@@ -10,6 +10,7 @@ from hipscat.io.file_io import (
     is_regular_file,
 )
 
+
 def test_file_or_dir_exist(small_sky_dir_cloud, example_cloud_storage_options):
     small_sky_pointer = get_file_pointer_from_path(small_sky_dir_cloud)
     assert does_file_or_directory_exist(small_sky_pointer, storage_options=example_cloud_storage_options)
@@ -27,7 +28,7 @@ def test_is_regular_file(small_sky_dir_cloud, example_cloud_storage_options):
     partition_info_file = os.path.join(small_sky_dir_cloud, "partition_info.csv")
     assert is_regular_file(partition_info_file, storage_options=example_cloud_storage_options)
 
-    assert not is_regular_file(small_sky_dir_cloud,storage_options=example_cloud_storage_options)
+    assert not is_regular_file(small_sky_dir_cloud, storage_options=example_cloud_storage_options)
 
     partition_dir = os.path.join(small_sky_dir_cloud, "Norder=0")
     assert not is_regular_file(partition_dir, storage_options=example_cloud_storage_options)
@@ -35,17 +36,45 @@ def test_is_regular_file(small_sky_dir_cloud, example_cloud_storage_options):
 
 def test_find_files_matching_path(small_sky_dir_cloud, example_cloud_storage_options):
     ## no_wildcard
-    assert len(find_files_matching_path(small_sky_dir_cloud, "partition_info.csv", storage_options=example_cloud_storage_options)) == 1
+    assert (
+        len(
+            find_files_matching_path(
+                small_sky_dir_cloud, "partition_info.csv", storage_options=example_cloud_storage_options
+            )
+        )
+        == 1
+    )
 
     ## wilcard in the name
-    assert len(find_files_matching_path(small_sky_dir_cloud, "*.csv", storage_options=example_cloud_storage_options)) == 1
+    assert (
+        len(
+            find_files_matching_path(
+                small_sky_dir_cloud, "*.csv", storage_options=example_cloud_storage_options
+            )
+        )
+        == 1
+    )
 
 
 def test_find_files_matching_path_directory(small_sky_order1_dir_cloud, example_cloud_storage_options):
-    assert len(find_files_matching_path(small_sky_order1_dir_cloud, storage_options=example_cloud_storage_options)) == 1
+    assert (
+        len(
+            find_files_matching_path(
+                small_sky_order1_dir_cloud, storage_options=example_cloud_storage_options
+            )
+        )
+        == 1
+    )
 
     ## wildcard in directory - will match all files at indicated depth
-    assert len(find_files_matching_path(small_sky_order1_dir_cloud, "*", "*", "*", storage_options=example_cloud_storage_options)) == 4
+    assert (
+        len(
+            find_files_matching_path(
+                small_sky_order1_dir_cloud, "*", "*", "*", storage_options=example_cloud_storage_options
+            )
+        )
+        == 4
+    )
 
 
 def test_directory_has_contents(small_sky_order1_dir_cloud, example_cloud_storage_options):
@@ -53,7 +82,9 @@ def test_directory_has_contents(small_sky_order1_dir_cloud, example_cloud_storag
 
 
 def test_get_directory_contents(small_sky_order1_dir_cloud, example_cloud_storage_options):
-    small_sky_contents = get_directory_contents(small_sky_order1_dir_cloud, include_protocol=True, storage_options=example_cloud_storage_options)
+    small_sky_contents = get_directory_contents(
+        small_sky_order1_dir_cloud, include_protocol=True, storage_options=example_cloud_storage_options
+    )
     assert len(small_sky_contents) == 4
 
     expected = [

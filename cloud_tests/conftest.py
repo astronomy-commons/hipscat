@@ -23,6 +23,7 @@ TEST_DIR = os.path.dirname(__file__)
 
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
+
 def pytest_addoption(parser):
     parser.addoption("--cloud", action="store", default="abfs")
 
@@ -31,7 +32,7 @@ def pytest_generate_tests(metafunc):
     # This is called for every test. Only get/set command line arguments
     # if the argument is specified in the list of test "fixturenames".
     option_value = metafunc.config.option.cloud
-    if 'cloud' in metafunc.fixturenames and option_value is not None:
+    if "cloud" in metafunc.fixturenames and option_value is not None:
         metafunc.parametrize("cloud", [option_value])
 
 
@@ -39,16 +40,17 @@ def pytest_generate_tests(metafunc):
 def example_cloud_path(cloud):
     if cloud == "abfs":
         return "abfs:///hipscat/pytests/hipscat"
-    
+
     else:
         raise NotImplementedError("Cloud format not implemented for hipscat tests!")
+
 
 @pytest.fixture
 def example_cloud_storage_options(cloud):
     if cloud == "abfs":
         storage_options = {
-            "account_key" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
-            "account_name" : os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME")
+            "account_key": os.environ.get("ABFS_LINCCDATA_ACCOUNT_KEY"),
+            "account_name": os.environ.get("ABFS_LINCCDATA_ACCOUNT_NAME"),
         }
         return storage_options
 
@@ -148,6 +150,7 @@ def catalog_path_cloud(test_data_dir_cloud) -> str:
 @pytest.fixture
 def catalog_info_file_cloud(catalog_path_cloud) -> str:
     return os.path.join(catalog_path_cloud, "catalog_info.json")
+
 
 @pytest.fixture
 def test_data_dir():
@@ -273,7 +276,6 @@ def index_catalog_info_with_extra() -> dict:
     }
 
 
-
 @pytest.fixture
 def catalog_info(catalog_info_data) -> CatalogInfo:
     return CatalogInfo(**catalog_info_data)
@@ -311,5 +313,5 @@ def default_almanac_cloud(example_cloud_path, example_cloud_storage_options):
 
     os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
     os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
-    
+
     return Almanac(storage_options=example_cloud_storage_options)
