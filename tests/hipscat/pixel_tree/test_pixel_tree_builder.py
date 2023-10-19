@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from hipscat.pixel_math import HealpixPixel
@@ -16,8 +15,8 @@ def assert_pixel_tree_has_nodes_in_catalog(tree, catalog):
 
 def test_pixel_tree_small_sky(small_sky_catalog, small_sky_pixels):
     """test pixel tree on small sky"""
-    pixel_tree = PixelTreeBuilder.from_partition_info_df(small_sky_catalog.get_pixels())
-    assert len(pixel_tree) == len(small_sky_catalog.get_pixels()) + 1
+    pixel_tree = PixelTreeBuilder.from_healpix(small_sky_catalog.get_healpix_pixels())
+    assert len(pixel_tree) == len(small_sky_catalog.get_healpix_pixels()) + 1
     assert_pixel_tree_has_nodes_in_catalog(pixel_tree, small_sky_catalog)
     small_sky_pixel = pixel_tree.get_node(small_sky_pixels[0])
     assert small_sky_pixel.parent == pixel_tree.root_pixel
@@ -26,7 +25,7 @@ def test_pixel_tree_small_sky(small_sky_catalog, small_sky_pixels):
 
 def test_pixel_tree_small_sky_order1(small_sky_order1_catalog, small_sky_order1_pixels):
     """test pixel tree on small sky order1"""
-    pixel_tree = PixelTreeBuilder.from_partition_info_df(small_sky_order1_catalog.get_pixels())
+    pixel_tree = PixelTreeBuilder.from_healpix(small_sky_order1_catalog.get_healpix_pixels())
     assert_pixel_tree_has_nodes_in_catalog(pixel_tree, small_sky_order1_catalog)
     first_pixel = pixel_tree.get_node(small_sky_order1_pixels[0])
     second_pixel = pixel_tree.get_node(small_sky_order1_pixels[1])
@@ -58,13 +57,18 @@ def test_pixel_tree_small_sky_order1_from_list(small_sky_order1_catalog, small_s
     assert parent_node.parent == pixel_tree.root_pixel
 
 
-def test_duplicate_pixel_raises_error(small_sky_catalog):
+def test_duplicate_pixel_raises_error():
     """test pixel tree raises error with duplicate pixels"""
-    partition_info = small_sky_catalog.get_pixels()
-    pixel_row = partition_info.iloc[0]
-    info_with_duplicate = pd.concat([partition_info, pixel_row.to_frame().T])
+    partition_info = [
+        HealpixPixel(0, 11),
+    ]
+    PixelTreeBuilder.from_healpix(partition_info)
+    info_with_duplicate = [
+        HealpixPixel(0, 11),
+        HealpixPixel(0, 11),
+    ]
     with pytest.raises(ValueError):
-        PixelTreeBuilder.from_partition_info_df(info_with_duplicate)
+        PixelTreeBuilder.from_healpix(info_with_duplicate)
 
 
 def test_pixel_duplicated_at_different_order_raises_error():

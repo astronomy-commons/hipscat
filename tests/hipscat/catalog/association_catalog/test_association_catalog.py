@@ -55,7 +55,6 @@ def test_read_from_file(association_catalog_path, association_catalog_join_pixel
     assert catalog.on_disk
     assert catalog.catalog_path == association_catalog_path
     assert len(catalog.get_join_pixels()) == 4
-    assert len(catalog.get_pixels()) == 1
     assert len(catalog.get_healpix_pixels()) == 1
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
     assert catalog.get_healpix_pixels() == [HealpixPixel(0, 11)]
@@ -91,7 +90,7 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
     ## partition_info file exists - almost there
     file_name = os.path.join(catalog_path, "partition_info.csv")
     with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write("foo")
+        metadata_file.write("Norder,Dir,Npix")
 
     with pytest.raises(FileNotFoundError):
         AssociationCatalog.read_from_hipscat(catalog_path)

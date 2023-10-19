@@ -2,7 +2,6 @@
 
 import os
 
-import pandas as pd
 import pytest
 
 from hipscat.catalog import Catalog, PartitionInfo
@@ -14,7 +13,7 @@ def test_load_catalog_small_sky(small_sky_dir_cloud, example_cloud_storage_optio
     cat = Catalog.read_from_hipscat(small_sky_dir_cloud, storage_options=example_cloud_storage_options)
 
     assert cat.catalog_name == "small_sky"
-    assert len(cat.get_pixels()) == 1
+    assert len(cat.get_healpix_pixels()) == 1
 
 
 def test_load_catalog_small_sky_order1(small_sky_order1_dir_cloud, example_cloud_storage_options):
@@ -22,7 +21,7 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir_cloud, example_cloud
     cat = Catalog.read_from_hipscat(small_sky_order1_dir_cloud, storage_options=example_cloud_storage_options)
 
     assert cat.catalog_name == "small_sky_order1"
-    assert len(cat.get_pixels()) == 4
+    assert len(cat.get_healpix_pixels()) == 4
 
 
 def test_cone_filter(small_sky_order1_catalog_cloud):

@@ -10,7 +10,7 @@ from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
-PixelInputTypes = Union[pd.DataFrame, PartitionInfo, PixelTree, List[HealpixPixel]]
+PixelInputTypes = Union[PartitionInfo, PixelTree, List[HealpixPixel]]
 
 
 class HealpixDataset(Dataset):
@@ -45,20 +45,6 @@ class HealpixDataset(Dataset):
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
 
-    def get_pixels(self):
-        """Get all healpix pixels that are contained in the catalog
-
-        Returns:
-            data frame with per-pixel data.
-
-            The data frame contains the following columns:
-
-            - order: order of the destination pixel
-            - pixel: pixel number *at the above order*
-            - num_objects: the number of rows in the pixel's partition
-        """
-        return self.partition_info.data_frame
-
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         """Get healpix pixel objects for all pixels contained in the catalog.
 
@@ -71,8 +57,6 @@ class HealpixDataset(Dataset):
     def _get_partition_info_from_pixels(pixels: PixelInputTypes) -> PartitionInfo:
         if isinstance(pixels, PartitionInfo):
             return pixels
-        if isinstance(pixels, pd.DataFrame):
-            return PartitionInfo(pixels)
         if isinstance(pixels, PixelTree):
             return PartitionInfo.from_healpix(
                 [
@@ -87,9 +71,7 @@ class HealpixDataset(Dataset):
     @staticmethod
     def _get_pixel_tree_from_pixels(pixels: PixelInputTypes) -> PixelTree:
         if isinstance(pixels, PartitionInfo):
-            return PixelTreeBuilder.from_partition_info_df(pixels.data_frame)
-        if isinstance(pixels, pd.DataFrame):
-            return PixelTreeBuilder.from_partition_info_df(pixels)
+            return PixelTreeBuilder.from_healpix(pixels.get_healpix_pixels())
         if isinstance(pixels, PixelTree):
             return pixels
         if pd.api.types.is_list_like(pixels):

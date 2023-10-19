@@ -15,8 +15,9 @@ class PartitionInfo:
     METADATA_DIR_COLUMN_NAME = "Dir"
     METADATA_PIXEL_COLUMN_NAME = "Npix"
 
-    def __init__(self, pixels: pd.DataFrame) -> None:
-        self.data_frame = pixels
+    def __init__(self, pixel_list: List[HealpixPixel]) -> None:
+        self.pixel_list = pixel_list
+        # self.data_frame = pixels
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         """Get healpix pixel objects for all pixels represented as partitions.
@@ -24,13 +25,7 @@ class PartitionInfo:
         Returns:
             List of HealpixPixel
         """
-        return [
-            HealpixPixel(order, pixel)
-            for order, pixel in zip(
-                self.data_frame[self.METADATA_ORDER_COLUMN_NAME],
-                self.data_frame[self.METADATA_PIXEL_COLUMN_NAME],
-            )
-        ]
+        return self.pixel_list
 
     def get_highest_order(self) -> int:
         """Get the highest healpix order for the dataset.
@@ -38,9 +33,8 @@ class PartitionInfo:
         Returns:
             int representing highest order.
         """
-        highest_order = np.max(self.data_frame[self.METADATA_ORDER_COLUMN_NAME].values)
-
-        return highest_order
+        max_pixel = np.max(self.pixel_list)
+        return max_pixel.order
 
     def write_to_file(self, partition_info_file: FilePointer):
         """Write all partition data to CSV file.
@@ -49,7 +43,7 @@ class PartitionInfo:
             partition_info_file: FilePointer to where the `partition_info.csv`
                 file will be written
         """
-        file_io.write_dataframe_to_csv(self.data_frame, partition_info_file, index=False)
+        file_io.write_dataframe_to_csv(self.as_dataframe(), partition_info_file, index=False)
 
     @classmethod
     def read_from_file(cls, partition_info_file: FilePointer, storage_options: dict = None):
@@ -66,7 +60,31 @@ class PartitionInfo:
             raise FileNotFoundError(f"No partition info found where expected: {str(partition_info_file)}")
 
         data_frame = file_io.load_csv_to_pandas(partition_info_file, storage_options=storage_options)
-        return cls(data_frame)
+
+        pixel_list = [
+            HealpixPixel(order, pixel)
+            for order, pixel in zip(
+                data_frame[cls.METADATA_ORDER_COLUMN_NAME],
+                data_frame[cls.METADATA_PIXEL_COLUMN_NAME],
+            )
+        ]
+
+        return cls(pixel_list)
+
+    def as_dataframe(self):
+        print("pixel_list", self.pixel_list)
+        partition_info_dict = {
+            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
+            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],
+            PartitionInfo.METADATA_DIR_COLUMN_NAME: [],
+        }
+        for pixel in self.pixel_list:
+            partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(pixel.order)
+            partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(pixel.pixel)
+            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(
+                int(pixel.pixel / 10_000) * 10_000
+            )
+        return pd.DataFrame.from_dict(partition_info_dict)
 
     @classmethod
     def from_healpix(cls, healpix_pixels: List[HealpixPixel]):
@@ -77,15 +95,4 @@ class PartitionInfo:
         Returns:
             A `PartitionInfo` object with the same healpix pixels
         """
-        partition_info_dict = {
-            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
-            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],
-            PartitionInfo.METADATA_DIR_COLUMN_NAME: [],
-        }
-        for pixel in healpix_pixels:
-            partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(pixel.order)
-            partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(pixel.pixel)
-            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(
-                int(pixel.pixel / 10_000) * 10_000
-            )
-        return cls(pd.DataFrame.from_dict(partition_info_dict))
+        return cls(healpix_pixels)
