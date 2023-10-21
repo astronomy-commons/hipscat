@@ -1,3 +1,5 @@
+from typing import List
+
 import healpy as hp
 import numpy as np
 
@@ -7,7 +9,7 @@ from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: float) -> PixelTree:
+def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: float) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a partition_info dataframe with the pixels
     that overlap with a cone
 
@@ -17,7 +19,7 @@ def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: 
         radius (float): Radius of the cone in degrees
 
     Returns:
-        A catalog_info dataframe with only the pixels that overlap with the specified cone
+        List of HealpixPixels representing only the pixels that overlap with the specified cone
     """
     max_order = max(pixel_tree.pixels.keys())
     cone_tree = _generate_cone_pixel_tree(ra, dec, radius, max_order)
