@@ -4,9 +4,6 @@ from __future__ import annotations
 
 from typing import List
 
-import pandas as pd
-
-from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
 from hipscat.pixel_tree.pixel_node import PixelNode
@@ -34,22 +31,6 @@ class PixelTreeBuilder:
             The pixel tree with the nodes created in the builder
         """
         return PixelTree(self.root_pixel, self.pixels)
-
-    @staticmethod
-    def from_partition_info_df(partition_info_df: pd.DataFrame) -> PixelTree:
-        """Build a tree from a partition_info DataFrame
-
-        Args:
-            partition_info_df: Pandas Dataframe with columns matching those in the
-            `partition_info.csv` metadata file
-
-        Returns:
-            The pixel tree with the leaf pixels specified in the DataFrame
-        """
-        builder = PixelTreeBuilder()
-        # pylint: disable=protected-access
-        builder._create_tree_from_partition_info_df(partition_info_df)
-        return builder.build()
 
     @staticmethod
     def from_healpix(healpix_pixels: List[HealpixPixel]) -> PixelTree:
@@ -102,28 +83,6 @@ class PixelTreeBuilder:
 
     def __getitem__(self, item) -> PixelNode:
         return self.get_node(item)
-
-    def _create_tree_from_partition_info_df(self, partition_info_df: pd.DataFrame):
-        """Creates the tree by recursively creating parent nodes until reaching the root from
-        each leaf pixel
-
-        Validates the pixel structure as it does so by checking for duplicate pixels or pixels
-        defined at multiple orders
-
-        Args:
-            partition_info_df: Dataframe loaded from the partition_info metadata
-        """
-        if len(partition_info_df) > 0:
-            orders = partition_info_df[PartitionInfo.METADATA_ORDER_COLUMN_NAME].to_numpy()
-            pixels = partition_info_df[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].to_numpy()
-            for i in range(len(partition_info_df)):
-                self.create_node_and_parent_if_not_exist(
-                    (
-                        orders[i],
-                        pixels[i],
-                    ),
-                    PixelNodeType.LEAF,
-                )
 
     def create_node_and_parent_if_not_exist(self, pixel: HealpixInputTypes, node_type: PixelNodeType):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent

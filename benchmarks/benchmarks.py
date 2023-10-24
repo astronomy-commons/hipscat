@@ -5,11 +5,11 @@ https://asv.readthedocs.io/en/stable/writing_benchmarks.html."""
 
 import healpy as hp
 import numpy as np
-import pandas as pd
 
 import hipscat.pixel_math as hist
-from hipscat.catalog import Catalog, PartitionInfo
+from hipscat.catalog import Catalog
 from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
@@ -34,27 +34,19 @@ def time_test_cone_filter_multiple_order():
             "dec_column": "dec",
         }
     )
-    partition_info_df = pd.DataFrame.from_dict(
-        {
-            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [6, 7, 7],
-            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [30, 124, 5000],
-        }
-    )
-    catalog = Catalog(catalog_info, partition_info_df)
+    pixels = [HealpixPixel(6, 30), HealpixPixel(7, 124), HealpixPixel(7, 5000)]
+    catalog = Catalog(catalog_info, pixels)
     filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)
-    assert len(filtered_catalog.partition_info.data_frame) == 2
-    assert (6, 30) in filtered_catalog.pixel_tree
-    assert (7, 124) in filtered_catalog.pixel_tree
+    assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
 
 
 class Suite:
+    def __init__(self) -> None:
+        """Just initialize things"""
+        self.pixel_list = None
+
     def setup(self):
-        self.partition_info_df = pd.DataFrame.from_dict(
-            {
-                PartitionInfo.METADATA_ORDER_COLUMN_NAME: np.full(100000, 8),
-                PartitionInfo.METADATA_PIXEL_COLUMN_NAME: np.arange(100000),
-            }
-        )
+        self.pixel_list = [HealpixPixel(8, pixel) for pixel in np.arange(100000)]
 
     def time_pixel_tree_creation(self):
-        PixelTreeBuilder.from_partition_info_df(self.partition_info_df)
+        PixelTreeBuilder.from_healpix(self.pixel_list)

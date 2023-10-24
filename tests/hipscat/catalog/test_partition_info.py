@@ -1,7 +1,6 @@
 """Tests of partition info functionality"""
 import os
 
-import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo
@@ -61,4 +60,4 @@ def test_write_to_file(tmp_path, small_sky_pixels):
 
     new_partition_info = PartitionInfo.read_from_file(partition_info_pointer)
 
-    pd.testing.assert_frame_equal(partition_info.data_frame, new_partition_info.data_frame)
+    assert partition_info.get_healpix_pixels() == new_partition_info.get_healpix_pixels()

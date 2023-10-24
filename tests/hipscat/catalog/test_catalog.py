@@ -2,8 +2,6 @@
 
 import os
 
-import pandas as pd
-import pandas.testing
 import pytest
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
@@ -12,12 +10,11 @@ from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-def test_catalog_load(catalog_info, catalog_pixels_df, catalog_pixels):
-    catalog = Catalog(catalog_info, catalog_pixels_df)
-    pandas.testing.assert_frame_equal(catalog.get_pixels(), catalog_pixels_df)
+def test_catalog_load(catalog_info, catalog_pixels):
+    catalog = Catalog(catalog_info, catalog_pixels)
+    assert catalog.get_healpix_pixels() == catalog_pixels
     assert catalog.catalog_name == catalog_info.catalog_name
 
-    assert len(catalog.get_pixels()) == len(catalog_pixels)
     for hp_pixel in catalog_pixels:
         assert hp_pixel in catalog.pixel_tree
         assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
@@ -37,7 +34,7 @@ def test_catalog_wrong_catalog_type(catalog_info, catalog_pixels):
 def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
     partition_info = PartitionInfo.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, partition_info)
-    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
     assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
     for hp_pixel in catalog_pixels:
         assert hp_pixel in catalog.pixel_tree
@@ -47,7 +44,7 @@ def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
 def test_tree_pixel_input(catalog_info, catalog_pixels):
     tree = PixelTreeBuilder.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, tree)
-    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
     assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
     for pixel in catalog_pixels:
         assert pixel in catalog.pixel_tree
@@ -56,7 +53,7 @@ def test_tree_pixel_input(catalog_info, catalog_pixels):
 
 def test_tree_pixel_input_list(catalog_info, catalog_pixels):
     catalog = Catalog(catalog_info, catalog_pixels)
-    assert len(catalog.get_pixels()) == len(catalog_pixels)
+    assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
     assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
     for pixel in catalog_pixels:
         assert pixel in catalog.pixel_tree
@@ -72,12 +69,6 @@ def test_wrong_pixel_input_type(catalog_info):
         Catalog._get_partition_info_from_pixels("test")
 
 
-def test_get_pixels(catalog_info, catalog_pixels_df):
-    catalog = Catalog(catalog_info, catalog_pixels_df)
-    pixels = catalog.get_pixels()
-    pandas.testing.assert_frame_equal(pixels, catalog_pixels_df)
-
-
 def test_get_pixels_list(catalog_info, catalog_pixels):
     catalog = Catalog(catalog_info, catalog_pixels)
     pixels = catalog.get_healpix_pixels()
@@ -89,7 +80,7 @@ def test_load_catalog_small_sky(small_sky_dir):
     cat = Catalog.read_from_hipscat(small_sky_dir)
 
     assert cat.catalog_name == "small_sky"
-    assert len(cat.get_pixels()) == 1
+    assert len(cat.get_healpix_pixels()) == 1
 
 
 def test_load_catalog_small_sky_order1(small_sky_order1_dir):
@@ -97,7 +88,7 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
     cat = Catalog.read_from_hipscat(small_sky_order1_dir)
 
     assert cat.catalog_name == "small_sky_order1"
-    assert len(cat.get_pixels()) == 4
+    assert len(cat.get_healpix_pixels()) == 4
 
 
 def test_cone_filter(small_sky_order1_catalog):
@@ -123,22 +114,19 @@ def test_cone_filter_big(small_sky_order1_catalog):
 
 @pytest.mark.timeout(5)
 def test_cone_filter_multiple_order(catalog_info):
-    partition_info_df = pd.DataFrame.from_dict(
-        {
-            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [6, 7, 7],
-            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [30, 124, 5000],
-        }
-    )
-    catalog = Catalog(catalog_info, partition_info_df)
+    catalog_pixel_list = [
+        HealpixPixel(6, 30),
+        HealpixPixel(7, 124),
+        HealpixPixel(7, 5000),
+    ]
+    catalog = Catalog(catalog_info, catalog_pixel_list)
     filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)
-    assert len(filtered_catalog.partition_info.data_frame) == 2
-    assert (6, 30) in filtered_catalog.pixel_tree
-    assert (7, 124) in filtered_catalog.pixel_tree
+    assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
 
 
 def test_cone_filter_empty(small_sky_order1_catalog):
     filtered_catalog = small_sky_order1_catalog.filter_by_cone(0, 0, 0.1)
-    assert len(filtered_catalog.partition_info.data_frame) == 0
+    assert len(filtered_catalog.get_healpix_pixels()) == 0
     assert len(filtered_catalog.pixel_tree) == 1
 
 
@@ -166,7 +154,7 @@ def test_empty_directory(tmp_path):
     ## partition_info file exists - enough to create a catalog
     file_name = os.path.join(catalog_path, "partition_info.csv")
     with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write("foo")
+        metadata_file.write("Norder,Dir,Npix")
 
     catalog = Catalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == "empty"

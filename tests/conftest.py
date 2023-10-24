@@ -5,7 +5,6 @@ from typing import List
 import pandas as pd
 import pytest
 
-from hipscat.catalog import PartitionInfo
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -185,17 +184,6 @@ def catalog_info_file(catalog_path) -> str:
 @pytest.fixture
 def catalog_info(catalog_info_data) -> CatalogInfo:
     return CatalogInfo(**catalog_info_data)
-
-
-@pytest.fixture
-def catalog_pixels_df() -> pd.DataFrame:
-    return pd.DataFrame.from_dict(
-        {
-            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [1, 1, 2],
-            PartitionInfo.METADATA_DIR_COLUMN_NAME: [0, 0, 0],
-            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [0, 1, 8],
-        }
-    )
 
 
 @pytest.fixture

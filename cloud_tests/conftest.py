@@ -282,17 +282,6 @@ def catalog_info(catalog_info_data) -> CatalogInfo:
 
 
 @pytest.fixture
-def catalog_pixels_df() -> pd.DataFrame:
-    return pd.DataFrame.from_dict(
-        {
-            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [1, 1, 2],
-            PartitionInfo.METADATA_DIR_COLUMN_NAME: [0, 0, 0],
-            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [0, 1, 8],
-        }
-    )
-
-
-@pytest.fixture
 def association_catalog_join_pixels() -> pd.DataFrame:
     return pd.DataFrame.from_dict(
         {

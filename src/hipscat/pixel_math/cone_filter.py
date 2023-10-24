@@ -1,14 +1,15 @@
+from typing import List
+
 import healpy as hp
 import numpy as np
-import pandas as pd
 
-from hipscat.catalog.partition_info import PartitionInfo
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: float) -> PixelTree:
+def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: float) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a partition_info dataframe with the pixels
     that overlap with a cone
 
@@ -18,7 +19,7 @@ def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: 
         radius (float): Radius of the cone in degrees
 
     Returns:
-        A catalog_info dataframe with only the pixels that overlap with the specified cone
+        List of HealpixPixels representing only the pixels that overlap with the specified cone
     """
     max_order = max(pixel_tree.pixels.keys())
     cone_tree = _generate_cone_pixel_tree(ra, dec, radius, max_order)
@@ -27,13 +28,15 @@ def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: 
         [PixelAlignment.PRIMARY_ORDER_COLUMN_NAME, PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME]
     ]
     filtered_pixels_df = pixels_df.drop_duplicates()
-    partition_info_df = filtered_pixels_df.rename(
-        columns={
-            PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: PartitionInfo.METADATA_ORDER_COLUMN_NAME,
-            PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: PartitionInfo.METADATA_PIXEL_COLUMN_NAME,
-        }
-    )
-    return partition_info_df.reset_index(drop=True)
+
+    pixel_list = [
+        HealpixPixel(order, pixel)
+        for order, pixel in zip(
+            filtered_pixels_df[PixelAlignment.PRIMARY_ORDER_COLUMN_NAME],
+            filtered_pixels_df[PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME],
+        )
+    ]
+    return pixel_list
 
 
 def _generate_cone_pixel_tree(ra: float, dec: float, radius: float, order: int):
@@ -42,10 +45,6 @@ def _generate_cone_pixel_tree(ra: float, dec: float, radius: float, order: int):
     center_vec = hp.ang2vec(ra, dec, lonlat=True)
     radius_radians = np.radians(radius)
     cone_pixels = hp.query_disc(n_side, center_vec, radius_radians, inclusive=True, nest=True)
-    cone_pixel_info_dict = {
-        PartitionInfo.METADATA_ORDER_COLUMN_NAME: np.full(len(cone_pixels), order),
-        PartitionInfo.METADATA_PIXEL_COLUMN_NAME: cone_pixels,
-    }
-    cone_partition_info_df = pd.DataFrame.from_dict(cone_pixel_info_dict)
-    cone_tree = PixelTreeBuilder.from_partition_info_df(cone_partition_info_df)
+    pixel_list = [HealpixPixel(order, cone_pixel) for cone_pixel in cone_pixels]
+    cone_tree = PixelTreeBuilder.from_healpix(pixel_list)
     return cone_tree
