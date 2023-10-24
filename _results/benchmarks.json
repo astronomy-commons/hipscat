@@ -1,6 +1,6 @@
 {
     "benchmarks.Suite.time_pixel_tree_creation": {
-        "code": "class Suite:\n    def time_pixel_tree_creation(self):\n        PixelTreeBuilder.from_partition_info_df(self.partition_info_df)\n\n    def setup(self):\n        self.partition_info_df = pd.DataFrame.from_dict(\n            {\n                PartitionInfo.METADATA_ORDER_COLUMN_NAME: np.full(100000, 8),\n                PartitionInfo.METADATA_PIXEL_COLUMN_NAME: np.arange(100000),\n            }\n        )",
+        "code": "class Suite:\n    def time_pixel_tree_creation(self):\n        PixelTreeBuilder.from_healpix(self.pixel_list)\n\n    def setup(self):\n        self.pixel_list = [HealpixPixel(8, pixel) for pixel in np.arange(100000)]",
         "min_run_count": 2,
         "name": "benchmarks.Suite.time_pixel_tree_creation",
         "number": 0,
@@ -12,7 +12,7 @@
         "timeout": 60.0,
         "type": "time",
         "unit": "seconds",
-        "version": "8bf760a61b72bab11beafeba6de2dd0f7ae55026fe32317da4b96ad7291560f9",
+        "version": "b253603a95d873d4a9a8bdf0fd8e8845cfc04dd474b6a5f8f4ae10540eb19006",
         "warmup_time": -1
     },
     "benchmarks.time_test_alignment_even_sky": {
@@ -32,7 +32,7 @@
         "warmup_time": -1
     },
     "benchmarks.time_test_cone_filter_multiple_order": {
-        "code": "def time_test_cone_filter_multiple_order():\n    \"\"\"Create a catalog cone filter where we have multiple orders in the catalog\"\"\"\n    catalog_info = CatalogInfo(\n        **{\n            \"catalog_name\": \"test_name\",\n            \"catalog_type\": \"object\",\n            \"total_rows\": 10,\n            \"epoch\": \"J2000\",\n            \"ra_column\": \"ra\",\n            \"dec_column\": \"dec\",\n        }\n    )\n    partition_info_df = pd.DataFrame.from_dict(\n        {\n            PartitionInfo.METADATA_ORDER_COLUMN_NAME: [6, 7, 7],\n            PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [30, 124, 5000],\n        }\n    )\n    catalog = Catalog(catalog_info, partition_info_df)\n    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)\n    assert len(filtered_catalog.partition_info.data_frame) == 2\n    assert (6, 30) in filtered_catalog.pixel_tree\n    assert (7, 124) in filtered_catalog.pixel_tree",
+        "code": "def time_test_cone_filter_multiple_order():\n    \"\"\"Create a catalog cone filter where we have multiple orders in the catalog\"\"\"\n    catalog_info = CatalogInfo(\n        **{\n            \"catalog_name\": \"test_name\",\n            \"catalog_type\": \"object\",\n            \"total_rows\": 10,\n            \"epoch\": \"J2000\",\n            \"ra_column\": \"ra\",\n            \"dec_column\": \"dec\",\n        }\n    )\n    pixels = [HealpixPixel(6, 30), HealpixPixel(7, 124), HealpixPixel(7, 5000)]\n    catalog = Catalog(catalog_info, pixels)\n    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)\n    assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]",
         "min_run_count": 2,
         "name": "benchmarks.time_test_cone_filter_multiple_order",
         "number": 0,
@@ -44,7 +44,7 @@
         "timeout": 60.0,
         "type": "time",
         "unit": "seconds",
-        "version": "cc6648c47a6ef6e16a69a17abcfb56b39c62d3b6dbe0c1c5ce31e0c21ebdacac",
+        "version": "1b8e1bb21a1e4ede9063e5c908697ec779d7fdd7aa4d51e70d0010e7e1171f10",
         "warmup_time": -1
     },
     "version": 2
