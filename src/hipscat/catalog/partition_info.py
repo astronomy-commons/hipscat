@@ -1,5 +1,5 @@
 """Container class to hold per-partition metadata"""
-from typing import List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -45,7 +45,9 @@ class PartitionInfo:
         file_io.write_dataframe_to_csv(self.as_dataframe(), partition_info_file, index=False)
 
     @classmethod
-    def read_from_file(cls, partition_info_file: FilePointer, storage_options: dict = None):
+    def read_from_file(
+        cls, partition_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+    ):
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
