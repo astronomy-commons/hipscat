@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import healpy as hp
 import numpy as np
@@ -14,7 +14,9 @@ import yaml
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 
 
-def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_options: Dict[Any, Any] | None = None):
+def make_directory(
+    file_pointer: FilePointer, exist_ok: bool = False, storage_options: Union[Dict[Any, Any] | None] = None
+):
     """Make a directory at a given file pointer
 
     Will raise an error if a directory already exists, unless `exist_ok` is True in which case
@@ -33,7 +35,9 @@ def make_directory(file_pointer: FilePointer, exist_ok: bool = False, storage_op
     file_system.makedirs(file_pointer, exist_ok=exist_ok)
 
 
-def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_options: Dict[Any, Any] | None = None):
+def remove_directory(
+    file_pointer: FilePointer, ignore_errors=False, storage_options: Union[Dict[Any, Any] | None] = None
+):
     """Remove a directory, and all contents, recursively.
 
     Args:
@@ -54,7 +58,10 @@ def remove_directory(file_pointer: FilePointer, ignore_errors=False, storage_opt
 
 
 def write_string_to_file(
-    file_pointer: FilePointer, string: str, encoding: str = "utf-8", storage_options: Dict[Any, Any] | None = None
+    file_pointer: FilePointer,
+    string: str,
+    encoding: str = "utf-8",
+    storage_options: Union[Dict[Any, Any] | None] = None,
 ):
     """Write a string to a text file
 
@@ -69,7 +76,9 @@ def write_string_to_file(
         _file.write(string)
 
 
-def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: Dict[Any, Any] | None = None):
+def load_text_file(
+    file_pointer: FilePointer, encoding: str = "utf-8", storage_options: Union[Dict[Any, Any] | None] = None
+):
     """Load a text file content to a list of strings.
 
     Args:
@@ -86,7 +95,9 @@ def load_text_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     return text_file
 
 
-def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_options: Dict[Any, Any] | None = None) -> dict:
+def load_json_file(
+    file_pointer: FilePointer, encoding: str = "utf-8", storage_options: Union[Dict[Any, Any] | None] = None
+) -> dict:
     """Load a json file to a dictionary
 
     Args:
@@ -105,7 +116,9 @@ def load_json_file(file_pointer: FilePointer, encoding: str = "utf-8", storage_o
     return json_dict
 
 
-def load_csv_to_pandas(file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None, **kwargs) -> pd.DataFrame:
+def load_csv_to_pandas(
+    file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None, **kwargs
+) -> pd.DataFrame:
     """Load a csv file to a pandas dataframe
 
     Args:
@@ -118,7 +131,9 @@ def load_csv_to_pandas(file_pointer: FilePointer, storage_options: Dict[Any, Any
     return pd.read_csv(file_pointer, storage_options=storage_options, **kwargs)
 
 
-def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None, **kwargs) -> pd.DataFrame:
+def load_parquet_to_pandas(
+    file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None, **kwargs
+) -> pd.DataFrame:
     """Load a parquet file to a pandas dataframe
 
     Args:
@@ -132,7 +147,10 @@ def load_parquet_to_pandas(file_pointer: FilePointer, storage_options: Dict[Any,
 
 
 def write_dataframe_to_csv(
-    dataframe: pd.DataFrame, file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None, **kwargs
+    dataframe: pd.DataFrame,
+    file_pointer: FilePointer,
+    storage_options: Union[Dict[Any, Any] | None] = None,
+    **kwargs,
 ):
     """Write a pandas DataFrame to a CSV file
 
@@ -146,7 +164,9 @@ def write_dataframe_to_csv(
     write_string_to_file(file_pointer, output, storage_options=storage_options)
 
 
-def write_dataframe_to_parquet(dataframe: pd.DataFrame, file_pointer, storage_options: Dict[Any, Any] | None = None):
+def write_dataframe_to_parquet(
+    dataframe: pd.DataFrame, file_pointer, storage_options: Union[Dict[Any, Any] | None] = None
+):
     """Write a pandas DataFrame to a parquet file
 
     Args:
@@ -158,7 +178,7 @@ def write_dataframe_to_parquet(dataframe: pd.DataFrame, file_pointer, storage_op
 
 
 def read_parquet_metadata(
-    file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None, **kwargs
+    file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None, **kwargs
 ) -> pq.FileMetaData:
     """Read FileMetaData from footer of a single Parquet file.
 
@@ -175,7 +195,7 @@ def read_parquet_metadata(
     return parquet_file
 
 
-def read_parquet_dataset(dir_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def read_parquet_dataset(dir_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None):
     """Read parquet dataset from directory pointer.
 
     Args:
@@ -204,7 +224,7 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: Dict[Any, An
     return dataset
 
 
-def read_parquet_file(file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def read_parquet_file(file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None):
     """Read parquet file from file pointer.
 
     Args:
@@ -219,7 +239,7 @@ def write_parquet_metadata(
     schema: Any,
     file_pointer: FilePointer,
     metadata_collector: list | None = None,
-    storage_options: Dict[Any, Any] | None = None,
+    storage_options: Union[Dict[Any, Any] | None] = None,
     **kwargs,
 ):
     """Write a metadata only parquet file from a schema
@@ -240,7 +260,7 @@ def write_parquet_metadata(
     )
 
 
-def read_fits_image(map_file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def read_fits_image(map_file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
@@ -259,7 +279,9 @@ def read_fits_image(map_file_pointer: FilePointer, storage_options: Dict[Any, An
     return map_fits_image
 
 
-def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def write_fits_image(
+    histogram: np.ndarray, map_file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+):
     """Write the object spatial distribution information to a healpix FITS file.
 
     Args:
@@ -275,7 +297,7 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: FilePointer, stora
             _map_file.write(_tmp_file.read())
 
 
-def read_yaml(file_handle: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def read_yaml(file_handle: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None):
     """Reads yaml file from filesystem.
 
     Args:
@@ -288,7 +310,7 @@ def read_yaml(file_handle: FilePointer, storage_options: Dict[Any, Any] | None =
     return metadata
 
 
-def delete_file(file_handle: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def delete_file(file_handle: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None):
     """Deletes file from filesystem.
 
     Args:
@@ -300,7 +322,7 @@ def delete_file(file_handle: FilePointer, storage_options: Dict[Any, Any] | None
 
 
 def read_parquet_file_to_pandas(
-    file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None, **kwargs
+    file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None, **kwargs
 ) -> pd.DataFrame:
     """Reads a parquet file to a pandas DataFrame
 

@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, NewType, Tuple
+from typing import Any, Dict, List, NewType, Tuple, Union
 
 import fsspec
 
@@ -24,7 +24,9 @@ def get_file_protocol(pointer: FilePointer) -> str:
     return protocol
 
 
-def get_fs(file_pointer: FilePointer, storage_options: Dict[Any, Any] | None = None) -> Tuple[fsspec.filesystem, FilePointer]:
+def get_fs(
+    file_pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+) -> Tuple[fsspec.filesystem, FilePointer]:
     """Create the abstract filesystem
 
     Args:
@@ -121,7 +123,9 @@ def append_paths_to_pointer(pointer: FilePointer, *paths: str) -> FilePointer:
     return FilePointer(os.path.join(pointer, *paths))
 
 
-def does_file_or_directory_exist(pointer: FilePointer, storage_options: Dict[Any, Any] | None = None) -> bool:
+def does_file_or_directory_exist(
+    pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+) -> bool:
     """Checks if a file or directory exists for a given file pointer
 
     Args:
@@ -135,7 +139,7 @@ def does_file_or_directory_exist(pointer: FilePointer, storage_options: Dict[Any
     return file_system.exists(pointer)
 
 
-def is_regular_file(pointer: FilePointer, storage_options: Dict[Any, Any] | None = None) -> bool:
+def is_regular_file(pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None) -> bool:
     """Checks if a regular file (NOT a directory) exists for a given file pointer.
 
     Args:
@@ -150,7 +154,7 @@ def is_regular_file(pointer: FilePointer, storage_options: Dict[Any, Any] | None
 
 
 def find_files_matching_path(
-    pointer: FilePointer, *paths: str, storage_options: Dict[Any, Any] | None = None
+    pointer: FilePointer, *paths: str, storage_options: Union[Dict[Any, Any] | None] = None
 ) -> List[FilePointer]:
     """Find files or directories matching the provided path parts.
 
@@ -166,7 +170,9 @@ def find_files_matching_path(
     return [get_file_pointer_from_path(x) for x in file_system.glob(matcher)]
 
 
-def directory_has_contents(pointer: FilePointer, storage_options: Dict[Any, Any] | None = None) -> bool:
+def directory_has_contents(
+    pointer: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+) -> bool:
     """Checks if a directory already has some contents (any files or subdirectories)
 
     Args:
@@ -180,7 +186,7 @@ def directory_has_contents(pointer: FilePointer, storage_options: Dict[Any, Any]
 
 
 def get_directory_contents(
-    pointer: FilePointer, include_protocol=False, storage_options: Dict[Any, Any] | None = None
+    pointer: FilePointer, include_protocol=False, storage_options: Union[Dict[Any, Any] | None] = None
 ) -> List[FilePointer]:
     """Finds all files and directories in the specified directory.
 

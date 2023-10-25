@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import healpy as hp
 import numpy as np
@@ -36,7 +36,7 @@ class Catalog(HealpixDataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: Dict[Any, Any] | None = None,
+        storage_options: Union[Dict[Any, Any] | None] = None,
     ) -> None:
         """Initializes a Catalog
 

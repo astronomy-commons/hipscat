@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -51,7 +51,7 @@ def create_catalog_info(keywords: dict, catalog_type: Optional[CatalogType] = No
     return ci_class(**catalog_info_keywords)
 
 
-def from_catalog_dir(catalog_base_dir: FilePointer, storage_options: Dict[Any, Any] | None = None):
+def from_catalog_dir(catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None):
     """Generate a typed catalog info object from the type specified in the
     catalog info file.
 

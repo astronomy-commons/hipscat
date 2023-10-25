@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import pandas as pd
 from typing_extensions import Self
@@ -31,7 +31,9 @@ class PartitionJoinInfo:
                 raise ValueError(f"join_info_df does not contain column {column}")
 
     @classmethod
-    def read_from_file(cls, partition_join_info_file: FilePointer, storage_options: Dict[Any, Any] | None = None) -> Self:
+    def read_from_file(
+        cls, partition_join_info_file: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+    ) -> Self:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
