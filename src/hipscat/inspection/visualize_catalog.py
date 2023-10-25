@@ -3,6 +3,8 @@
 NB: Testing validity of generated plots is currently not tested in our unit test suite.
 """
 
+from typing import Any, Dict
+
 import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
@@ -11,7 +13,7 @@ from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
 
 
-def _read_point_map(catalog_base_dir, storage_options: dict = None):
+def _read_point_map(catalog_base_dir, storage_options: Dict[Any, Any] | None = None):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:

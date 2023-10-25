@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import List
+from typing import Any, Dict, List
 
 import pandas as pd
 
@@ -32,7 +32,7 @@ class Almanac:
               catalogs.
     """
 
-    def __init__(self, include_default_dir=True, dirs=None, storage_options: dict = None):
+    def __init__(self, include_default_dir=True, dirs=None, storage_options: Dict[Any, Any] | None = None):
         """Create new almanac."""
         self.files = {}
         self.entries = {}

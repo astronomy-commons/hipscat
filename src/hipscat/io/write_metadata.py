@@ -4,6 +4,7 @@ import dataclasses
 import json
 from datetime import datetime
 from importlib.metadata import version
+from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ from hipscat.io import file_io, paths
 
 
 def write_json_file(
-    metadata_dictionary: dict, file_pointer: file_io.FilePointer, storage_options: dict = None
+    metadata_dictionary: dict, file_pointer: file_io.FilePointer, storage_options: Dict[Any, Any] | None = None
 ):
     """Convert metadata_dictionary to a json string and print to file.
 
@@ -25,7 +26,7 @@ def write_json_file(
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n", storage_options=storage_options)
 
 
-def write_catalog_info(catalog_base_dir, dataset_info, storage_options: dict = None):
+def write_catalog_info(catalog_base_dir, dataset_info, storage_options: Dict[Any, Any] | None = None):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
@@ -40,7 +41,7 @@ def write_catalog_info(catalog_base_dir, dataset_info, storage_options: dict = N
 
 
 def write_provenance_info(
-    catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict, storage_options: dict = None
+    catalog_base_dir: file_io.FilePointer, dataset_info, tool_args: dict, storage_options: Dict[Any, Any] | None = None
 ):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
@@ -63,7 +64,7 @@ def write_provenance_info(
 
 
 def write_partition_info(
-    catalog_base_dir: file_io.FilePointer, destination_healpix_pixel_map: dict, storage_options: dict = None
+    catalog_base_dir: file_io.FilePointer, destination_healpix_pixel_map: dict, storage_options: Dict[Any, Any] | None = None
 ):
     """Write all partition data to CSV file.
 
@@ -100,7 +101,7 @@ def write_partition_info(
     )
 
 
-def write_parquet_metadata(catalog_path, storage_options: dict = None):
+def write_parquet_metadata(catalog_path, storage_options: Dict[Any, Any] | None = None):
     """Generate parquet metadata, using the already-partitioned parquet files
     for this catalog
 
@@ -135,7 +136,7 @@ def write_parquet_metadata(catalog_path, storage_options: dict = None):
     )
 
 
-def write_fits_map(catalog_path, histogram: np.ndarray, storage_options: dict = None):
+def write_fits_map(catalog_path, histogram: np.ndarray, storage_options: Dict[Any, Any] | None = None):
     """Write the object spatial distribution information to a healpix FITS file.
 
     Args:

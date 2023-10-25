@@ -1,5 +1,6 @@
 import dataclasses
 from dataclasses import dataclass
+from typing import Any, Dict
 
 from typing_extensions import Self
 
@@ -42,7 +43,7 @@ class BaseCatalogInfo:
         return formatted_string
 
     @classmethod
-    def read_from_metadata_file(cls, catalog_info_file: FilePointer, storage_options: dict = None) -> Self:
+    def read_from_metadata_file(cls, catalog_info_file: FilePointer, storage_options: Dict[Any, Any] | None = None) -> Self:
         """Read catalog info from the `catalog_info.json` metadata file
 
         Args:
