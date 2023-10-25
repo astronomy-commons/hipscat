@@ -44,7 +44,7 @@ class BaseCatalogInfo:
 
     @classmethod
     def read_from_metadata_file(
-        cls, catalog_info_file: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, catalog_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Self:
         """Read catalog info from the `catalog_info.json` metadata file
 

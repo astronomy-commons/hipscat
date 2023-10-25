@@ -31,7 +31,7 @@ class AssociationCatalog(HealpixDataset):
         pixels: PixelInputTypes,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
-        storage_options: Union[Dict[Any, Any] | None] = None,
+        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
@@ -59,7 +59,7 @@ class AssociationCatalog(HealpixDataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
@@ -70,7 +70,7 @@ class AssociationCatalog(HealpixDataset):
 
     @classmethod
     def _check_files_exist(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)

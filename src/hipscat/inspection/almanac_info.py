@@ -18,7 +18,7 @@ class AlmanacInfo:
     """Container for parsed almanac information."""
 
     file_path: str = ""
-    storage_options: Union[Dict[Any, Any] | None] = field(default_factory=dict)
+    storage_options: Union[Dict[Any, Any], None] = field(default_factory=dict)
     namespace: str = ""
     catalog_path: str = ""
     catalog_name: str = ""
@@ -76,7 +76,7 @@ class AlmanacInfo:
 
     @classmethod
     def from_catalog_dir(
-        cls, catalog_base_dir: str, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, catalog_base_dir: str, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
         catalog_info = catalog_info_factory.from_catalog_dir(
@@ -93,7 +93,7 @@ class AlmanacInfo:
         return cls(**args)
 
     @classmethod
-    def from_file(cls, file: str, storage_options: Union[Dict[Any, Any] | None] = None) -> Self:
+    def from_file(cls, file: str, storage_options: Union[Dict[Any, Any], None] = None) -> Self:
         """Create almanac information from an almanac file."""
         _, fmt = os.path.splitext(file)
         if fmt != ".yml":
@@ -106,7 +106,7 @@ class AlmanacInfo:
         directory=None,
         default_dir=True,
         fmt="yml",
-        storage_options: Union[Dict[Any, Any] | None] = None,
+        storage_options: Union[Dict[Any, Any], None] = None,
     ):
         """Write the almanac to an almanac file"""
         if default_dir and directory:

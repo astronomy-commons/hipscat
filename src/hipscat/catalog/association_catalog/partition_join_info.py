@@ -32,7 +32,7 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_file(
-        cls, partition_join_info_file: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, partition_join_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Self:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 

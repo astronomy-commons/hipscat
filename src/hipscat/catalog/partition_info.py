@@ -46,7 +46,7 @@ class PartitionInfo:
 
     @classmethod
     def read_from_file(
-        cls, partition_info_file: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, partition_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ):
         """Read partition info from a `partition_info.csv` file to create an object
 

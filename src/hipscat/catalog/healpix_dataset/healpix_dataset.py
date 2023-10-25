@@ -28,7 +28,7 @@ class HealpixDataset(Dataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: Union[Dict[Any, Any] | None] = None,
+        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
 
@@ -79,7 +79,7 @@ class HealpixDataset(Dataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Tuple[CatalogInfoClass, PartitionInfo]:
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
@@ -88,7 +88,7 @@ class HealpixDataset(Dataset):
 
     @classmethod
     def _check_files_exist(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any] | None] = None
+        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)

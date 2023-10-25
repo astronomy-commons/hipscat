@@ -33,7 +33,7 @@ class Almanac:
     """
 
     def __init__(
-        self, include_default_dir=True, dirs=None, storage_options: Union[Dict[Any, Any] | None] = None
+        self, include_default_dir=True, dirs=None, storage_options: Union[Dict[Any, Any], None] = None
     ):
         """Create new almanac."""
         self.files = {}

@@ -13,7 +13,7 @@ from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
 
 
-def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any] | None] = None):
+def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], None] = None):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
