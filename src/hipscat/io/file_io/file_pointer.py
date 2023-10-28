@@ -104,6 +104,9 @@ def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> File
     """Strips the leading slash for pyarrow read/write functions.
     This is required for their filesystem abstraction
     """
+    if isinstance(protocol, tuple):
+        if "file" in list(protocol):
+            protocol = "file"
     if protocol != "file" and str(pointer).startswith("/"):
         pointer = FilePointer(str(pointer).replace("/", "", 1))
     return pointer

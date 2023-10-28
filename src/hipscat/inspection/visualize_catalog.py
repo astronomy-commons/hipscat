@@ -41,7 +41,7 @@ def plot_points(catalog: Catalog, projection="moll", draw_map=True):
     _plot_healpix_map(
         point_map,
         projection,
-        f"Catalog point density map - {catalog.catalog_name}",
+        f"catalog point density map - {catalog.catalog_name} (log_10 scale)",
         draw_map=draw_map,
     )
 
@@ -100,7 +100,7 @@ def _plot_healpix_map(healpix_map, projection, title, draw_map=True):
 
     if draw_map:  # pragma: no cover
         projection_method(
-            healpix_map,
+            np.log10(healpix_map+1),
             title=title,
             nest=True,
         )

@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 
 from hipscat.catalog.catalog import CatalogType
+from hipscat.catalog.catalog import Catalog
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.inspection.almanac_info import AlmanacInfo
 from hipscat.io.file_io import file_pointer
@@ -249,12 +250,12 @@ class Almanac:
         """Fetch the almanac info for a single catalog."""
         return self.entries[catalog_name]
 
-    def get_catalog(self, catalog_name: str) -> Dataset:
+    def get_catalog(self, catalog_name: str) -> Catalog:
         """Fetch the fully-populated hipscat metadata for the catalog name.
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(
+        return Catalog.read_from_hipscat(
             self.get_almanac_info(catalog_name=catalog_name).catalog_path,
             storage_options=self.storage_options,
         )
