@@ -13,6 +13,7 @@ from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
+from hipscat.pixel_math.polygon_filter import filter_pixels_by_polygon
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
@@ -72,6 +73,24 @@ class Catalog(HealpixDataset):
             total_rows=None,
         )
         return Catalog(filtered_catalog_info, filtered_cone_pixels)
+
+    def filter_by_polygon(self, vertices) -> Catalog:
+        """Filter the pixels in the catalog to only include the pixels that overlap with a cone
+
+        Args:
+            ra (float): Right Ascension of the center of the cone in degrees
+            dec (float): Declination of the center of the cone in degrees
+            radius (float): Radius of the cone in degrees
+
+        Returns:
+            A new catalog with only the pixels that overlap with the specified cone
+        """
+        filtered_polygon_pixels, polygon_pixels, max_order = filter_pixels_by_polygon(self.pixel_tree, vertices)
+        filtered_catalog_info = dataclasses.replace(
+            self.catalog_info,
+            total_rows=None,
+        )
+        return Catalog(filtered_catalog_info, filtered_polygon_pixels), polygon_pixels, max_order
 
     # pylint: disable=too-many-locals
     def generate_negative_tree_pixels(self) -> List[HealpixPixel]:
