@@ -19,7 +19,7 @@ def filter_pixels_by_polygon(pixel_tree: PixelTree, vertices) -> List[HealpixPix
     Returns:
         List of HealpixPixels representing only the pixels that overlap with the specified polygon
     """
-    max_order = max(pixel_tree.pixels.keys())
+    max_order = 10 if max(pixel_tree.pixels.keys()) < 10 else max(pixel_tree.pixels.keys())
     polygon_tree, polygon_pixels = _generate_polygon_pixel_tree(vertices, max_order)
     polygon_alignment = align_trees(pixel_tree, polygon_tree, alignment_type=PixelAlignmentType.INNER)
     pixels_df = polygon_alignment.pixel_mapping[
