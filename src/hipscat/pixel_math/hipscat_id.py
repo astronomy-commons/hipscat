@@ -66,16 +66,16 @@ def _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter):
     return shifted_pixels
 
 
-def hipscat_id_to_healpix(ids):
-    """Convert some hipscat ids to the healpix pixel at order 19.
+def hipscat_id_to_healpix(ids, target_order = HIPSCAT_ID_HEALPIX_ORDER):
+    """Convert some hipscat ids to the healpix pixel at the specified order
     This is just bit-shifting the counter away.
 
     Args:
         ids (list[int64]): list of well-formatted hipscat ids
     Returns:
-        list of order 19 pixels from the hipscat id
+        list of target_order pixels from the hipscat id
     """
-    return np.asarray(ids, dtype=np.uint64) >> (64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
+    return np.asarray(ids, dtype=np.uint64) >> (64 - (4 + 2 * target_order))
 
 
 def healpix_to_hipscat_id(order: int, pixel: int, counter: int = 0) -> int:

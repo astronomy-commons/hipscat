@@ -116,6 +116,26 @@ def test_hipscat_id_to_healpix():
     npt.assert_array_equal(result, expected)
 
 
+def test_hipscat_id_to_healpix_low_order():
+    """Test the inverse operation"""
+    ids = [
+        5482513871577022464,
+        5482513871577022465,
+        5482513871577022466,
+        5476738131329810432,  # out of sequence
+        5482513871577022467,
+        5482513871577022468,
+        5482513871577022469,
+        5476738131329810433,  # out of sequence
+        5482513871577022470,
+    ]
+
+    result = hipscat_id_to_healpix(ids, target_order=4)
+
+    expected = [1217, 1217, 1217, 1216, 1217, 1217, 1217, 1216, 1217]
+
+    npt.assert_array_equal(result, expected)
+
 def test_healpix_to_hipscat_id_single():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
