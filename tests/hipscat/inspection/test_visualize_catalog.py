@@ -36,6 +36,7 @@ def test_generate_map_order1(small_sky_order1_dir):
 
 
 def test_visualize_in_memory_catalogs(catalog_info, catalog_pixels):
+    """Test behavior of visualization methods for non-on-disk catalogs and pixel data."""
     catalog = Catalog(catalog_info, catalog_pixels)
     plot_pixels(catalog, draw_map=False)
     plot_pixel_list(catalog_pixels, plot_title="My special catalog", draw_map=False)

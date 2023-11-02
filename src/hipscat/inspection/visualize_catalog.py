@@ -70,10 +70,11 @@ def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
 
 
 def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection="moll", draw_map=True):
-    """Create a visual map of the pixel density of the catalog.
+    """Create a visual map of the pixel density of a list of pixels.
 
     Args:
-        catalog (`hipscat.catalog.Catalog`) Catalog to display
+        pixels: healpix pixels (order and pixel number) to visualize
+        plot_title (str): heading for the plot
         projection (str) The map projection to use. Valid values include:
             - moll - Molleweide projection (default)
             - gnom - Gnomonic projection
