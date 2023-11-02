@@ -3,7 +3,7 @@
 NB: Testing validity of generated plots is currently not tested in our unit test suite.
 """
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 import healpy as hp
 import numpy as np
@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
+from hipscat.pixel_math import HealpixPixel
 
 
 def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], None] = None):
@@ -27,7 +28,7 @@ def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], Non
 
 
 def plot_points(catalog: Catalog, projection="moll", draw_map=True):
-    """Create a visual map of the input points of the catalog.
+    """Create a visual map of the input points of an in-memory catalog.
 
     Args:
         catalog (`hipscat.catalog.Catalog`) Catalog to display
@@ -37,6 +38,8 @@ def plot_points(catalog: Catalog, projection="moll", draw_map=True):
             - cart - Cartesian projection
             - orth - Orthographic projection
     """
+    if not catalog.on_disk:
+        raise ValueError("on disk catalog required for point-wise visualization")
     point_map = _read_point_map(catalog.catalog_base_dir, storage_options=catalog.storage_options)
     _plot_healpix_map(
         point_map,
@@ -58,7 +61,27 @@ def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
             - orth - Orthographic projection
     """
     pixels = catalog.get_healpix_pixels()
-    max_order = catalog.partition_info.get_highest_order()
+    plot_pixel_list(
+        pixels=pixels,
+        plot_title=f"Catalog pixel density map - {catalog.catalog_name}",
+        projection=projection,
+        draw_map=draw_map,
+    )
+
+
+def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection="moll", draw_map=True):
+    """Create a visual map of the pixel density of a list of pixels.
+
+    Args:
+        pixels: healpix pixels (order and pixel number) to visualize
+        plot_title (str): heading for the plot
+        projection (str) The map projection to use. Valid values include:
+            - moll - Molleweide projection (default)
+            - gnom - Gnomonic projection
+            - cart - Cartesian projection
+            - orth - Orthographic projection
+    """
+    max_order = np.max(pixels).order
 
     order_map = np.full(hp.order2npix(max_order), hp.pixelfunc.UNSEEN)
 
@@ -74,7 +97,7 @@ def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
     _plot_healpix_map(
         order_map,
         projection,
-        f"Catalog pixel density map - {catalog.catalog_name}",
+        plot_title,
         draw_map=draw_map,
     )
 
