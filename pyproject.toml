@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "adlfs", # abfs filesytem support
-    "asv==0.5.1", # Used to compute performance benchmarks
+    "asv==0.6.1", # Used to compute performance benchmarks
     "ipykernel", # Support for Jupyter notebooks
     "ipython", # Also used in building notebooks into Sphinx
     "matplotlib", # Used in sample notebook intro_notebook.ipynb
@@ -49,6 +49,11 @@ dev = [
     "sphinx-autoapi", # Used to automatically generate api documentation
     "sphinx-rtd-theme" # Used to render documentation
 ]
+
+[metadata]
+long_description = { file = "README.md" }
+url = "https://github.com/astronomy-commons/hipscat"
+
 [build-system]
 requires = [
     "setuptools>=62", # Used to build and package the Python project
