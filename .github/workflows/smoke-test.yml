@@ -6,6 +6,8 @@
 name: Unit test smoke test
 
 on:
+
+  # Runs this workflow automatically
   schedule:
     - cron: 45 6 * * *
   # Allows you to run this workflow manually from the Actions tab
