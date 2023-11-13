@@ -195,20 +195,15 @@ def read_parquet_metadata(
     return parquet_file
 
 
-def read_parquet_dataset(dir_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None):
+def read_parquet_dataset(
+    dir_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None, **kwargs
+):
     """Read parquet dataset from directory pointer.
 
     Args:
         dir_pointer: location of file to read metadata from
         storage_options: dictionary that contains abstract filesystem credentials
     """
-
-    ignore_prefixes = [
-        "intermediate",
-        "_common_metadata",
-        "_metadata",
-    ]
-
     file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
     # pyarrow.dataset requires the pointer not lead with a slash
@@ -217,9 +212,8 @@ def read_parquet_dataset(dir_pointer: FilePointer, storage_options: Union[Dict[A
     dataset = pds.dataset(
         dir_pointer,
         filesystem=file_system,
-        exclude_invalid_files=True,
         format="parquet",
-        ignore_prefixes=ignore_prefixes,
+        **kwargs,
     )
     return dataset
 
