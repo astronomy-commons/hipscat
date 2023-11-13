@@ -117,7 +117,18 @@ def write_parquet_metadata(catalog_path, storage_options: Union[Dict[Any, Any], 
         storage_options: dictionary that contains abstract filesystem credentials
     """
 
-    dataset = file_io.read_parquet_dataset(catalog_path, storage_options=storage_options)
+    ignore_prefixes = [
+        "intermediate",
+        "_common_metadata",
+        "_metadata",
+    ]
+
+    dataset = file_io.read_parquet_dataset(
+        catalog_path,
+        storage_options=storage_options,
+        ignore_prefixes=ignore_prefixes,
+        exclude_invalid_files=True,
+    )
     metadata_collector = []
 
     for hips_file in dataset.files:
