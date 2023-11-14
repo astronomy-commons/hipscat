@@ -54,6 +54,11 @@ def test_load_partition_no_file(tmp_path):
     with pytest.raises(FileNotFoundError):
         PartitionInfo.read_from_file(wrong_pointer)
 
+    wrong_path = os.path.join(tmp_path, "partition_info.csv")
+    wrong_pointer = file_io.get_file_pointer_from_path(wrong_path)
+    with pytest.raises(FileNotFoundError):
+        PartitionInfo.read_from_csv(wrong_pointer)
+
 
 def test_get_highest_order(small_sky_order1_dir):
     """test the `get_highest_order` method"""

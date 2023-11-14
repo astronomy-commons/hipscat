@@ -3,22 +3,28 @@
 import os
 import shutil
 
-import numpy.testing as npt
 import pandas as pd
 import pyarrow as pa
+import pytest
 
-import hipscat.io.parquet_metadata as io
-from hipscat.io import file_io
+from hipscat.io import file_io, paths
+from hipscat.io.parquet_metadata import (
+    read_row_group_fragments,
+    row_group_stat_single_value,
+    write_parquet_metadata,
+)
 
 
-def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_metadata):
+def test_write_parquet_metadata(
+    tmp_path, small_sky_dir, basic_catalog_parquet_metadata, check_parquet_schema
+):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = os.path.join(tmp_path, "catalog")
     shutil.copytree(
         small_sky_dir,
         catalog_base_dir,
     )
-    io.write_parquet_metadata(catalog_base_dir)
+    write_parquet_metadata(catalog_base_dir)
     check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
@@ -27,7 +33,7 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_m
         0,
     )
     ## Re-write - should still have the same properties.
-    io.write_parquet_metadata(catalog_base_dir)
+    write_parquet_metadata(catalog_base_dir)
     check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
@@ -37,7 +43,9 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir, basic_catalog_parquet_m
     )
 
 
-def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata):
+def test_write_parquet_metadata_order1(
+    tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata, check_parquet_schema
+):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
     temp_path = os.path.join(tmp_path, "catalog")
@@ -46,7 +54,7 @@ def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir, basic_cat
         temp_path,
     )
 
-    io.write_parquet_metadata(temp_path)
+    write_parquet_metadata(temp_path)
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
         os.path.join(temp_path, "_metadata"),
@@ -61,7 +69,7 @@ def test_write_parquet_metadata_order1(tmp_path, small_sky_order1_dir, basic_cat
     )
 
 
-def test_write_index_parquet_metadata(tmp_path):
+def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
     """Create an index-like catalog, and test metadata creation."""
     temp_path = os.path.join(tmp_path, "index")
 
@@ -77,7 +85,7 @@ def test_write_index_parquet_metadata(tmp_path):
         ]
     )
 
-    io.write_parquet_metadata(temp_path)
+    write_parquet_metadata(temp_path)
     check_parquet_schema(os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
@@ -87,26 +95,25 @@ def test_write_index_parquet_metadata(tmp_path):
     )
 
 
-def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
-    """Check parquet schema against expectations"""
-    assert file_io.does_file_or_directory_exist(file_name), f"file not found [{file_name}]"
+def test_row_group_fragments(small_sky_order1_dir):
+    partition_info_file = paths.get_parquet_metadata_pointer(small_sky_order1_dir)
 
-    single_metadata = file_io.read_parquet_metadata(file_name)
-    schema = single_metadata.schema.to_arrow_schema()
+    num_row_groups = 0
+    for _ in read_row_group_fragments(partition_info_file):
+        num_row_groups += 1
 
-    assert len(schema) == len(
-        expected_schema
-    ), f"object list not the same size ({len(schema)} vs {len(expected_schema)})"
+    assert num_row_groups == 4
 
-    npt.assert_array_equal(schema.names, expected_schema.names)
 
-    assert schema.equals(expected_schema, check_metadata=False)
+def test_row_group_stats(small_sky_dir):
+    partition_info_file = paths.get_parquet_metadata_pointer(small_sky_dir)
+    first_row_group = next(read_row_group_fragments(partition_info_file))
 
-    parquet_file = file_io.read_parquet_file(file_name)
-    assert parquet_file.metadata.num_row_groups == expected_num_row_groups
+    assert row_group_stat_single_value(first_row_group, "Norder") == 0
+    assert row_group_stat_single_value(first_row_group, "Npix") == 11
 
-    for row_index in range(0, parquet_file.metadata.num_row_groups):
-        row_md = parquet_file.metadata.row_group(row_index)
-        for column_index in range(0, row_md.num_columns):
-            column_metadata = row_md.column(column_index)
-            assert column_metadata.file_path.endswith(".parquet")
+    with pytest.raises(ValueError, match="doesn't have expected key"):
+        row_group_stat_single_value(first_row_group, "NOT HERE")
+
+    with pytest.raises(ValueError, match="stat min != max"):
+        row_group_stat_single_value(first_row_group, "ra")

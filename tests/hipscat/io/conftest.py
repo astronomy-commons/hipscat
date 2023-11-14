@@ -2,9 +2,11 @@
 
 import re
 
+import numpy.testing as npt
 import pyarrow as pa
 import pytest
 
+from hipscat.io import file_io
 from hipscat.io.file_io.file_io import load_text_file
 from hipscat.io.file_io.file_pointer import does_file_or_directory_exist
 
@@ -58,3 +60,32 @@ def basic_catalog_parquet_metadata():
             pa.field("__index_level_0__", pa.int64()),
         ]
     )
+
+
+@pytest.fixture
+def check_parquet_schema():
+    def check_parquet_schema(file_name, expected_schema, expected_num_row_groups=1):
+        """Check parquet schema against expectations"""
+        assert file_io.does_file_or_directory_exist(file_name), f"file not found [{file_name}]"
+
+        single_metadata = file_io.read_parquet_metadata(file_name)
+        schema = single_metadata.schema.to_arrow_schema()
+
+        assert len(schema) == len(
+            expected_schema
+        ), f"object list not the same size ({len(schema)} vs {len(expected_schema)})"
+
+        npt.assert_array_equal(schema.names, expected_schema.names)
+
+        assert schema.equals(expected_schema, check_metadata=False)
+
+        parquet_file = file_io.read_parquet_file(file_name)
+        assert parquet_file.metadata.num_row_groups == expected_num_row_groups
+
+        for row_index in range(0, parquet_file.metadata.num_row_groups):
+            row_md = parquet_file.metadata.row_group(row_index)
+            for column_index in range(0, row_md.num_columns):
+                column_metadata = row_md.column(column_index)
+                assert column_metadata.file_path.endswith(".parquet")
+
+    return check_parquet_schema
