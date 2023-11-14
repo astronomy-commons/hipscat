@@ -84,8 +84,8 @@ class PartitionInfo:
         """
         pixel_list = [
             HealpixPixel(
-                row_group_stat_single_value(row_group,cls.METADATA_ORDER_COLUMN_NAME),
-                row_group_stat_single_value(row_group,cls.METADATA_PIXEL_COLUMN_NAME),
+                row_group_stat_single_value(row_group, cls.METADATA_ORDER_COLUMN_NAME),
+                row_group_stat_single_value(row_group, cls.METADATA_PIXEL_COLUMN_NAME),
             )
             for row_group in read_row_group_fragments(metadata_file, storage_options)
         ]
