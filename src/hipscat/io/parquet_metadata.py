@@ -33,7 +33,18 @@ def write_parquet_metadata(catalog_path, storage_options: dict = None, output_pa
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
     """
-    dataset = file_io.read_parquet_dataset(catalog_path, storage_options=storage_options)
+    ignore_prefixes = [
+        "intermediate",
+        "_common_metadata",
+        "_metadata",
+    ]
+
+    dataset = file_io.read_parquet_dataset(
+        catalog_path,
+        storage_options=storage_options,
+        ignore_prefixes=ignore_prefixes,
+        exclude_invalid_files=True,
+    )
     metadata_collector = []
 
     for hips_file in dataset.files:
