@@ -8,7 +8,6 @@ import pytest
 from hipscat.io.file_io import (
     delete_file,
     get_file_pointer_from_path,
-    load_csv_to_pandas,
     load_json_file,
     load_parquet_to_pandas,
     make_directory,

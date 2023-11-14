@@ -8,7 +8,6 @@ import pandas as pd
 import pyarrow as pa
 
 import hipscat.io.parquet_metadata as io
-import hipscat.pixel_math as hist
 from hipscat.io import file_io
 
 

@@ -2,7 +2,6 @@ import os
 
 import pytest
 
-from hipscat.catalog import PartitionInfo
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
