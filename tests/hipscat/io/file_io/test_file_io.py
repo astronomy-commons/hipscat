@@ -91,14 +91,6 @@ def test_load_json(small_sky_dir):
     assert loaded_json_dict == json_dict
 
 
-def test_load_csv_to_pandas(small_sky_dir):
-    partition_info_path = os.path.join(small_sky_dir, "partition_info.csv")
-    csv_df = pd.read_csv(partition_info_path)
-    partition_info_pointer = get_file_pointer_from_path(partition_info_path)
-    loaded_df = load_csv_to_pandas(partition_info_pointer)
-    pd.testing.assert_frame_equal(csv_df, loaded_df)
-
-
 def test_load_parquet_to_pandas(small_sky_dir):
     pixel_data_path = pixel_catalog_file(small_sky_dir, 0, 11)
     parquet_df = pd.read_parquet(pixel_data_path)

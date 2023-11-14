@@ -140,7 +140,7 @@ def test_empty_directory(tmp_path):
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError, match="catalog info"):
         Catalog.read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
@@ -148,13 +148,12 @@ def test_empty_directory(tmp_path):
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write('{"catalog_name":"empty", "catalog_type":"source"}')
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError, match="metadata"):
         Catalog.read_from_hipscat(catalog_path)
 
-    ## partition_info file exists - enough to create a catalog
-    file_name = os.path.join(catalog_path, "partition_info.csv")
-    with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write("Norder,Dir,Npix")
+    ## Now we create the needed _metadata and everything is right.
+    part_info = PartitionInfo.from_healpix([HealpixPixel(0, 11)])
+    part_info.write_to_metadata_files(catalog_path=catalog_path)
 
     catalog = Catalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == "empty"

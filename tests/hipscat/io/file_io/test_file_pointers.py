@@ -49,8 +49,8 @@ def test_append_paths_to_pointer(tmp_path):
 
 
 def test_is_regular_file(small_sky_dir):
-    partition_info_file = os.path.join(small_sky_dir, "partition_info.csv")
-    assert is_regular_file(partition_info_file)
+    catalog_info_file = os.path.join(small_sky_dir, "catalog_info.json")
+    assert is_regular_file(catalog_info_file)
 
     assert not is_regular_file(small_sky_dir)
 
@@ -60,10 +60,10 @@ def test_is_regular_file(small_sky_dir):
 
 def test_find_files_matching_path(small_sky_dir):
     ## no_wildcard
-    assert len(find_files_matching_path(small_sky_dir, "partition_info.csv")) == 1
+    assert len(find_files_matching_path(small_sky_dir, "catalog_info.json")) == 1
 
     ## wilcard in the name
-    assert len(find_files_matching_path(small_sky_dir, "*.csv")) == 1
+    assert len(find_files_matching_path(small_sky_dir, "*.json")) == 1
 
 
 def test_find_files_matching_path_directory(small_sky_order1_dir):
@@ -85,12 +85,13 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
         if not content.startswith("/"):
             small_sky_contents[i] = f"/{content}"
 
-    assert len(small_sky_contents) == 4
+    assert len(small_sky_contents) == 5
 
     expected = [
         os.path.join(small_sky_order1_dir, "Norder=1"),
+        os.path.join(small_sky_order1_dir, "_common_metadata"),
+        os.path.join(small_sky_order1_dir, "_metadata"),
         os.path.join(small_sky_order1_dir, "catalog_info.json"),
-        os.path.join(small_sky_order1_dir, "partition_info.csv"),
         os.path.join(small_sky_order1_dir, "point_map.fits"),
     ]
 

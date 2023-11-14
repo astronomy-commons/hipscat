@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from hipscat.io import file_io, paths
+from hipscat.io.parquet_metadata import write_parquet_metadata as wpm
 
 
 def write_json_file(
@@ -116,30 +117,10 @@ def write_parquet_metadata(catalog_path, storage_options: Union[Dict[Any, Any], 
         catalog_path (str): base path for the catalog
         storage_options: dictionary that contains abstract filesystem credentials
     """
-
-    dataset = file_io.read_parquet_dataset(catalog_path, storage_options=storage_options)
-    metadata_collector = []
-
-    for hips_file in dataset.files:
-        hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
-        single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
-        relative_path = hips_file[len(catalog_path) :]
-        single_metadata.set_file_path(relative_path)
-        metadata_collector.append(single_metadata)
-
-    ## Write out the two metadata files
-    catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
-    metadata_file_pointer = paths.get_parquet_metadata_pointer(catalog_base_dir)
-    common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
-
-    file_io.write_parquet_metadata(
-        dataset.schema,
-        metadata_file_pointer,
-        metadata_collector=metadata_collector,
+    wpm(
+        catalog_path=catalog_path,
         storage_options=storage_options,
-    )
-    file_io.write_parquet_metadata(
-        dataset.schema, common_metadata_file_pointer, storage_options=storage_options
+        output_path=catalog_path,
     )
 
 

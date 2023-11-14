@@ -3,8 +3,14 @@ from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 
 from hipscat.io import FilePointer, file_io
+from hipscat.io.parquet_metadata import (
+    read_row_group_fragments,
+    row_group_stat_single_value,
+    write_parquet_metadata_for_batches,
+)
 from hipscat.pixel_math import HealpixPixel
 
 
@@ -44,10 +50,54 @@ class PartitionInfo:
         """
         file_io.write_dataframe_to_csv(self.as_dataframe(), partition_info_file, index=False)
 
+    def write_to_metadata_files(self, catalog_path: FilePointer, storage_options: dict = None):
+        """Generate parquet metadata, using the known partitions.
+
+        Args:
+            catalog_path (str): base path for the catalog
+            storage_options: dictionary that contains abstract filesystem credentials
+        """
+        batches = [
+            pa.RecordBatch.from_arrays(
+                [[pixel.order], [pixel.dir], [pixel.pixel]],
+                names=[
+                    self.METADATA_ORDER_COLUMN_NAME,
+                    self.METADATA_DIR_COLUMN_NAME,
+                    self.METADATA_PIXEL_COLUMN_NAME,
+                ],
+            )
+            for pixel in self.get_healpix_pixels()
+        ]
+
+        write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
+
     @classmethod
-    def read_from_file(
-        cls, partition_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-    ):
+    def read_from_file(cls, metadata_file: FilePointer, storage_options: dict = None):
+        """Read partition info from a `_metadata` file to create an object
+
+        Args:
+            metadata_file: FilePointer to the `_metadata` file
+            storage_options: dictionary that contains abstract filesystem credentials
+
+        Returns:
+            A `PartitionInfo` object with the data from the file
+        """
+        pixel_list = [
+            HealpixPixel(
+                row_group_stat_single_value(row_group,cls.METADATA_ORDER_COLUMN_NAME),
+                row_group_stat_single_value(row_group,cls.METADATA_PIXEL_COLUMN_NAME),
+            )
+            for row_group in read_row_group_fragments(metadata_file, storage_options)
+        ]
+        ## Remove duplicates, preserving order.
+        ## In the case of association partition join info, we may have multiple entries
+        ## for the primary order/pixels.
+        pixel_list = list(dict.fromkeys(pixel_list))
+
+        return cls(pixel_list)
+
+    @classmethod
+    def read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None):
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
