@@ -7,7 +7,7 @@ from hipscat.catalog.association_catalog.association_catalog_info import Associa
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
-from hipscat.io import FilePointer, paths
+from hipscat.io import FilePointer, file_io, paths
 
 
 class AssociationCatalog(HealpixDataset):
@@ -63,5 +63,26 @@ class AssociationCatalog(HealpixDataset):
     ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
-        partition_join_info = PartitionJoinInfo.read_from_file(metadata_file, storage_options=storage_options)
+        if file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
+            partition_join_info = PartitionJoinInfo.read_from_file(
+                metadata_file, storage_options=storage_options
+            )
+        else:
+            partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
+            partition_join_info = PartitionJoinInfo.read_from_csv(
+                partition_join_info_file, storage_options=storage_options
+            )
         return args + (partition_join_info,)
+
+    @classmethod
+    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
+        super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
+        partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
+        metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
+        if not (
+            file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options)
+            or file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options)
+        ):
+            raise FileNotFoundError(
+                f"_metadata or partition join info file is required in catalog directory {catalog_base_dir}"
+            )
