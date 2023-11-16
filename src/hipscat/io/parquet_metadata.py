@@ -7,7 +7,7 @@ import pyarrow.dataset as pds
 import pyarrow.parquet as pq
 
 from hipscat.io import file_io, paths
-from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
+from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow, is_regular_file
 
 
 def row_group_stat_single_value(row_group, stat_key):
@@ -97,12 +97,14 @@ def read_row_group_fragments(metadata_file, storage_options: dict = None):
     """Generator for metadata fragment row groups in a parquet metadata file.
 
     Args:
-        metadata_file (str): path to `_metadata` file.
+        metadata_file (str): path to `_metadata` file, or path to a directory containing a _metadata file
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    file_system, dir_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
-    dir_pointer = strip_leading_slash_for_pyarrow(dir_pointer, file_system.protocol)
-    dataset = pds.parquet_dataset(dir_pointer, filesystem=file_system)
+    file_system, file_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
+    if not is_regular_file(file_pointer):
+        file_pointer = paths.get_parquet_metadata_pointer(file_pointer)
+    file_pointer = strip_leading_slash_for_pyarrow(file_pointer, file_system.protocol)
+    dataset = pds.parquet_dataset(file_pointer, filesystem=file_system)
 
     for frag in dataset.get_fragments():
         for row_group in frag.row_groups:

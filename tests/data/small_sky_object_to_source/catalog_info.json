@@ -1,0 +1,9 @@
+{
+    "catalog_name": "small_sky_object_to_source",
+    "catalog_type": "association",
+    "total_rows": 17161,
+    "primary_catalog": "tests/hipscat_import/data/small_sky_object_catalog",
+    "primary_column": "id",
+    "join_catalog": "tests/hipscat_import/data/small_sky_source_catalog",
+    "join_column": "object_id"
+}
