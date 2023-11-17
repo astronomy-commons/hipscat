@@ -1,6 +1,7 @@
 """Tests of partition info functionality"""
 import os
 
+import numpy.testing as npt
 import pytest
 
 from hipscat.catalog import PartitionInfo
@@ -78,4 +79,18 @@ def test_write_to_file(tmp_path, small_sky_pixels):
 
     new_partition_info = PartitionInfo.read_from_csv(partition_info_pointer)
 
+    # We're not using parquet metadata, so we don't force a re-sorting.
     assert partition_info.get_healpix_pixels() == new_partition_info.get_healpix_pixels()
+
+
+def test_write_to_file_sorted(tmp_path, pixel_list_norder_major, pixel_list_sky_sorting):
+    """Write out the partition info to file and make sure that it's sorted by sky-sorting,
+    even though the original pixel list is in Norder-major sorting.."""
+    partition_info = PartitionInfo.from_healpix(pixel_list_norder_major)
+    npt.assert_array_equal(pixel_list_norder_major, partition_info.get_healpix_pixels())
+    partition_info.write_to_metadata_files(tmp_path)
+
+    partition_info_pointer = paths.get_parquet_metadata_pointer(tmp_path)
+    new_partition_info = PartitionInfo.read_from_file(partition_info_pointer)
+
+    npt.assert_array_equal(pixel_list_sky_sorting, new_partition_info.get_healpix_pixels())

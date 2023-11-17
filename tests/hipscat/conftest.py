@@ -75,3 +75,36 @@ def small_sky_order1_pixels():
         HealpixPixel(1, 46),
         HealpixPixel(1, 47),
     ]
+
+
+@pytest.fixture
+def pixel_list_norder_major():
+    """A list of pixels that are sorted by Norder, but NOT sky position"""
+    return [
+        HealpixPixel(0, 10),
+        HealpixPixel(1, 33),
+        HealpixPixel(1, 35),
+        HealpixPixel(1, 44),
+        HealpixPixel(1, 45),
+        HealpixPixel(1, 46),
+        HealpixPixel(2, 128),
+        HealpixPixel(2, 130),
+        HealpixPixel(2, 131),
+    ]
+
+
+@pytest.fixture
+def pixel_list_sky_sorting():
+    """The same pixels in the above `pixel_list_norder_major` list, but
+    in sky-position order"""
+    return [
+        HealpixPixel(2, 128),
+        HealpixPixel(2, 130),
+        HealpixPixel(2, 131),
+        HealpixPixel(1, 33),
+        HealpixPixel(1, 35),
+        HealpixPixel(0, 10),
+        HealpixPixel(1, 44),
+        HealpixPixel(1, 45),
+        HealpixPixel(1, 46),
+    ]
