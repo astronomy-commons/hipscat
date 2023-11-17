@@ -12,7 +12,12 @@ from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyar
 
 def row_group_stat_single_value(row_group, stat_key):
     """Convenience method to find the min and max inside a statistics dictionary,
-    and raise an error if they're unequal."""
+    and raise an error if they're unequal.
+
+    Args:
+        row_group: dataset fragment row group
+        stat_key (str): column name of interest.
+    """
     if stat_key not in row_group.statistics:
         raise ValueError(f"row group doesn't have expected key {stat_key}")
     stat_dict = row_group.statistics[stat_key]
@@ -25,7 +30,10 @@ def row_group_stat_single_value(row_group, stat_key):
 
 def write_parquet_metadata(catalog_path, storage_options: dict = None, output_path: str = None):
     """Generate parquet metadata, using the already-partitioned parquet files
-    for this catalog
+    for this catalog.
+
+    For more information on the general parquet metadata files, and why we write them, see
+    https://arrow.apache.org/docs/python/parquet.html#writing-metadata-and-common-metadata-files
 
     Args:
         catalog_path (str): base path for the catalog
@@ -50,6 +58,8 @@ def write_parquet_metadata(catalog_path, storage_options: dict = None, output_pa
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
+
+        # Users must set the file path of each chunk before combining the metadata.
         relative_path = hips_file[len(catalog_path) :]
         single_metadata.set_file_path(relative_path)
         metadata_collector.append(single_metadata)
@@ -78,6 +88,7 @@ def write_parquet_metadata_for_batches(
 ):
     """Write parquet metadata files for some pyarrow table batches.
     This writes the batches to a temporary parquet dataset using local storage, and
+    generates the metadata for the partitioned catalog parquet files.
 
     Args:
         batches (List[pa.RecordBatch]): create one batch per group of data (partition or row group)
