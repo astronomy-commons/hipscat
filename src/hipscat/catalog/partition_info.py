@@ -1,4 +1,6 @@
 """Container class to hold per-partition metadata"""
+from __future__ import annotations
+
 from typing import List
 
 import numpy as np
@@ -54,8 +56,8 @@ class PartitionInfo:
         """Generate parquet metadata, using the known partitions.
 
         Args:
-            catalog_path (str): base path for the catalog
-            storage_options: dictionary that contains abstract filesystem credentials
+            catalog_path (FilePointer): base path for the catalog
+            storage_options (dict): dictionary that contains abstract filesystem credentials
         """
         batches = [
             [
@@ -74,12 +76,12 @@ class PartitionInfo:
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
     @classmethod
-    def read_from_file(cls, metadata_file: FilePointer, storage_options: dict = None):
+    def read_from_file(cls, metadata_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
         """Read partition info from a `_metadata` file to create an object
 
         Args:
-            metadata_file: FilePointer to the `_metadata` file
-            storage_options: dictionary that contains abstract filesystem credentials
+            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionInfo` object with the data from the file
@@ -99,12 +101,12 @@ class PartitionInfo:
         return cls(pixel_list)
 
     @classmethod
-    def read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None):
+    def read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
-            partition_info_file: FilePointer to the `partition_info.csv` file
-            storage_options: dictionary that contains abstract filesystem credentials
+            partition_info_file (FilePointer): FilePointer to the `partition_info.csv` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionInfo` object with the data from the file
@@ -144,7 +146,7 @@ class PartitionInfo:
         return pd.DataFrame.from_dict(partition_info_dict)
 
     @classmethod
-    def from_healpix(cls, healpix_pixels: List[HealpixPixel]):
+    def from_healpix(cls, healpix_pixels: List[HealpixPixel]) -> PartitionInfo:
         """Create a partition info object from a list of constituent healpix pixels.
 
         Args:

@@ -13,9 +13,16 @@ from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 from hipscat.pixel_math.healpix_pixel_function import get_pixel_argsort
 
 
-def row_group_stat_single_value(row_group, stat_key):
+def row_group_stat_single_value(row_group, stat_key: str):
     """Convenience method to find the min and max inside a statistics dictionary,
-    and raise an error if they're unequal."""
+    and raise an error if they're unequal.
+
+    Args:
+        row_group: dataset fragment row group
+        stat_key (str): column name of interest.
+    Returns:
+        The value of the specified row group statistic
+    """
     if stat_key not in row_group.statistics:
         raise ValueError(f"row group doesn't have expected key {stat_key}")
     stat_dict = row_group.statistics[stat_key]
@@ -47,11 +54,12 @@ def get_healpix_pixel_from_metadata(metadata) -> HealpixPixel:
     return HealpixPixel(order, pixel)
 
 
-def write_parquet_metadata(
-    catalog_path, order_by_healpix=True, storage_options: dict = None, output_path: str = None
-):
+def write_parquet_metadata(catalog_path: str, order_by_healpix=True, storage_options: dict = None, output_path: str = None):
     """Generate parquet metadata, using the already-partitioned parquet files
-    for this catalog
+    for this catalog.
+
+    For more information on the general parquet metadata files, and why we write them, see
+    https://arrow.apache.org/docs/python/parquet.html#writing-metadata-and-common-metadata-files
 
     Args:
         catalog_path (str): base path for the catalog
@@ -80,6 +88,8 @@ def write_parquet_metadata(
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
+
+        # Users must set the file path of each chunk before combining the metadata.
         relative_path = hips_file[len(catalog_path) :]
         single_metadata.set_file_path(relative_path)
 
@@ -118,6 +128,7 @@ def write_parquet_metadata_for_batches(
 ):
     """Write parquet metadata files for some pyarrow table batches.
     This writes the batches to a temporary parquet dataset using local storage, and
+    generates the metadata for the partitioned catalog parquet files.
 
     Args:
         batches (List[pa.RecordBatch]): create one batch per group of data (partition or row group)
@@ -133,7 +144,7 @@ def write_parquet_metadata_for_batches(
         write_parquet_metadata(temp_pq_file, storage_options=storage_options, output_path=output_path)
 
 
-def read_row_group_fragments(metadata_file, storage_options: dict = None):
+def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
     """Generator for metadata fragment row groups in a parquet metadata file.
 
     Args:
