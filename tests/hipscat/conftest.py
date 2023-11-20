@@ -80,6 +80,7 @@ def small_sky_order1_pixels():
 @pytest.fixture
 def pixel_list_norder_major():
     """A list of pixels that are sorted by Norder, but NOT sky position"""
+    # pylint: disable=duplicate-code
     return [
         HealpixPixel(0, 10),
         HealpixPixel(1, 33),
