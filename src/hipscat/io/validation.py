@@ -16,7 +16,7 @@ def is_valid_catalog(pointer: FilePointer) -> bool:
     return is_catalog_info_valid(pointer) and (is_partition_info_valid(pointer) or is_metadata_valid(pointer))
 
 
-def is_catalog_info_valid(pointer: FilePointer):
+def is_catalog_info_valid(pointer: FilePointer) -> bool:
     """Checks if catalog_info is valid for a given base catalog pointer
 
     Args:
@@ -34,7 +34,7 @@ def is_catalog_info_valid(pointer: FilePointer):
     return is_valid
 
 
-def is_partition_info_valid(pointer: FilePointer):
+def is_partition_info_valid(pointer: FilePointer) -> bool:
     """Checks if partition_info is valid for a given base catalog pointer
 
     Args:
@@ -48,7 +48,7 @@ def is_partition_info_valid(pointer: FilePointer):
     return partition_info_exists
 
 
-def is_metadata_valid(pointer: FilePointer):
+def is_metadata_valid(pointer: FilePointer) -> bool:
     """Checks if _metadata is valid for a given base catalog pointer
 
     Args:

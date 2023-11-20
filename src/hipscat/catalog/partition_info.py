@@ -56,7 +56,7 @@ class PartitionInfo:
         """Generate parquet metadata, using the known partitions.
 
         Args:
-            catalog_path (str): base path for the catalog
+            catalog_path (FilePointer): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
         """
         batches = [
@@ -103,7 +103,7 @@ class PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
-            partition_info_file: FilePointer to the `partition_info.csv` file
+            partition_info_file (FilePointer): FilePointer to the `partition_info.csv` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:

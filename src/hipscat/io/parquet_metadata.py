@@ -10,13 +10,15 @@ from hipscat.io import file_io, paths
 from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
 
 
-def row_group_stat_single_value(row_group, stat_key):
+def row_group_stat_single_value(row_group, stat_key: str):
     """Convenience method to find the min and max inside a statistics dictionary,
     and raise an error if they're unequal.
 
     Args:
         row_group: dataset fragment row group
         stat_key (str): column name of interest.
+    Returns:
+        The value of the specified row group statistic
     """
     if stat_key not in row_group.statistics:
         raise ValueError(f"row group doesn't have expected key {stat_key}")
@@ -28,7 +30,7 @@ def row_group_stat_single_value(row_group, stat_key):
     return min_val
 
 
-def write_parquet_metadata(catalog_path, storage_options: dict = None, output_path: str = None):
+def write_parquet_metadata(catalog_path: str, storage_options: dict = None, output_path: str = None):
     """Generate parquet metadata, using the already-partitioned parquet files
     for this catalog.
 
@@ -104,7 +106,7 @@ def write_parquet_metadata_for_batches(
         write_parquet_metadata(temp_pq_file, storage_options=storage_options, output_path=output_path)
 
 
-def read_row_group_fragments(metadata_file, storage_options: dict = None):
+def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
     """Generator for metadata fragment row groups in a parquet metadata file.
 
     Args:
