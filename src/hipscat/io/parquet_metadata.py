@@ -54,7 +54,9 @@ def get_healpix_pixel_from_metadata(metadata) -> HealpixPixel:
     return HealpixPixel(order, pixel)
 
 
-def write_parquet_metadata(catalog_path: str, order_by_healpix=True, storage_options: dict = None, output_path: str = None):
+def write_parquet_metadata(
+    catalog_path: str, order_by_healpix=True, storage_options: dict = None, output_path: str = None
+):
     """Generate parquet metadata, using the already-partitioned parquet files
     for this catalog.
 
