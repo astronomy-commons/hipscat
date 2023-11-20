@@ -18,6 +18,7 @@ dynamic = ["version"]
 requires-python = ">=3.8"
 dependencies = [
     "astropy",
+    "regions",
     "fsspec<=2023.9.2", # Used for abstract filesystems
     "healpy",
     "numba",
