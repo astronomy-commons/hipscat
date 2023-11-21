@@ -98,7 +98,7 @@ def pixel_list_depth_first():
 def pixel_list_breadth_first():
     """The same pixels in the above `pixel_list_depth_first` list, but
     in breadth-first traversal order by the healpix pixel hierarchy.
-    
+
     See tree for illustration (brackets indicate inner node)::
 
         .
@@ -108,12 +108,12 @@ def pixel_list_breadth_first():
         │   │   ├── 2,130
         │   │   └── 2,131
         │   ├── 1,33
-        │   └── 1,35  
+        │   └── 1,35
         ├── 0,10
         └── <0,11>
             ├── 1,44
             ├── 1,45
-            └── 1,46    
+            └── 1,46
     """
     return [
         HealpixPixel(2, 128),

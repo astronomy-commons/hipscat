@@ -78,7 +78,7 @@ def write_parquet_metadata(
 
     Args:
         catalog_path (str): base path for the catalog
-        order_by_healpix (bool): use False if the dataset is not to be reordered by 
+        order_by_healpix (bool): use False if the dataset is not to be reordered by
             breadth-first healpix pixel (e.g. secondary indexes)
         storage_options: dictionary that contains abstract filesystem credentials
         output_path (str): base path for writing out metadata files

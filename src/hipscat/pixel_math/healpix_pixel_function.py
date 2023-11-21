@@ -9,7 +9,7 @@ def get_pixel_argsort(pixels: List[HealpixPixel]):
     """Perform an indirect sort of a list of HealpixPixels.
 
     This will order the pixels according to a breadth-first traversal of the healpix
-    pixel hierarchy, not merely by increasing order by Norder/Npix (depth-first ordering). 
+    pixel hierarchy, not merely by increasing order by Norder/Npix (depth-first ordering).
     This is similar to ordering fully by _hipscat_index.
 
     Args:
