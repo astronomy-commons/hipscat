@@ -60,14 +60,16 @@ class PartitionInfo:
             storage_options (dict): dictionary that contains abstract filesystem credentials
         """
         batches = [
-            pa.RecordBatch.from_arrays(
-                [[pixel.order], [pixel.dir], [pixel.pixel]],
-                names=[
-                    self.METADATA_ORDER_COLUMN_NAME,
-                    self.METADATA_DIR_COLUMN_NAME,
-                    self.METADATA_PIXEL_COLUMN_NAME,
-                ],
-            )
+            [
+                pa.RecordBatch.from_arrays(
+                    [[pixel.order], [pixel.dir], [pixel.pixel]],
+                    names=[
+                        self.METADATA_ORDER_COLUMN_NAME,
+                        self.METADATA_DIR_COLUMN_NAME,
+                        self.METADATA_PIXEL_COLUMN_NAME,
+                    ],
+                )
+            ]
             for pixel in self.get_healpix_pixels()
         ]
 
