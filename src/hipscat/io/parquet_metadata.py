@@ -33,10 +33,17 @@ def row_group_stat_single_value(row_group, stat_key: str):
     return min_val
 
 
-def get_healpix_pixel_from_metadata(metadata) -> HealpixPixel:
+def get_healpix_pixel_from_metadata(metadata: pq.FileMetaData) -> HealpixPixel:
     """Get the healpix pixel according to a parquet file's metadata.
 
-    This is determined by the value of Norder and Npix in the table's data"""
+    This is determined by the value of Norder and Npix in the table's data
+
+    Args:
+        metadata (pyarrow.parquet.FileMetaData): full metadata for a single file.
+
+    Returns:
+        Healpix pixel representing the Norder and Npix from the first row group.
+    """
     if metadata.num_row_groups <= 0 or metadata.num_columns <= 0:
         raise ValueError("metadata is for empty table")
     order = -1
@@ -45,8 +52,14 @@ def get_healpix_pixel_from_metadata(metadata) -> HealpixPixel:
     for i in range(0, first_row_group.num_columns):
         column = first_row_group.column(i)
         if column.path_in_schema == "Norder":
+            if column.statistics.min != column.statistics.max:
+                raise ValueError(
+                    f"Norder stat min != max ({column.statistics.min} != {column.statistics.max})"
+                )
             order = column.statistics.min
         elif column.path_in_schema == "Npix":
+            if column.statistics.min != column.statistics.max:
+                raise ValueError(f"Npix stat min != max ({column.statistics.min} != {column.statistics.max})")
             pixel = column.statistics.min
 
     if order == -1 or pixel == -1:
@@ -65,8 +78,8 @@ def write_parquet_metadata(
 
     Args:
         catalog_path (str): base path for the catalog
-        order_by_healpix (bool): use False if the dataset is not ordered by healpix pixel
-            (e.g. secondary indexes)
+        order_by_healpix (bool): use False if the dataset is not to be reordered by 
+            breadth-first healpix pixel (e.g. secondary indexes)
         storage_options: dictionary that contains abstract filesystem credentials
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
@@ -133,7 +146,8 @@ def write_parquet_metadata_for_batches(
     generates the metadata for the partitioned catalog parquet files.
 
     Args:
-        batches (List[pa.RecordBatch]): create one batch per group of data (partition or row group)
+        batches (List[List[pa.RecordBatch]]): create one row group per RecordBatch, grouped
+            into tables by the inner list.
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
         storage_options: dictionary that contains abstract filesystem credentials

@@ -166,5 +166,12 @@ def test_get_healpix_pixel_from_metadata_fail(tmp_path):
     metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
     non_healpix_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
+    with pytest.raises(ValueError, match="Npix stat min != max"):
+        get_healpix_pixel_from_metadata(single_metadata)
+
+    non_healpix_dataframe = pd.DataFrame({"data": [0], "Npix": [45]})
+    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    non_healpix_dataframe.to_parquet(metadata_filename)
+    single_metadata = file_io.read_parquet_metadata(metadata_filename)
     with pytest.raises(ValueError, match="missing Norder"):
         get_healpix_pixel_from_metadata(single_metadata)

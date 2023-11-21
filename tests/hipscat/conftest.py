@@ -78,8 +78,8 @@ def small_sky_order1_pixels():
 
 
 @pytest.fixture
-def pixel_list_norder_major():
-    """A list of pixels that are sorted by Norder, but NOT sky position"""
+def pixel_list_depth_first():
+    """A list of pixels that are sorted by Norder (depth-first)"""
     # pylint: disable=duplicate-code
     return [
         HealpixPixel(0, 10),
@@ -95,9 +95,26 @@ def pixel_list_norder_major():
 
 
 @pytest.fixture
-def pixel_list_sky_sorting():
-    """The same pixels in the above `pixel_list_norder_major` list, but
-    in sky-position order"""
+def pixel_list_breadth_first():
+    """The same pixels in the above `pixel_list_depth_first` list, but
+    in breadth-first traversal order by the healpix pixel hierarchy.
+    
+    See tree for illustration (brackets indicate inner node)::
+
+        .
+        ├── <0,8>
+        │   ├── <1,32>
+        │   │   ├── 2,128
+        │   │   ├── 2,130
+        │   │   └── 2,131
+        │   ├── 1,33
+        │   └── 1,35  
+        ├── 0,10
+        └── <0,11>
+            ├── 1,44
+            ├── 1,45
+            └── 1,46    
+    """
     return [
         HealpixPixel(2, 128),
         HealpixPixel(2, 130),
