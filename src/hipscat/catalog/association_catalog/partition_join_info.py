@@ -1,5 +1,7 @@
 """Container class to hold primary-to-join partition metadata"""
 
+from typing import Dict, List
+
 import pandas as pd
 import pyarrow as pa
 from typing_extensions import Self
@@ -10,6 +12,7 @@ from hipscat.io.parquet_metadata import (
     row_group_stat_single_value,
     write_parquet_metadata_for_batches,
 )
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 class PartitionJoinInfo:
@@ -36,6 +39,29 @@ class PartitionJoinInfo:
             if column not in self.data_frame.columns:
                 raise ValueError(f"join_info_df does not contain column {column}")
 
+    def primary_to_join_map(self) -> Dict[HealpixPixel, List[HealpixPixel]]:
+        """Generate a map from a single primary pixel to one or more pixels in the join catalog.
+
+        Lots of cute comprehension is happening here.
+        We create tuple of (primary order/pixel) and [array of tuples of (join order/pixel)]
+        """
+        primary_map = self.data_frame.groupby(
+            [self.PRIMARY_ORDER_COLUMN_NAME, self.PRIMARY_PIXEL_COLUMN_NAME], group_keys=True
+        )
+        primary_to_join = [
+            (
+                HealpixPixel(int(primary_pixel[0]), int(primary_pixel[1])),
+                [
+                    HealpixPixel(int(object_elem[0]), int(object_elem[1]))
+                    for object_elem in join_group.dropna().to_numpy().T[2:4].T
+                ],
+            )
+            for primary_pixel, join_group in primary_map
+        ]
+        ## Treat the array of tuples as a dictionary.
+        primary_to_join = dict(primary_to_join)
+        return primary_to_join
+
     def write_to_metadata_files(self, catalog_path: FilePointer, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.
 
@@ -44,16 +70,19 @@ class PartitionJoinInfo:
             storage_options: dictionary that contains abstract filesystem credentials
         """
         batches = [
-            pa.RecordBatch.from_arrays(
-                [
-                    [row[self.PRIMARY_ORDER_COLUMN_NAME]],
-                    [row[self.PRIMARY_PIXEL_COLUMN_NAME]],
-                    [row[self.JOIN_ORDER_COLUMN_NAME]],
-                    [row[self.JOIN_PIXEL_COLUMN_NAME]],
-                ],
-                names=self.COLUMN_NAMES,
-            )
-            for index, row in self.data_frame.iterrows()
+            [
+                pa.RecordBatch.from_arrays(
+                    [
+                        [primary_pixel.order],
+                        [primary_pixel.pixel],
+                        [join_pixel.order],
+                        [join_pixel.pixel],
+                    ],
+                    names=self.COLUMN_NAMES,
+                )
+                for join_pixel in join_pixels
+            ]
+            for primary_pixel, join_pixels in self.primary_to_join_map().items()
         ]
 
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)

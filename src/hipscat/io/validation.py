@@ -7,7 +7,7 @@ def is_valid_catalog(pointer: FilePointer) -> bool:
     """Checks if a catalog is valid for a given base catalog pointer
 
     Args:
-        pointer: pointer to base catalog directory
+        pointer (FilePointer): pointer to base catalog directory
 
     Returns:
         True if both the catalog_info and partition_info files are
@@ -16,11 +16,11 @@ def is_valid_catalog(pointer: FilePointer) -> bool:
     return is_catalog_info_valid(pointer) and (is_partition_info_valid(pointer) or is_metadata_valid(pointer))
 
 
-def is_catalog_info_valid(pointer):
+def is_catalog_info_valid(pointer: FilePointer) -> bool:
     """Checks if catalog_info is valid for a given base catalog pointer
 
     Args:
-        pointer: pointer to base catalog directory
+        pointer (FilePointer): pointer to base catalog directory
 
     Returns:
         True if the catalog_info file exists, and it is correctly formatted,
@@ -34,11 +34,11 @@ def is_catalog_info_valid(pointer):
     return is_valid
 
 
-def is_partition_info_valid(pointer):
+def is_partition_info_valid(pointer: FilePointer) -> bool:
     """Checks if partition_info is valid for a given base catalog pointer
 
     Args:
-        pointer: pointer to base catalog directory
+        pointer (FilePointer): pointer to base catalog directory
 
     Returns:
         True if the partition_info file exists, False otherwise
@@ -48,11 +48,11 @@ def is_partition_info_valid(pointer):
     return partition_info_exists
 
 
-def is_metadata_valid(pointer):
+def is_metadata_valid(pointer: FilePointer) -> bool:
     """Checks if _metadata is valid for a given base catalog pointer
 
     Args:
-        pointer: pointer to base catalog directory
+        pointer (FilePointer): pointer to base catalog directory
 
     Returns:
         True if the _metadata file exists, False otherwise

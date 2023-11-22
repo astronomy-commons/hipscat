@@ -9,10 +9,12 @@ import pytest
 
 from hipscat.io import file_io, paths
 from hipscat.io.parquet_metadata import (
+    get_healpix_pixel_from_metadata,
     read_row_group_fragments,
     row_group_stat_single_value,
     write_parquet_metadata,
 )
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 def test_write_parquet_metadata(
@@ -69,6 +71,32 @@ def test_write_parquet_metadata_order1(
     )
 
 
+def test_write_parquet_metadata_sorted(
+    tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata, check_parquet_schema
+):
+    """Copy existing catalog and create new metadata files for it,
+    using a catalog with multiple files."""
+    temp_path = os.path.join(tmp_path, "catalog")
+    shutil.copytree(
+        small_sky_order1_dir,
+        temp_path,
+    )
+
+    write_parquet_metadata(temp_path)
+    ## 4 row groups for 4 partitioned parquet files
+    check_parquet_schema(
+        os.path.join(temp_path, "_metadata"),
+        basic_catalog_parquet_metadata,
+        4,
+    )
+    ## _common_metadata has 0 row groups
+    check_parquet_schema(
+        os.path.join(temp_path, "_common_metadata"),
+        basic_catalog_parquet_metadata,
+        0,
+    )
+
+
 def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
     """Create an index-like catalog, and test metadata creation."""
     temp_path = os.path.join(tmp_path, "index")
@@ -85,7 +113,7 @@ def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
         ]
     )
 
-    write_parquet_metadata(temp_path)
+    write_parquet_metadata(temp_path, order_by_healpix=False)
     check_parquet_schema(os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
@@ -117,3 +145,49 @@ def test_row_group_stats(small_sky_dir):
 
     with pytest.raises(ValueError, match="stat min != max"):
         row_group_stat_single_value(first_row_group, "ra")
+
+
+def test_get_healpix_pixel_from_metadata(small_sky_dir):
+    partition_info_file = paths.get_parquet_metadata_pointer(small_sky_dir)
+    single_metadata = file_io.read_parquet_metadata(partition_info_file)
+    pixel = get_healpix_pixel_from_metadata(single_metadata)
+    assert pixel == HealpixPixel(0, 11)
+
+
+def test_get_healpix_pixel_from_metadata_min_max(tmp_path):
+    good_healpix_dataframe = pd.DataFrame({"data": [0, 1], "Norder": [1, 1], "Npix": [44, 44]})
+    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    good_healpix_dataframe.to_parquet(metadata_filename)
+    single_metadata = file_io.read_parquet_metadata(metadata_filename)
+    pixel = get_healpix_pixel_from_metadata(single_metadata)
+    assert pixel == HealpixPixel(1, 44)
+
+    non_healpix_dataframe = pd.DataFrame({"data": [0, 1], "Npix": [45, 44]})
+    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    non_healpix_dataframe.to_parquet(metadata_filename)
+    single_metadata = file_io.read_parquet_metadata(metadata_filename)
+    with pytest.raises(ValueError, match="Npix stat min != max"):
+        get_healpix_pixel_from_metadata(single_metadata)
+
+    non_healpix_dataframe = pd.DataFrame({"data": [0, 1], "Norder": [5, 6]})
+    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    non_healpix_dataframe.to_parquet(metadata_filename)
+    single_metadata = file_io.read_parquet_metadata(metadata_filename)
+    with pytest.raises(ValueError, match="Norder stat min != max"):
+        get_healpix_pixel_from_metadata(single_metadata)
+
+
+def test_get_healpix_pixel_from_metadata_fail(tmp_path):
+    empty_dataframe = pd.DataFrame()
+    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    empty_dataframe.to_parquet(metadata_filename)
+    single_metadata = file_io.read_parquet_metadata(metadata_filename)
+    with pytest.raises(ValueError, match="empty table"):
+        get_healpix_pixel_from_metadata(single_metadata)
+
+    non_healpix_dataframe = pd.DataFrame({"data": [0], "Npix": [45]})
+    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    non_healpix_dataframe.to_parquet(metadata_filename)
+    single_metadata = file_io.read_parquet_metadata(metadata_filename)
+    with pytest.raises(ValueError, match="missing Norder"):
+        get_healpix_pixel_from_metadata(single_metadata)

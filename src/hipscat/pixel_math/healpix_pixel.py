@@ -82,7 +82,7 @@ class HealpixPixel:
         return pixels
 
     @property
-    def dir(self):
+    def dir(self) -> int:
         """Directory number for the pixel.
 
         This is necessary for file systems that limit to 10,000 subdirectories.
@@ -95,3 +95,6 @@ class HealpixPixel:
             (pixel_number/10000)*10000
         """
         return int(self.pixel / 10_000) * 10_000
+
+
+INVALID_PIXEL = HealpixPixel(-1, -1)

@@ -5,6 +5,7 @@ import pytest
 
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.io import file_io
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 def test_init(association_catalog_join_pixels):
@@ -25,6 +26,22 @@ def test_read_from_metadata(association_catalog_join_pixels, association_catalog
     file_pointer = file_io.get_file_pointer_from_path(os.path.join(association_catalog_path, "_metadata"))
     info = PartitionJoinInfo.read_from_file(file_pointer)
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
+
+
+def test_primary_to_join_map(association_catalog_join_pixels):
+    info = PartitionJoinInfo(association_catalog_join_pixels)
+    pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
+    pixel_map = info.primary_to_join_map()
+
+    expected = {
+        HealpixPixel(0, 11): [
+            HealpixPixel(1, 44),
+            HealpixPixel(1, 45),
+            HealpixPixel(1, 46),
+            HealpixPixel(1, 47),
+        ]
+    }
+    assert pixel_map == expected
 
 
 def test_metadata_file_round_trip(association_catalog_join_pixels, tmp_path):
