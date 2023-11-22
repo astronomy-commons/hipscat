@@ -44,6 +44,9 @@ class PartitionJoinInfo:
 
         Lots of cute comprehension is happening here, so watch out!
         We create tuple of (primary order/pixel) and [array of tuples of (join order/pixel)]
+
+        Returns:
+            dictionary mapping (primary order/pixel) to [array of (join order/pixel)]
         """
         primary_map = self.data_frame.groupby(
             [self.PRIMARY_ORDER_COLUMN_NAME, self.PRIMARY_PIXEL_COLUMN_NAME], group_keys=True
@@ -88,12 +91,14 @@ class PartitionJoinInfo:
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
     @classmethod
-    def read_from_file(cls, metadata_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None):
+    def read_from_file(
+        cls, metadata_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+    ) -> Self:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
-            metadata_file: FilePointer to the `_metadata` file
-            storage_options: dictionary that contains abstract filesystem credentials
+            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
@@ -120,8 +125,8 @@ class PartitionJoinInfo:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
-            partition_join_info_file: FilePointer to the `partition_join_info.csv` file
-            storage_options: dictionary that contains abstract filesystem credentials
+            partition_join_info_file (FilePointer): FilePointer to the `partition_join_info.csv` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
