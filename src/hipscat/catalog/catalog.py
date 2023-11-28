@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Dict, List, Union, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import healpy as hp
 import numpy as np
+from regions import PolygonSkyRegion
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -79,11 +80,12 @@ class Catalog(HealpixDataset):
         with a polygonal sky region
 
         Args:
-            polygon (PolygonSkyRegion): The polygon represented by ra and dec coordinates
+            polygon (PolygonSkyRegion): The polygon, represented by spherical
+                sky coordinates (ra and dec), to filter points with
 
         Returns:
-            A new catalog with only the pixels that overlap with the specified polygon,
-            and their maximum pixel order
+            A new catalog with only the pixels that overlap with the specified
+            polygon, and their maximum pixel order
         """
         filtered_polygon_pixels, max_order = filter_pixels_by_polygon(self.pixel_tree, polygon)
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
