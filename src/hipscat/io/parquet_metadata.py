@@ -33,7 +33,9 @@ def row_group_stat_single_value(row_group, stat_key: str):
     return min_val
 
 
-def get_healpix_pixel_from_metadata(metadata: pq.FileMetaData) -> HealpixPixel:
+def get_healpix_pixel_from_metadata(
+    metadata: pq.FileMetaData, norder_column: str = "Norder", npix_column: str = "Npix"
+) -> HealpixPixel:
     """Get the healpix pixel according to a parquet file's metadata.
 
     This is determined by the value of Norder and Npix in the table's data
@@ -51,19 +53,21 @@ def get_healpix_pixel_from_metadata(metadata: pq.FileMetaData) -> HealpixPixel:
     first_row_group = metadata.row_group(0)
     for i in range(0, first_row_group.num_columns):
         column = first_row_group.column(i)
-        if column.path_in_schema == "Norder":
+        if column.path_in_schema == norder_column:
             if column.statistics.min != column.statistics.max:
                 raise ValueError(
-                    f"Norder stat min != max ({column.statistics.min} != {column.statistics.max})"
+                    f"{norder_column} stat min != max ({column.statistics.min} != {column.statistics.max})"
                 )
             order = column.statistics.min
-        elif column.path_in_schema == "Npix":
+        elif column.path_in_schema == npix_column:
             if column.statistics.min != column.statistics.max:
-                raise ValueError(f"Npix stat min != max ({column.statistics.min} != {column.statistics.max})")
+                raise ValueError(
+                    f"{npix_column} stat min != max ({column.statistics.min} != {column.statistics.max})"
+                )
             pixel = column.statistics.min
 
     if order == -1 or pixel == -1:
-        raise ValueError("Metadata missing Norder or Npix column")
+        raise ValueError(f"Metadata missing Norder ({norder_column}) or Npix ({npix_column}) column")
     return HealpixPixel(order, pixel)
 
 
@@ -167,9 +171,11 @@ def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
         metadata_file (str): path to `_metadata` file.
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    file_system, dir_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
-    dir_pointer = strip_leading_slash_for_pyarrow(dir_pointer, file_system.protocol)
-    dataset = pds.parquet_dataset(dir_pointer, filesystem=file_system)
+    if not file_io.is_regular_file(metadata_file, storage_options=storage_options):
+        metadata_file = paths.get_parquet_metadata_pointer(metadata_file)
+    file_system, file_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
+    file_pointer = strip_leading_slash_for_pyarrow(file_pointer, file_system.protocol)
+    dataset = pds.parquet_dataset(file_pointer, filesystem=file_system)
 
     for frag in dataset.get_fragments():
         for row_group in frag.row_groups:
