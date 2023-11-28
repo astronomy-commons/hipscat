@@ -3,6 +3,8 @@
 import os
 
 import pytest
+from astropy.coordinates import SkyCoord
+from regions import PolygonSkyRegion
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.pixel_math import HealpixPixel
@@ -128,6 +130,60 @@ def test_cone_filter_empty(small_sky_order1_catalog):
     filtered_catalog = small_sky_order1_catalog.filter_by_cone(0, 0, 0.1)
     assert len(filtered_catalog.get_healpix_pixels()) == 0
     assert len(filtered_catalog.pixel_tree) == 1
+
+
+def test_polygonal_filter(small_sky_order1_catalog):
+    vertices = SkyCoord([282, 282, 272, 272], [-58, -55, -55, -58], unit="deg")
+    polygon = PolygonSkyRegion(vertices=vertices)
+    filtered_catalog, _ = small_sky_order1_catalog.filter_by_polygon(polygon)
+    filtered_pixels = filtered_catalog.get_healpix_pixels()
+
+    assert len(filtered_pixels) == 1
+    assert filtered_pixels == [HealpixPixel(1, 46)]
+
+    assert (1, 46) in filtered_catalog.pixel_tree
+    assert len(filtered_catalog.pixel_tree.pixels[1]) == 1
+    assert filtered_catalog.catalog_info.total_rows is None
+
+
+def test_polygonal_filter_big(small_sky_order1_catalog):
+    vertices = SkyCoord([281, 281, 350, 350], [-69, -25, -25, -69], unit="deg")
+    polygon = PolygonSkyRegion(vertices=vertices)
+    filtered_catalog, _ = small_sky_order1_catalog.filter_by_polygon(polygon)
+    assert len(filtered_catalog.get_healpix_pixels()) == 4
+    assert (1, 44) in filtered_catalog.pixel_tree
+    assert (1, 45) in filtered_catalog.pixel_tree
+    assert (1, 46) in filtered_catalog.pixel_tree
+    assert (1, 47) in filtered_catalog.pixel_tree
+
+
+def test_polygonal_filter_multiple_order(catalog_info):
+    catalog_pixel_list = [
+        HealpixPixel(6, 30),
+        HealpixPixel(7, 124),
+        HealpixPixel(7, 5000),
+    ]
+    catalog = Catalog(catalog_info, catalog_pixel_list)
+    vertices = SkyCoord([47.1, 64.5, 64.5, 47.1], [6, 6, 6.27, 6.27], unit="deg")
+    polygon = PolygonSkyRegion(vertices=vertices)
+    filtered_catalog, _ = catalog.filter_by_polygon(polygon)
+    assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
+
+
+def test_polygonal_filter_empty(small_sky_order1_catalog):
+    vertices = SkyCoord([0, 1, 0], [0, 1, 2], unit="deg")
+    polygon = PolygonSkyRegion(vertices=vertices)
+    filtered_catalog, _ = small_sky_order1_catalog.filter_by_polygon(polygon)
+    assert len(filtered_catalog.get_healpix_pixels()) == 0
+    assert len(filtered_catalog.pixel_tree) == 1
+
+
+def test_polygonal_filter_invalid_shape(small_sky_order1_catalog):
+    # Polygon is not convex, so the shape is invalid
+    vertices = SkyCoord([0, 1, 1, 0], [1, 0, 1, 0], unit="deg")
+    polygon = PolygonSkyRegion(vertices=vertices)
+    with pytest.raises(RuntimeError):
+        small_sky_order1_catalog.filter_by_polygon(polygon)
 
 
 def test_empty_directory(tmp_path):

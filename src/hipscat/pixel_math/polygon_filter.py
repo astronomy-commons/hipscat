@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 import healpy as hp
+import numpy as np
 from regions import PolygonSkyRegion
 from regions.core.attributes import OneDSkyCoord
 
@@ -44,9 +45,9 @@ def filter_pixels_by_polygon(
 
 def _generate_polygon_pixel_tree(vertices: OneDSkyCoord, order: int) -> PixelTree:
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap within a polygon"""
-    n_side = hp.order2nside(order)
-    cartesian_coords = vertices.cartesian.xyz
-    polygon_pixels = hp.query_polygon(n_side, cartesian_coords, inclusive=True, nest=True)
+    # The cartesian representation of coordinates is represented in arrays of ra and dec.
+    # To obtain the coordinates to use in query_polygon we need to calculate the array transpose.
+    vertices_coords = np.array(vertices.cartesian.xyz).T
+    polygon_pixels = hp.query_polygon(hp.order2nside(order), vertices_coords, inclusive=True, nest=True)
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in polygon_pixels]
-    polygon_tree = PixelTreeBuilder.from_healpix(pixel_list)
-    return polygon_tree
+    return PixelTreeBuilder.from_healpix(pixel_list)
