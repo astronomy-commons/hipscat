@@ -6,7 +6,7 @@ from regions import PolygonSkyRegion
 from regions.core.attributes import OneDSkyCoord
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType, align_trees
+from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
@@ -15,7 +15,7 @@ def filter_pixels_by_polygon(
         pixel_tree: PixelTree, polygon: PolygonSkyRegion
 ) -> Tuple[List[HealpixPixel], int]:
     """Filter the leaf pixels in a pixel tree to return a partition_info
-    dataframe with the pixels that overlap with a polygonal region
+    dataframe with the pixels that overlap with a polygonal region.
 
     Args:
         pixel_tree (PixelTree): The catalog tree to filter pixels from
@@ -24,22 +24,11 @@ def filter_pixels_by_polygon(
 
     Returns:
         List of HealpixPixel, representing only the pixels that overlap
-        with the specified polygonal region, and the maximum pixel order
+        with the specified polygonal region, and the maximum pixel order.
     """
     max_order = max(pixel_tree.pixels.keys())
     polygon_tree = _generate_polygon_pixel_tree(polygon.vertices, max_order)
-    polygon_alignment = align_trees(pixel_tree, polygon_tree, alignment_type=PixelAlignmentType.INNER)
-    pixels_df = polygon_alignment.pixel_mapping[
-        [PixelAlignment.PRIMARY_ORDER_COLUMN_NAME, PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME]
-    ]
-    filtered_pixels_df = pixels_df.drop_duplicates()
-    pixel_list = [
-        HealpixPixel(order, pixel)
-        for order, pixel in zip(
-            filtered_pixels_df[PixelAlignment.PRIMARY_ORDER_COLUMN_NAME],
-            filtered_pixels_df[PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME],
-        )
-    ]
+    pixel_list = get_filtered_pixel_list(pixel_tree, polygon_tree)
     return pixel_list, max_order
 
 
