@@ -17,7 +17,7 @@ def get_filtered_pixel_list(pixel_tree: PixelTree, search_tree: PixelTree) -> Li
     Returns:
         A list of HEALPix pixels that overlap in both trees.
     """
-    polygon_alignment = align_trees(pixel_tree, search_tree, alignment_type=PixelAlignmentType.INNER)
+    search_alignment = align_trees(pixel_tree, search_tree, alignment_type=PixelAlignmentType.INNER)
     pixels_df = polygon_alignment.pixel_mapping[
         [PixelAlignment.PRIMARY_ORDER_COLUMN_NAME, PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME]
     ]

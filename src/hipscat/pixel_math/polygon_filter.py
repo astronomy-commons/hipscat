@@ -14,8 +14,8 @@ from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 def filter_pixels_by_polygon(
         pixel_tree: PixelTree, polygon: PolygonSkyRegion
 ) -> Tuple[List[HealpixPixel], int]:
-    """Filter the leaf pixels in a pixel tree to return a partition_info
-    dataframe with the pixels that overlap with a polygonal region.
+    """Filter the leaf pixels in a pixel tree to return a list of
+    healpix pixels that overlap with a polygonal region.
 
     Args:
         pixel_tree (PixelTree): The catalog tree to filter pixels from
