@@ -76,7 +76,7 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError, match="catalog info"):
         AssociationCatalog.read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
@@ -84,20 +84,13 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write(json.dumps(association_catalog_info_data))
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError, match="metadata"):
         AssociationCatalog.read_from_hipscat(catalog_path)
 
-    ## partition_info file exists - almost there
-    file_name = os.path.join(catalog_path, "partition_info.csv")
-    with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write("Norder,Dir,Npix")
-
-    with pytest.raises(FileNotFoundError):
-        AssociationCatalog.read_from_hipscat(catalog_path)
-
-    ## partition_join info file exists - enough to create a catalog
-    file_name = os.path.join(catalog_path, "partition_join_info.csv")
-    association_catalog_join_pixels.to_csv(file_name)
-
+    ## Now we create the needed _metadata and everything is right.
+    part_info = PartitionJoinInfo(association_catalog_join_pixels)
+    part_info.write_to_metadata_files(
+        catalog_path=catalog_path,
+    )
     catalog = AssociationCatalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == association_catalog_info_data["catalog_name"]

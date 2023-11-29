@@ -53,7 +53,7 @@ class HealpixPixel:
         if delta_order < 0:
             raise ValueError("delta order cannot be below zero")
         new_order = self.order - delta_order
-        new_pixel = math.floor(self.pixel / 4**delta_order)
+        new_pixel = math.floor(self.pixel / 4 ** delta_order)
         return HealpixPixel(new_order, new_pixel)
 
     def convert_to_higher_order(self, delta_order: int) -> List[HealpixPixel]:
@@ -77,6 +77,24 @@ class HealpixPixel:
             raise ValueError("delta order cannot be below zero")
         pixels = []
         new_order = self.order + delta_order
-        for new_pixel in range(self.pixel * 4**delta_order, (self.pixel + 1) * 4**delta_order):
+        for new_pixel in range(self.pixel * 4 ** delta_order, (self.pixel + 1) * 4 ** delta_order):
             pixels.append(HealpixPixel(new_order, new_pixel))
         return pixels
+
+    @property
+    def dir(self) -> int:
+        """Directory number for the pixel.
+
+        This is necessary for file systems that limit to 10,000 subdirectories.
+        The directory name will take the HiPS standard form of::
+
+            <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>
+
+        Where the directory number is calculated using integer division as::
+
+            (pixel_number/10000)*10000
+        """
+        return int(self.pixel / 10_000) * 10_000
+
+
+INVALID_PIXEL = HealpixPixel(-1, -1)

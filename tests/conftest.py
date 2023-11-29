@@ -217,6 +217,32 @@ def source_catalog_info_file(test_data_dir) -> str:
 
 
 @pytest.fixture
+def small_sky_source_dir(test_data_dir) -> str:
+    return os.path.join(test_data_dir, "small_sky_source")
+
+
+@pytest.fixture
+def small_sky_source_pixels():
+    """Source catalog pixels"""
+    return [
+        HealpixPixel(0, 4),
+        HealpixPixel(1, 47),
+        HealpixPixel(2, 176),
+        HealpixPixel(2, 177),
+        HealpixPixel(2, 178),
+        HealpixPixel(2, 179),
+        HealpixPixel(2, 180),
+        HealpixPixel(2, 181),
+        HealpixPixel(2, 182),
+        HealpixPixel(2, 183),
+        HealpixPixel(2, 184),
+        HealpixPixel(2, 185),
+        HealpixPixel(2, 186),
+        HealpixPixel(2, 187),
+    ]
+
+
+@pytest.fixture
 def association_catalog_info(association_catalog_info_data) -> AssociationCatalogInfo:
     return AssociationCatalogInfo(**association_catalog_info_data)
 
