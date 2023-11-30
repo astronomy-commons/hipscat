@@ -201,9 +201,17 @@ def read_parquet_dataset(
 ) -> Tuple(FilePointer, Dataset):
     """Read parquet dataset from directory pointer.
 
+    Note that pyarrow.dataset reads require that directory pointers don't contain a
+    leading slash, and the protocol prefix may additionally be removed. As such, we also return
+    the directory path that is formatted for pyarrow ingestion for follow-up.
+
     Args:
         dir_pointer: location of file to read metadata from
         storage_options: dictionary that contains abstract filesystem credentials
+    
+    Returns:
+        Tuple containing a path to the dataset (that is formatted for pyarrow ingestion)
+        and the dataset read from disk.
     """
     file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
