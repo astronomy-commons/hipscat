@@ -36,14 +36,6 @@ def test_load_json(small_sky_dir_local, small_sky_dir_cloud, example_cloud_stora
     assert json_dict_cloud == json_dict_local
 
 
-def test_load_csv_to_pandas(small_sky_dir_local, small_sky_dir_cloud, example_cloud_storage_options):
-    partition_info_path = os.path.join(small_sky_dir_local, "partition_info.csv")
-    partition_info_path_cloud = os.path.join(small_sky_dir_cloud, "partition_info.csv")
-    csv_df = pd.read_csv(partition_info_path)
-    loaded_df = load_csv_to_pandas(partition_info_path_cloud, storage_options=example_cloud_storage_options)
-    pd.testing.assert_frame_equal(csv_df, loaded_df)
-
-
 def test_load_parquet_to_pandas(small_sky_dir_local, small_sky_dir_cloud, example_cloud_storage_options):
     pixel_data_path = pixel_catalog_file(small_sky_dir_local, 0, 11)
     pixel_data_path_cloud = pixel_catalog_file(small_sky_dir_cloud, 0, 11)

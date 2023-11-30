@@ -59,5 +59,5 @@ def example_cloud_storage_options(cloud):
     return {}
 ```
 
-* 3.) Finally, you will need to copy the entire `/tests/data/` directory into your newly created bucket. This can be accomplished by running the `copy_data_to_fs.py` script in the `cloud_tests/` directory. 
+* 3.) Finally, you will need to copy several `/tests/data/` directories into your newly created bucket. This can be accomplished by running the `copy_data_to_fs.py` script in the `cloud_tests/` directory. 
 * 4.) Before running the tests, you will need to export your `valid_storage_option_param` into the environment.

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
-from typing import Any, Dict, Union
+from typing import Any, Dict, Tuple, Union
 
 import healpy as hp
 import numpy as np
@@ -10,6 +10,7 @@ import pandas as pd
 import pyarrow.dataset as pds
 import pyarrow.parquet as pq
 import yaml
+from pyarrow.dataset import Dataset
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 
@@ -197,7 +198,7 @@ def read_parquet_metadata(
 
 def read_parquet_dataset(
     dir_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None, **kwargs
-):
+) -> Tuple(FilePointer, Dataset):
     """Read parquet dataset from directory pointer.
 
     Args:
@@ -215,7 +216,7 @@ def read_parquet_dataset(
         format="parquet",
         **kwargs,
     )
-    return dataset
+    return (dir_pointer, dataset)
 
 
 def read_parquet_file(file_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None):

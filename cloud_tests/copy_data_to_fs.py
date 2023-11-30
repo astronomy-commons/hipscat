@@ -64,12 +64,16 @@ def copy_dir(source_fs, source_fp, destination_fs, desintation_fp, verbose=False
 
 
 if __name__ == "__main__":
+    # pylint: disable=invalid-name,duplicate-key
 
     source_pw = f"{os.getcwd()}/../tests/data"
     target_pw = "new_protocol:///path/to/pytest/hipscat"
 
     target_so = {
         "valid_storage_option_param1": os.environ.get("NEW_PROTOCOL_PARAM1"),
-        "valid_storage_option_param1": os.environ.get("NEW_PROTOCOL_PARAM2"),
+        "valid_storage_option_param2": os.environ.get("NEW_PROTOCOL_PARAM2"),
     }
-    copy_tree_fs_to_fs(source_pw, target_pw, {}, target_so, verbose=True)
+
+    for data_dir in ["almanac", "dataset", "small_sky", "small_sky_order1"]:
+        source_dir = os.path.join(source_pw, data_dir)
+        copy_tree_fs_to_fs(source_dir, target_pw, {}, target_so, verbose=True)

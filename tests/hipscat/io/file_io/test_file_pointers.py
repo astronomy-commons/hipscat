@@ -88,12 +88,14 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     assert len(small_sky_contents) == 5
 
     expected = [
-        os.path.join(small_sky_order1_dir, "Norder=1"),
-        os.path.join(small_sky_order1_dir, "_common_metadata"),
-        os.path.join(small_sky_order1_dir, "_metadata"),
-        os.path.join(small_sky_order1_dir, "catalog_info.json"),
-        os.path.join(small_sky_order1_dir, "point_map.fits"),
+        "Norder=1",
+        "_common_metadata",
+        "_metadata",
+        "catalog_info.json",
+        "point_map.fits",
     ]
+
+    expected = [os.path.join(small_sky_order1_dir, file_name) for file_name in expected]
 
     assert small_sky_contents == expected
 
