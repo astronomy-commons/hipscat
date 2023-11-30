@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Union
 
 import healpy as hp
 import numpy as np
-from regions import PolygonSkyRegion
+from spherical_geometry.polygon import SingleSphericalPolygon
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -75,21 +75,19 @@ class Catalog(HealpixDataset):
         )
         return Catalog(filtered_catalog_info, filtered_cone_pixels)
 
-    def filter_by_polygon(self, polygon: PolygonSkyRegion) -> Tuple[Catalog, int]:
+    def filter_by_polygon(self, polygon: SingleSphericalPolygon) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap
-        with a polygonal sky region
+        with a polygonal sky region.
 
         Args:
-            polygon (PolygonSkyRegion): The polygon, represented by spherical
-                sky coordinates (ra and dec), to filter points with
+            polygon (SingleSphericalPolygon): The polygon to filter points with
 
         Returns:
-            A new catalog with only the pixels that overlap with the specified
-            polygon, and their maximum pixel order
+            A new catalog with only the pixels that overlap with the specified polygon.
         """
-        filtered_polygon_pixels, max_order = filter_pixels_by_polygon(self.pixel_tree, polygon)
+        filtered_polygon_pixels = filter_pixels_by_polygon(self.pixel_tree, polygon)
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
-        return Catalog(filtered_catalog_info, filtered_polygon_pixels), max_order
+        return Catalog(filtered_catalog_info, filtered_polygon_pixels)
 
     # pylint: disable=too-many-locals
     def generate_negative_tree_pixels(self) -> List[HealpixPixel]:

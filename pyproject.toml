@@ -18,13 +18,13 @@ dynamic = ["version"]
 requires-python = ">=3.9"
 dependencies = [
     "astropy",
-    "regions",
     "fsspec<=2023.9.2", # Used for abstract filesystems
     "healpy",
     "numba",
     "pandas",
     "pyarrow>=10.0.0",
-    "typing-extensions>=4.3.0"
+    "typing-extensions>=4.3.0",
+    "spherical-geometry", # To handle spherical sky polygons
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
