@@ -1,7 +1,6 @@
 import os
 
 from hipscat.io.file_io import (
-    append_paths_to_pointer,
     directory_has_contents,
     does_file_or_directory_exist,
     find_files_matching_path,
@@ -25,7 +24,7 @@ def test_file_or_dir_exist_false(small_sky_dir_cloud, example_cloud_storage_opti
 
 
 def test_is_regular_file(small_sky_dir_cloud, example_cloud_storage_options):
-    partition_info_file = os.path.join(small_sky_dir_cloud, "partition_info.csv")
+    partition_info_file = os.path.join(small_sky_dir_cloud, "catalog_info.json")
     assert is_regular_file(partition_info_file, storage_options=example_cloud_storage_options)
 
     assert not is_regular_file(small_sky_dir_cloud, storage_options=example_cloud_storage_options)
@@ -39,7 +38,7 @@ def test_find_files_matching_path(small_sky_dir_cloud, example_cloud_storage_opt
     assert (
         len(
             find_files_matching_path(
-                small_sky_dir_cloud, "partition_info.csv", storage_options=example_cloud_storage_options
+                small_sky_dir_cloud, "catalog_info.json", storage_options=example_cloud_storage_options
             )
         )
         == 1
@@ -49,7 +48,7 @@ def test_find_files_matching_path(small_sky_dir_cloud, example_cloud_storage_opt
     assert (
         len(
             find_files_matching_path(
-                small_sky_dir_cloud, "*.csv", storage_options=example_cloud_storage_options
+                small_sky_dir_cloud, "*.json", storage_options=example_cloud_storage_options
             )
         )
         == 1
@@ -85,13 +84,15 @@ def test_get_directory_contents(small_sky_order1_dir_cloud, example_cloud_storag
     small_sky_contents = get_directory_contents(
         small_sky_order1_dir_cloud, include_protocol=True, storage_options=example_cloud_storage_options
     )
-    assert len(small_sky_contents) == 4
 
     expected = [
-        os.path.join(small_sky_order1_dir_cloud, "Norder=1"),
-        os.path.join(small_sky_order1_dir_cloud, "catalog_info.json"),
-        os.path.join(small_sky_order1_dir_cloud, "partition_info.csv"),
-        os.path.join(small_sky_order1_dir_cloud, "point_map.fits"),
+        "Norder=1",
+        "_common_metadata",
+        "_metadata",
+        "catalog_info.json",
+        "point_map.fits",
     ]
+
+    expected = [os.path.join(small_sky_order1_dir_cloud, file_name) for file_name in expected]
 
     assert small_sky_contents == expected

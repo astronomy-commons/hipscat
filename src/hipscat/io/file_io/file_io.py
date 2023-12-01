@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
-from typing import Any, Dict, Union
+from typing import Any, Dict, Tuple, Union
 
 import healpy as hp
 import numpy as np
@@ -10,6 +10,7 @@ import pandas as pd
 import pyarrow.dataset as pds
 import pyarrow.parquet as pq
 import yaml
+from pyarrow.dataset import Dataset
 
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 
@@ -197,12 +198,20 @@ def read_parquet_metadata(
 
 def read_parquet_dataset(
     dir_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None, **kwargs
-):
+) -> Tuple(FilePointer, Dataset):
     """Read parquet dataset from directory pointer.
+
+    Note that pyarrow.dataset reads require that directory pointers don't contain a
+    leading slash, and the protocol prefix may additionally be removed. As such, we also return
+    the directory path that is formatted for pyarrow ingestion for follow-up.
 
     Args:
         dir_pointer: location of file to read metadata from
         storage_options: dictionary that contains abstract filesystem credentials
+    
+    Returns:
+        Tuple containing a path to the dataset (that is formatted for pyarrow ingestion)
+        and the dataset read from disk.
     """
     file_system, dir_pointer = get_fs(file_pointer=dir_pointer, storage_options=storage_options)
 
@@ -215,7 +224,7 @@ def read_parquet_dataset(
         format="parquet",
         **kwargs,
     )
-    return dataset
+    return (dir_pointer, dataset)
 
 
 def read_parquet_file(file_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None):

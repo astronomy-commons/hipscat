@@ -94,7 +94,7 @@ def write_parquet_metadata(
         "_metadata",
     ]
 
-    dataset = file_io.read_parquet_dataset(
+    (dataset_path, dataset) = file_io.read_parquet_dataset(
         catalog_path,
         storage_options=storage_options,
         ignore_prefixes=ignore_prefixes,
@@ -109,7 +109,7 @@ def write_parquet_metadata(
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
 
         # Users must set the file path of each chunk before combining the metadata.
-        relative_path = hips_file[len(catalog_path) :]
+        relative_path = hips_file[len(dataset_path) :]
         single_metadata.set_file_path(relative_path)
 
         if order_by_healpix:
