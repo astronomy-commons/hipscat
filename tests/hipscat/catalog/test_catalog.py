@@ -3,7 +3,7 @@
 import os
 
 import pytest
-from spherical_geometry.polygon import SphericalPolygon
+from spherical_geometry.polygon import SingleSphericalPolygon
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.pixel_math import HealpixPixel
@@ -133,7 +133,7 @@ def test_cone_filter_empty(small_sky_order1_catalog):
 
 def test_polygonal_filter(small_sky_order1_catalog):
     ra, dec = [282, 282, 272, 272], [-58, -55, -55, -58]
-    polygon = SphericalPolygon.from_lonlat(ra, dec)
+    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
 
     filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon)
     filtered_pixels = filtered_catalog.get_healpix_pixels()
@@ -147,7 +147,7 @@ def test_polygonal_filter(small_sky_order1_catalog):
 
 def test_polygonal_filter_big(small_sky_order1_catalog):
     ra, dec = [281, 281, 350, 350], [-69, -25, -25, -69]
-    polygon = SphericalPolygon.from_lonlat(ra, dec)
+    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
 
     filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon)
 
@@ -166,14 +166,14 @@ def test_polygonal_filter_multiple_order(catalog_info):
     ]
     catalog = Catalog(catalog_info, catalog_pixel_list)
     ra, dec = [47.1, 64.5, 64.5, 47.1], [6, 6, 6.27, 6.27]
-    polygon = SphericalPolygon.from_lonlat(ra, dec)
+    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
     filtered_catalog = catalog.filter_by_polygon(polygon)
     assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
 
 
 def test_polygonal_filter_empty(small_sky_order1_catalog):
     ra, dec = [0, 1, 0], [0, 1, 2]
-    polygon = SphericalPolygon.from_lonlat(ra, dec)
+    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
     filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon)
     assert len(filtered_catalog.get_healpix_pixels()) == 0
     assert len(filtered_catalog.pixel_tree) == 1
@@ -182,7 +182,7 @@ def test_polygonal_filter_empty(small_sky_order1_catalog):
 def test_polygonal_filter_invalid_shape(small_sky_order1_catalog):
     # Polygon is not convex, so the shape is invalid
     ra, dec = [0, 1, 1, 0], [1, 0, 1, 0]
-    polygon = SphericalPolygon.from_lonlat(ra, dec)
+    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
     with pytest.raises(RuntimeError):
         small_sky_order1_catalog.filter_by_polygon(polygon)
 
