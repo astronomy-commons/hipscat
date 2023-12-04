@@ -60,7 +60,14 @@ def test_is_regular_file(small_sky_dir):
 
 def test_find_files_matching_path(small_sky_dir):
     ## no_wildcard
-    assert len(find_files_matching_path(small_sky_dir, "catalog_info.json")) == 1
+    matching_files = find_files_matching_path(small_sky_dir, "catalog_info.json")
+    assert len(matching_files) == 1
+
+    matching_files_with_protocol = find_files_matching_path(
+        small_sky_dir, "catalog_info.json", include_protocol=True
+    )
+    assert matching_files_with_protocol[0] != matching_files[0]
+    assert matching_files[0] in matching_files_with_protocol[0]
 
     ## wilcard in the name
     assert len(find_files_matching_path(small_sky_dir, "*.json")) == 1

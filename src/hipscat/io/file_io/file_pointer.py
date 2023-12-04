@@ -154,25 +154,35 @@ def is_regular_file(pointer: FilePointer, storage_options: Union[Dict[Any, Any],
 
 
 def find_files_matching_path(
-    pointer: FilePointer, *paths: str, storage_options: Union[Dict[Any, Any], None] = None
+    pointer: FilePointer,
+    *paths: str,
+    include_protocol=False,
+    storage_options: Union[Dict[Any, Any], None] = None,
 ) -> List[FilePointer]:
     """Find files or directories matching the provided path parts.
 
     Args:
+        pointer: base File Pointer in which to find contents
         paths: any number of directory names optionally followed by a file name.
             directory or file names may be replaced with `*` as a matcher.
+        include_protocol: boolean on whether or not to include the filesystem protocol in the
+            returned directory contents
         storage_options: dictionary that contains abstract filesystem credentials
     Returns:
         New file pointers to files found matching the path
     """
     matcher = append_paths_to_pointer(pointer, *paths)
-    file_system, pointer = get_fs(pointer, storage_options)
-    return [get_file_pointer_from_path(x) for x in file_system.glob(matcher)]
+    file_system, _ = get_fs(pointer, storage_options)
+
+    contents = [get_file_pointer_from_path(x) for x in file_system.glob(matcher)]
+
+    if include_protocol:
+        contents = [get_full_file_pointer(x, protocol_path=pointer) for x in contents]
+
+    return contents
 
 
-def directory_has_contents(
-    pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-) -> bool:
+def directory_has_contents(pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
     """Checks if a directory already has some contents (any files or subdirectories)
 
     Args:
