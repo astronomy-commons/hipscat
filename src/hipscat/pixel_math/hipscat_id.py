@@ -39,7 +39,7 @@ def compute_hipscat_id(ra_values, dec_values):
 
     ## Construct the bit-shifted healpix segment
     value_count = len(ra_values)
-    mapped_pixels = hp.ang2pix(2**HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
+    mapped_pixels = hp.ang2pix(2 ** HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
 
     ## We sort to put pixels next to each other that will need to be counted.
     ## This simplifies the counter logic, as we can subtract the index where
@@ -66,7 +66,7 @@ def _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter):
     return shifted_pixels
 
 
-def hipscat_id_to_healpix(ids, target_order = HIPSCAT_ID_HEALPIX_ORDER):
+def hipscat_id_to_healpix(ids, target_order=HIPSCAT_ID_HEALPIX_ORDER):
     """Convert some hipscat ids to the healpix pixel at the specified order
     This is just bit-shifting the counter away.
 

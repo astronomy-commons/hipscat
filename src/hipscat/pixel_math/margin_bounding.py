@@ -43,7 +43,7 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
     if num_points == 0:
         return np.array([])
 
-    bounds = hp.vec2dir(hp.boundaries(2**pixel_order, pixel, step=step, nest=True), lonlat=True)
+    bounds = hp.vec2dir(hp.boundaries(2 ** pixel_order, pixel, step=step, nest=True), lonlat=True)
     margin_check = np.full((num_points,), False)
 
     distances = _get_boundary_point_distances(pixel_order, pixel, step)
@@ -125,7 +125,7 @@ def _find_minimum_distance(separations, distances, margin_threshold):  # pragma:
 
 def _get_boundary_point_distances(order, pixel, step):
     """Get the distance of the segments between healpixel boundary points"""
-    boundary_points = hp.vec2dir(hp.boundaries(2**order, pixel, step=step, nest=True), lonlat=True)
+    boundary_points = hp.vec2dir(hp.boundaries(2 ** order, pixel, step=step, nest=True), lonlat=True)
 
     # shift forward all the coordinates by one
     shift_ra = np.roll(boundary_points[0], 1)

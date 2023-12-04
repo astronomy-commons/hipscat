@@ -45,7 +45,7 @@ def generate_histogram(
     if not all(x in data.columns for x in required_columns):
         raise ValueError(f"Invalid column names in input: {ra_column}, {dec_column}")
     mapped_pixels = hp.ang2pix(
-        2**highest_order,
+        2 ** highest_order,
         data[ra_column].values,
         data[dec_column].values,
         lonlat=True,

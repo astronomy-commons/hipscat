@@ -82,7 +82,7 @@ def test_convert_lower_order_fails_negative():
 def test_convert_higher_order(order, pixel, delta_order):
     converted_pixels = HealpixPixel(order, pixel).convert_to_higher_order(delta_order)
     final_order = order + delta_order
-    for final_pixel in range(pixel * 4**delta_order, (pixel + 1) * 4**delta_order):
+    for final_pixel in range(pixel * 4 ** delta_order, (pixel + 1) * 4 ** delta_order):
         assert HealpixPixel(final_order, final_pixel) in converted_pixels
 
 
