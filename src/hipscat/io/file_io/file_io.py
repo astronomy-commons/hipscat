@@ -208,7 +208,7 @@ def read_parquet_dataset(
     Args:
         dir_pointer: location of file to read metadata from
         storage_options: dictionary that contains abstract filesystem credentials
-    
+
     Returns:
         Tuple containing a path to the dataset (that is formatted for pyarrow ingestion)
         and the dataset read from disk.
