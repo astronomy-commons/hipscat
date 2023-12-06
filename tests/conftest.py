@@ -88,8 +88,10 @@ def association_catalog_info_data() -> dict:
         "total_rows": 10,
         "primary_catalog": "small_sky",
         "primary_column": "id",
+        "primary_column_association": "id_small_sky",
         "join_catalog": "small_sky_order1",
         "join_column": "id",
+        "join_column_association": "id_small_sky_order1",
     }
 
 
