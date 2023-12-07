@@ -31,10 +31,8 @@ class AssociationCatalogInfo(BaseCatalogInfo):
     required_fields = BaseCatalogInfo.required_fields + [
         "primary_catalog",
         "primary_column",
-        "primary_column_association",
         "join_catalog",
         "join_column",
-        "join_column_association",
     ]
 
     DEFAULT_TYPE = CatalogType.ASSOCIATION
