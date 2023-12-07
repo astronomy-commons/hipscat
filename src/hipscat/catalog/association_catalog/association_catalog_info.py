@@ -16,15 +16,23 @@ class AssociationCatalogInfo(BaseCatalogInfo):
     primary_column: str | None = None
     """Column name in the primary (left) side of join"""
 
+    primary_column_association: str | None = None
+    """Column name in the association table that matches the primary (left) side of join"""
+
     join_catalog: str | None = None
     """Catalog name for the joining (right) side of association"""
 
     join_column: str | None = None
     """Column name in the joining (right) side of join"""
 
+    join_column_association: str | None = None
+    """Column name in the association table that matches the joining (right) side of join"""
+
     required_fields = BaseCatalogInfo.required_fields + [
         "primary_catalog",
+        "primary_column",
         "join_catalog",
+        "join_column",
     ]
 
     DEFAULT_TYPE = CatalogType.ASSOCIATION
