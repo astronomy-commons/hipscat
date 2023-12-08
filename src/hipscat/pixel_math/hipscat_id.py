@@ -27,14 +27,14 @@ HIPSCAT_ID_HEALPIX_ORDER = 19
 HIPSCAT_ID_MAX = 2**64 - 1
 
 
-def compute_hipscat_id(ra_values: List[float], dec_values: List[float]) -> List[int]:
+def compute_hipscat_id(ra_values: List[float], dec_values: List[float]) -> np.ndarray:
     """Compute the hipscat ID field.
 
     Args:
         ra_values (List[float]): celestial coordinates, right ascension
         dec_values (List[float]): celestial coordinates, declination
     Returns:
-        one-dimensional array of int64s with hipscat IDs for the sky positions.
+        one-dimensional numpy array of int64s with hipscat IDs for the sky positions.
     Raises:
         ValueError: if the length of the input lists don't match.
     """
@@ -70,7 +70,7 @@ def _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter):
     return shifted_pixels
 
 
-def hipscat_id_to_healpix(ids: List[int], target_order: int = HIPSCAT_ID_HEALPIX_ORDER) -> List[int]:
+def hipscat_id_to_healpix(ids: List[int], target_order: int = HIPSCAT_ID_HEALPIX_ORDER) -> np.ndarray:
     """Convert some hipscat ids to the healpix pixel at the specified order
     This is just bit-shifting the counter away.
 
@@ -79,14 +79,14 @@ def hipscat_id_to_healpix(ids: List[int], target_order: int = HIPSCAT_ID_HEALPIX
         target_order (int64): Defaults to `HIPSCAT_ID_HEALPIX_ORDER`.
             The order of the pixel to get from the hipscat ids.
     Returns:
-        list of target_order pixels from the hipscat id
+        numpy array of target_order pixels from the hipscat id
     """
     return np.asarray(ids, dtype=np.uint64) >> (64 - (4 + 2 * target_order))
 
 
 def healpix_to_hipscat_id(
     order: int | List[int], pixel: int | List[int], counter: int | List[int] = 0
-) -> int | List[int]:
+) -> np.uint64 | np.ndarray:
     """Convert a healpix pixel to a hipscat_id
 
     This maps the healpix pixel to the lowest pixel number within that pixel at order 19,
@@ -99,7 +99,7 @@ def healpix_to_hipscat_id(
         pixel (int64 | List[int64]): pixel number in nested ordering of pixel to convert
         counter (int64 | List[int64]) (Default: 0): counter value in converted hipscat id
     Returns:
-        hipscat id or list of hipscat ids
+        hipscat id or numpy array of hipscat ids
     """
     order = np.uint64(order)
     pixel = np.uint64(pixel)
