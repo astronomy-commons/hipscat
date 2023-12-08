@@ -31,8 +31,8 @@ def compute_hipscat_id(ra_values: List[float], dec_values: List[float]) -> List[
     """Compute the hipscat ID field.
 
     Args:
-        ra_values (list[float]): celestial coordinates, right ascension
-        dec_values (list[float]): celestial coordinates, declination
+        ra_values (List[float]): celestial coordinates, right ascension
+        dec_values (List[float]): celestial coordinates, declination
     Returns:
         one-dimensional array of int64s with hipscat IDs for the sky positions.
     Raises:
