@@ -15,12 +15,16 @@ between spatially partitioned data files.
 
 See the README in this directory for more information on the fiddly pixel math.
 """
+from __future__ import annotations
+
+from typing import List
 
 import healpy as hp
 import numpy as np
 
 HIPSCAT_ID_COLUMN = "_hipscat_index"
 HIPSCAT_ID_HEALPIX_ORDER = 19
+HIPSCAT_ID_MAX = 2**64 - 1
 
 
 def compute_hipscat_id(ra_values, dec_values):
@@ -39,7 +43,7 @@ def compute_hipscat_id(ra_values, dec_values):
 
     ## Construct the bit-shifted healpix segment
     value_count = len(ra_values)
-    mapped_pixels = hp.ang2pix(2 ** HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
+    mapped_pixels = hp.ang2pix(2**HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
 
     ## We sort to put pixels next to each other that will need to be counted.
     ## This simplifies the counter logic, as we can subtract the index where
@@ -66,19 +70,23 @@ def _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter):
     return shifted_pixels
 
 
-def hipscat_id_to_healpix(ids, target_order=HIPSCAT_ID_HEALPIX_ORDER):
+def hipscat_id_to_healpix(ids: List[int], target_order: int = HIPSCAT_ID_HEALPIX_ORDER) -> List[int]:
     """Convert some hipscat ids to the healpix pixel at the specified order
     This is just bit-shifting the counter away.
 
     Args:
-        ids (list[int64]): list of well-formatted hipscat ids
+        ids (List[int64]): list of well-formatted hipscat ids
+        target_order (int64): Defaults to `HIPSCAT_ID_HEALPIX_ORDER`.
+            The order of the pixel to get from the hipscat ids.
     Returns:
         list of target_order pixels from the hipscat id
     """
     return np.asarray(ids, dtype=np.uint64) >> (64 - (4 + 2 * target_order))
 
 
-def healpix_to_hipscat_id(order: int, pixel: int, counter: int = 0) -> int:
+def healpix_to_hipscat_id(
+    order: int | List[int], pixel: int | List[int], counter: int | List[int] = 0
+) -> int | List[int]:
     """Convert a healpix pixel to a hipscat_id
 
     This maps the healpix pixel to the lowest pixel number within that pixel at order 19,
@@ -87,11 +95,11 @@ def healpix_to_hipscat_id(order: int, pixel: int, counter: int = 0) -> int:
     Useful for operations such as filtering by hipscat_id.
 
     Args:
-        order (int64 | list[int64]): order of pixel to convert
-        pixel (int64 | list[int64]): pixel number in nested ordering of pixel to convert
-        counter (int64 | list[int64]) (Default: 0): counter value in converted hipscat id
+        order (int64 | List[int64]): order of pixel to convert
+        pixel (int64 | List[int64]): pixel number in nested ordering of pixel to convert
+        counter (int64 | List[int64]) (Default: 0): counter value in converted hipscat id
     Returns:
-        list of hipscat ids
+        hipscat id or list of hipscat ids
     """
     order = np.uint64(order)
     pixel = np.uint64(pixel)
