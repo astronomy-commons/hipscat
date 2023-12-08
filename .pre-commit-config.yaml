@@ -79,7 +79,7 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        files: ^(tests|benchmarks|cloud_tests)/
+        files: ^(tests|benchmarks)/
         args:
           [
             "-rn", # Only display messages
