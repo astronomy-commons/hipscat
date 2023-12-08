@@ -27,7 +27,7 @@ HIPSCAT_ID_HEALPIX_ORDER = 19
 HIPSCAT_ID_MAX = 2**64 - 1
 
 
-def compute_hipscat_id(ra_values, dec_values):
+def compute_hipscat_id(ra_values: List[float], dec_values: List[float]) -> List[int]:
     """Compute the hipscat ID field.
 
     Args:
