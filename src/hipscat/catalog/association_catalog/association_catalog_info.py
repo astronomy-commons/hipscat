@@ -28,11 +28,15 @@ class AssociationCatalogInfo(BaseCatalogInfo):
     join_column_association: str | None = None
     """Column name in the association table that matches the joining (right) side of join"""
 
+    contains_leaf_files: bool = False
+    """Whether or not the association catalog contains leaf parquet files"""
+
     required_fields = BaseCatalogInfo.required_fields + [
         "primary_catalog",
         "primary_column",
         "join_catalog",
         "join_column",
+        "contains_leaf_files"
     ]
 
     DEFAULT_TYPE = CatalogType.ASSOCIATION
