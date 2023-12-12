@@ -3,13 +3,18 @@
 For more information on writing benchmarks:
 https://asv.readthedocs.io/en/stable/writing_benchmarks.html."""
 
+import os
+
 import healpy as hp
 import numpy as np
 
 import hipscat.pixel_math as hist
-from hipscat.catalog import Catalog
+from hipscat.catalog import Catalog, PartitionInfo
+from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.io import paths
 from hipscat.pixel_math import HealpixPixel
+from hipscat.pixel_tree import PixelAlignment, align_trees
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
@@ -50,3 +55,62 @@ class Suite:
 
     def time_pixel_tree_creation(self):
         PixelTreeBuilder.from_healpix(self.pixel_list)
+
+
+class MetadataSuite:
+    """Suite that generates _metadata files and benchmarks the operations on them."""
+
+    def setup_cache(self):
+        root_dir = os.getcwd()
+
+        ## Create partition info for catalog a (only at order 7)
+        pixel_list_a = [HealpixPixel(7, pixel) for pixel in np.arange(100_000)]
+        catalog_path_a = os.path.join(root_dir, "catalog_a")
+        os.makedirs(catalog_path_a, exist_ok=True)
+        partition_info = PartitionInfo.from_healpix(pixel_list_a)
+        partition_info.write_to_metadata_files(catalog_path_a)
+
+        ## Create partition info for catalog a (only at order 6)
+        pixel_list_b = [HealpixPixel(6, pixel) for pixel in np.arange(25_000)]
+        catalog_path_b = os.path.join(root_dir, "catalog_b")
+        os.makedirs(catalog_path_b, exist_ok=True)
+        partition_info = PartitionInfo.from_healpix(pixel_list_b)
+        partition_info.write_to_metadata_files(catalog_path_b)
+
+        ## Fake an association table between the two
+        tree_a = PixelTreeBuilder.from_healpix(pixel_list_a)
+        tree_b = PixelTreeBuilder.from_healpix(pixel_list_b)
+        alignment = align_trees(tree_a, tree_b)
+        alignment_df = alignment.pixel_mapping[
+            [
+                PixelAlignment.PRIMARY_ORDER_COLUMN_NAME,
+                PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME,
+                PixelAlignment.JOIN_ORDER_COLUMN_NAME,
+                PixelAlignment.JOIN_PIXEL_COLUMN_NAME,
+            ]
+        ]
+        alignment_df = alignment_df.rename(
+            columns={
+                PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: "Norder",
+                PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: "Npix",
+            }
+        )
+
+        association_catalog_path = os.path.join(root_dir, "assocation_a_b")
+        os.makedirs(association_catalog_path, exist_ok=True)
+        partition_info = PartitionJoinInfo(alignment_df)
+        partition_info.write_to_metadata_files(association_catalog_path)
+
+        return (catalog_path_a, catalog_path_b, association_catalog_path)
+
+    def time_load_partition_info_order7(self, cache):
+        partition_info_pointer = paths.get_parquet_metadata_pointer(cache[0])
+        PartitionInfo.read_from_file(partition_info_pointer)
+
+    def time_load_partition_info_order6(self, cache):
+        partition_info_pointer = paths.get_parquet_metadata_pointer(cache[1])
+        PartitionInfo.read_from_file(partition_info_pointer)
+
+    def time_load_partition_join_info(self, cache):
+        partition_info_pointer = paths.get_parquet_metadata_pointer(cache[2])
+        PartitionJoinInfo.read_from_file(partition_info_pointer)
