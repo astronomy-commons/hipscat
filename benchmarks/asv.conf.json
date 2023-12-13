@@ -17,6 +17,7 @@
     "build_command": [
         "python -m build --wheel -o {build_cache_dir} {build_dir}"
     ],
+    "default_benchmark_timeout": 300,
     // The DVCS being used. If not set, it will be automatically
     // determined from "repo" by looking at the protocol in the URL
     // (if remote), or by looking for special directories, such as
