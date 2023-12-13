@@ -161,7 +161,7 @@ class PixelTreeBuilder:
         if parent.node_type == PixelNodeType.LEAF:
             raise ValueError(
                 f"Cannot create node at {str(pixel)}, "
-                f"parent node at {str(parent_pixel)} has node type leaf"
+                f"parent node at {str(parent.pixel)} has node type leaf"
             )
         node_to_replace = None
         if pixel in self:
