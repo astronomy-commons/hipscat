@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, List, Union
 
+import numpy as np
 import pandas as pd
 import pyarrow as pa
 from typing_extensions import Self
@@ -92,7 +93,7 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, metadata_file: FilePointer, strict=False, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Self:
         """Read partition join info from a `_metadata` file to create an object
 
@@ -103,18 +104,66 @@ class PartitionJoinInfo:
         Returns:
             A `PartitionJoinInfo` object with the data from the file
         """
-        pixel_frame = pd.DataFrame(
-            [
-                (
-                    row_group_stat_single_value(row_group, cls.PRIMARY_ORDER_COLUMN_NAME),
-                    row_group_stat_single_value(row_group, cls.PRIMARY_PIXEL_COLUMN_NAME),
-                    row_group_stat_single_value(row_group, cls.JOIN_ORDER_COLUMN_NAME),
-                    row_group_stat_single_value(row_group, cls.JOIN_PIXEL_COLUMN_NAME),
-                )
-                for row_group in read_row_group_fragments(metadata_file, storage_options)
-            ],
-            columns=cls.COLUMN_NAMES,
-        )
+        if strict:
+            pixel_frame = pd.DataFrame(
+                [
+                    (
+                        row_group_stat_single_value(row_group, cls.PRIMARY_ORDER_COLUMN_NAME),
+                        row_group_stat_single_value(row_group, cls.PRIMARY_PIXEL_COLUMN_NAME),
+                        row_group_stat_single_value(row_group, cls.JOIN_ORDER_COLUMN_NAME),
+                        row_group_stat_single_value(row_group, cls.JOIN_PIXEL_COLUMN_NAME),
+                    )
+                    for row_group in read_row_group_fragments(metadata_file, storage_options)
+                ],
+                columns=cls.COLUMN_NAMES,
+            )
+        else:
+            total_metadata = file_io.read_parquet_metadata(metadata_file, storage_options)
+            num_row_groups = total_metadata.num_row_groups
+
+            first_row_group = total_metadata.row_group(0)
+            norder_column = -1
+            npix_column = -1
+            join_norder_column = -1
+            join_npix_column = -1
+
+            for i in range(0, first_row_group.num_columns):
+                column = first_row_group.column(i)
+                if column.path_in_schema == cls.PRIMARY_ORDER_COLUMN_NAME:
+                    norder_column = i
+                elif column.path_in_schema == cls.PRIMARY_PIXEL_COLUMN_NAME:
+                    npix_column = i
+                elif column.path_in_schema == cls.JOIN_ORDER_COLUMN_NAME:
+                    join_norder_column = i
+                elif column.path_in_schema == cls.JOIN_PIXEL_COLUMN_NAME:
+                    join_npix_column = i
+
+            missing_columns = []
+            if norder_column == -1:
+                missing_columns.append(cls.PRIMARY_ORDER_COLUMN_NAME)
+            if npix_column == -1:
+                missing_columns.append(cls.PRIMARY_PIXEL_COLUMN_NAME)
+            if join_norder_column == -1:
+                missing_columns.append(cls.JOIN_ORDER_COLUMN_NAME)
+            if join_npix_column == -1:
+                missing_columns.append(cls.JOIN_PIXEL_COLUMN_NAME)
+
+            if len(missing_columns) != 0:
+                raise ValueError(f"Metadata missing columns ({missing_columns})")
+
+            row_group_index = np.arange(0, num_row_groups)
+            pixel_frame = pd.DataFrame(
+                [
+                    (
+                        total_metadata.row_group(index).column(norder_column).statistics.min,
+                        total_metadata.row_group(index).column(npix_column).statistics.min,
+                        total_metadata.row_group(index).column(join_norder_column).statistics.min,
+                        total_metadata.row_group(index).column(join_npix_column).statistics.min,
+                    )
+                    for index in row_group_index
+                ],
+                columns=cls.COLUMN_NAMES,
+            )
 
         return cls(pixel_frame)
 

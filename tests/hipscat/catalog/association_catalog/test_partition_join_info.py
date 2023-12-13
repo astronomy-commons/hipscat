@@ -27,6 +27,34 @@ def test_read_from_metadata(association_catalog_join_pixels, association_catalog
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
 
 
+def test_read_from_metadata_fail(tmp_path):
+    empty_dataframe = pd.DataFrame()
+    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    empty_dataframe.to_parquet(metadata_filename)
+    with pytest.raises(ValueError, match="missing columns"):
+        PartitionJoinInfo.read_from_file(metadata_filename)
+
+    with pytest.raises(ValueError, match="at least one column"):
+        PartitionJoinInfo.read_from_file(metadata_filename, strict=True)
+
+    ## Starting with a valid join info, remove each column and make sure we error.
+    valid_ish_dataframe = pd.DataFrame(
+        {"data": [0], "Norder": [3], "Npix": [45], "join_Norder": [3], "join_Npix": [45]}
+    )
+    metadata_filename = os.path.join(tmp_path, "test_metadata.parquet")
+    valid_ish_dataframe.to_parquet(metadata_filename)
+    PartitionJoinInfo.read_from_file(metadata_filename)
+
+    for drop_column in ["Norder", "Npix", "join_Norder", "join_Npix"]:
+        missing_column_dataframe = valid_ish_dataframe.drop(labels=drop_column, axis=1)
+        missing_column_dataframe.to_parquet(metadata_filename)
+        with pytest.raises(ValueError, match=f"missing .*{drop_column}"):
+            PartitionJoinInfo.read_from_file(metadata_filename)
+
+    with pytest.raises(ValueError, match="empty file path"):
+        PartitionJoinInfo.read_from_file(metadata_filename, strict=True)
+
+
 def test_primary_to_join_map(association_catalog_join_pixels):
     info = PartitionJoinInfo(association_catalog_join_pixels)
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)

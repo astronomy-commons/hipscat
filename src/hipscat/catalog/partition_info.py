@@ -76,7 +76,9 @@ class PartitionInfo:
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
     @classmethod
-    def read_from_file(cls, metadata_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
+    def read_from_file(
+        cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
+    ) -> PartitionInfo:
         """Read partition info from a `_metadata` file to create an object
 
         Args:
@@ -86,13 +88,41 @@ class PartitionInfo:
         Returns:
             A `PartitionInfo` object with the data from the file
         """
-        pixel_list = [
-            HealpixPixel(
-                row_group_stat_single_value(row_group, cls.METADATA_ORDER_COLUMN_NAME),
-                row_group_stat_single_value(row_group, cls.METADATA_PIXEL_COLUMN_NAME),
-            )
-            for row_group in read_row_group_fragments(metadata_file, storage_options)
-        ]
+        if strict:
+            pixel_list = [
+                HealpixPixel(
+                    row_group_stat_single_value(row_group, cls.METADATA_ORDER_COLUMN_NAME),
+                    row_group_stat_single_value(row_group, cls.METADATA_PIXEL_COLUMN_NAME),
+                )
+                for row_group in read_row_group_fragments(metadata_file, storage_options)
+            ]
+        else:
+            total_metadata = file_io.read_parquet_metadata(metadata_file, storage_options)
+            num_row_groups = total_metadata.num_row_groups
+
+            first_row_group = total_metadata.row_group(0)
+            norder_column = -1
+            npix_column = -1
+
+            for i in range(0, first_row_group.num_columns):
+                column = first_row_group.column(i)
+                if column.path_in_schema == cls.METADATA_ORDER_COLUMN_NAME:
+                    norder_column = i
+                elif column.path_in_schema == cls.METADATA_PIXEL_COLUMN_NAME:
+                    npix_column = i
+
+            if norder_column == -1 or npix_column == -1:
+                raise ValueError("Metadata missing Norder or Npix column")
+
+            row_group_index = np.arange(0, num_row_groups)
+
+            pixel_list = [
+                HealpixPixel(
+                    total_metadata.row_group(index).column(norder_column).statistics.min,
+                    total_metadata.row_group(index).column(npix_column).statistics.min,
+                )
+                for index in row_group_index
+            ]
         ## Remove duplicates, preserving order.
         ## In the case of association partition join info, we may have multiple entries
         ## for the primary order/pixels.
