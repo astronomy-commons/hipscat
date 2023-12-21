@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Tuple, TypeAlias
 
 import healpy as hp
@@ -8,28 +10,34 @@ from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
-# Pair of sky coordinates (ra, dec)
-SkyCoordinates: TypeAlias = Tuple[float, float]
+# Pair of spherical sky coordinates (ra, dec)
+SphericalCoordinates: TypeAlias = Tuple[float, float]
 
 # Sky coordinates on the unit sphere, in cartesian representation (x,y,z)
 CartesianCoordinates: TypeAlias = Tuple[float, float, float]
 
 
 def filter_pixels_by_polygon(
-    pixel_tree: PixelTree, vertices: List[CartesianCoordinates]
+    pixel_tree: PixelTree,
+    vertices: List[SphericalCoordinates] | List[CartesianCoordinates]
 ) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a list of healpix pixels that
     overlap with a polygonal region.
 
     Args:
         pixel_tree (PixelTree): The catalog tree to filter pixels from.
-        vertices (List[CartesianCoordinates]): The vertices of the polygon to filter pixels
-            with, in cartesian representation, with shape (Num vertices, 3).
+        vertices (List[SphericalCoordinates] | List[CartesianCoordinates]): The vertices
+            of the polygon to filter points with, in lists of (ra,dec) or (x,y,z) points
+            on the unit sphere.
 
     Returns:
         List of HealpixPixel, representing only the pixels that overlap
         with the specified polygonal region, and the maximum pixel order.
     """
+    # Get the coordinates vector on the unit sphere if we were provided
+    # with polygon spherical coordinates of ra and dec
+    if all(len(vertex) == 2 for vertex in vertices):
+        vertices = hp.ang2vec(*np.array(vertices).T, lonlat=True)
     max_order = max(pixel_tree.pixels.keys())
     polygon_tree = _generate_polygon_pixel_tree(vertices, max_order)
     return get_filtered_pixel_list(pixel_tree, polygon_tree)

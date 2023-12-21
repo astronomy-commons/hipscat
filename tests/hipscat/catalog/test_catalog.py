@@ -2,8 +2,9 @@
 
 import os
 
+import healpy as hp
+import numpy as np
 import pytest
-from spherical_geometry.polygon import SingleSphericalPolygon
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.pixel_math import HealpixPixel
@@ -132,12 +133,9 @@ def test_cone_filter_empty(small_sky_order1_catalog):
 
 
 def test_polygonal_filter(small_sky_order1_catalog):
-    ra, dec = [282, 282, 272, 272], [-58, -55, -55, -58]
-    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
-
-    filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon)
+    polygon_vertices = [(282, -58), (282, -55), (272, -55), (272, -58)]
+    filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
     filtered_pixels = filtered_catalog.get_healpix_pixels()
-
     assert len(filtered_pixels) == 1
     assert filtered_pixels == [HealpixPixel(1, 46)]
     assert (1, 46) in filtered_catalog.pixel_tree
@@ -145,12 +143,19 @@ def test_polygonal_filter(small_sky_order1_catalog):
     assert filtered_catalog.catalog_info.total_rows is None
 
 
+def test_polygon_filter_with_cartesian_coordinates(small_sky_order1_catalog):
+    sky_vertices = [(282, -58), (282, -55), (272, -55), (272, -58)]
+    cartesian_vertices = hp.ang2vec(*np.array(sky_vertices).T, lonlat=True)
+    filtered_catalog_1 = small_sky_order1_catalog.filter_by_polygon(sky_vertices)
+    filtered_catalog_2 = small_sky_order1_catalog.filter_by_polygon(cartesian_vertices)
+    assert filtered_catalog_1.get_healpix_pixels() == filtered_catalog_2.get_healpix_pixels()
+    assert (1, 46) in filtered_catalog_1.pixel_tree
+    assert (1, 46) in filtered_catalog_2.pixel_tree
+
+
 def test_polygonal_filter_big(small_sky_order1_catalog):
-    ra, dec = [281, 281, 350, 350], [-69, -25, -25, -69]
-    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
-
-    filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon)
-
+    polygon_vertices = [(281, -69), (281, -25), (350, -25), (350, -69)]
+    filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
     assert len(filtered_catalog.get_healpix_pixels()) == 4
     assert (1, 44) in filtered_catalog.pixel_tree
     assert (1, 45) in filtered_catalog.pixel_tree
@@ -165,26 +170,23 @@ def test_polygonal_filter_multiple_order(catalog_info):
         HealpixPixel(7, 5000),
     ]
     catalog = Catalog(catalog_info, catalog_pixel_list)
-    ra, dec = [47.1, 64.5, 64.5, 47.1], [6, 6, 6.27, 6.27]
-    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
-    filtered_catalog = catalog.filter_by_polygon(polygon)
+    polygon_vertices = [(47.1, 6), (64.5, 6), (64.5, 6.27), (47.1, 6.27)]
+    filtered_catalog = catalog.filter_by_polygon(polygon_vertices)
     assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
 
 
 def test_polygonal_filter_empty(small_sky_order1_catalog):
-    ra, dec = [0, 1, 0], [0, 1, 2]
-    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
-    filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon)
+    polygon_vertices = [(0, 0), (1, 1), (0, 2)]
+    filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
     assert len(filtered_catalog.get_healpix_pixels()) == 0
     assert len(filtered_catalog.pixel_tree) == 1
 
 
 def test_polygonal_filter_invalid_shape(small_sky_order1_catalog):
     # Polygon is not convex, so the shape is invalid
-    ra, dec = [0, 1, 1, 0], [1, 0, 1, 0]
-    polygon = SingleSphericalPolygon.from_lonlat(ra, dec)
+    polygon_vertices = [(0, 1), (1, 0), (1, 1), (0, 0)]
     with pytest.raises(RuntimeError):
-        small_sky_order1_catalog.filter_by_polygon(polygon)
+        small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
 
 
 def test_empty_directory(tmp_path):
