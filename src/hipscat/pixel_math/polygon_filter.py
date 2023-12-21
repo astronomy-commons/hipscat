@@ -8,17 +8,22 @@ from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
-# The vertices of the polygon on the unit sphere, in cartesian representation (x,y,z)
-PolygonVertices: TypeAlias = List[Tuple[float, float, float]]
+# Pair of sky coordinates (ra, dec)
+SkyCoordinates: TypeAlias = Tuple[float, float]
+
+# Sky coordinates on the unit sphere, in cartesian representation (x,y,z)
+CartesianCoordinates: TypeAlias = Tuple[float, float, float]
 
 
-def filter_pixels_by_polygon(pixel_tree: PixelTree, vertices: PolygonVertices) -> List[HealpixPixel]:
+def filter_pixels_by_polygon(
+    pixel_tree: PixelTree, vertices: List[CartesianCoordinates]
+) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a list of healpix pixels that
     overlap with a polygonal region.
 
     Args:
         pixel_tree (PixelTree): The catalog tree to filter pixels from.
-        vertices (PolygonVertices): The vertices of the polygon to filter pixels
+        vertices (List[CartesianCoordinates]): The vertices of the polygon to filter pixels
             with, in cartesian representation, with shape (Num vertices, 3).
 
     Returns:
