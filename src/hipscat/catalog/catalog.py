@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Union
 
 import healpy as hp
 import numpy as np
-from spherical_geometry.polygon import SingleSphericalPolygon
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -14,7 +13,7 @@ from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
-from hipscat.pixel_math.polygon_filter import filter_pixels_by_polygon
+from hipscat.pixel_math.polygon_filter import PolygonVertices, filter_pixels_by_polygon
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
@@ -75,17 +74,17 @@ class Catalog(HealpixDataset):
         )
         return Catalog(filtered_catalog_info, filtered_cone_pixels)
 
-    def filter_by_polygon(self, polygon: SingleSphericalPolygon) -> Catalog:
+    def filter_by_polygon(self, vertices: PolygonVertices) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap
         with a polygonal sky region.
 
         Args:
-            polygon (SingleSphericalPolygon): The polygon to filter points with
+            vertices (PolygonVertices): The vertices of the polygon to filter points with.
 
         Returns:
             A new catalog with only the pixels that overlap with the specified polygon.
         """
-        filtered_polygon_pixels = filter_pixels_by_polygon(self.pixel_tree, polygon)
+        filtered_polygon_pixels = filter_pixels_by_polygon(self.pixel_tree, vertices)
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
         return Catalog(filtered_catalog_info, filtered_polygon_pixels)
 

@@ -1,33 +1,32 @@
-from typing import List
+from typing import List, Tuple, TypeAlias
 
 import healpy as hp
 import numpy as np
-from spherical_geometry.polygon import SingleSphericalPolygon
 
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
+# The vertices of the polygon on the unit sphere, in cartesian representation (x,y,z)
+PolygonVertices: TypeAlias = List[Tuple[float, float, float]]
 
-def filter_pixels_by_polygon(pixel_tree: PixelTree, polygon: SingleSphericalPolygon) -> List[HealpixPixel]:
-    """Filter the leaf pixels in a pixel tree to return a list of
-    healpix pixels that overlap with a polygonal region.
+
+def filter_pixels_by_polygon(pixel_tree: PixelTree, vertices: PolygonVertices) -> List[HealpixPixel]:
+    """Filter the leaf pixels in a pixel tree to return a list of healpix pixels that
+    overlap with a polygonal region.
 
     Args:
-        pixel_tree (PixelTree): The catalog tree to filter pixels from
-        polygon (SingleSphericalPolygon): The polygon to filter pixels with
+        pixel_tree (PixelTree): The catalog tree to filter pixels from.
+        vertices (PolygonVertices): The vertices of the polygon to filter pixels
+            with, in cartesian representation, with shape (Num vertices, 3).
 
     Returns:
         List of HealpixPixel, representing only the pixels that overlap
         with the specified polygonal region, and the maximum pixel order.
     """
     max_order = max(pixel_tree.pixels.keys())
-    # The SingleSphericalPolygon is an explicitly closed polygon, meaning
-    # that the first and last vertices are the same. Only the first of the
-    # repeated vertices is kept.
-    cartesian_vertices = np.array(list(polygon.points))[:-1]
-    polygon_tree = _generate_polygon_pixel_tree(cartesian_vertices, max_order)
+    polygon_tree = _generate_polygon_pixel_tree(vertices, max_order)
     return get_filtered_pixel_list(pixel_tree, polygon_tree)
 
 
