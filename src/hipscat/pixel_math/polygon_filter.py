@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import List, Tuple, TypeAlias
+from typing import List, Tuple
 
 import healpy as hp
 import numpy as np
+from typing_extensions import TypeAlias
 
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
