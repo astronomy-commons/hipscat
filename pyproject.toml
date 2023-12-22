@@ -24,7 +24,6 @@ dependencies = [
     "pandas",
     "pyarrow>=10.0.0",
     "typing-extensions>=4.3.0",
-    "spherical-geometry", # To handle spherical sky polygons
 ]
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
