@@ -26,6 +26,9 @@ dependencies = [
     "typing-extensions>=4.3.0",
 ]
 
+[project.urls]
+"Source Code" = "https://github.com/astronomy-commons/hipscat"
+
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
 dev = [
@@ -49,10 +52,6 @@ dev = [
     "sphinx-autoapi", # Used to automatically generate api documentation
     "sphinx-rtd-theme" # Used to render documentation
 ]
-
-[metadata]
-long_description = { file = "README.md" }
-url = "https://github.com/astronomy-commons/hipscat"
 
 [build-system]
 requires = [
