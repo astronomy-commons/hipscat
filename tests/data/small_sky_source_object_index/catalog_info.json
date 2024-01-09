@@ -1,0 +1,8 @@
+{
+    "catalog_name": "small_sky_source_object_index",
+    "catalog_type": "index",
+    "total_rows": 148,
+    "primary_catalog": "/home/delucchi/git/hipscat-import/tests/hipscat_import/data/small_sky_source_catalog/",
+    "indexing_column": "object_id",
+    "extra_columns": []
+}

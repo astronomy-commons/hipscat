@@ -57,7 +57,10 @@ def basic_catalog_parquet_metadata():
             pa.field("dec", pa.float64()),
             pa.field("ra_error", pa.int64()),
             pa.field("dec_error", pa.int64()),
-            pa.field("__index_level_0__", pa.int64()),
+            pa.field("Norder", pa.uint8()),
+            pa.field("Dir", pa.uint64()),
+            pa.field("Npix", pa.uint64()),
+            pa.field("_hipscat_index", pa.uint64()),
         ]
     )
 

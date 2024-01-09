@@ -69,8 +69,8 @@ def test_find_files_matching_path(small_sky_dir):
     assert matching_files_with_protocol[0] != matching_files[0]
     assert matching_files[0] in matching_files_with_protocol[0]
 
-    ## wilcard in the name
-    assert len(find_files_matching_path(small_sky_dir, "*.json")) == 1
+    ## wilcard in the name (matches catalog_info and provenance_info)
+    assert len(find_files_matching_path(small_sky_dir, "*.json")) == 2
 
 
 def test_find_files_matching_path_directory(small_sky_order1_dir):
@@ -92,14 +92,14 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
         if not content.startswith("/"):
             small_sky_contents[i] = f"/{content}"
 
-    assert len(small_sky_contents) == 5
-
     expected = [
         "Norder=1",
+        "README.md",
         "_common_metadata",
         "_metadata",
         "catalog_info.json",
         "point_map.fits",
+        "provenance_info.json",
     ]
 
     expected = [os.path.join(small_sky_order1_dir, file_name) for file_name in expected]
