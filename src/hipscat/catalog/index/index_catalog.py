@@ -13,10 +13,15 @@ from hipscat.pixel_math.healpix_pixel_function import get_pixel_argsort
 
 
 class IndexCatalog(Dataset):
+    """An index into HiPSCat Catalog for enabling fast lookups on non-spatial values.
+
+    Note that this is not a true "HiPScat Catalog", as it is not partitioned spatially.
+    """
+
     CatalogInfoClass: TypeAlias = IndexCatalogInfo
     catalog_info: CatalogInfoClass
 
-    def loc_partitions(self, ids: List[str | int]) -> List[HealpixPixel]:
+    def loc_partitions(self, ids) -> List[HealpixPixel]:
         """Find the set of partitions in the primary catalog for the
         ids provided.
 
