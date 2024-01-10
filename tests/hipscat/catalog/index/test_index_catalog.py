@@ -1,4 +1,5 @@
 import os
+
 import numpy.testing as npt
 
 from hipscat.catalog.index.index_catalog import IndexCatalog
