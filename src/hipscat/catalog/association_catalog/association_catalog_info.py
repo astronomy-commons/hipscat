@@ -36,7 +36,7 @@ class AssociationCatalogInfo(BaseCatalogInfo):
         "primary_column",
         "join_catalog",
         "join_column",
-        "contains_leaf_files"
+        "contains_leaf_files",
     ]
 
     DEFAULT_TYPE = CatalogType.ASSOCIATION

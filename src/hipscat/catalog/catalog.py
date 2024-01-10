@@ -111,7 +111,7 @@ class Catalog(HealpixDataset):
 
         covered_orders = []
         for order_i in range(0, max_depth + 1):
-            npix = hp.nside2npix(2 ** order_i)
+            npix = hp.nside2npix(2**order_i)
             covered_orders.append(np.zeros(npix))
 
         for order in range(0, max_depth + 1):
