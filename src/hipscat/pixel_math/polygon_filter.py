@@ -19,8 +19,7 @@ CartesianCoordinates: TypeAlias = Tuple[float, float, float]
 
 
 def filter_pixels_by_polygon(
-    pixel_tree: PixelTree,
-    vertices: List[SphericalCoordinates] | List[CartesianCoordinates]
+    pixel_tree: PixelTree, vertices: List[SphericalCoordinates] | List[CartesianCoordinates]
 ) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a list of healpix pixels that
     overlap with a polygonal region.
