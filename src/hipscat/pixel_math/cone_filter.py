@@ -21,7 +21,7 @@ def filter_pixels_by_cone(pixel_tree: PixelTree, ra: float, dec: float, radius: 
     Returns:
         List of HealpixPixels representing only the pixels that overlap with the specified cone.
     """
-    max_order = max(pixel_tree.pixels.keys())
+    max_order = pixel_tree.get_max_depth()
     cone_tree = _generate_cone_pixel_tree(ra, dec, radius, max_order)
     return get_filtered_pixel_list(pixel_tree, cone_tree)
 

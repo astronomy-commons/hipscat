@@ -38,7 +38,7 @@ def filter_pixels_by_polygon(
     # with polygon spherical coordinates of ra and dec
     if all(len(vertex) == 2 for vertex in vertices):
         vertices = hp.ang2vec(*np.array(vertices).T, lonlat=True)
-    max_order = max(pixel_tree.pixels.keys())
+    max_order = pixel_tree.get_max_depth()
     polygon_tree = _generate_polygon_pixel_tree(vertices, max_order)
     return get_filtered_pixel_list(pixel_tree, polygon_tree)
 

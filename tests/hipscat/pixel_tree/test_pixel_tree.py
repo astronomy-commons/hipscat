@@ -17,6 +17,12 @@ def test_pixel_tree_length():
         assert len(tree) == length + 1
 
 
+def test_pixel_tree_max_depth(pixel_tree_1, pixel_tree_2, pixel_tree_3):
+    assert pixel_tree_1.get_max_depth() == 0
+    assert pixel_tree_2.get_max_depth() == 2
+    assert pixel_tree_3.get_max_depth() == 1
+
+
 def test_pixel_tree_contains():
     root_node = PixelNode((-1, -1), PixelNodeType.ROOT, None)
     leaf_node = PixelNode((0, 0), PixelNodeType.LEAF, root_node)

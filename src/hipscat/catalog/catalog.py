@@ -4,8 +4,6 @@ from __future__ import annotations
 import dataclasses
 from typing import Any, Dict, List, Union
 
-import healpy as hp
-import numpy as np
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -18,7 +16,6 @@ from hipscat.pixel_math.polygon_filter import (
     SphericalCoordinates,
     filter_pixels_by_polygon,
 )
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class Catalog(HealpixDataset):
@@ -71,12 +68,7 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified cone
         """
-        filtered_cone_pixels = filter_pixels_by_cone(self.pixel_tree, ra, dec, radius)
-        filtered_catalog_info = dataclasses.replace(
-            self.catalog_info,
-            total_rows=None,
-        )
-        return Catalog(filtered_catalog_info, filtered_cone_pixels)
+        return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius))
 
     def filter_by_polygon(self, vertices: List[SphericalCoordinates] | List[CartesianCoordinates]) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap
@@ -90,11 +82,21 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified polygon.
         """
-        filtered_polygon_pixels = filter_pixels_by_polygon(self.pixel_tree, vertices)
-        filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
-        return Catalog(filtered_catalog_info, filtered_polygon_pixels)
+        return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, vertices))
 
-    # pylint: disable=too-many-locals
+    def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Catalog:
+        """Filter the pixels in the catalog to only include the requested pixels.
+
+        Args:
+            pixels (List[HealpixPixels]): the pixels to include
+
+        Returns:
+            A new catalog with only those pixels. Note that we reset the total_rows
+            to None, instead of performing a scan over the new pixel sizes.
+        """
+        filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
+        return Catalog(filtered_catalog_info, pixels)
+
     def generate_negative_tree_pixels(self) -> List[HealpixPixel]:
         """Get the leaf nodes at each healpix order that have zero catalog data.
 
@@ -105,38 +107,4 @@ class Catalog(HealpixDataset):
         Returns:
             List of HealpixPixels representing the 'negative tree' for the catalog.
         """
-        max_depth = self.partition_info.get_highest_order()
-        missing_pixels = []
-        pixels_at_order = self.pixel_tree.root_pixel.children
-
-        covered_orders = []
-        for order_i in range(0, max_depth + 1):
-            npix = hp.nside2npix(2**order_i)
-            covered_orders.append(np.zeros(npix))
-
-        for order in range(0, max_depth + 1):
-            next_order_children = []
-            leaf_pixels = []
-
-            for node in pixels_at_order:
-                pixel = node.pixel.pixel
-                covered_orders[order][pixel] = 1
-                if node.node_type == PixelNodeType.LEAF:
-                    leaf_pixels.append(pixel)
-                else:
-                    next_order_children.extend(node.children)
-
-            zero_leafs = np.argwhere(covered_orders[order] == 0).flatten()
-            for pix in zero_leafs:
-                missing_pixels.append(HealpixPixel(order, pix))
-                leaf_pixels.append(pix)
-
-            pixels_at_order = next_order_children
-
-            for order_j in range(order + 1, max_depth + 1):
-                explosion_factor = 4 ** (order_j - order)
-                for pixel in leaf_pixels:
-                    covered_pix = range(pixel * explosion_factor, (pixel + 1) * explosion_factor)
-                    covered_orders[order_j][covered_pix] = 1
-
-        return missing_pixels
+        return self.pixel_tree.get_negative_pixels()
