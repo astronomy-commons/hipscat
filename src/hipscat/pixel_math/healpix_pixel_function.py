@@ -18,6 +18,8 @@ def get_pixel_argsort(pixels: List[HealpixPixel]):
     Returns:
         array of indices that sort the pixels in breadth-first order.
     """
+    if not pixels:
+        return []
     # Construct a parallel list of exploded, high order pixels.
     highest_order = np.max(pixels).order
 
