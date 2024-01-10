@@ -28,7 +28,9 @@ if __name__ == "__main__":
 
 NB: 
 
-- Setting `compute_partition_size` coerces the import pipeline to create smaller
-  result partitions, and so we have three distinct index partitions.
-- Setting `include_hipscat_index` keeps us from needing a row for every source
-  and lets the indexing pipeline create only one row per unique objectId/Norder/Npix
+- Setting `compute_partition_size` to something less than `1_000_000` 
+  coerces the import pipeline to create smaller result partitions, 
+  and so we have three distinct index partitions.
+- Setting `include_hipscat_index=False` keeps us from needing a row for every 
+  source and lets the indexing pipeline create only one row per 
+  unique objectId/Norder/Npix

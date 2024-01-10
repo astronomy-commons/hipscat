@@ -22,8 +22,7 @@ class IndexCatalog(Dataset):
     catalog_info: CatalogInfoClass
 
     def loc_partitions(self, ids) -> List[HealpixPixel]:
-        """Find the set of partitions in the primary catalog for the
-        ids provided.
+        """Find the set of partitions in the primary catalog for the ids provided.
 
         Args:
             ids: the values of the indexing column (e.g. 87,543)
@@ -34,16 +33,24 @@ class IndexCatalog(Dataset):
         metadata_file = paths.get_parquet_metadata_pointer(self.catalog_base_dir)
         dataset = pds.parquet_dataset(metadata_file)
 
+        # There's a lot happening in a few pyarrow dataset methods:
+        # We create a simple pyarrow expression that roughly corresponds to a SQL statement like
+        #   WHERE id_column IN (<ids>)
+        # We stay in pyarrow to group by Norder/Npix to aggregate the results unique values.
+        # After that convert into pandas, as this handles the integer type conversions
+        # (uint8 and uint64 aren't always friendly between pyarrow and the rest of python),
+        # and offers easy iteration to create our HealpixPixel list.
         filtered = dataset.filter(pc.field(self.catalog_info.indexing_column).isin(ids)).to_table()
-        python_friendly = filtered.group_by(["Norder", "Npix"]).aggregate([]).to_pandas()
+        unique_pixel_dataframe = filtered.group_by(["Norder", "Npix"]).aggregate([]).to_pandas()
 
         loc_partitions = [
             HealpixPixel(order, pixel)
             for order, pixel in zip(
-                python_friendly["Norder"],
-                python_friendly["Npix"],
+                unique_pixel_dataframe["Norder"],
+                unique_pixel_dataframe["Npix"],
             )
         ]
+        # Put the partitions in stable order (by nested healpix ordering).
         argsort = get_pixel_argsort(loc_partitions)
         loc_partitions = np.array(loc_partitions)[argsort]
 
