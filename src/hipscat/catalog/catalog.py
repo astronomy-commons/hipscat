@@ -4,6 +4,8 @@ from __future__ import annotations
 import dataclasses
 from typing import Any, Dict, List, Union
 
+import healpy as hp
+import numpy as np
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -16,6 +18,7 @@ from hipscat.pixel_math.polygon_filter import (
     SphericalCoordinates,
     filter_pixels_by_polygon,
 )
+from hipscat.pixel_math.validators import validate_declination_values
 
 
 class Catalog(HealpixDataset):
@@ -68,6 +71,7 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified cone
         """
+        validate_declination_values(dec)
         return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius))
 
     def filter_by_polygon(self, vertices: List[SphericalCoordinates] | List[CartesianCoordinates]) -> Catalog:
@@ -82,6 +86,12 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified polygon.
         """
+        if all(len(vertex) == 2 for vertex in vertices):
+            ra, dec = np.array(vertices).T
+            validate_declination_values(dec)
+            # Get the coordinates vector on the unit sphere if we were provided
+            # with polygon spherical coordinates of ra and dec
+            vertices = hp.ang2vec(ra, dec, lonlat=True)
         return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, vertices))
 
     def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Catalog:

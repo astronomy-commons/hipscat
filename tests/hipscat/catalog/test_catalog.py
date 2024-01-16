@@ -1,6 +1,7 @@
 """Tests of catalog functionality"""
 
 import os
+import re
 
 import healpy as hp
 import numpy as np
@@ -132,6 +133,14 @@ def test_cone_filter_empty(small_sky_order1_catalog):
     assert len(filtered_catalog.pixel_tree) == 1
 
 
+def test_cone_filter_invalid_cone_center(small_sky_order1_catalog):
+    error_msg = re.escape("declination must be in the [-90.0, 90.0] degree range")
+    with pytest.raises(ValueError, match=error_msg):
+        small_sky_order1_catalog.filter_by_cone(0, -100, 0.1)
+    with pytest.raises(ValueError, match=error_msg):
+        small_sky_order1_catalog.filter_by_cone(0, 100, 0.1)
+
+
 def test_polygonal_filter(small_sky_order1_catalog):
     polygon_vertices = [(282, -58), (282, -55), (272, -55), (272, -58)]
     filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
@@ -182,12 +191,15 @@ def test_polygonal_filter_empty(small_sky_order1_catalog):
     assert len(filtered_catalog.pixel_tree) == 1
 
 
-def test_polygonal_filter_invalid_shape(small_sky_order1_catalog):
-    # Polygon is not convex, so the shape is invalid
-    polygon_vertices = [(0, 1), (1, 0), (1, 1), (0, 0)]
-    with pytest.raises(RuntimeError):
+def test_polygonal_filter_invalid_polygon_coordinates(small_sky_order1_catalog):
+    # Declination is over 90 degrees
+    error_msg = re.escape("declination must be in the [-90.0, 90.0] degree range")
+    polygon_vertices = [(47.1, -100), (64.5, -100), (64.5, 6.27), (47.1, 6.27)]
+    with pytest.raises(ValueError, match=error_msg):
         small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
-
+    # Right ascension should wrap, it does not throw an error
+    polygon_vertices = [(470.1, 6), (470.5, 6), (64.5, 10.27), (47.1, 10.27)]
+    small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
 
 def test_empty_directory(tmp_path):
     """Test loading empty or incomplete data"""
