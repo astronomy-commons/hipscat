@@ -18,7 +18,7 @@ from hipscat.pixel_math.polygon_filter import (
     SphericalCoordinates,
     filter_pixels_by_polygon,
 )
-from hipscat.pixel_math.validators import validate_declination_values
+from hipscat.pixel_math.validators import validate_declination_values, validate_radius
 
 
 class Catalog(HealpixDataset):
@@ -71,6 +71,7 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified cone
         """
+        validate_radius(radius)
         validate_declination_values(dec)
         return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius))
 

@@ -9,6 +9,20 @@ import numpy as np
 class ValidatorsErrors(str, Enum):
     """Error messages for the coordinate validators"""
     INVALID_DEC = "declination must be in the -90.0 to 90.0 degree range"
+    INVALID_RADIUS = "cone radius must be positive"
+
+
+def validate_radius(radius: float):
+    """Validates that a cone search radius is positive
+
+    Arguments:
+        radius (float): The cone radius, in degrees
+
+    Raises:
+        ValueError if radius is non-positive
+    """
+    if radius <= 0:
+        raise ValueError(ValidatorsErrors.INVALID_RADIUS.value)
 
 
 def validate_declination_values(dec: float | List[float]):

@@ -138,6 +138,8 @@ def test_cone_filter_invalid_cone_center(small_sky_order1_catalog):
         small_sky_order1_catalog.filter_by_cone(0, -100, 0.1)
     with pytest.raises(ValueError, match=ValidatorsErrors.INVALID_DEC):
         small_sky_order1_catalog.filter_by_cone(0, 100, 0.1)
+    with pytest.raises(ValueError, match=ValidatorsErrors.INVALID_RADIUS):
+        small_sky_order1_catalog.filter_by_cone(0, 10, -1)
 
 
 def test_polygonal_filter(small_sky_order1_catalog):
