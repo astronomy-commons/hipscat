@@ -153,7 +153,7 @@ def test_polygonal_filter(small_sky_order1_catalog):
     assert filtered_catalog.catalog_info.total_rows is None
 
 
-def test_polygon_filter_with_cartesian_coordinates(small_sky_order1_catalog):
+def test_polygonal_filter_with_cartesian_coordinates(small_sky_order1_catalog):
     sky_vertices = [(282, -58), (282, -55), (272, -55), (272, -58)]
     cartesian_vertices = hp.ang2vec(*np.array(sky_vertices).T, lonlat=True)
     filtered_catalog_1 = small_sky_order1_catalog.filter_by_polygon(sky_vertices)
@@ -192,7 +192,7 @@ def test_polygonal_filter_empty(small_sky_order1_catalog):
     assert len(filtered_catalog.pixel_tree) == 1
 
 
-def test_polygonal_filter_invalid_polygon_coordinates(small_sky_order1_catalog):
+def test_polygonal_filter_invalid_coordinates(small_sky_order1_catalog):
     # Declination is over 90 degrees
     polygon_vertices = [(47.1, -100), (64.5, -100), (64.5, 6.27), (47.1, 6.27)]
     with pytest.raises(ValueError, match=ValidatorsErrors.INVALID_DEC):
@@ -200,6 +200,24 @@ def test_polygonal_filter_invalid_polygon_coordinates(small_sky_order1_catalog):
     # Right ascension should wrap, it does not throw an error
     polygon_vertices = [(470.1, 6), (470.5, 6), (64.5, 10.27), (47.1, 10.27)]
     small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
+
+
+def test_polygonal_filter_invalid_polygon(small_sky_order1_catalog):
+    # The polygon must have a minimum of 3 vertices
+    with pytest.raises(ValueError, match=ValidatorsErrors.INVALID_NUM_VERTICES):
+        vertices = [(100.1, -20.3), (100.1, 40.3)]
+        small_sky_order1_catalog.filter_by_polygon(vertices[:2])
+    # The vertices should not have duplicates
+    with pytest.raises(ValueError, match=ValidatorsErrors.DUPLICATE_VERTICES):
+        vertices = [(100.1, -20.3), (100.1, -20.3), (280.1, -20.3), (280.1, 40.3)]
+        small_sky_order1_catalog.filter_by_polygon(vertices)
+    # The polygons should not be on a great circle
+    with pytest.raises(ValueError, match=ValidatorsErrors.DEGENERATE_POLYGON):
+        vertices = [(100.1, 40.3), (100.1, -20.3), (280.1, -20.3), (280.1, 40.3)]
+        small_sky_order1_catalog.filter_by_polygon(vertices)
+    with pytest.raises(ValueError, match=ValidatorsErrors.DEGENERATE_POLYGON):
+        vertices = [(50.1, 0), (100.1, 0), (150.1, 0), (200.1, 0)]
+        small_sky_order1_catalog.filter_by_polygon(vertices)
 
 
 def test_empty_directory(tmp_path):

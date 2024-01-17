@@ -18,7 +18,7 @@ from hipscat.pixel_math.polygon_filter import (
     SphericalCoordinates,
     filter_pixels_by_polygon,
 )
-from hipscat.pixel_math.validators import validate_declination_values, validate_radius
+from hipscat.pixel_math.validators import validate_declination_values, validate_polygon, validate_radius
 
 
 class Catalog(HealpixDataset):
@@ -93,6 +93,7 @@ class Catalog(HealpixDataset):
             # Get the coordinates vector on the unit sphere if we were provided
             # with polygon spherical coordinates of ra and dec
             vertices = hp.ang2vec(ra, dec, lonlat=True)
+        validate_polygon(vertices)
         return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, vertices))
 
     def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Catalog:
