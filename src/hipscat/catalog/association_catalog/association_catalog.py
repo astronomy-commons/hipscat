@@ -62,16 +62,9 @@ class AssociationCatalog(HealpixDataset):
         cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
-        metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
-        if file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
-            partition_join_info = PartitionJoinInfo.read_from_file(
-                metadata_file, storage_options=storage_options
-            )
-        else:
-            partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
-            partition_join_info = PartitionJoinInfo.read_from_csv(
-                partition_join_info_file, storage_options=storage_options
-            )
+        partition_join_info = PartitionJoinInfo.read_from_dir(
+            catalog_base_dir, storage_options=storage_options
+        )
         return args + (partition_join_info,)
 
     @classmethod

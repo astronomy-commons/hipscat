@@ -55,6 +55,20 @@ def test_load_partition_info_from_metadata_fail(tmp_path):
         PartitionInfo.read_from_file(metadata_filename, strict=True)
 
 
+def test_load_partition_info_from_dir_fail(tmp_path):
+    empty_dataframe = pd.DataFrame()
+    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    empty_dataframe.to_parquet(metadata_filename)
+    with pytest.raises(FileNotFoundError, match="_metadata or partition info"):
+        PartitionInfo.read_from_dir(tmp_path)
+
+    # The file is there, but doesn't have the required content.
+    metadata_filename = os.path.join(tmp_path, "_metadata")
+    empty_dataframe.to_parquet(metadata_filename)
+    with pytest.raises(ValueError, match="missing Norder"):
+        PartitionInfo.read_from_dir(tmp_path)
+
+
 def test_load_partition_info_small_sky_order1(small_sky_order1_dir):
     """Instantiate the partition info for catalog with 4 pixels"""
     partition_info_file = paths.get_parquet_metadata_pointer(small_sky_order1_dir)
