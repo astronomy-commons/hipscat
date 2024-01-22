@@ -6,6 +6,7 @@ import numpy as np
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
+from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
 def filter_pixels_by_radec(
@@ -28,10 +29,10 @@ def filter_pixels_by_radec(
     if ra is not None and dec is not None:
         raise ValueError("Use polygonal search")
     if ra is not None:
-        pixel_tree = _generate_ra_strip_pixel_tree(ra, max_order)
+        search_tree = _generate_ra_strip_pixel_tree(ra, max_order)
     elif dec is not None:
-        pixel_tree = _generate_dec_strip_pixel_tree(dec, max_order)
-    return get_filtered_pixel_list(pixel_tree, pixel_tree)
+        search_tree = _generate_dec_strip_pixel_tree(dec, max_order)
+    return get_filtered_pixel_list(pixel_tree, search_tree)
 
 
 def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int):
@@ -47,8 +48,8 @@ def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int):
     pixels_in_range_2 = hp.query_polygon(nside, vertices_2, inclusive=True, nest=True)
     # Merge the two sets of pixels
     pixels_in_range = np.unique(np.concatenate((pixels_in_range_1, pixels_in_range_2), 0))
-    return [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
-
+    pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
+    return PixelTreeBuilder.from_healpix(pixel_list)
 
 def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int):
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the dec region"""
@@ -59,4 +60,5 @@ def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int):
     pixels_in_range = hp.ring2nest(
         nside, hp.query_strip(nside, theta1=min_colatitude, theta2=max_colatitude, inclusive=True)
     )
-    return [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
+    pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
+    return PixelTreeBuilder.from_healpix(pixel_list)
