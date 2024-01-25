@@ -63,10 +63,6 @@ def test_wrong_type(association_catalog_info_data, catalog_info_data):
         AssociationCatalogInfo(**catalog_info_data)
 
     with pytest.raises(ValueError, match=f"{CatalogType.ASSOCIATION}"):
-        try:
-            init_data = association_catalog_info_data.copy()
-            init_data["catalog_type"] = CatalogType.OBJECT
-            AssociationCatalogInfo(**init_data)
-        except Exception as e:
-            print("XXXXXXXXXX", e)
-            raise
+        init_data = association_catalog_info_data.copy()
+        init_data["catalog_type"] = CatalogType.OBJECT
+        AssociationCatalogInfo(**init_data)
