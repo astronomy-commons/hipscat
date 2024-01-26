@@ -60,7 +60,7 @@ def test_wrong_type(margin_cache_catalog_info, catalog_info_data):
     with pytest.raises(TypeError, match="unexpected"):
         MarginCacheCatalogInfo(**catalog_info_data)
 
-    with pytest.raises(ValueError, match="type margin"):
+    with pytest.raises(ValueError, match=f"{CatalogType.MARGIN}"):
         init_data = margin_cache_catalog_info.copy()
         init_data["catalog_type"] = CatalogType.OBJECT
         MarginCacheCatalogInfo(**init_data)
