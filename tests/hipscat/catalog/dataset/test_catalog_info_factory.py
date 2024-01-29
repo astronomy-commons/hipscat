@@ -50,8 +50,8 @@ def test_create_catalog_info_source(source_catalog_info, source_catalog_info_wit
     assert isinstance(catalog_info, SourceCatalogInfo)
 
 
-def test_create_catalog_info_margin_cache(margin_cache_catalog_info):
-    catalog_info = create_catalog_info(margin_cache_catalog_info)
+def test_create_catalog_info_margin_cache(margin_cache_catalog_info_data):
+    catalog_info = create_catalog_info(margin_cache_catalog_info_data)
     assert catalog_info.catalog_name == "test_margin"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, MarginCacheCatalogInfo)
