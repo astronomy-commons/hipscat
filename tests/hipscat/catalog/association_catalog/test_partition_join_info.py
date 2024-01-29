@@ -95,6 +95,16 @@ def test_metadata_file_round_trip(association_catalog_join_pixels, tmp_path):
     pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
 
 
+def test_csv_file_round_trip(association_catalog_join_pixels, tmp_path):
+    info = PartitionJoinInfo(association_catalog_join_pixels)
+    pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
+    info.write_to_csv(tmp_path)
+
+    file_pointer = file_io.get_file_pointer_from_path(os.path.join(tmp_path, "partition_join_info.csv"))
+    new_info = PartitionJoinInfo.read_from_csv(file_pointer)
+    pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
+
+
 def test_read_from_csv(association_catalog_partition_join_file, association_catalog_join_pixels):
     file_pointer = file_io.get_file_pointer_from_path(association_catalog_partition_join_file)
     info = PartitionJoinInfo.read_from_csv(file_pointer)

@@ -7,6 +7,7 @@ import pandas as pd
 import pyarrow as pa
 from typing_extensions import Self
 
+from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
 from hipscat.io.parquet_metadata import (
     read_row_group_fragments,
@@ -90,6 +91,34 @@ class PartitionJoinInfo:
         ]
 
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
+
+    def write_to_csv(self, catalog_path: FilePointer, storage_options: dict = None):
+        """Write all partition data to CSV files.
+
+        Two files will be written::
+        - partition_info.csv - covers all primary catalog pixels, and should match the file structure
+        - partition_join_info.csv - covers all pairwise relationships between primary and
+          join catalogs.
+
+        Args:
+            catalog_path: FilePointer to the directory where the
+                `partition_join_info.csv` file will be written
+            storage_options (dict): dictionary that contains abstract filesystem credentials
+        """
+        partition_join_info_file = paths.get_partition_join_info_pointer(catalog_path)
+        file_io.write_dataframe_to_csv(
+            self.data_frame, partition_join_info_file, index=False, storage_options=storage_options
+        )
+
+        primary_pixels = self.primary_to_join_map().keys()
+        partition_info_pointer = paths.get_partition_info_pointer(catalog_path)
+        partition_info = PartitionInfo.from_healpix(primary_pixels)
+        file_io.write_dataframe_to_csv(
+            partition_info.as_dataframe(),
+            partition_info_pointer,
+            index=False,
+            storage_options=storage_options,
+        )
 
     @classmethod
     def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> Self:
