@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from hipscat.catalog import MarginCatalog, CatalogType, PartitionInfo
+from hipscat.catalog import CatalogType, MarginCatalog, PartitionInfo
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
