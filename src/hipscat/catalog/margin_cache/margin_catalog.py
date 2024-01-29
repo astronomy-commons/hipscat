@@ -8,8 +8,12 @@ from hipscat.catalog.margin_cache import MarginCacheCatalogInfo
 
 
 class MarginCatalog(HealpixDataset):
-    """
+    """A HiPSCat Catalog used to contain the 'margin' of another HiPSCat catalog.
 
+    Catalogs of this type are used alongside a primary catalog, and contains the margin points for each
+    HEALPix pixel - any points that are within a certain distance from the HEALPix pixel boundary. This is
+    used to ensure spatial operations such as crossmatching can be performed efficiently while maintaining
+    accuracy.
     """
     # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
     # set the catalog info to the correct type
