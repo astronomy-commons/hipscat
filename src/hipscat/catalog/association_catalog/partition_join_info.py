@@ -1,11 +1,11 @@
 """Container class to hold primary-to-join partition metadata"""
+from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 import pyarrow as pa
-from typing_extensions import Self
 
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
@@ -113,15 +113,12 @@ class PartitionJoinInfo:
         primary_pixels = self.primary_to_join_map().keys()
         partition_info_pointer = paths.get_partition_info_pointer(catalog_path)
         partition_info = PartitionInfo.from_healpix(primary_pixels)
-        file_io.write_dataframe_to_csv(
-            partition_info.as_dataframe(),
-            partition_info_pointer,
-            index=False,
-            storage_options=storage_options,
+        partition_info.write_to_file(
+            partition_info_file=partition_info_pointer, storage_options=storage_options
         )
 
     @classmethod
-    def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> Self:
+    def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionJoinInfo:
         """Read partition join info from a file within a hipscat directory.
 
         This will look for a `_metadata` file, and if not found, will look for
@@ -132,7 +129,7 @@ class PartitionJoinInfo:
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
-            A `PartitionInfo` object with the data from the file
+            A `PartitionJoinInfo` object with the data from the file
 
         Raises:
             FileNotFoundError: if neither desired file is found in the catalog_base_dir
@@ -155,8 +152,8 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, strict=False, storage_options: Union[Dict[Any, Any], None] = None
-    ) -> Self:
+        cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
+    ) -> PartitionJoinInfo:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
@@ -231,8 +228,8 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_csv(
-        cls, partition_join_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-    ) -> Self:
+        cls, partition_join_info_file: FilePointer, storage_options: dict = None
+    ) -> PartitionJoinInfo:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
@@ -246,7 +243,7 @@ class PartitionJoinInfo:
             partition_join_info_file, storage_options=storage_options
         ):
             raise FileNotFoundError(
-                f"No partition info found where expected: {str(partition_join_info_file)}"
+                f"No partition join info found where expected: {str(partition_join_info_file)}"
             )
 
         data_frame = file_io.load_csv_to_pandas(partition_join_info_file, storage_options=storage_options)

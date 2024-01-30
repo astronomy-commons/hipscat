@@ -43,14 +43,17 @@ class PartitionInfo:
         max_pixel = np.max(self.pixel_list)
         return max_pixel.order
 
-    def write_to_file(self, partition_info_file: FilePointer):
+    def write_to_file(self, partition_info_file: FilePointer, storage_options: dict = None):
         """Write all partition data to CSV file.
 
         Args:
             partition_info_file: FilePointer to where the `partition_info.csv`
                 file will be written
+            storage_options (dict): dictionary that contains abstract filesystem credentials
         """
-        file_io.write_dataframe_to_csv(self.as_dataframe(), partition_info_file, index=False)
+        file_io.write_dataframe_to_csv(
+            self.as_dataframe(), partition_info_file, index=False, storage_options=storage_options
+        )
 
     def write_to_metadata_files(self, catalog_path: FilePointer, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.

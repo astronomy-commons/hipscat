@@ -55,7 +55,7 @@ def test_read_from_metadata_fail(tmp_path):
         PartitionJoinInfo.read_from_file(metadata_filename, strict=True)
 
 
-def test_load_partition_info_from_dir_fail(tmp_path):
+def test_load_partition_join_info_from_dir_fail(tmp_path):
     empty_dataframe = pd.DataFrame()
     metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
     empty_dataframe.to_parquet(metadata_filename)
