@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 
-from hipscat.io import FilePointer, file_io
+from hipscat.io import FilePointer, file_io, paths
 from hipscat.io.parquet_metadata import (
     read_row_group_fragments,
     row_group_stat_single_value,
@@ -43,14 +43,17 @@ class PartitionInfo:
         max_pixel = np.max(self.pixel_list)
         return max_pixel.order
 
-    def write_to_file(self, partition_info_file: FilePointer):
+    def write_to_file(self, partition_info_file: FilePointer, storage_options: dict = None):
         """Write all partition data to CSV file.
 
         Args:
             partition_info_file: FilePointer to where the `partition_info.csv`
                 file will be written
+            storage_options (dict): dictionary that contains abstract filesystem credentials
         """
-        file_io.write_dataframe_to_csv(self.as_dataframe(), partition_info_file, index=False)
+        file_io.write_dataframe_to_csv(
+            self.as_dataframe(), partition_info_file, index=False, storage_options=storage_options
+        )
 
     def write_to_metadata_files(self, catalog_path: FilePointer, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.
@@ -74,6 +77,35 @@ class PartitionInfo:
         ]
 
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
+
+    @classmethod
+    def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionInfo:
+        """Read partition info from a file within a hipscat directory.
+
+        This will look for a `_metadata` file, and if not found, will look for
+        a `partition_info.csv` file.
+
+        Args:
+            catalog_base_dir: path to the root directory of the catalog
+            storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Returns:
+            A `PartitionInfo` object with the data from the file
+
+        Raises:
+            FileNotFoundError: if neither desired file is found in the catalog_base_dir
+        """
+        metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
+        partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
+        if file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
+            partition_info = PartitionInfo.read_from_file(metadata_file, storage_options=storage_options)
+        elif file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
+            partition_info = PartitionInfo.read_from_csv(partition_info_file, storage_options=storage_options)
+        else:
+            raise FileNotFoundError(
+                f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
+            )
+        return partition_info
 
     @classmethod
     def read_from_file(
