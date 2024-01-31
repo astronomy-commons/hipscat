@@ -1,6 +1,7 @@
 """Container class to hold primary-to-join partition metadata"""
 from __future__ import annotations
 
+import warnings
 from typing import Dict, List
 
 import numpy as np
@@ -136,13 +137,14 @@ class PartitionJoinInfo:
         """
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
-        if file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
-            partition_join_info = PartitionJoinInfo.read_from_file(
-                metadata_file, storage_options=storage_options
-            )
-        elif file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options):
+        if file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options):
             partition_join_info = PartitionJoinInfo.read_from_csv(
                 partition_join_info_file, storage_options=storage_options
+            )
+        elif file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
+            warnings.warn("Reading partitions from parquet metadata. This is typically slow.")
+            partition_join_info = PartitionJoinInfo.read_from_file(
+                metadata_file, storage_options=storage_options
             )
         else:
             raise FileNotFoundError(

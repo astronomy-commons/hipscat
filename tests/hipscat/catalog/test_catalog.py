@@ -245,7 +245,8 @@ def test_empty_directory(tmp_path):
     part_info = PartitionInfo.from_healpix([HealpixPixel(0, 11)])
     part_info.write_to_metadata_files(catalog_path=catalog_path)
 
-    catalog = Catalog.read_from_hipscat(catalog_path)
+    with pytest.warns(UserWarning, match="slow"):
+        catalog = Catalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == "empty"
 
 

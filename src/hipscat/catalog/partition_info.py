@@ -1,6 +1,7 @@
 """Container class to hold per-partition metadata"""
 from __future__ import annotations
 
+import warnings
 from typing import List
 
 import numpy as np
@@ -97,10 +98,11 @@ class PartitionInfo:
         """
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
-        if file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
-            partition_info = PartitionInfo.read_from_file(metadata_file, storage_options=storage_options)
-        elif file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
+        if file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
             partition_info = PartitionInfo.read_from_csv(partition_info_file, storage_options=storage_options)
+        elif file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
+            warnings.warn("Reading partitions from parquet metadata. This is typically slow.")
+            partition_info = PartitionInfo.read_from_file(metadata_file, storage_options=storage_options)
         else:
             raise FileNotFoundError(
                 f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
@@ -202,9 +204,7 @@ class PartitionInfo:
         for pixel in self.pixel_list:
             partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(pixel.order)
             partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(pixel.pixel)
-            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(
-                int(pixel.pixel / 10_000) * 10_000
-            )
+            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(pixel.dir)
         return pd.DataFrame.from_dict(partition_info_dict)
 
     @classmethod
