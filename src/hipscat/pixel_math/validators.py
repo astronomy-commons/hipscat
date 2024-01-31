@@ -85,3 +85,16 @@ def is_polygon_degenerate(vertices: np.ndarray) -> bool:
     # the polygon is degenerate and therefore, invalid.
     center_distance = np.dot(normal_vector, vertices[0])
     return bool(np.isclose(center_distance, 0))
+
+
+def validate_radec_search(ra, dec):
+    """Checks if ra and dec values are valid for the box search.
+    They must be pairs (of minimum and maximum value)."""
+    values_provided = False
+    if ra is not None and len(ra) == 2:
+        values_provided = True
+    if dec is not None and len(dec) == 2:
+        validate_declination_values(list(dec))
+        values_provided = True
+    if not values_provided:
+        raise ValueError("Provide ra or dec range")

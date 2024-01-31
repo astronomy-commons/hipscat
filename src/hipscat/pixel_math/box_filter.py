@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 from typing import List, Tuple
 
+import astropy.units as u
 import healpy as hp
 import numpy as np
+from astropy.coordinates import Angle
 
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
+from hipscat.pixel_math.polygon_filter import SphericalCoordinates
+from hipscat.pixel_math.validators import validate_radec_search
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
 def filter_pixels_by_radec(
-    pixel_tree: PixelTree, ra: Tuple[float, float], dec: Tuple[float, float]
+    pixel_tree: PixelTree, ra: Tuple[float, float] | None, dec: Tuple[float, float] | None
 ) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a partition_info dataframe
     with the pixels that overlap with a right ascension or the declination region.
@@ -25,14 +31,42 @@ def filter_pixels_by_radec(
         List of HealpixPixels representing only the pixels that overlap with the right
         ascension or the declination region.
     """
+    validate_radec_search(ra, dec)
     max_order = pixel_tree.get_max_depth()
-    if ra is not None and dec is not None:
-        raise ValueError("Use polygonal search")
-    if ra is not None:
-        search_tree = _generate_ra_strip_pixel_tree(ra, max_order)
-    elif dec is not None:
-        search_tree = _generate_dec_strip_pixel_tree(dec, max_order)
+    search_tree = (
+        _generate_ra_strip_pixel_tree(ra, max_order)
+        if ra is not None
+        else _generate_dec_strip_pixel_tree(dec, max_order)
+    )
     return get_filtered_pixel_list(pixel_tree, search_tree)
+
+
+def transform_radec(ra, dec) -> Tuple[List[float] | None, List[float] | None]:
+    """Transforms ra and dec values before performing the search.
+    Wraps right ascension values to the [0,360] degree range and
+    sorts declination values by ascending order."""
+    if ra is not None:
+        ra = wrap_angles(ra)
+    if dec is not None:
+        dec = list(np.sort(dec))
+    return ra, dec
+
+
+def wrap_angles(ra) -> List[float]:
+    """Wrap angles to the [0,360] degree range."""
+    return Angle(list(ra), u.deg).wrap_at(360 * u.deg).degree
+
+
+def form_polygon(ra, dec) -> List[SphericalCoordinates]:
+    """Checks if both ra and dec were provided and calculates the
+    polygon vertices based on the fact that declination values have
+    been previously sorted.
+
+    Returns:
+        A list of polygon vertices, if we were provided pairs of
+        ra and dec coordinates, None otherwise.
+    """
+    return [(ra[0], dec[0]), (ra[0], dec[1]), (ra[1], dec[1]), (ra[1], dec[0])]
 
 
 def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int):
@@ -50,6 +84,7 @@ def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int):
     pixels_in_range = np.unique(np.concatenate((pixels_in_range_1, pixels_in_range_2), 0))
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
     return PixelTreeBuilder.from_healpix(pixel_list)
+
 
 def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int):
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the dec region"""
