@@ -26,3 +26,4 @@ NB:
 - The setting `margin_threshold` at 7200 arcseconds (2 degrees) is much higher than
   a usual margin cache would be generated at, but is used because the small sky test
   dataset is sparse.
+- The `small_sky_order1` catalog only contains points in Norder1, Npix=[44, 45, 46, 47], but the margin catalog also contains points in Norder0, Npix=4 due to negative pixel margins.
