@@ -8,16 +8,16 @@ from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCa
 from hipscat.io import file_io
 
 
-def test_margin_cache_catalog_info(margin_cache_catalog_info, assert_catalog_info_matches_dict):
-    info = MarginCacheCatalogInfo(**margin_cache_catalog_info)
-    assert_catalog_info_matches_dict(info, margin_cache_catalog_info)
+def test_margin_cache_catalog_info(margin_cache_catalog_info_data, assert_catalog_info_matches_dict):
+    info = MarginCacheCatalogInfo(**margin_cache_catalog_info_data)
+    assert_catalog_info_matches_dict(info, margin_cache_catalog_info_data)
 
 
-def test_str(margin_cache_catalog_info):
+def test_str(margin_cache_catalog_info_data):
     correct_string = ""
-    for name, value in margin_cache_catalog_info.items():
+    for name, value in margin_cache_catalog_info_data.items():
         correct_string += f"  {name} {value}\n"
-    cat_info = MarginCacheCatalogInfo(**margin_cache_catalog_info)
+    cat_info = MarginCacheCatalogInfo(**margin_cache_catalog_info_data)
     assert str(cat_info) == correct_string
 
 
@@ -38,29 +38,29 @@ def test_read_from_file(margin_cache_catalog_info_file, assert_catalog_info_matc
         assert_catalog_info_matches_dict(catalog_info, catalog_info_json)
 
 
-def test_required_fields_missing(margin_cache_catalog_info):
+def test_required_fields_missing(margin_cache_catalog_info_data):
     required_fields = ["primary_catalog", "margin_threshold"]
     for required_field in required_fields:
         assert required_field in MarginCacheCatalogInfo.required_fields
     for field in required_fields:
-        init_data = margin_cache_catalog_info.copy()
+        init_data = margin_cache_catalog_info_data.copy()
         init_data[field] = None
         with pytest.raises(ValueError, match=field):
             MarginCacheCatalogInfo(**init_data)
 
 
-def test_type_missing(margin_cache_catalog_info):
-    init_data = margin_cache_catalog_info.copy()
+def test_type_missing(margin_cache_catalog_info_data):
+    init_data = margin_cache_catalog_info_data.copy()
     init_data["catalog_type"] = None
     catalog_info = MarginCacheCatalogInfo(**init_data)
     assert catalog_info.catalog_type == CatalogType.MARGIN
 
 
-def test_wrong_type(margin_cache_catalog_info, catalog_info_data):
+def test_wrong_type(margin_cache_catalog_info_data, catalog_info_data):
     with pytest.raises(TypeError, match="unexpected"):
         MarginCacheCatalogInfo(**catalog_info_data)
 
     with pytest.raises(ValueError, match=f"{CatalogType.MARGIN}"):
-        init_data = margin_cache_catalog_info.copy()
+        init_data = margin_cache_catalog_info_data.copy()
         init_data["catalog_type"] = CatalogType.OBJECT
         MarginCacheCatalogInfo(**init_data)
