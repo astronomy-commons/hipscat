@@ -42,9 +42,9 @@ def test_read_from_file(margin_catalog_path, margin_catalog_pixels):
     assert catalog.get_healpix_pixels() == margin_catalog_pixels
 
     info = catalog.catalog_info
-    assert info.catalog_name == "small_sky_xmatch_margin"
+    assert info.catalog_name == "small_sky_order1_margin"
     assert info.catalog_type == CatalogType.MARGIN
-    assert info.primary_catalog == "small_sky_xmatch"
+    assert info.primary_catalog == "small_sky_order1"
     assert info.margin_threshold == 7200
 
 

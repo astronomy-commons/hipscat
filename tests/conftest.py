@@ -204,7 +204,7 @@ def margin_catalog_pixels() -> List[HealpixPixel]:
 
 @pytest.fixture
 def margin_catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_xmatch_margin")
+    return os.path.join(test_data_dir, "small_sky_order1_margin")
 
 
 @pytest.fixture

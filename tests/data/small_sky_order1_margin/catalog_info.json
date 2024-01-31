@@ -1,0 +1,7 @@
+{
+    "catalog_name": "small_sky_order1_margin",
+    "catalog_type": "margin",
+    "total_rows": 28,
+    "primary_catalog": "small_sky_order1",
+    "margin_threshold": 7200
+}
