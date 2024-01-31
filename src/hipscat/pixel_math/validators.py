@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
 
 class ValidatorsErrors(str, Enum):
     """Error messages for the coordinate validators"""
+
     INVALID_DEC = "declination must be in the -90.0 to 90.0 degree range"
     INVALID_RADIUS = "cone radius must be positive"
     INVALID_NUM_VERTICES = "polygon must contain a minimum of 3 vertices"
@@ -38,7 +39,7 @@ def validate_declination_values(dec: float | List[float]):
         ValueError if declination values are not in the [-90,90] degree range
     """
     dec_values = np.array(dec)
-    lower_bound, upper_bound = -90., 90.
+    lower_bound, upper_bound = -90.0, 90.0
     if not np.all((dec_values >= lower_bound) & (dec_values <= upper_bound)):
         raise ValueError(ValidatorsErrors.INVALID_DEC.value)
 
@@ -87,9 +88,18 @@ def is_polygon_degenerate(vertices: np.ndarray) -> bool:
     return bool(np.isclose(center_distance, 0))
 
 
-def validate_box_search(ra, dec):
+def validate_box_search(ra: Tuple[float, float] | None, dec: Tuple[float, float] | None):
     """Checks if ra and dec values are valid for the box search.
-    They must be pairs (of minimum and maximum value)."""
+    They must be pairs (of minimum and maximum value, in degrees).
+
+    Arguments:
+        ra (Tuple[float, float]): Right ascension range, in degrees
+        dec (Tuple[float, float]): Declination range, in degrees
+
+    Raises:
+        ValueError, if declination values are out of range [-90,90]
+        or if no range was provided.
+    """
     values_provided = False
     if ra is not None and len(ra) == 2:
         values_provided = True

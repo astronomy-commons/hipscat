@@ -85,11 +85,11 @@ class Catalog(HealpixDataset):
         self, ra: Tuple[float, float] | None = None, dec: Tuple[float, float] | None = None
     ) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap with a
-        right ascension or declination range. In case both ranges are provided, filtering the
-        pixels consists of filtering using a polygon.
+        right ascension or declination range. In case both ranges are provided, filtering
+        is performed using a polygon.
 
         Args:
-            ra (Tuple[float, float]): Right Ascension range, in degrees
+            ra (Tuple[float, float]): Right ascension range, in degrees
             dec (Tuple[float, float]): Declination range, in degrees
 
         Returns:
