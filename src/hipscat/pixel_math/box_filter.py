@@ -15,7 +15,7 @@ from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
-def filter_pixels_by_radec(
+def filter_pixels_by_box(
     pixel_tree: PixelTree, ra: Tuple[float, float] | None, dec: Tuple[float, float] | None
 ) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a partition_info dataframe

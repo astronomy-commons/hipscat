@@ -12,7 +12,7 @@ from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.box_filter import _form_polygon, filter_pixels_by_radec, transform_radec
+from hipscat.pixel_math.box_filter import filter_pixels_by_box, form_polygon, transform_radec
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
 from hipscat.pixel_math.polygon_filter import (
     CartesianCoordinates,
@@ -98,10 +98,10 @@ class Catalog(HealpixDataset):
         validate_radec_search(ra, dec)
         ra, dec = transform_radec(ra, dec)
         if ra is not None and dec is not None:
-            vertices = _form_polygon(ra, dec)
+            vertices = form_polygon(ra, dec)
             pixel_list = self.filter_by_polygon(vertices)
         else:
-            pixel_list = filter_pixels_by_radec(self.pixel_tree, ra, dec)
+            pixel_list = filter_pixels_by_box(self.pixel_tree, ra, dec)
         return self.filter_from_pixel_list(pixel_list)
 
     def filter_by_polygon(self, vertices: List[SphericalCoordinates] | List[CartesianCoordinates]) -> Catalog:
