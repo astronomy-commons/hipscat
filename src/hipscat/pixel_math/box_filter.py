@@ -10,7 +10,7 @@ from astropy.coordinates import Angle
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
-from hipscat.pixel_math.validators import validate_radec_search
+from hipscat.pixel_math.validators import validate_box_search
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
@@ -31,7 +31,7 @@ def filter_pixels_by_box(
         List of HealpixPixels representing only the pixels that overlap with the right
         ascension or the declination region.
     """
-    validate_radec_search(ra, dec)
+    validate_box_search(ra, dec)
     max_order = pixel_tree.get_max_depth()
     search_tree = (
         _generate_ra_strip_pixel_tree(ra, max_order)
@@ -41,12 +41,12 @@ def filter_pixels_by_box(
     return get_filtered_pixel_list(pixel_tree, search_tree)
 
 
-def transform_radec(ra, dec) -> Tuple[List[float] | None, List[float] | None]:
+def transform_radec(ra, dec) -> Tuple[Tuple[float, float] | None, Tuple[float, float] | None]:
     """Transforms ra and dec values before performing the search.
     Wraps right ascension values to the [0,360] degree range and
     sorts declination values by ascending order."""
     if ra is not None:
-        ra = wrap_angles(ra)
+        ra = tuple(wrap_angles(ra))
     if dec is not None:
         dec = list(np.sort(dec))
     return ra, dec

@@ -87,7 +87,7 @@ def is_polygon_degenerate(vertices: np.ndarray) -> bool:
     return bool(np.isclose(center_distance, 0))
 
 
-def validate_radec_search(ra, dec):
+def validate_box_search(ra, dec):
     """Checks if ra and dec values are valid for the box search.
     They must be pairs (of minimum and maximum value)."""
     values_provided = False

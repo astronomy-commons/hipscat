@@ -20,9 +20,9 @@ from hipscat.pixel_math.polygon_filter import (
     filter_pixels_by_polygon,
 )
 from hipscat.pixel_math.validators import (
+    validate_box_search,
     validate_declination_values,
     validate_polygon,
-    validate_radec_search,
     validate_radius,
 )
 
@@ -95,7 +95,7 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified region
         """
-        validate_radec_search(ra, dec)
+        validate_box_search(ra, dec)
         ra, dec = transform_radec(ra, dec)
         if ra is not None and dec is not None:
             vertices = form_polygon(ra, dec)
