@@ -65,8 +65,9 @@ def test_load_partition_join_info_from_dir_fail(tmp_path):
     # The file is there, but doesn't have the required content.
     metadata_filename = os.path.join(tmp_path, "_metadata")
     empty_dataframe.to_parquet(metadata_filename)
-    with pytest.raises(ValueError, match="missing columns"):
-        PartitionJoinInfo.read_from_dir(tmp_path)
+    with pytest.warns(UserWarning, match="slow"):
+        with pytest.raises(ValueError, match="missing columns"):
+            PartitionJoinInfo.read_from_dir(tmp_path)
 
 
 def test_primary_to_join_map(association_catalog_join_pixels):

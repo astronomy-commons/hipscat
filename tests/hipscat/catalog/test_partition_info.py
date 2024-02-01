@@ -65,8 +65,9 @@ def test_load_partition_info_from_dir_fail(tmp_path):
     # The file is there, but doesn't have the required content.
     metadata_filename = os.path.join(tmp_path, "_metadata")
     empty_dataframe.to_parquet(metadata_filename)
-    with pytest.raises(ValueError, match="missing Norder"):
-        PartitionInfo.read_from_dir(tmp_path)
+    with pytest.warns(UserWarning, match="slow"):
+        with pytest.raises(ValueError, match="missing Norder"):
+            PartitionInfo.read_from_dir(tmp_path)
 
 
 def test_load_partition_info_small_sky_order1(small_sky_order1_dir):

@@ -90,7 +90,8 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
     ## Now we create the needed _metadata and everything is right.
     part_info = PartitionJoinInfo(association_catalog_join_pixels)
     part_info.write_to_metadata_files(catalog_path=catalog_path)
-    catalog = AssociationCatalog.read_from_hipscat(catalog_path)
+    with pytest.warns(UserWarning, match="slow"):
+        catalog = AssociationCatalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == association_catalog_info_data["catalog_name"]
 
 
