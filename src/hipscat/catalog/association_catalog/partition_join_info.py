@@ -122,8 +122,10 @@ class PartitionJoinInfo:
     def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionJoinInfo:
         """Read partition join info from a file within a hipscat directory.
 
-        This will look for a `_metadata` file, and if not found, will look for
-        a `partition_join_info.csv` file.
+        This will look for a `partition_join_info.csv` file, and if not found, will look for 
+        a `_metadata` file. The second approach is typically slower for large catalogs
+        therefore a warning is issued to the user. In internal testing with large catalogs, 
+        the first approach takes less than a second, while the second can take 10-20 seconds.
 
         Args:
             catalog_base_dir: path to the root directory of the catalog
