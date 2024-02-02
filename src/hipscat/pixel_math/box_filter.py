@@ -31,27 +31,39 @@ def filter_pixels_by_box(
         List of HealpixPixels representing only the pixels that overlap with the right
         ascension or the declination region.
     """
+    ra = wrap_ra_values(ra)
     validate_box_search(ra, dec)
     max_order = pixel_tree.get_max_depth()
-    search_tree = (
-        _generate_ra_strip_pixel_tree(ra, max_order)
-        if ra is not None
-        else _generate_dec_strip_pixel_tree(dec, max_order)
-    )
-    return get_filtered_pixel_list(pixel_tree, search_tree)
 
+    result_pixels = []
+    ra_search_tree, dec_search_tree = None, None
 
-def transform_radec(
-    ra: Tuple[float, float] | None, dec: Tuple[float, float] | None
-) -> Tuple[Tuple[float, float] | None, Tuple[float, float] | None]:
-    """Transforms ra and dec values so that they are valid when performing the
-    search. Wraps right ascension values to the [0,360] degree range and sorts
-    declination values by ascending order."""
     if ra is not None:
-        ra = tuple(wrap_angles(list(ra)))
+        ra_search_tree = _generate_ra_strip_pixel_tree(ra, max_order)
+        result_pixels = get_filtered_pixel_list(pixel_tree, ra_search_tree)
     if dec is not None:
-        dec = tuple(np.sort(dec))
-    return ra, dec
+        dec_search_tree = _generate_dec_strip_pixel_tree(dec, max_order)
+        result_pixels = get_filtered_pixel_list(pixel_tree, dec_search_tree)
+    if ra_search_tree is not None and dec_search_tree is not None:
+        filter_pixels = get_filtered_pixel_list(ra_search_tree, dec_search_tree)
+        filter_tree = PixelTreeBuilder.from_healpix(filter_pixels)
+        result_pixels = get_filtered_pixel_list(pixel_tree, filter_tree)
+
+    return result_pixels
+
+
+def wrap_ra_values(ra: Tuple[float, float] | None) -> Tuple[float, float] | None:
+    """Wraps right ascension values to the [0,360] degree range and sorts
+    declination values by ascending order.
+
+    Args:
+        ra (Tuple[float, float]): The right ascension values, in degrees
+
+    Returns:
+        The right ascension values wrapped to the [0,360] degree range,
+        or None if they do not exist.
+    """
+    return tuple(wrap_angles(list(ra))) if ra else None
 
 
 def wrap_angles(ra: List[float]) -> List[float]:
@@ -66,30 +78,36 @@ def wrap_angles(ra: List[float]) -> List[float]:
     return Angle(ra, u.deg).wrap_at(360 * u.deg).degree
 
 
-def form_polygon(ra: Tuple[float, float], dec: Tuple[float, float]) -> List[SphericalCoordinates]:
-    """Checks if both ra and dec were provided and calculates the polygon vertices.
-    Right ascension values should have been wrapped to the [0,360] degree range and
-    declination values sorted in ascending order.
-
-    Returns:
-        A list of polygon vertices, in spherical coordinates.
-    """
-    return [(ra[0], dec[0]), (ra[0], dec[1]), (ra[1], dec[1]), (ra[1], dec[0])]
-
-
 def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int) -> PixelTree:
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the ra region."""
-    nside = hp.order2nside(order)
-    # The first region contains the North Pole
-    vertices_1 = [(0, 90), (ra_range[0], 0), (ra_range[1], 0)]
-    vertices_1 = hp.ang2vec(*np.array(vertices_1).T, lonlat=True)
-    pixels_in_range_1 = hp.query_polygon(nside, vertices_1, inclusive=True, nest=True)
-    # The second region contains the South Pole
-    vertices_2 = [(ra_range[0], 0), (0, -90), (ra_range[1], 0)]
-    vertices_2 = hp.ang2vec(*np.array(vertices_2).T, lonlat=True)
-    pixels_in_range_2 = hp.query_polygon(nside, vertices_2, inclusive=True, nest=True)
-    # Merge the two sets of pixels
-    pixels_in_range = np.unique(np.concatenate((pixels_in_range_1, pixels_in_range_2), 0))
+    # Subdivide polygons (if needed) in two smaller polygons of at most 180 degrees
+    division_ra = _get_division_ra(ra_range)
+
+    if division_ra is not None:
+        pixels_in_range = _get_pixels_for_subpolygons(
+            [
+                # North Pole
+                [(0, 90), (ra_range[0], 0), (division_ra, 0)],
+                [(0, 90), (division_ra, 0), (ra_range[1], 0)],
+                # South Pole
+                [(ra_range[0], 0), (0, -90), (division_ra, 0)],
+                [(division_ra, 0), (0, -90), (ra_range[1], 0)],
+            ],
+            order,
+        )
+    else:
+        # HEALpy will assume the polygon of smallest area by default
+        # e.g. for ra_ranges of [10,50], [200,10] or [350,10]
+        pixels_in_range = _get_pixels_for_subpolygons(
+            [
+                # North Pole
+                [(0, 90), (ra_range[0], 0), (ra_range[1], 0)],
+                # South Pole
+                [(ra_range[0], 0), (0, -90), (ra_range[1], 0)],
+            ],
+            order,
+        )
+
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
     return PixelTreeBuilder.from_healpix(pixel_list)
 
@@ -97,11 +115,35 @@ def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int) -> 
 def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int) -> PixelTree:
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the dec region."""
     nside = hp.order2nside(order)
-    sorted_dec = np.sort([90 - dec if dec > 0 else 90 + abs(dec) for dec in dec_range])
-    min_colatitude = np.radians(sorted_dec[0])
-    max_colatitude = np.radians(sorted_dec[1])
+    # Convert declination values to colatitudes, in radians, and revert their order
+    colat_rad = np.sort(np.radians([90 - dec if dec > 0 else 90 + abs(dec) for dec in dec_range]))
+    # Figure out which pixels in nested order are contained in the declination band
     pixels_in_range = hp.ring2nest(
-        nside, hp.query_strip(nside, theta1=min_colatitude, theta2=max_colatitude, inclusive=True)
+        nside, hp.query_strip(nside, theta1=colat_rad[0], theta2=colat_rad[1], inclusive=True)
     )
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
     return PixelTreeBuilder.from_healpix(pixel_list)
+
+
+def _get_division_ra(ra_range: Tuple[float, float]) -> float | None:
+    """Gets the division angle for the right ascension region. This is crucial for the edge
+    cases where we need to split up polygons wider than 180 degrees into smaller polygons."""
+    division_ra = None
+    if ra_range[0] > ra_range[1] and 360 - ra_range[0] + ra_range[1] >= 180:
+        # e.g. edge case of [350, 170] or [180, 0], we want the wider polygon
+        division_ra = (ra_range[1] - 360 + ra_range[0]) / 2
+    elif ra_range[0] < ra_range[1] and ra_range[1] - ra_range[0] >= 180:
+        # e.g. edge case of [10, 200] or [0, 180], we want the wider polygon
+        division_ra = ra_range[0] + (ra_range[1] - ra_range[0]) / 2
+    return division_ra
+
+
+def _get_pixels_for_subpolygons(polygons: List[List[SphericalCoordinates]], order: int) -> np.ndarray:
+    """Gets the unique pixels for a set of sub-polygons."""
+    nside = hp.order2nside(order)
+    all_polygon_pixels = []
+    for vertices in polygons:
+        vertices = hp.ang2vec(*np.array(vertices).T, lonlat=True)
+        pixels = hp.query_polygon(nside, vertices, inclusive=True, nest=True)
+        all_polygon_pixels.append(pixels)
+    return np.unique(np.concatenate(all_polygon_pixels, 0))

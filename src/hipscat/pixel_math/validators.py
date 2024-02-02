@@ -14,6 +14,7 @@ class ValidatorsErrors(str, Enum):
     INVALID_NUM_VERTICES = "polygon must contain a minimum of 3 vertices"
     DUPLICATE_VERTICES = "polygon has duplicated vertices"
     DEGENERATE_POLYGON = "polygon is degenerate"
+    INVALID_RADEC_RANGE = "invalid ra or dec range"
 
 
 def validate_radius(radius: float):
@@ -90,21 +91,23 @@ def is_polygon_degenerate(vertices: np.ndarray) -> bool:
 
 def validate_box_search(ra: Tuple[float, float] | None, dec: Tuple[float, float] | None):
     """Checks if ra and dec values are valid for the box search.
-    They must be pairs (of minimum and maximum value, in degrees).
+
+    - At least one range of ra or dec must have been provided
+    - Ranges must be pairs of non-duplicate minimum and maximum values, in degrees
+    - Declination values, if existing, must be in ascending order
+    - Declination values, if existing, must be in the [-90,90] degree range
 
     Arguments:
         ra (Tuple[float, float]): Right ascension range, in degrees
         dec (Tuple[float, float]): Declination range, in degrees
-
-    Raises:
-        ValueError, if declination values are out of range [-90,90]
-        or if no range was provided.
     """
-    values_provided = False
-    if ra is not None and len(ra) == 2:
-        values_provided = True
-    if dec is not None and len(dec) == 2:
+    invalid_range = False
+    if ra is not None:
+        if len(ra) != 2 or len(ra) != len(set(ra)):
+            invalid_range = True
+    if dec is not None:
+        if len(dec) != 2 or dec[0] >= dec[1]:
+            invalid_range = True
         validate_declination_values(list(dec))
-        values_provided = True
-    if not values_provided:
-        raise ValueError("Provide ra or dec range")
+    if (ra is None and dec is None) or invalid_range:
+        raise ValueError(ValidatorsErrors.INVALID_RADEC_RANGE.value)
