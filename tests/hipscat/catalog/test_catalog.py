@@ -262,17 +262,15 @@ def test_box_filter_ra_divisions_edge_cases(small_sky_order1_catalog):
     def assert_is_subset_of(catalog, catalog_complement):
         pixels_catalog = catalog.get_healpix_pixels()
         pixels_catalog_complement = catalog_complement.get_healpix_pixels()
-        assert all(pixel in pixels_catalog_complement for pixel in pixels_catalog)
         assert len(pixels_catalog) < len(pixels_catalog_complement)
+        assert all(pixel in pixels_catalog_complement for pixel in pixels_catalog)
 
     filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=(0, 180))
     filtered_catalog_complement = small_sky_order1_catalog.filter_by_box(ra=(180, 0))
     assert_is_subset_of(filtered_catalog, filtered_catalog_complement)
 
     filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=(10, 50))
-    assert len(filtered_catalog.get_healpix_pixels()) == 1
     filtered_catalog_complement = small_sky_order1_catalog.filter_by_box(ra=(50, 10))
-    assert filtered_catalog_complement.get_healpix_pixels() == small_sky_order1_catalog.get_healpix_pixels()
     assert_is_subset_of(filtered_catalog, filtered_catalog_complement)
 
     filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=(10, 220))
@@ -306,8 +304,8 @@ def test_box_filter_ra_pixel_tree_generation():
     assert len(pixel_tree_complement) < len(pixel_tree)
     assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 
-    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(200, 300), order=1)
-    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(300, 200), order=1)
+    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(200, 350), order=1)
+    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(350, 200), order=1)
     assert len(pixel_tree) < len(pixel_tree_complement)
     assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 

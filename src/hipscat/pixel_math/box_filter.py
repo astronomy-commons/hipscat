@@ -10,7 +10,6 @@ from astropy.coordinates import Angle
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
-from hipscat.pixel_math.validators import validate_box_search
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
@@ -24,15 +23,13 @@ def filter_pixels_by_box(
 
     Args:
         pixel_tree (PixelTree): The catalog tree to filter pixels from
-        ra (Tuple[float, float]): Right ascension range, in degrees
-        dec (Tuple[float, float]): Declination range, in degrees
+        ra (Tuple[float, float]): Right ascension range, in [0,360] degrees
+        dec (Tuple[float, float]): Declination range, in [-90,90] degrees
 
     Returns:
         List of HealpixPixels representing only the pixels that overlap with the right
         ascension or the declination region.
     """
-    ra = wrap_ra_values(ra)
-    validate_box_search(ra, dec)
     max_order = pixel_tree.get_max_depth()
 
     result_pixels = []
