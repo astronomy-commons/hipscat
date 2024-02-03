@@ -35,7 +35,7 @@ class Catalog(HealpixDataset):
     `Norder=/Dir=/Npix=.parquet`
     """
 
-    HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE, CatalogType.MARGIN]
+    HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE]
 
     # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
     # set the catalog info to the correct type

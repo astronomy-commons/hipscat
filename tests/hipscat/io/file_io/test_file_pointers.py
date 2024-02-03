@@ -98,6 +98,7 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
         "_common_metadata",
         "_metadata",
         "catalog_info.json",
+        "partition_info.csv",
         "point_map.fits",
         "provenance_info.json",
     ]

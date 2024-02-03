@@ -67,7 +67,7 @@ def test_wrong_type(index_catalog_info, catalog_info_data):
     with pytest.raises(TypeError, match="unexpected"):
         IndexCatalogInfo(**catalog_info_data)
 
-    with pytest.raises(ValueError, match="type index"):
+    with pytest.raises(ValueError, match=f"{CatalogType.INDEX}"):
         init_data = index_catalog_info.copy()
         init_data["catalog_type"] = CatalogType.OBJECT
         IndexCatalogInfo(**init_data)

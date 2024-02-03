@@ -64,10 +64,10 @@ def test_type_missing(source_catalog_info):
 
 
 def test_wrong_type(source_catalog_info, catalog_info_data):
-    with pytest.raises(ValueError, match="type source"):
+    with pytest.raises(ValueError, match=f"{CatalogType.SOURCE}"):
         SourceCatalogInfo(**catalog_info_data)
 
-    with pytest.raises(ValueError, match="type source"):
+    with pytest.raises(ValueError, match=f"{CatalogType.SOURCE}"):
         init_data = source_catalog_info.copy()
         init_data["catalog_type"] = CatalogType.OBJECT
         SourceCatalogInfo(**init_data)

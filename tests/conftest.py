@@ -9,6 +9,7 @@ from hipscat.catalog.association_catalog.association_catalog_info import Associa
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
+from hipscat.catalog.margin_cache import MarginCacheCatalogInfo
 from hipscat.inspection.almanac import Almanac
 from hipscat.pixel_math import HealpixPixel
 
@@ -126,7 +127,7 @@ def source_catalog_info_with_extra() -> dict:
 
 
 @pytest.fixture
-def margin_cache_catalog_info() -> dict:
+def margin_cache_catalog_info_data() -> dict:
     return {
         "catalog_name": "test_margin",
         "catalog_type": "margin",
@@ -187,6 +188,23 @@ def catalog_info_file(catalog_path) -> str:
 @pytest.fixture
 def catalog_info(catalog_info_data) -> CatalogInfo:
     return CatalogInfo(**catalog_info_data)
+
+
+@pytest.fixture
+def margin_catalog_info(margin_cache_catalog_info_data) -> MarginCacheCatalogInfo:
+    return MarginCacheCatalogInfo(**margin_cache_catalog_info_data)
+
+
+@pytest.fixture
+def margin_catalog_pixels() -> List[HealpixPixel]:
+    return [
+        HealpixPixel(0, 4), HealpixPixel(1, 44), HealpixPixel(1, 45), HealpixPixel(1, 46), HealpixPixel(1, 47)
+    ]
+
+
+@pytest.fixture
+def margin_catalog_path(test_data_dir) -> str:
+    return os.path.join(test_data_dir, "small_sky_order1_margin")
 
 
 @pytest.fixture

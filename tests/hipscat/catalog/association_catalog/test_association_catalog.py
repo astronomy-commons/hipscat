@@ -89,8 +89,36 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
 
     ## Now we create the needed _metadata and everything is right.
     part_info = PartitionJoinInfo(association_catalog_join_pixels)
-    part_info.write_to_metadata_files(
-        catalog_path=catalog_path,
-    )
-    catalog = AssociationCatalog.read_from_hipscat(catalog_path)
+    part_info.write_to_metadata_files(catalog_path=catalog_path)
+    with pytest.warns(UserWarning, match="slow"):
+        catalog = AssociationCatalog.read_from_hipscat(catalog_path)
     assert catalog.catalog_name == association_catalog_info_data["catalog_name"]
+
+
+def test_csv_round_trip(tmp_path, association_catalog_info_data, association_catalog_join_pixels):
+    ## Path doesn't exist
+    with pytest.raises(FileNotFoundError):
+        AssociationCatalog.read_from_hipscat(os.path.join("path", "empty"))
+
+    catalog_path = os.path.join(tmp_path, "empty")
+    os.makedirs(catalog_path, exist_ok=True)
+
+    file_name = os.path.join(catalog_path, "catalog_info.json")
+    with open(file_name, "w", encoding="utf-8") as metadata_file:
+        metadata_file.write(json.dumps(association_catalog_info_data))
+
+    with pytest.raises(FileNotFoundError, match="partition"):
+        AssociationCatalog.read_from_hipscat(catalog_path)
+
+    file_name = os.path.join(catalog_path, "partition_info.csv")
+    with open(file_name, "w", encoding="utf-8") as metadata_file:
+        # dump some garbage in there - just needs to exist.
+        metadata_file.write(json.dumps(association_catalog_info_data))
+    with pytest.raises(FileNotFoundError, match="partition"):
+        AssociationCatalog.read_from_hipscat(catalog_path)
+
+    part_info = PartitionJoinInfo(association_catalog_join_pixels)
+    part_info.write_to_csv(catalog_path=catalog_path)
+
+    catalog = AssociationCatalog.read_from_hipscat(catalog_path)
+    pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
