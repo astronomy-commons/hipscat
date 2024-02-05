@@ -10,6 +10,7 @@ from astropy.coordinates import Angle
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
+from hipscat.pixel_tree import PixelAlignmentType, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
@@ -31,19 +32,21 @@ def filter_pixels_by_box(
     """
     max_order = pixel_tree.get_max_depth()
 
-    result_pixels = []
+    filter_tree = None
     ra_search_tree, dec_search_tree = None, None
 
     if ra is not None:
         ra_search_tree = _generate_ra_strip_pixel_tree(ra, max_order)
-        result_pixels = get_filtered_pixel_list(pixel_tree, ra_search_tree)
+        filter_tree = ra_search_tree
     if dec is not None:
         dec_search_tree = _generate_dec_strip_pixel_tree(dec, max_order)
-        result_pixels = get_filtered_pixel_list(pixel_tree, dec_search_tree)
+        filter_tree = dec_search_tree
     if ra_search_tree is not None and dec_search_tree is not None:
-        filter_pixels = get_filtered_pixel_list(ra_search_tree, dec_search_tree)
-        filter_tree = PixelTreeBuilder.from_healpix(filter_pixels)
-        result_pixels = get_filtered_pixel_list(pixel_tree, filter_tree)
+        filter_tree = align_trees(
+            ra_search_tree, dec_search_tree, alignment_type=PixelAlignmentType.INNER
+        ).pixel_tree
+
+    result_pixels = get_filtered_pixel_list(pixel_tree, filter_tree)
 
     return result_pixels
 
