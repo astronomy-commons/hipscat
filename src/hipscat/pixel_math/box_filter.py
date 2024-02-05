@@ -18,8 +18,7 @@ def filter_pixels_by_box(
     pixel_tree: PixelTree, ra: Tuple[float, float] | None, dec: Tuple[float, float] | None
 ) -> List[HealpixPixel]:
     """Filter the leaf pixels in a pixel tree to return a partition_info dataframe
-    with the pixels that overlap with a right ascension or the declination region.
-    Only one of ra and dec should be set, otherwise one should use polygonal search.
+    with the pixels that overlap with a right ascension and/or declination region.
 
     Args:
         pixel_tree (PixelTree): The catalog tree to filter pixels from
@@ -27,8 +26,8 @@ def filter_pixels_by_box(
         dec (Tuple[float, float]): Declination range, in [-90,90] degrees
 
     Returns:
-        List of HealpixPixels representing only the pixels that overlap with the right
-        ascension or the declination region.
+        List of HEALPix representing only the pixels that overlap with the right
+        ascension and/or declination region.
     """
     max_order = pixel_tree.get_max_depth()
 
@@ -50,8 +49,7 @@ def filter_pixels_by_box(
 
 
 def wrap_ra_values(ra: Tuple[float, float] | None) -> Tuple[float, float] | None:
-    """Wraps right ascension values to the [0,360] degree range and sorts
-    declination values by ascending order.
+    """Wraps right ascension values to the [0,360] degree range.
 
     Args:
         ra (Tuple[float, float]): The right ascension values, in degrees
