@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import healpy as hp
 import numpy as np
@@ -12,13 +12,19 @@ from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
+from hipscat.pixel_math.box_filter import filter_pixels_by_box, wrap_ra_values
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
 from hipscat.pixel_math.polygon_filter import (
     CartesianCoordinates,
     SphericalCoordinates,
     filter_pixels_by_polygon,
 )
-from hipscat.pixel_math.validators import validate_declination_values, validate_polygon, validate_radius
+from hipscat.pixel_math.validators import (
+    validate_box_search,
+    validate_declination_values,
+    validate_polygon,
+    validate_radius,
+)
 
 
 class Catalog(HealpixDataset):
@@ -74,6 +80,24 @@ class Catalog(HealpixDataset):
         validate_radius(radius)
         validate_declination_values(dec)
         return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius))
+
+    def filter_by_box(
+        self, ra: Tuple[float, float] | None = None, dec: Tuple[float, float] | None = None
+    ) -> Catalog:
+        """Filter the pixels in the catalog to only include the pixels that overlap with a
+        right ascension or declination range. In case both ranges are provided, filtering
+        is performed using a polygon.
+
+        Args:
+            ra (Tuple[float, float]): Right ascension range, in degrees
+            dec (Tuple[float, float]): Declination range, in degrees
+
+        Returns:
+            A new catalog with only the pixels that overlap with the specified region
+        """
+        ra = wrap_ra_values(ra)
+        validate_box_search(ra, dec)
+        return self.filter_from_pixel_list(filter_pixels_by_box(self.pixel_tree, ra, dec))
 
     def filter_by_polygon(self, vertices: List[SphericalCoordinates] | List[CartesianCoordinates]) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap

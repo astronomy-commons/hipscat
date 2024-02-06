@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
 
 class ValidatorsErrors(str, Enum):
     """Error messages for the coordinate validators"""
+
     INVALID_DEC = "declination must be in the -90.0 to 90.0 degree range"
     INVALID_RADIUS = "cone radius must be positive"
     INVALID_NUM_VERTICES = "polygon must contain a minimum of 3 vertices"
     DUPLICATE_VERTICES = "polygon has duplicated vertices"
     DEGENERATE_POLYGON = "polygon is degenerate"
+    INVALID_RADEC_RANGE = "invalid ra or dec range"
 
 
 def validate_radius(radius: float):
@@ -38,7 +40,7 @@ def validate_declination_values(dec: float | List[float]):
         ValueError if declination values are not in the [-90,90] degree range
     """
     dec_values = np.array(dec)
-    lower_bound, upper_bound = -90., 90.
+    lower_bound, upper_bound = -90.0, 90.0
     if not np.all((dec_values >= lower_bound) & (dec_values <= upper_bound)):
         raise ValueError(ValidatorsErrors.INVALID_DEC.value)
 
@@ -85,3 +87,27 @@ def is_polygon_degenerate(vertices: np.ndarray) -> bool:
     # the polygon is degenerate and therefore, invalid.
     center_distance = np.dot(normal_vector, vertices[0])
     return bool(np.isclose(center_distance, 0))
+
+
+def validate_box_search(ra: Tuple[float, float] | None, dec: Tuple[float, float] | None):
+    """Checks if ra and dec values are valid for the box search.
+
+    - At least one range of ra or dec must have been provided
+    - Ranges must be pairs of non-duplicate minimum and maximum values, in degrees
+    - Declination values, if existing, must be in ascending order
+    - Declination values, if existing, must be in the [-90,90] degree range
+
+    Arguments:
+        ra (Tuple[float, float]): Right ascension range, in degrees
+        dec (Tuple[float, float]): Declination range, in degrees
+    """
+    invalid_range = False
+    if ra is not None:
+        if len(ra) != 2 or len(ra) != len(set(ra)):
+            invalid_range = True
+    if dec is not None:
+        if len(dec) != 2 or dec[0] >= dec[1]:
+            invalid_range = True
+        validate_declination_values(list(dec))
+    if (ra is None and dec is None) or invalid_range:
+        raise ValueError(ValidatorsErrors.INVALID_RADEC_RANGE.value)
