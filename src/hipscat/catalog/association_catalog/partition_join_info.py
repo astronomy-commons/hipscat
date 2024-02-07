@@ -1,4 +1,5 @@
 """Container class to hold primary-to-join partition metadata"""
+
 from __future__ import annotations
 
 import warnings

@@ -15,6 +15,7 @@ between spatially partitioned data files.
 
 See the README in this directory for more information on the fiddly pixel math.
 """
+
 from __future__ import annotations
 
 from typing import List

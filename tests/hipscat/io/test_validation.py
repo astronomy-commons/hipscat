@@ -1,4 +1,5 @@
 """Test catalog information is valid"""
+
 import os
 
 from hipscat.catalog import PartitionInfo
