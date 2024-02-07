@@ -12,7 +12,6 @@ import hipscat.pixel_math as hist
 from hipscat.catalog import Catalog, PartitionInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
-from hipscat.io import paths
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, align_trees
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
