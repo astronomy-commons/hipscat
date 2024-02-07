@@ -22,7 +22,7 @@ dependencies = [
     "healpy",
     "numba",
     "pandas",
-    "pyarrow>=10.0.0",
+    "pyarrow>=14.0.1",
     "typing-extensions>=4.3.0",
 ]
 
