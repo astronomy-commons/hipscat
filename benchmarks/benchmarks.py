@@ -58,7 +58,7 @@ class Suite:
 
 
 class MetadataSuite:
-    """Suite that generates _metadata files and benchmarks the operations on them."""
+    """Suite that generates catalog files and benchmarks the operations on them."""
 
     def setup_cache(self):
         root_dir = os.getcwd()
@@ -68,14 +68,14 @@ class MetadataSuite:
         catalog_path_a = os.path.join(root_dir, "catalog_a")
         os.makedirs(catalog_path_a, exist_ok=True)
         partition_info = PartitionInfo.from_healpix(pixel_list_a)
-        partition_info.write_to_metadata_files(catalog_path_a)
+        partition_info.write_to_file(os.path.join(catalog_path_a, "partition_info.csv"))
 
         ## Create partition info for catalog a (only at order 6)
         pixel_list_b = [HealpixPixel(6, pixel) for pixel in np.arange(25_000)]
         catalog_path_b = os.path.join(root_dir, "catalog_b")
         os.makedirs(catalog_path_b, exist_ok=True)
         partition_info = PartitionInfo.from_healpix(pixel_list_b)
-        partition_info.write_to_metadata_files(catalog_path_b)
+        partition_info.write_to_file(os.path.join(catalog_path_b, "partition_info.csv"))
 
         ## Fake an association table between the two
         tree_a = PixelTreeBuilder.from_healpix(pixel_list_a)
@@ -99,18 +99,15 @@ class MetadataSuite:
         association_catalog_path = os.path.join(root_dir, "assocation_a_b")
         os.makedirs(association_catalog_path, exist_ok=True)
         partition_info = PartitionJoinInfo(alignment_df)
-        partition_info.write_to_metadata_files(association_catalog_path)
+        partition_info.write_to_csv(association_catalog_path)
 
         return (catalog_path_a, catalog_path_b, association_catalog_path)
 
     def time_load_partition_info_order7(self, cache):
-        partition_info_pointer = paths.get_parquet_metadata_pointer(cache[0])
-        PartitionInfo.read_from_file(partition_info_pointer)
+        PartitionInfo.read_from_dir(cache[0])
 
     def time_load_partition_info_order6(self, cache):
-        partition_info_pointer = paths.get_parquet_metadata_pointer(cache[1])
-        PartitionInfo.read_from_file(partition_info_pointer)
+        PartitionInfo.read_from_dir(cache[1])
 
     def time_load_partition_join_info(self, cache):
-        partition_info_pointer = paths.get_parquet_metadata_pointer(cache[2])
-        PartitionJoinInfo.read_from_file(partition_info_pointer)
+        PartitionInfo.read_from_dir(cache[2])
