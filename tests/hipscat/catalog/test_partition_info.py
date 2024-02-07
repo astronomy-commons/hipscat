@@ -1,4 +1,5 @@
 """Tests of partition info functionality"""
+
 import os
 
 import numpy.testing as npt

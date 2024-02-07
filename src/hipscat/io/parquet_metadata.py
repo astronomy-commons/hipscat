@@ -1,4 +1,5 @@
 """Utility functions for handling parquet metadata files"""
+
 import tempfile
 from typing import List
 

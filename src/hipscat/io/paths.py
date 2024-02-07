@@ -1,4 +1,5 @@
 """Methods for creating partitioned data paths"""
+
 from __future__ import annotations
 
 import re

@@ -15,6 +15,7 @@ class MarginCatalog(HealpixDataset):
     used to ensure spatial operations such as crossmatching can be performed efficiently while maintaining
     accuracy.
     """
+
     # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
     # set the catalog info to the correct type
     CatalogInfoClass: TypeAlias = MarginCacheCatalogInfo
@@ -38,7 +39,5 @@ class MarginCatalog(HealpixDataset):
             storage_options: dictionary that contains abstract filesystem credentials
         """
         if catalog_info.catalog_type != CatalogType.MARGIN:
-            raise ValueError(
-                f"Catalog info `catalog_type` must equal {CatalogType.MARGIN}"
-            )
+            raise ValueError(f"Catalog info `catalog_type` must equal {CatalogType.MARGIN}")
         super().__init__(catalog_info, pixels, catalog_path, storage_options)

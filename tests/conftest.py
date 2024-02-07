@@ -198,7 +198,11 @@ def margin_catalog_info(margin_cache_catalog_info_data) -> MarginCacheCatalogInf
 @pytest.fixture
 def margin_catalog_pixels() -> List[HealpixPixel]:
     return [
-        HealpixPixel(0, 4), HealpixPixel(1, 44), HealpixPixel(1, 45), HealpixPixel(1, 46), HealpixPixel(1, 47)
+        HealpixPixel(0, 4),
+        HealpixPixel(1, 44),
+        HealpixPixel(1, 45),
+        HealpixPixel(1, 46),
+        HealpixPixel(1, 47),
     ]
 
 

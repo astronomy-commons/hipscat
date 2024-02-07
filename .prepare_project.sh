@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
+echo "Checking pip version"
+MINIMUM_PIP_VERSION=22
+pipversion=( $(pip --version | awk '{print $2}' | sed 's/\./ /g') )
+if let "${pipversion[0]}<${MINIMUM_PIP_VERSION}"; then
+    echo "Insufficient version of pip found. Requires at least version ${MINIMUM_PIP_VERSION}."
+    echo "See https://lincc-ppt.readthedocs.io/ for details."
+    exit 1
+fi
+
 echo "Initializing local git repository"
 {
-    gitversion=( $(git version | sed 's/^.* //;s/\./ /g') )
+    gitversion=( $(git version | git version | awk '{print $3}' | sed 's/\./ /g') )
     if let "${gitversion[0]}<2"; then
 	# manipulate directly
 	git init . && echo 'ref: refs/heads/main' >.git/HEAD

@@ -8,9 +8,7 @@ from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 def test_init_catalog(margin_catalog_info, margin_catalog_pixels):
-    catalog = MarginCatalog(
-        margin_catalog_info, margin_catalog_pixels
-    )
+    catalog = MarginCatalog(margin_catalog_info, margin_catalog_pixels)
     assert catalog.catalog_name == margin_catalog_info.catalog_name
     assert catalog.get_healpix_pixels() == margin_catalog_pixels
     assert catalog.catalog_info == margin_catalog_info
