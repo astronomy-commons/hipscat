@@ -132,3 +132,30 @@ def test_write_to_file_sorted(tmp_path, pixel_list_depth_first, pixel_list_bread
     new_partition_info = PartitionInfo.read_from_file(partition_info_pointer)
 
     npt.assert_array_equal(pixel_list_breadth_first, new_partition_info.get_healpix_pixels())
+
+
+def test_load_partition_info_from_dir_and_write(tmp_path, pixel_list_depth_first):
+    partition_info = PartitionInfo.from_healpix(pixel_list_depth_first)
+
+    ## Path arguments are required if the info was not created from a `read_from_dir` call
+    with pytest.raises(ValueError):
+        partition_info.write_to_file()
+    with pytest.raises(ValueError):
+        partition_info.write_to_metadata_files()
+
+    partition_info.write_to_file(catalog_path=tmp_path)
+    info = PartitionInfo.read_from_dir(tmp_path)
+
+    ## Can write out the partition info CSV by providing:
+    ##  - no arguments
+    ##  - new catalog directory
+    ##  - full path to the csv file
+    info.write_to_file()
+    info.write_to_file(catalog_path=tmp_path)
+    info.write_to_file(partition_info_file=os.path.join(tmp_path, "new_csv.csv"))
+
+    ## Can write out the _metadata file by providing:
+    ##  - no arguments
+    ##  - new catalog directory
+    info.write_to_metadata_files()
+    info.write_to_metadata_files(catalog_path=tmp_path)

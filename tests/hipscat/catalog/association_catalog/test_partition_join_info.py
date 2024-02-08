@@ -117,3 +117,28 @@ def test_read_from_missing_file(tmp_path):
     file_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
         PartitionJoinInfo.read_from_csv(file_pointer)
+
+
+def test_load_partition_info_from_dir_and_write(tmp_path, association_catalog_join_pixels):
+    info = PartitionJoinInfo(association_catalog_join_pixels)
+
+    ## Path arguments are required if the info was not created from a `read_from_dir` call
+    with pytest.raises(ValueError):
+        info.write_to_csv()
+    with pytest.raises(ValueError):
+        info.write_to_metadata_files()
+
+    info.write_to_csv(catalog_path=tmp_path)
+    info = PartitionJoinInfo.read_from_dir(tmp_path)
+
+    ## Can write out the partition info CSV by providing:
+    ##  - no arguments
+    ##  - new catalog directory
+    info.write_to_csv()
+    info.write_to_csv(catalog_path=tmp_path)
+
+    ## Can write out the _metadata file by providing:
+    ##  - no arguments
+    ##  - new catalog directory
+    info.write_to_metadata_files()
+    info.write_to_metadata_files(catalog_path=tmp_path)

@@ -34,8 +34,9 @@ class PartitionJoinInfo:
         JOIN_PIXEL_COLUMN_NAME,
     ]
 
-    def __init__(self, join_info_df: pd.DataFrame) -> None:
+    def __init__(self, join_info_df: pd.DataFrame, catalog_base_dir: str = None) -> None:
         self.data_frame = join_info_df
+        self.catalog_base_dir = catalog_base_dir
         self._check_column_names()
 
     def _check_column_names(self):
@@ -69,13 +70,21 @@ class PartitionJoinInfo:
         primary_to_join = dict(primary_to_join)
         return primary_to_join
 
-    def write_to_metadata_files(self, catalog_path: FilePointer, storage_options: dict = None):
+    def write_to_metadata_files(self, catalog_path: FilePointer = None, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.
 
         Args:
             catalog_path (FilePointer): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Raises:
+            ValueError: if no path is provided, and could not be inferred.
         """
+        if catalog_path is None:
+            if self.catalog_base_dir is None:
+                raise ValueError("catalog_path is required if info was not loaded from a directory")
+            catalog_path = self.catalog_base_dir
+
         batches = [
             [
                 pa.RecordBatch.from_arrays(
@@ -94,7 +103,7 @@ class PartitionJoinInfo:
 
         write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
-    def write_to_csv(self, catalog_path: FilePointer, storage_options: dict = None):
+    def write_to_csv(self, catalog_path: FilePointer = None, storage_options: dict = None):
         """Write all partition data to CSV files.
 
         Two files will be written::
@@ -106,7 +115,15 @@ class PartitionJoinInfo:
             catalog_path: FilePointer to the directory where the
                 `partition_join_info.csv` file will be written
             storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Raises:
+            ValueError: if no path is provided, and could not be inferred.
         """
+        if catalog_path is None:
+            if self.catalog_base_dir is None:
+                raise ValueError("catalog_path is required if info was not loaded from a directory")
+            catalog_path = self.catalog_base_dir
+
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_path)
         file_io.write_dataframe_to_csv(
             self.data_frame, partition_join_info_file, index=False, storage_options=storage_options
@@ -141,24 +158,39 @@ class PartitionJoinInfo:
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         if file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options):
-            partition_join_info = PartitionJoinInfo.read_from_csv(
+            pixel_frame = PartitionJoinInfo._read_from_csv(
                 partition_join_info_file, storage_options=storage_options
             )
         elif file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
             warnings.warn("Reading partitions from parquet metadata. This is typically slow.")
-            partition_join_info = PartitionJoinInfo.read_from_file(
+            pixel_frame = PartitionJoinInfo._read_from_metadata_file(
                 metadata_file, storage_options=storage_options
             )
         else:
             raise FileNotFoundError(
                 f"_metadata or partition join info file is required in catalog directory {catalog_base_dir}"
             )
-        return partition_join_info
+        return cls(pixel_frame, catalog_base_dir)
 
     @classmethod
     def read_from_file(
         cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
     ) -> PartitionJoinInfo:
+        """Read partition join info from a `_metadata` file to create an object
+
+        Args:
+            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Returns:
+            A `PartitionJoinInfo` object with the data from the file
+        """
+        return cls(cls._read_from_metadata_file(metadata_file, strict, storage_options))
+
+    @classmethod
+    def _read_from_metadata_file(
+        cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
+    ) -> pd.DataFrame:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
@@ -229,12 +261,27 @@ class PartitionJoinInfo:
                 columns=cls.COLUMN_NAMES,
             )
 
-        return cls(pixel_frame)
+        return pixel_frame
 
     @classmethod
     def read_from_csv(
         cls, partition_join_info_file: FilePointer, storage_options: dict = None
     ) -> PartitionJoinInfo:
+        """Read partition join info from a `partition_join_info.csv` file to create an object
+
+        Args:
+            partition_join_info_file (FilePointer): FilePointer to the `partition_join_info.csv` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Returns:
+            A `PartitionJoinInfo` object with the data from the file
+        """
+        return cls(cls._read_from_csv(partition_join_info_file, storage_options))
+
+    @classmethod
+    def _read_from_csv(
+        cls, partition_join_info_file: FilePointer, storage_options: dict = None
+    ) -> pd.DataFrame:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
@@ -251,5 +298,4 @@ class PartitionJoinInfo:
                 f"No partition join info found where expected: {str(partition_join_info_file)}"
             )
 
-        data_frame = file_io.load_csv_to_pandas(partition_join_info_file, storage_options=storage_options)
-        return cls(data_frame)
+        return file_io.load_csv_to_pandas(partition_join_info_file, storage_options=storage_options)
