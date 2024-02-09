@@ -147,13 +147,15 @@ class PartitionInfo:
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
+        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
     ) -> PartitionInfo:
         """Read partition info from a `_metadata` file to create an object
 
         Args:
             metadata_file (FilePointer): FilePointer to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
+            strict (bool): use strict parsing of _metadata file. this is slower, but
+                gives more helpful error messages in the case of invalid data.
 
         Returns:
             A `PartitionInfo` object with the data from the file
@@ -162,13 +164,15 @@ class PartitionInfo:
 
     @classmethod
     def _read_from_metadata_file(
-        cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
+        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
     ) -> List[HealpixPixel]:
         """Read partition info list from a `_metadata` file.
 
         Args:
             metadata_file (FilePointer): FilePointer to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
+            strict (bool): use strict parsing of _metadata file. this is slower, but
+                gives more helpful error messages in the case of invalid data.
 
         Returns:
             A `PartitionInfo` object with the data from the file
