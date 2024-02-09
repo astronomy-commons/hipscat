@@ -25,8 +25,9 @@ class PartitionInfo:
     METADATA_DIR_COLUMN_NAME = "Dir"
     METADATA_PIXEL_COLUMN_NAME = "Npix"
 
-    def __init__(self, pixel_list: List[HealpixPixel]) -> None:
+    def __init__(self, pixel_list: List[HealpixPixel], catalog_base_dir: str = None) -> None:
         self.pixel_list = pixel_list
+        self.catalog_base_dir = catalog_base_dir
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         """Get healpix pixel objects for all pixels represented as partitions.
@@ -45,25 +46,55 @@ class PartitionInfo:
         max_pixel = np.max(self.pixel_list)
         return max_pixel.order
 
-    def write_to_file(self, partition_info_file: FilePointer, storage_options: dict = None):
+    def write_to_file(
+        self,
+        partition_info_file: FilePointer = None,
+        catalog_path: FilePointer = None,
+        storage_options: dict = None,
+    ):
         """Write all partition data to CSV file.
+
+        If no paths are provided, the catalog base directory from the `read_from_dir` call is used.
 
         Args:
             partition_info_file: FilePointer to where the `partition_info.csv`
-                file will be written
+                file will be written.
+            catalog_path: base directory for a catalog where the `partition_info.csv`
+                file will be written.
             storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Raises:
+            ValueError: if no path is provided, and could not be inferred.
         """
+        if partition_info_file is None:
+            if catalog_path is not None:
+                partition_info_file = paths.get_partition_info_pointer(catalog_path)
+            elif self.catalog_base_dir is not None:
+                partition_info_file = paths.get_partition_info_pointer(self.catalog_base_dir)
+            else:
+                raise ValueError("partition_info_file is required if info was not loaded from a directory")
+
         file_io.write_dataframe_to_csv(
             self.as_dataframe(), partition_info_file, index=False, storage_options=storage_options
         )
 
-    def write_to_metadata_files(self, catalog_path: FilePointer, storage_options: dict = None):
+    def write_to_metadata_files(self, catalog_path: FilePointer = None, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.
+
+        If no catalog_path is provided, the catalog base directory from the `read_from_dir` call is used.
 
         Args:
             catalog_path (FilePointer): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Raises:
+            ValueError: if no path is provided, and could not be inferred.
         """
+        if catalog_path is None:
+            if self.catalog_base_dir is None:
+                raise ValueError("catalog_path is required if info was not loaded from a directory")
+            catalog_path = self.catalog_base_dir
+
         batches = [
             [
                 pa.RecordBatch.from_arrays(
@@ -102,25 +133,46 @@ class PartitionInfo:
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         if file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options):
-            partition_info = PartitionInfo.read_from_csv(partition_info_file, storage_options=storage_options)
+            pixel_list = PartitionInfo._read_from_csv(partition_info_file, storage_options=storage_options)
         elif file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
             warnings.warn("Reading partitions from parquet metadata. This is typically slow.")
-            partition_info = PartitionInfo.read_from_file(metadata_file, storage_options=storage_options)
+            pixel_list = PartitionInfo._read_from_metadata_file(
+                metadata_file, storage_options=storage_options
+            )
         else:
             raise FileNotFoundError(
                 f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
             )
-        return partition_info
+        return cls(pixel_list, catalog_base_dir)
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, strict=False, storage_options: dict = None
+        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
     ) -> PartitionInfo:
         """Read partition info from a `_metadata` file to create an object
 
         Args:
             metadata_file (FilePointer): FilePointer to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
+            strict (bool): use strict parsing of _metadata file. this is slower, but
+                gives more helpful error messages in the case of invalid data.
+
+        Returns:
+            A `PartitionInfo` object with the data from the file
+        """
+        return cls(cls._read_from_metadata_file(metadata_file, strict, storage_options))
+
+    @classmethod
+    def _read_from_metadata_file(
+        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+    ) -> List[HealpixPixel]:
+        """Read partition info list from a `_metadata` file.
+
+        Args:
+            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
+            strict (bool): use strict parsing of _metadata file. this is slower, but
+                gives more helpful error messages in the case of invalid data.
 
         Returns:
             A `PartitionInfo` object with the data from the file
@@ -163,12 +215,23 @@ class PartitionInfo:
         ## Remove duplicates, preserving order.
         ## In the case of association partition join info, we may have multiple entries
         ## for the primary order/pixels.
-        pixel_list = list(dict.fromkeys(pixel_list))
-
-        return cls(pixel_list)
+        return list(dict.fromkeys(pixel_list))
 
     @classmethod
     def read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
+        """Read partition info from a `partition_info.csv` file to create an object
+
+        Args:
+            partition_info_file (FilePointer): FilePointer to the `partition_info.csv` file
+            storage_options (dict): dictionary that contains abstract filesystem credentials
+
+        Returns:
+            A `PartitionInfo` object with the data from the file
+        """
+        return cls(cls._read_from_csv(partition_info_file, storage_options))
+
+    @classmethod
+    def _read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
@@ -183,15 +246,13 @@ class PartitionInfo:
 
         data_frame = file_io.load_csv_to_pandas(partition_info_file, storage_options=storage_options)
 
-        pixel_list = [
+        return [
             HealpixPixel(order, pixel)
             for order, pixel in zip(
                 data_frame[cls.METADATA_ORDER_COLUMN_NAME],
                 data_frame[cls.METADATA_PIXEL_COLUMN_NAME],
             )
         ]
-
-        return cls(pixel_list)
 
     def as_dataframe(self):
         """Construct a pandas dataframe for the partition info pixels.
