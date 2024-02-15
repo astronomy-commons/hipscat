@@ -14,3 +14,9 @@ def test_get_pixel_argsort(pixel_list_depth_first, pixel_list_breadth_first):
 def test_get_pixel_argsort_empty():
     argsort = get_pixel_argsort([])
     npt.assert_array_equal(argsort, [])
+
+    argsort = get_pixel_argsort(None)
+    npt.assert_array_equal(argsort, [])
+
+    argsort = get_pixel_argsort(np.array([]))
+    npt.assert_array_equal(argsort, [])
