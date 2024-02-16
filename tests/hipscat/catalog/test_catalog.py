@@ -84,6 +84,7 @@ def test_load_catalog_small_sky(small_sky_dir):
     """Instantiate a catalog with 1 pixel"""
     cat = read_from_hipscat(small_sky_dir)
 
+    assert isinstance(cat, Catalog)
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_healpix_pixels()) == 1
 
@@ -92,8 +93,18 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
     """Instantiate a catalog with 4 pixels"""
     cat = read_from_hipscat(small_sky_order1_dir)
 
+    assert isinstance(cat, Catalog)
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_healpix_pixels()) == 4
+
+
+def test_load_catalog_small_sky_source(small_sky_source_dir):
+    """Instantiate a source catalog with 14 pixels"""
+    cat = read_from_hipscat(small_sky_source_dir)
+
+    assert isinstance(cat, Catalog)
+    assert cat.catalog_name == "small_sky_source_catalog"
+    assert len(cat.get_healpix_pixels()) == 14
 
 
 def test_cone_filter(small_sky_order1_catalog):

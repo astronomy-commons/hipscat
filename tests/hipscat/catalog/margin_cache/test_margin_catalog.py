@@ -35,6 +35,8 @@ def test_wrong_catalog_info_type(catalog_info, margin_catalog_pixels):
 
 def test_read_from_file(margin_catalog_path, margin_catalog_pixels):
     catalog = read_from_hipscat(margin_catalog_path)
+
+    assert isinstance(catalog, MarginCatalog)
     assert catalog.on_disk
     assert catalog.catalog_path == margin_catalog_path
     assert len(catalog.get_healpix_pixels()) == len(margin_catalog_pixels)
