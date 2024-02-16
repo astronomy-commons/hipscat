@@ -1,7 +1,8 @@
 import pytest
 
-from hipscat.catalog import Catalog, read_from_hipscat
+from hipscat.catalog import Catalog
 from hipscat.inspection import plot_pixel_list, plot_pixels, plot_points
+from hipscat.loaders import read_from_hipscat
 
 
 @pytest.mark.parametrize("projection", ["moll", "gnom", "cart", "orth"])

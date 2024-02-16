@@ -6,7 +6,8 @@ import healpy as hp
 import numpy as np
 import pytest
 
-from hipscat.catalog import Catalog, CatalogType, PartitionInfo, read_from_hipscat
+from hipscat.catalog import Catalog, CatalogType, PartitionInfo
+from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.box_filter import _generate_ra_strip_pixel_tree
 from hipscat.pixel_math.validators import ValidatorsErrors

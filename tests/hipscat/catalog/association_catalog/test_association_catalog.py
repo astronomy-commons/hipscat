@@ -4,9 +4,10 @@ import os
 import pandas as pd
 import pytest
 
-from hipscat.catalog import CatalogType, read_from_hipscat
+from hipscat.catalog import CatalogType
 from hipscat.catalog.association_catalog.association_catalog import AssociationCatalog
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
+from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 

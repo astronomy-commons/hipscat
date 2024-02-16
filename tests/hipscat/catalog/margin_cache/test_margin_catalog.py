@@ -3,7 +3,8 @@ import os
 
 import pytest
 
-from hipscat.catalog import CatalogType, MarginCatalog, PartitionInfo, read_from_hipscat
+from hipscat.catalog import CatalogType, MarginCatalog, PartitionInfo
+from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
@@ -46,6 +47,7 @@ def test_read_from_file(margin_catalog_path, margin_catalog_pixels):
     assert info.margin_threshold == 7200
 
 
+# pylint: disable=duplicate-code
 def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalog_pixels):
     """Test loading empty or incomplete data"""
     ## Path doesn't exist
@@ -71,5 +73,6 @@ def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalo
     part_info = PartitionInfo.from_healpix(margin_catalog_pixels)
     part_info.write_to_metadata_files(catalog_path=catalog_path)
 
-    catalog = read_from_hipscat(catalog_path)
+    with pytest.warns(UserWarning, match="slow"):
+        catalog = read_from_hipscat(catalog_path)
     assert catalog.catalog_name == margin_cache_catalog_info_data["catalog_name"]
