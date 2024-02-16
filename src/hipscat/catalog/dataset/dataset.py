@@ -1,21 +1,16 @@
 from typing import Any, Dict, Tuple, Union
 
-from typing_extensions import Self, TypeAlias
+from typing_extensions import Self
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.io import FilePointer, file_io, paths
 
 
 class Dataset:
-    """A base HiPSCat dataset
+    """A base HiPSCat dataset that contains a catalog_info metadata file
+    and the data contained in parquet files"""
 
-    A base dataset contains a catalog_info metadata file and the data contained in parquet files
-
-    TODO - create factory methods to get appropriately-typed datasets for
-    some catalog info or catalog directory
-    """
-
-    CatalogInfoClass: TypeAlias = BaseCatalogInfo
+    CatalogInfoClass = BaseCatalogInfo
 
     def __init__(
         self,
