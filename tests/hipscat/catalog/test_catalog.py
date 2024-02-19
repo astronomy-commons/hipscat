@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
+from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.box_filter import _generate_ra_strip_pixel_tree
 from hipscat.pixel_math.validators import ValidatorsErrors
@@ -81,18 +82,29 @@ def test_get_pixels_list(catalog_info, catalog_pixels):
 
 def test_load_catalog_small_sky(small_sky_dir):
     """Instantiate a catalog with 1 pixel"""
-    cat = Catalog.read_from_hipscat(small_sky_dir)
+    cat = read_from_hipscat(small_sky_dir)
 
+    assert isinstance(cat, Catalog)
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_healpix_pixels()) == 1
 
 
 def test_load_catalog_small_sky_order1(small_sky_order1_dir):
     """Instantiate a catalog with 4 pixels"""
-    cat = Catalog.read_from_hipscat(small_sky_order1_dir)
+    cat = read_from_hipscat(small_sky_order1_dir)
 
+    assert isinstance(cat, Catalog)
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_healpix_pixels()) == 4
+
+
+def test_load_catalog_small_sky_source(small_sky_source_dir):
+    """Instantiate a source catalog with 14 pixels"""
+    cat = read_from_hipscat(small_sky_source_dir)
+
+    assert isinstance(cat, Catalog)
+    assert cat.catalog_name == "small_sky_source_catalog"
+    assert len(cat.get_healpix_pixels()) == 14
 
 
 def test_cone_filter(small_sky_order1_catalog):
@@ -412,14 +424,14 @@ def test_empty_directory(tmp_path):
     """Test loading empty or incomplete data"""
     ## Path doesn't exist
     with pytest.raises(FileNotFoundError):
-        Catalog.read_from_hipscat(os.path.join("path", "empty"))
+        read_from_hipscat(os.path.join("path", "empty"))
 
     catalog_path = os.path.join(tmp_path, "empty")
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError, match="catalog info"):
-        Catalog.read_from_hipscat(catalog_path)
+    with pytest.raises(FileNotFoundError, match="catalog_info"):
+        read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
     file_name = os.path.join(catalog_path, "catalog_info.json")
@@ -427,14 +439,14 @@ def test_empty_directory(tmp_path):
         metadata_file.write('{"catalog_name":"empty", "catalog_type":"source"}')
 
     with pytest.raises(FileNotFoundError, match="metadata"):
-        Catalog.read_from_hipscat(catalog_path)
+        read_from_hipscat(catalog_path)
 
     ## Now we create the needed _metadata and everything is right.
     part_info = PartitionInfo.from_healpix([HealpixPixel(0, 11)])
     part_info.write_to_metadata_files(catalog_path=catalog_path)
 
     with pytest.warns(UserWarning, match="slow"):
-        catalog = Catalog.read_from_hipscat(catalog_path)
+        catalog = read_from_hipscat(catalog_path)
     assert catalog.catalog_name == "empty"
 
 

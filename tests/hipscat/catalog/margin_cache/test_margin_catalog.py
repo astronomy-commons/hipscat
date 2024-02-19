@@ -4,6 +4,7 @@ import os
 import pytest
 
 from hipscat.catalog import CatalogType, MarginCatalog, PartitionInfo
+from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
@@ -33,7 +34,9 @@ def test_wrong_catalog_info_type(catalog_info, margin_catalog_pixels):
 
 
 def test_read_from_file(margin_catalog_path, margin_catalog_pixels):
-    catalog = MarginCatalog.read_from_hipscat(margin_catalog_path)
+    catalog = read_from_hipscat(margin_catalog_path)
+
+    assert isinstance(catalog, MarginCatalog)
     assert catalog.on_disk
     assert catalog.catalog_path == margin_catalog_path
     assert len(catalog.get_healpix_pixels()) == len(margin_catalog_pixels)
@@ -46,18 +49,19 @@ def test_read_from_file(margin_catalog_path, margin_catalog_pixels):
     assert info.margin_threshold == 7200
 
 
+# pylint: disable=duplicate-code
 def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalog_pixels):
     """Test loading empty or incomplete data"""
     ## Path doesn't exist
     with pytest.raises(FileNotFoundError):
-        MarginCatalog.read_from_hipscat(os.path.join("path", "empty"))
+        read_from_hipscat(os.path.join("path", "empty"))
 
     catalog_path = os.path.join(tmp_path, "empty")
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError, match="catalog info"):
-        MarginCatalog.read_from_hipscat(catalog_path)
+    with pytest.raises(FileNotFoundError, match="catalog_info"):
+        read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
     file_name = os.path.join(catalog_path, "catalog_info.json")
@@ -65,12 +69,12 @@ def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalo
         metadata_file.write(json.dumps(margin_cache_catalog_info_data))
 
     with pytest.raises(FileNotFoundError, match="metadata"):
-        MarginCatalog.read_from_hipscat(catalog_path)
+        read_from_hipscat(catalog_path)
 
     ## Now we create the needed _metadata and everything is right.
     part_info = PartitionInfo.from_healpix(margin_catalog_pixels)
     part_info.write_to_metadata_files(catalog_path=catalog_path)
 
     with pytest.warns(UserWarning, match="slow"):
-        catalog = MarginCatalog.read_from_hipscat(catalog_path)
+        catalog = read_from_hipscat(catalog_path)
     assert catalog.catalog_name == margin_cache_catalog_info_data["catalog_name"]

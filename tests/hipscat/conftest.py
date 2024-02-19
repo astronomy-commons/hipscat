@@ -1,6 +1,6 @@
 import pytest
 
-from hipscat.catalog import Catalog
+from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
@@ -52,7 +52,7 @@ def leaf_pixel_node(leaf_pixel_node_data):
 
 @pytest.fixture
 def small_sky_catalog(small_sky_dir):
-    return Catalog.read_from_hipscat(small_sky_dir)
+    return read_from_hipscat(small_sky_dir)
 
 
 @pytest.fixture()
@@ -64,7 +64,7 @@ def small_sky_pixels():
 
 @pytest.fixture
 def small_sky_order1_catalog(small_sky_order1_dir):
-    return Catalog.read_from_hipscat(small_sky_order1_dir)
+    return read_from_hipscat(small_sky_order1_dir)
 
 
 @pytest.fixture()
