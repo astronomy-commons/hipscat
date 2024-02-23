@@ -20,7 +20,7 @@ dependencies = [
     "astropy",
     "fsspec<=2023.9.2", # Used for abstract filesystems
     "healpy",
-    "numba",
+    "numba>=0.58",
     "pandas",
     "pyarrow>=14.0.1",
     "typing-extensions>=4.3.0",
