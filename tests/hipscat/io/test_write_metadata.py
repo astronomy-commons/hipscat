@@ -42,15 +42,15 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
 
 
 def test_write_json_paths(assert_text_file_matches, tmp_path):
-    posix_path = Path(tmp_path)
+    pathlib_path = Path(tmp_path)
     file_pointer = file_io.FilePointer(tmp_path)
     dictionary = {}
-    dictionary["posix_path"] = posix_path
+    dictionary["pathlib_path"] = pathlib_path
     dictionary["file_pointer"] = file_pointer
     dictionary["first_greek"] = "alpha"
     expected_lines = [
         "{\n",
-        f'    "posix_path": "{tmp_path}",',
+        f'    "pathlib_path": "{tmp_path}",',
         f'    "file_pointer": "{tmp_path}",',
         '    "first_greek": "alpha"',
         "}",
