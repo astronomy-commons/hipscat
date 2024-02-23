@@ -27,17 +27,18 @@ def get_edge(d_order, pix, edge):
         dk (int): the change in k that we wish to find the margins for.
         pix (int): the healpix pixel to find margin pixels of.
         edge (int): the edge we want to find for the given pixel. (0-7)
-            0: NE edge
-            1: E corner
-            2: SE edge
-            3: S corner
-            4: SW edge
-            5: W corner
-            6: NW edge
-            7: N corner
+
+            - 0: NE edge
+            - 1: E corner
+            - 2: SE edge
+            - 3: S corner
+            - 4: SW edge
+            - 5: W corner
+            - 6: NW edge
+            - 7: N corner
     Returns:
         one-dimensional numpy array of long integers, filled with the healpix pixels
-            at order kk+dk that border the given edge of pix.
+        at order kk+dk that border the given edge of pix.
     """
     if edge < 0 or edge > 7:
         raise ValueError("edge can only be values between 0 and 7 (see docstring)")
@@ -74,7 +75,7 @@ def get_margin(order, pix, d_order):
             Must be greater than kk.
     Returns:
         one-dimensional numpy array of long integers, filled with the healpix pixels
-            at order kk+dk that border pix.
+        at order kk+dk that border pix.
     """
     if d_order < 1:
         raise ValueError("dk must be greater than order")
@@ -122,8 +123,8 @@ def pixel_is_polar(order, pix):
         pix (int): the id of a healpixel to be checked. must be in the nested id scheme.
     Returns:
         tuple of a boolean and a string, the boolean indicating whether the pixel
-            polar and the string denoting which pole it is ('North' or 'South')).
-            string is empty in the case that the pixel isn't polar.
+        polar and the string denoting which pole it is ('North' or 'South')).
+        string is empty in the case that the pixel isn't polar.
     """
     nside = hp.order2nside(order)
     npix = hp.nside2npix(nside)

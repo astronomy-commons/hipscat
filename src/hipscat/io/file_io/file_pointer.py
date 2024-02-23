@@ -9,8 +9,8 @@ FilePointer = NewType("FilePointer", str)
 
 def get_file_protocol(pointer: FilePointer) -> str:
     """Method to parse filepointer for the filesystem protocol.
-        if it doesn't follow the pattern of protocol://pathway/to/file, then it
-        assumes that it is a localfilesystem.
+    If it doesn't follow the pattern of protocol://pathway/to/file, then it
+    assumes that it is a localfilesystem.
 
     Args:
         pointer: filesystem pathway pointer
@@ -33,7 +33,7 @@ def get_fs(
         file_pointer: filesystem pathway
         storage_options: dictionary that contains abstract filesystem credentials
     Raises:
-        ImportError if environment cannot import necessary libraries for
+        ImportError: if environment cannot import necessary libraries for
             fsspec filesystems.
     """
     if storage_options is None:
@@ -50,15 +50,17 @@ def get_fs(
 
 
 def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePointer:
-    """Creates the filepathway from the file_pointer. Will strip the protocol so that
-            the file_pointer can be accessed from the filesystem
-        abfs filesystems DO NOT require the account_name in the pathway
-        s3 filesystems DO require the account_name/container name in the pathway
+    """Creates the filepathway from the file_pointer.
+
+    This will strip the protocol so that the file_pointer can be accessed from
+    the filesystem:
+
+        - abfs filesystems DO NOT require the account_name in the pathway
+        - s3 filesystems DO require the account_name/container name in the pathway
 
     Args:
         protocol: str filesytem protocol, file, abfs, or s3
         file_pointer: filesystem pathway
-
     """
     if not isinstance(file_pointer, str):
         file_pointer = str(file_pointer)
@@ -105,7 +107,13 @@ def get_basename_from_filepointer(pointer: FilePointer) -> str:
 
 def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> FilePointer:
     """Strips the leading slash for pyarrow read/write functions.
-    This is required for their filesystem abstraction
+    This is required for pyarrow's underlying filesystem abstraction.
+
+    Args:
+        pointer: `FilePointer` object
+
+    Returns:
+        New file pointer with leading slash removed.
     """
     if protocol != "file" and str(pointer).startswith("/"):
         pointer = FilePointer(str(pointer).replace("/", "", 1))
@@ -203,7 +211,7 @@ def get_directory_contents(
 ) -> List[FilePointer]:
     """Finds all files and directories in the specified directory.
 
-    NBL This is not recursive, and will return only the first level of directory contents.
+    NB: This is not recursive, and will return only the first level of directory contents.
 
     Args:
         pointer: File Pointer in which to find contents

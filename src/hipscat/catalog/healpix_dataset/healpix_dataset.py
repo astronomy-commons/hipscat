@@ -17,7 +17,9 @@ class HealpixDataset(Dataset):
     """A HiPSCat dataset partitioned with a HEALPix partitioning structure.
 
     Catalogs of this type are partitioned based on the ra and dec of the points with each partition
-    containing points within a given HEALPix pixel. The files are in the form 'Norder=/Dir=/Npix=.parquet'.
+    containing points within a given HEALPix pixel. The files are in the form::
+
+        Norder=/Dir=/Npix=.parquet
     """
 
     CatalogInfoClass: TypeAlias = BaseCatalogInfo

@@ -30,8 +30,8 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
             memory issues.
     Returns:
         :obj:`numpy.array` of boolean values corresponding to the ra and dec
-            coordinates checked against whether a given point is within any of the
-            provided polygons.
+        coordinates checked against whether a given point is within any of the
+        provided polygons.
     """
     num_points = len(r_asc)
     if num_points != len(dec):

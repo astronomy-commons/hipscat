@@ -24,7 +24,7 @@ def validate_radius(radius: float):
         radius (float): The cone radius, in degrees
 
     Raises:
-        ValueError if radius is non-positive
+        ValueError: if radius is non-positive
     """
     if radius <= 0:
         raise ValueError(ValidatorsErrors.INVALID_RADIUS.value)
@@ -37,7 +37,7 @@ def validate_declination_values(dec: float | List[float]):
         dec (float | List[float]): The declination values to be validated
 
     Raises:
-        ValueError if declination values are not in the [-90,90] degree range
+        ValueError: if declination values are not in the [-90,90] degree range
     """
     dec_values = np.array(dec)
     lower_bound, upper_bound = -90.0, 90.0
@@ -53,7 +53,7 @@ def validate_polygon(vertices: np.ndarray):
         vertices (np.ndarray): The polygon vertices, in cartesian coordinates
 
     Raises:
-        ValueError exception if the polygon is invalid.
+        ValueError: exception if the polygon is invalid.
     """
     if len(vertices) < 3:
         raise ValueError(ValidatorsErrors.INVALID_NUM_VERTICES.value)
