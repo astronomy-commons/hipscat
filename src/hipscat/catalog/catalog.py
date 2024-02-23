@@ -67,20 +67,20 @@ class Catalog(HealpixDataset):
             )
         super().__init__(catalog_info, pixels, catalog_path, storage_options)
 
-    def filter_by_cone(self, ra: float, dec: float, radius: float) -> Catalog:
+    def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap with a cone
 
         Args:
             ra (float): Right Ascension of the center of the cone in degrees
             dec (float): Declination of the center of the cone in degrees
-            radius (float): Radius of the cone in degrees
+            radius_arcsec (float): Radius of the cone in arcseconds
 
         Returns:
             A new catalog with only the pixels that overlap with the specified cone
         """
-        validate_radius(radius)
+        validate_radius(radius_arcsec)
         validate_declination_values(dec)
-        return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius))
+        return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius_arcsec))
 
     def filter_by_box(
         self, ra: Tuple[float, float] | None = None, dec: Tuple[float, float] | None = None

@@ -120,7 +120,7 @@ def test_cone_filter(small_sky_order1_catalog):
 
 
 def test_cone_filter_big(small_sky_order1_catalog):
-    filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 30)
+    filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 30 * 3600)
     assert len(filtered_catalog.get_healpix_pixels()) == 4
     assert (1, 44) in filtered_catalog.pixel_tree
     assert (1, 45) in filtered_catalog.pixel_tree
@@ -136,7 +136,7 @@ def test_cone_filter_multiple_order(catalog_info):
         HealpixPixel(7, 5000),
     ]
     catalog = Catalog(catalog_info, catalog_pixel_list)
-    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)
+    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30 * 3600)
     assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
 
 
