@@ -24,7 +24,7 @@ class HipscatEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Path):
             return str(o)
-        return super().default(self, o)  # pragma: no cover
+        return super().default(o)  # pragma: no cover
 
 
 def write_json_file(
