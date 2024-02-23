@@ -4,6 +4,7 @@ import dataclasses
 import json
 from datetime import datetime
 from importlib.metadata import version
+from pathlib import Path
 from typing import Any, Dict, Union
 
 import numpy as np
@@ -11,6 +12,15 @@ import pandas as pd
 
 from hipscat.io import file_io, paths
 from hipscat.io.parquet_metadata import write_parquet_metadata as wpm
+
+
+class HipscatEncoder(json.JSONEncoder):
+    """Special json encoder for types commonly encountered with hipscat"""
+
+    def default(self, o):
+        if isinstance(o, Path):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
 
 
 def write_json_file(
@@ -25,7 +35,7 @@ def write_json_file(
         file_pointer (str): destination for the json file
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    dumped_metadata = json.dumps(metadata_dictionary, indent=4)
+    dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=HipscatEncoder)
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n", storage_options=storage_options)
 
 

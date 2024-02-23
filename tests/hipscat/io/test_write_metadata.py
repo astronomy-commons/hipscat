@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from pathlib import Path
 
 import numpy.testing as npt
 
@@ -35,6 +36,25 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
     dictionary["first_number"] = 1
     dictionary["first_five_fib"] = [1, 1, 2, 3, 5]
 
+    json_filename = os.path.join(tmp_path, "dictionary.json")
+    io.write_json_file(dictionary, json_filename)
+    assert_text_file_matches(expected_lines, json_filename)
+
+
+def test_write_json_paths(assert_text_file_matches, tmp_path):
+    posix_path = Path(tmp_path)
+    file_pointer = file_io.FilePointer(tmp_path)
+    dictionary = {}
+    dictionary["posix_path"] = posix_path
+    dictionary["file_pointer"] = file_pointer
+    dictionary["first_greek"] = "alpha"
+    expected_lines = [
+        "{\n",
+        f'    "posix_path": "{tmp_path}",',
+        f'    "file_pointer": "{tmp_path}",',
+        '    "first_greek": "alpha"',
+        "}",
+    ]
     json_filename = os.path.join(tmp_path, "dictionary.json")
     io.write_json_file(dictionary, json_filename)
     assert_text_file_matches(expected_lines, json_filename)
