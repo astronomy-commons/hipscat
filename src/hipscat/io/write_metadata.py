@@ -15,12 +15,16 @@ from hipscat.io.parquet_metadata import write_parquet_metadata as wpm
 
 
 class HipscatEncoder(json.JSONEncoder):
-    """Special json encoder for types commonly encountered with hipscat"""
+    """Special json encoder for types commonly encountered with hipscat.
+
+    NB: This will only be used by JSON encoding when encountering a type
+    that is unhandled by the default encoder.
+    """
 
     def default(self, o):
         if isinstance(o, Path):
             return str(o)
-        return json.JSONEncoder.default(self, o)
+        return super().default(self, o)  # pragma: no cover
 
 
 def write_json_file(
