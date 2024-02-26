@@ -179,5 +179,4 @@ def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
     dataset = pds.parquet_dataset(file_pointer, filesystem=file_system)
 
     for frag in dataset.get_fragments():
-        for row_group in frag.row_groups:
-            yield row_group
+        yield from frag.row_groups

@@ -17,16 +17,16 @@ class ValidatorsErrors(str, Enum):
     INVALID_RADEC_RANGE = "invalid ra or dec range"
 
 
-def validate_radius(radius: float):
+def validate_radius(radius_arcsec: float):
     """Validates that a cone search radius is positive
 
     Arguments:
-        radius (float): The cone radius, in degrees
+        radius_arcsec (float): The cone radius, in arcseconds
 
     Raises:
         ValueError if radius is non-positive
     """
-    if radius <= 0:
+    if radius_arcsec <= 0:
         raise ValueError(ValidatorsErrors.INVALID_RADIUS.value)
 
 
