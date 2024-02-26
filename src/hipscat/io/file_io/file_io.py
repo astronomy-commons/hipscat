@@ -270,8 +270,8 @@ def read_fits_image(map_file_pointer: FilePointer, storage_options: Union[Dict[A
         file_pointer: location of file to be written
         storage_options: dictionary that contains abstract filesystem credentials
     Returns:
-        histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
+        one-dimensional numpy array of long integers where the
+        value at each index corresponds to the number of objects found at the healpix pixel.
     """
     file_system, map_file_pointer = get_fs(file_pointer=map_file_pointer, storage_options=storage_options)
     with tempfile.NamedTemporaryFile() as _tmp_file:

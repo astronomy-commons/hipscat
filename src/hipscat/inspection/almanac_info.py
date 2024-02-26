@@ -60,12 +60,12 @@ class AlmanacInfo:
 
         This is set via the environment variable: HIPSCAT_ALMANAC_DIR
 
-        To set this in a linux-like environment, use a command like:
+        To set this in a linux-like environment, use a command like::
 
             export HIPSCAT_ALMANAC_DIR=/data/path/to/almanacs
 
         This will also attempt to expand any environment variables WITHIN the default
-        directory environment variable. This can be useful in cases where:
+        directory environment variable. This can be useful in cases where::
 
             $HIPSCAT_ALMANAC_DIR=$HIPSCAT_DEFAULT_DIR/almanacs/
         """

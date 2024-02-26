@@ -94,8 +94,10 @@ def write_partition_info(
         catalog_base_dir (str): base directory for catalog, where file will be written
         destination_healpix_pixel_map (dict):  dictionary that maps the HealpixPixel to a
             tuple of origin pixel information:
-            - 0 - the total number of rows found in this destination pixel
-            - 1 - the set of indexes in histogram for the pixels at the original healpix order
+
+                - 0 - the total number of rows found in this destination pixel
+                - 1 - the set of indexes in histogram for the pixels at the original healpix order
+
         storage_options: dictionary that contains abstract filesystem credentials
     """
     partition_info_pointer = paths.get_partition_info_pointer(catalog_base_dir)
@@ -109,14 +111,7 @@ def write_partition_info(
     data_frame["Dir"] = [int(x / 10_000) * 10_000 for x in data_frame["Npix"]]
 
     # Reorder the columns to match full path, and force to integer types.
-    data_frame = data_frame[
-        [
-            "Norder",
-            "Dir",
-            "Npix",
-            "num_rows",
-        ]
-    ].astype(int)
+    data_frame = data_frame[["Norder", "Dir", "Npix", "num_rows"]].astype(int)
 
     file_io.write_dataframe_to_csv(
         data_frame, partition_info_pointer, index=False, storage_options=storage_options

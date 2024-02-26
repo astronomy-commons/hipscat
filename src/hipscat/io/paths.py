@@ -32,11 +32,11 @@ def pixel_directory(
     """Create path pointer for a pixel directory. This will not create the directory.
 
     One of pixel_number or directory_number is required. The directory name will
-    take the HiPS standard form of:
+    take the HiPS standard form of::
 
         <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>
 
-    Where the directory number is calculated using integer division as:
+    Where the directory number is calculated using integer division as::
 
         (pixel_number/10000)*10000
 
@@ -64,7 +64,8 @@ def pixel_directory(
 
 
 def get_healpix_from_path(path: str) -> HealpixPixel:
-    """Find the `pixel_order` and `pixel_number` from a string like the following::
+    """Find the `pixel_order` and `pixel_number` from a string like the
+    following::
 
         Norder=<pixel_order>/Dir=<directory number>/Npix=<pixel_number>.parquet
 
@@ -85,13 +86,14 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
 
 
 def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int) -> FilePointer:
-    """Create path *pointer* for a pixel catalog file. This will not create the directory or file.
+    """Create path *pointer* for a pixel catalog file. This will not create the directory
+    or file.
 
-    The catalog file name will take the HiPS standard form of:
+    The catalog file name will take the HiPS standard form of::
 
         <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>/Npix=<pixel_number>.parquet
 
-    Where the directory number is calculated using integer division as:
+    Where the directory number is calculated using integer division as::
 
         (pixel_number/10000)*10000
 
@@ -113,7 +115,7 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
     """Create path *pointer* for a directory with hive partitioning naming.
     This will not create the directory.
 
-    The directory name will have the form of:
+    The directory name will have the form of::
 
         <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>
 
@@ -132,7 +134,7 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
 def create_hive_parquet_file_name(base_dir, partition_token_names, partition_token_values):
     """Create path *pointer* for a single parquet with hive partitioning naming.
 
-    The file name will have the form of:
+    The file name will have the form of::
 
         <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>.parquet
 

@@ -106,10 +106,11 @@ class PartitionJoinInfo:
     def write_to_csv(self, catalog_path: FilePointer = None, storage_options: dict = None):
         """Write all partition data to CSV files.
 
-        Two files will be written::
-        - partition_info.csv - covers all primary catalog pixels, and should match the file structure
-        - partition_join_info.csv - covers all pairwise relationships between primary and
-          join catalogs.
+        Two files will be written:
+
+            - partition_info.csv - covers all primary catalog pixels, and should match the file structure
+            - partition_join_info.csv - covers all pairwise relationships between primary and
+              join catalogs.
 
         Args:
             catalog_path: FilePointer to the directory where the
