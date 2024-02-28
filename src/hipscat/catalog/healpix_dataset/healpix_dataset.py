@@ -2,7 +2,7 @@ import dataclasses
 from typing import Any, Dict, List, Tuple, Union
 
 import pandas as pd
-from typing_extensions import TypeAlias, Self
+from typing_extensions import Self, TypeAlias
 
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
