@@ -12,7 +12,5 @@ jobs:
     steps:
       - uses: actions/add-to-project@v0.4.0
         with:
-          # You can target a repository in a different organization
-          # to the issue
           project-url: https://github.com/orgs/astronomy-commons/projects/7
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
