@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import dataclasses
 from typing import Any, Dict, List, Tuple, Union
 
 import healpy as hp
@@ -120,19 +119,6 @@ class Catalog(HealpixDataset):
             vertices = hp.ang2vec(ra, dec, lonlat=True)
         validate_polygon(vertices)
         return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, vertices))
-
-    def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Catalog:
-        """Filter the pixels in the catalog to only include the requested pixels.
-
-        Args:
-            pixels (List[HealpixPixels]): the pixels to include
-
-        Returns:
-            A new catalog with only those pixels. Note that we reset the total_rows
-            to None, instead of performing a scan over the new pixel sizes.
-        """
-        filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
-        return Catalog(filtered_catalog_info, pixels)
 
     def generate_negative_tree_pixels(self) -> List[HealpixPixel]:
         """Get the leaf nodes at each healpix order that have zero catalog data.
