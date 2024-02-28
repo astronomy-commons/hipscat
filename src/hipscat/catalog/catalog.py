@@ -13,7 +13,7 @@ from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.box_filter import filter_pixels_by_box, wrap_ra_values
+from hipscat.pixel_math.box_filter import filter_pixels_by_box, wrap_ra_angles
 from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
 from hipscat.pixel_math.polygon_filter import (
     CartesianCoordinates,
@@ -96,7 +96,7 @@ class Catalog(HealpixDataset):
         Returns:
             A new catalog with only the pixels that overlap with the specified region
         """
-        ra = wrap_ra_values(ra)
+        ra = tuple(wrap_ra_angles(ra)) if ra else None
         validate_box_search(ra, dec)
         return self.filter_from_pixel_list(filter_pixels_by_box(self.pixel_tree, ra, dec))
 

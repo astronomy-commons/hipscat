@@ -49,20 +49,7 @@ def filter_pixels_by_box(
     return result_pixels
 
 
-def wrap_ra_values(ra: Tuple[float, float] | None) -> Tuple[float, float] | None:
-    """Wraps right ascension values to the [0,360] degree range.
-
-    Args:
-        ra (Tuple[float, float]): The right ascension values, in degrees
-
-    Returns:
-        The right ascension values wrapped to the [0,360] degree range,
-        or None if they do not exist.
-    """
-    return tuple(wrap_angles(ra)) if ra else None
-
-
-def wrap_angles(ra: np.ndarray | Iterable | int | float) -> np.ndarray:
+def wrap_ra_angles(ra: np.ndarray | Iterable | int | float) -> np.ndarray:
     """Wraps angles to the [0,360] degree range.
 
     Args:
