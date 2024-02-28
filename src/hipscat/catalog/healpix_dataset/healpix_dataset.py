@@ -1,7 +1,8 @@
+import dataclasses
 from typing import Any, Dict, List, Tuple, Union
 
 import pandas as pd
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, Self
 
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
@@ -102,3 +103,16 @@ class HealpixDataset(Dataset):
             raise FileNotFoundError(
                 f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
             )
+
+    def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Self:
+        """Filter the pixels in the catalog to only include the requested pixels.
+
+        Args:
+            pixels (List[HealpixPixels]): the pixels to include
+
+        Returns:
+            A new catalog with only those pixels. Note that we reset the total_rows
+            to None, instead of performing a scan over the new pixel sizes.
+        """
+        filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
+        return self.__class__(filtered_catalog_info, pixels)
