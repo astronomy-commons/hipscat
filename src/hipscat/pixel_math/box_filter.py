@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
-import astropy.units as u
 import healpy as hp
 import numpy as np
-from astropy.coordinates import Angle
 
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
@@ -61,19 +59,19 @@ def wrap_ra_values(ra: Tuple[float, float] | None) -> Tuple[float, float] | None
         The right ascension values wrapped to the [0,360] degree range,
         or None if they do not exist.
     """
-    return tuple(wrap_angles(list(ra))) if ra else None
+    return tuple(wrap_angles(ra)) if ra else None
 
 
-def wrap_angles(ra: List[float]) -> List[float]:
+def wrap_angles(ra: np.ndarray | Iterable | int | float) -> np.ndarray:
     """Wraps angles to the [0,360] degree range.
 
-    Arguments:
-        ra (List[float]): List of right ascension values
+    Args:
+        ra (ndarray | Iterable | int | float): Right ascension values, in degrees
 
     Returns:
-        A list of right ascension values, wrapped to the [0,360] degree range.
+        A numpy array of right ascension values, wrapped to the [0,360] degree range.
     """
-    return Angle(ra, u.deg).wrap_at(360 * u.deg).degree
+    return np.asarray(ra, dtype=float) % 360
 
 
 def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int) -> PixelTree:

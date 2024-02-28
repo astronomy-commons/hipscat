@@ -20,7 +20,7 @@ class ValidatorsErrors(str, Enum):
 def validate_radius(radius_arcsec: float):
     """Validates that a cone search radius is positive
 
-    Arguments:
+    Args:
         radius_arcsec (float): The cone radius, in arcseconds
 
     Raises:
@@ -33,7 +33,7 @@ def validate_radius(radius_arcsec: float):
 def validate_declination_values(dec: float | List[float]):
     """Validates that declination values are in the [-90,90] degree range
 
-    Arguments:
+    Args:
         dec (float | List[float]): The declination values to be validated
 
     Raises:
@@ -49,7 +49,7 @@ def validate_polygon(vertices: np.ndarray):
     """Checks if the polygon contain a minimum of three vertices, that they are
     unique and that the polygon does not fall on a great circle.
 
-    Arguments:
+    Args:
         vertices (np.ndarray): The polygon vertices, in cartesian coordinates
 
     Raises:
@@ -67,7 +67,7 @@ def is_polygon_degenerate(vertices: np.ndarray) -> bool:
     """Checks if all the vertices of the polygon are contained in a same plane.
     If the plane intersects the center of the sphere, the polygon is degenerate.
 
-    Arguments:
+    Args:
         vertices (np.ndarray): The polygon vertices, in cartesian coordinates
 
     Returns:
@@ -97,7 +97,7 @@ def validate_box_search(ra: Tuple[float, float] | None, dec: Tuple[float, float]
     - Declination values, if existing, must be in ascending order
     - Declination values, if existing, must be in the [-90,90] degree range
 
-    Arguments:
+    Args:
         ra (Tuple[float, float]): Right ascension range, in degrees
         dec (Tuple[float, float]): Declination range, in degrees
     """
