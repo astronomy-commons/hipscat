@@ -40,7 +40,7 @@ def time_test_cone_filter_multiple_order():
     )
     pixels = [HealpixPixel(6, 30), HealpixPixel(7, 124), HealpixPixel(7, 5000)]
     catalog = Catalog(catalog_info, pixels)
-    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30)
+    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30 * 3600)
     assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]
 
 
