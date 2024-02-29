@@ -6,9 +6,9 @@ NB: Testing validity of generated plots is currently not tested in our unit test
 from typing import Any, Dict, List, Union
 
 import healpy as hp
+import matplotlib.colors as mcolors
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib.colors as mcolors
 
 from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
@@ -100,13 +100,7 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
             )
         ]
         order_map[exploded_pixels] = pixel.order
-    _plot_healpix_map(
-        order_map,
-        projection,
-        plot_title,
-        cmap=cmap,
-        draw_map=draw_map
-    )
+    _plot_healpix_map(order_map, projection, plot_title, cmap=cmap, draw_map=draw_map)
 
 
 def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", draw_map=True):
