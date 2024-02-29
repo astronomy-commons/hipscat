@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Union
 import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.colors as mcolors
 
 from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
@@ -82,6 +83,11 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
             - orth - Orthographic projection
     """
     max_order = np.max(pixels).order
+    min_order = np.min(pixels).order
+
+    num_colors = max_order - min_order + 1
+    colors = plt.cm.viridis(np.linspace(0, 1, num_colors))
+    cmap = mcolors.LinearSegmentedColormap.from_list("my_colormap", colors, num_colors)
 
     order_map = np.full(hp.order2npix(max_order), hp.pixelfunc.UNSEEN)
 
@@ -98,17 +104,19 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
         order_map,
         projection,
         plot_title,
-        draw_map=draw_map,
+        cmap=cmap,
+        draw_map=draw_map
     )
 
 
-def _plot_healpix_map(healpix_map, projection, title, draw_map=True):
+def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", draw_map=True):
     """Perform the plotting of a healpix pixel map.
 
     Args:
         healpix_map: array containing the map
         projection: projection type to display
         title: title used in image plot
+        cmap: matplotlib colormap to use
     """
     if projection == "moll":
         projection_method = hp.mollview
@@ -126,5 +134,6 @@ def _plot_healpix_map(healpix_map, projection, title, draw_map=True):
             healpix_map,
             title=title,
             nest=True,
+            cmap=cmap,
         )
         plt.plot()
