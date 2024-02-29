@@ -86,12 +86,12 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
     min_order = np.min(pixels).order
 
     if max_order == min_order:
-        color = plt.cm.viridis(0.5)
-        colors = [plt.cm.viridis(0.0), color]  # Create a list with gray and a single color
+        color = plt.cm.viridis(0.5)  # pylint: disable=no-member
+        colors = [plt.cm.viridis(0.0), color]  # pylint: disable=no-member
         cmap = mcolors.LinearSegmentedColormap.from_list("my_colormap", colors)
     else:
         num_colors = max_order - min_order + 1
-        colors = plt.cm.viridis(np.linspace(0, 1, num_colors)) # pylint: disable=no-member
+        colors = plt.cm.viridis(np.linspace(0, 1, num_colors))  # pylint: disable=no-member
         cmap = mcolors.LinearSegmentedColormap.from_list("my_colormap", colors, num_colors)
 
     order_map = np.full(hp.order2npix(max_order), hp.pixelfunc.UNSEEN)
