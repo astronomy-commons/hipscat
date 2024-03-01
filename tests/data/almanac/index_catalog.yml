@@ -1,4 +1,4 @@
-catalog_path: $HIPSCAT_DEFAULT_DIR/index_catalog
+catalog_path: $HIPSCAT_DEFAULT_DIR/info_only/index_catalog
 catalog_name: index_catalog
 catalog_type: index
 catalog_info:

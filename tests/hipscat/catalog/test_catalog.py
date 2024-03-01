@@ -103,7 +103,7 @@ def test_load_catalog_small_sky_source(small_sky_source_dir):
     cat = read_from_hipscat(small_sky_source_dir)
 
     assert isinstance(cat, Catalog)
-    assert cat.catalog_name == "small_sky_source_catalog"
+    assert cat.catalog_name == "small_sky_source"
     assert len(cat.get_healpix_pixels()) == 14
 
 
