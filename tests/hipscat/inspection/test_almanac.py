@@ -89,31 +89,31 @@ def test_linked_catalogs_object(default_almanac):
     assert len(object_almanac.sources) == 1
 
     source_almanac = object_almanac.sources[0]
-    assert source_almanac.catalog_name == "small_sky_source_catalog"
+    assert source_almanac.catalog_name == "small_sky_source"
 
     source_almanac = default_almanac.get_almanac_info(object_almanac.sources[0].catalog_name)
-    assert source_almanac.catalog_name == "small_sky_source_catalog"
+    assert source_almanac.catalog_name == "small_sky_source"
 
     source_catalog = default_almanac.get_catalog(object_almanac.sources[0].catalog_name)
-    assert source_catalog.catalog_name == "small_sky_source_catalog"
+    assert source_catalog.catalog_name == "small_sky_source"
 
 
 def test_linked_catalogs_source(default_almanac, test_data_dir):
     """Check that we can access the affiliated catalogs"""
-    source_almanac = default_almanac.get_almanac_info("small_sky_source_catalog")
+    source_almanac = default_almanac.get_almanac_info("small_sky_source")
     assert len(source_almanac.objects) == 1
 
     object_almanac = source_almanac.objects[0]
     assert object_almanac.catalog_name == "small_sky"
 
-    source_almanac = default_almanac.get_almanac_info("small_sky_source_catalog")
+    source_almanac = default_almanac.get_almanac_info("small_sky_source")
     assert len(source_almanac.objects) == 1
 
     ## This source catalog has no object catalog, *and that's ok*
     new_almanac = Almanac(
         dirs=os.path.join(test_data_dir, "almanac_exception", "standalone_source_catalog.yml")
     )
-    source_almanac = new_almanac.get_almanac_info("just_the_small_sky_source_catalog")
+    source_almanac = new_almanac.get_almanac_info("just_the_small_sky_source")
     assert len(source_almanac.objects) == 0
 
 

@@ -169,7 +169,7 @@ def index_catalog_info_with_extra() -> dict:
 
 @pytest.fixture
 def dataset_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "dataset")
+    return os.path.join(test_data_dir, "info_only", "dataset")
 
 
 @pytest.fixture
@@ -184,7 +184,7 @@ def base_catalog_info(base_catalog_info_data) -> BaseCatalogInfo:
 
 @pytest.fixture
 def catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "catalog")
+    return os.path.join(test_data_dir, "info_only", "catalog")
 
 
 @pytest.fixture
@@ -235,12 +235,12 @@ def association_catalog_info_file(association_catalog_path) -> str:
 
 @pytest.fixture
 def index_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "index_catalog", "catalog_info.json")
+    return os.path.join(test_data_dir, "info_only", "index_catalog", "catalog_info.json")
 
 
 @pytest.fixture
 def margin_cache_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "margin_cache", "catalog_info.json")
+    return os.path.join(test_data_dir, "info_only", "margin_cache", "catalog_info.json")
 
 
 @pytest.fixture
@@ -258,7 +258,6 @@ def small_sky_source_pixels():
     """Source catalog pixels"""
     return [
         HealpixPixel(0, 4),
-        HealpixPixel(1, 47),
         HealpixPixel(2, 176),
         HealpixPixel(2, 177),
         HealpixPixel(2, 178),
@@ -271,6 +270,7 @@ def small_sky_source_pixels():
         HealpixPixel(2, 185),
         HealpixPixel(2, 186),
         HealpixPixel(2, 187),
+        HealpixPixel(1, 47),
     ]
 
 

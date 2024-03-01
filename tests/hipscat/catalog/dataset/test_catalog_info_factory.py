@@ -78,7 +78,7 @@ def test_from_catalog_dir_object(small_sky_dir):
 
 def test_from_catalog_dir_source(source_catalog_info_file):
     catalog_info = from_catalog_dir(source_catalog_info_file)
-    assert catalog_info.catalog_name == "small_sky_source_catalog"
+    assert catalog_info.catalog_name == "small_sky_source"
     assert isinstance(catalog_info, BaseCatalogInfo)
     assert isinstance(catalog_info, SourceCatalogInfo)
 
