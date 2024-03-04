@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Tuple
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel import get_lower_order_pixel, get_higher_order_pixels
+from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel, get_healpix_tuple
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
@@ -21,8 +22,7 @@ class PixelTreeBuilder:
     """
 
     def __init__(self):
-        self.root_pixel = PixelNode((-1, -1), PixelNodeType.ROOT, None)
-        self.pixels = {-1: {-1: self.root_pixel}}
+        self.pixels = {-1: {-1: PixelNodeType.ROOT}}
 
     def build(self) -> PixelTree:
         """Build a `PixelTree` object from the nodes created
@@ -30,10 +30,10 @@ class PixelTreeBuilder:
         Returns:
             The pixel tree with the nodes created in the builder
         """
-        return PixelTree(self.root_pixel, self.pixels)
+        return PixelTree(self.pixels)
 
     @staticmethod
-    def from_healpix(healpix_pixels: List[HealpixPixel]) -> PixelTree:
+    def from_healpix(healpix_pixels: List[HealpixInputTypes]) -> PixelTree:
         """Build a tree from a list of constituent healpix pixels
 
         Args:
@@ -44,7 +44,7 @@ class PixelTreeBuilder:
         """
         builder = PixelTreeBuilder()
         for pixel in healpix_pixels:
-            builder.create_node_and_parent_if_not_exist((pixel.order, pixel.pixel), PixelNodeType.LEAF)
+            builder.create_node_and_parent_if_not_exist(pixel, PixelNodeType.LEAF)
         return builder.build()
 
     def contains(self, pixel: HealpixInputTypes) -> bool:
@@ -57,16 +57,13 @@ class PixelTreeBuilder:
         Returns:
             True if the tree contains the pixel, False if not
         """
-        if isinstance(pixel, HealpixPixel):
-            return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
-        if isinstance(pixel, tuple):
-            return pixel[0] in self.pixels and pixel[1] in self.pixels[pixel[0]]
-        raise TypeError("pixel must be either a HealpixPixel object or a Tuple of (order, pixel)")
+        (order, pixel) = get_healpix_tuple(pixel)
+        return order in self.pixels and pixel in self.pixels[order]
 
     def __contains__(self, item):
         return self.contains(item)
 
-    def get_node(self, pixel: HealpixInputTypes) -> PixelNode | None:
+    def get_node_type(self, pixel: HealpixInputTypes) -> PixelNodeType | None:
         """Get the node at a given pixel
 
         Args:
@@ -76,13 +73,13 @@ class PixelTreeBuilder:
         Returns:
             The PixelNode at the index, or None if a node does not exist
         """
-        pixel = get_healpix_pixel(pixel)
-        if self.contains(pixel):
-            return self.pixels[pixel.order][pixel.pixel]
+        (order, pixel) = get_healpix_tuple(pixel)
+        if self.contains((order, pixel)):
+            return self.pixels[order][pixel]
         return None
 
-    def __getitem__(self, item) -> PixelNode:
-        return self.get_node(item)
+    def __getitem__(self, item):
+        return self.get_node_type(item)
 
     def create_node_and_parent_if_not_exist(self, pixel: HealpixInputTypes, node_type: PixelNodeType):
         """Creates a node and adds to `self.pixels` in the tree, and recursively creates parent
@@ -93,47 +90,36 @@ class PixelTreeBuilder:
                 or a tuple of (order, pixel)
             node_type: Node type of the node to create
         """
-        pixel = get_healpix_pixel(pixel)
-        if self.contains(pixel):
+        order, pixel = get_healpix_tuple(pixel)
+        if self.contains((order, pixel)):
             raise ValueError("Incorrectly configured catalog: catalog contains duplicate pixels")
 
-        if pixel.order == 0:
-            self.create_node(pixel, node_type, self.root_pixel)
+        if order == 0:
+            self.create_node((order, pixel), node_type)
             return
 
         parents_to_add = []
-        for delta_order in range(1, pixel.order + 1):
-            parent_order = pixel.order - delta_order
-            parent_pixel = pixel.pixel >> (2 * delta_order)
+        for delta_order in range(1, order + 1):
+            parent_order = order - delta_order
+            parent_pixel = get_lower_order_pixel(order, pixel, delta_order)
             if not self.contains((parent_order, parent_pixel)):
                 parents_to_add.insert(0, (parent_order, parent_pixel))
             else:
                 break
 
         for add_order, add_pixel in parents_to_add:
-            parent_order = add_order - 1
-            parent_pixel = add_pixel >> 2 if add_order > 0 else -1
             self.create_node(
-                (add_order, add_pixel), PixelNodeType.INNER, self.pixels[parent_order][parent_pixel]
-            )
-        parent_order = pixel.order - 1
-        parent_pixel = pixel.pixel >> 2 if pixel.order > 0 else -1
-
-        parent = self.pixels[parent_order][parent_pixel]
-
-        if parent.node_type != PixelNodeType.INNER:
-            raise ValueError(
-                "Incorrectly configured catalog: catalog contains pixels defined at multiple orders"
+                (add_order, add_pixel), PixelNodeType.INNER
             )
 
-        self.create_node(pixel, node_type, parent)
+        self.create_node((order, pixel), node_type)
 
     def create_node(
         self,
         pixel: HealpixInputTypes,
         node_type: PixelNodeType,
-        parent: PixelNode = None,
         replace_existing_node=False,
+        check_parent=True
     ):
         """Create a node and add to `self.pixels` in the tree
 
@@ -141,46 +127,27 @@ class PixelTreeBuilder:
             pixel: HEALPix pixel to get. Either of type `HealpixPixel`
                 or a tuple of (order, pixel)
             node_type: Node type of the node to create
-            parent: (Default: None) Parent node of the node to create. If None, will get parent from
-                existing node in tree at correct position based on pixel
             replace_existing_node: (Default: False) If True and node at `pixel` already exists,
                 the existing node will be removed and replaced with the new node.
+            check_parent (bool): (Default: True) If True, will check if a parent node already exists at the
+                correct order and pixel and the correct node_type, and raise an error if not
         """
-        pixel = get_healpix_pixel(pixel)
-        if parent is None:
-            if pixel.order == 0:
-                parent = self.root_pixel
-            else:
-                parent_pixel = pixel.convert_to_lower_order(delta_order=1)
-                if parent_pixel not in self:
-                    raise ValueError(
-                        f"Cannot create node at {str(pixel)}, "
-                        f"no parent node exists at {str(parent_pixel)}"
-                    )
-                parent = self[parent_pixel]
-        if parent.node_type == PixelNodeType.LEAF:
-            raise ValueError(
-                f"Cannot create node at {str(pixel)}, "
-                f"parent node at {str(parent.pixel)} has node type leaf"
-            )
-        node_to_replace = None
-        if pixel in self:
+        order, pixel = get_healpix_tuple(pixel)
+        if order < 0:
+            raise ValueError("Cannot create node, order must be >= 0")
+        if check_parent and order > 0:
+            parent_pixel = (order - 1, get_lower_order_pixel(order, pixel, 1))
+            if parent_pixel not in self or self[parent_pixel] == PixelNodeType.LEAF:
+                raise ValueError(
+                    f"Cannot create node at {str((order, pixel))}, "
+                    f"parent node at {str(parent_pixel)} is invalid"
+                )
+        if (order, pixel) in self:
             if not replace_existing_node:
                 raise ValueError(f"Cannot create node at {str(pixel)}, node already exists")
-            node_to_replace = self[pixel]
-            parent.remove_child_link(node_to_replace)
-        node = PixelNode(pixel, node_type, parent)
-        if pixel.order not in self.pixels:
-            self.pixels[pixel.order] = {}
-        self.pixels[pixel.order][pixel.pixel] = node
-        if node_to_replace is not None:
-            if node.node_type != PixelNodeType.LEAF:
-                for child in node_to_replace.children:
-                    child.parent = node
-                    node.add_child_node(child)
-            else:
-                for child in node_to_replace.children:
-                    self._remove_node_and_children_from_tree(child.pixel)
+        if order not in self.pixels:
+            self.pixels[order] = {}
+        self.pixels[order][pixel] = node_type
 
     def remove_node(self, pixel: HealpixInputTypes):
         """Remove node in tree
@@ -194,19 +161,18 @@ class PixelTreeBuilder:
         Raises:
             ValueError: No node in tree at pixel
         """
-        pixel = get_healpix_pixel(pixel)
-        if pixel not in self:
-            raise ValueError(f"No node at pixel {str(pixel)}")
-        node = self[pixel]
-        node.parent.remove_child_link(node)
-        self._remove_node_and_children_from_tree(pixel)
+        order, pixel = get_healpix_tuple(pixel)
+        if (order, pixel) not in self:
+            raise ValueError(f"No node at pixel {str((order, pixel))}")
+        self._remove_node_and_children_from_tree(order, pixel)
 
-    def _remove_node_and_children_from_tree(self, pixel: HealpixPixel):
-        node = self.pixels[pixel.order].pop(pixel.pixel)
-        if len(self.pixels[pixel.order]) == 0:
-            self.pixels.pop(pixel.order)
-        for child_node in node.children:
-            self._remove_node_and_children_from_tree(child_node.pixel)
+    def _remove_node_and_children_from_tree(self, order: int, pixel: int):
+        node = self.pixels[order].pop(pixel)
+        if len(self.pixels[order]) == 0:
+            self.pixels.pop(order)
+        for child_pixel in get_higher_order_pixels(order, pixel, 1):
+            if (order + 1, child_pixel) in self:
+                self._remove_node_and_children_from_tree(order + 1, child_pixel)
 
     def add_all_descendants_from_node(self, node: PixelNode):
         """Adds all descendents from a given node to the current tree

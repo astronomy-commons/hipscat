@@ -6,6 +6,8 @@ import healpy as hp
 import numpy as np
 
 from hipscat.pixel_math import HealpixInputTypes, HealpixPixel, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel import get_lower_order_pixel, get_higher_order_pixels
+from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_tuple
 from hipscat.pixel_tree.pixel_node import PixelNode
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
@@ -22,19 +24,19 @@ class PixelTree:
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
             order then pixel number
-        root_pixel: Root node of the tree. Its children are a subset of the
-            12 base HEALPix pixels
     """
 
-    def __init__(self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]) -> None:
+    def __init__(self, pixels: dict[int, dict[int, PixelNodeType]]) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:
-            root_pixel: PixelNode representing the root node in the tree
             pixels: Dictionary containing all PixelNodes in the tree
         """
-        self.root_pixel = root_pixel
         self.pixels = pixels
+
+    @property
+    def root_pixel(self):
+        return self[(-1, -1)]
 
     def __len__(self):
         """Gets the number of nodes in the tree, including inner nodes and the root node
@@ -57,8 +59,8 @@ class PixelTree:
         Returns:
             True if the tree contains the pixel, False if not
         """
-        pixel = get_healpix_pixel(pixel)
-        return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+        (order, pixel) = get_healpix_tuple(pixel)
+        return order in self.pixels and pixel in self.pixels[order]
 
     def __contains__(self, item):
         return self.contains(item)
@@ -75,7 +77,25 @@ class PixelTree:
         """
         pixel = get_healpix_pixel(pixel)
         if self.contains(pixel):
-            return self.pixels[pixel.order][pixel.pixel]
+            return PixelNode(pixel, self.pixels[pixel.order][pixel.pixel], self)
+        return None
+
+    def __getitem__(self, item):
+        return self.get_node(item)
+
+    def get_node_type(self, pixel: HealpixInputTypes) -> PixelNodeType | None:
+        """Get the node at a given pixel
+
+        Args:
+            pixel: HEALPix pixel to get. Either of type `HealpixPixel`
+                or a tuple of (order, pixel)
+
+        Returns:
+            The PixelNode at the index, or None if a node does not exist
+        """
+        (order, pixel) = get_healpix_tuple(pixel)
+        if self.contains((order, pixel)):
+            return self.pixels[order][pixel]
         return None
 
     def get_max_depth(self) -> int:
@@ -86,8 +106,29 @@ class PixelTree:
         """
         return max(self.pixels.keys())
 
-    def __getitem__(self, item):
-        return self.get_node(item)
+    def get_parent_node_type(self, pixel: HealpixInputTypes) -> PixelNodeType:
+        (order, pixel) = get_healpix_tuple(pixel)
+        parent_order = order - 1
+        parent_pixel = get_lower_order_pixel(order, pixel, 1) if parent_order != 0 else -1
+        return self.get_node_type((parent_order, parent_pixel))
+
+    def get_parent_node(self, pixel: HealpixInputTypes) -> PixelNode:
+        pixel = get_healpix_pixel(pixel)
+        parent_pixel = pixel.convert_to_lower_order(1) if pixel.order != 0 else HealpixPixel(-1, -1)
+        return self[parent_pixel]
+
+    def get_child_node_types(self, pixel: HealpixInputTypes) -> np.ndarray:
+        (order, pixel) = get_healpix_tuple(pixel)
+        child_order = order + 1
+        child_pixels = get_higher_order_pixels(order, pixel, 1)
+        child_types = np.vectorize(lambda p: self.get_node_type((child_order, p)))(child_pixels)
+        return child_types
+
+    def get_child_nodes(self, pixel: HealpixInputTypes) -> List[PixelNode]:
+        pixel = get_healpix_pixel(pixel)
+        child_pixels = pixel.convert_to_higher_order(1)
+        child_nodes = [self[p] for p in child_pixels if p in self]
+        return child_nodes
 
     def get_leaf_nodes_at_healpix_pixel(self, pixel: HealpixInputTypes) -> List[PixelNode]:
         """Lookup all leaf nodes that contain or are within a given HEALPix pixel

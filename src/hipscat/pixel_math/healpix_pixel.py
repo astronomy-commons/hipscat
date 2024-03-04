@@ -4,6 +4,8 @@ import math
 from dataclasses import dataclass
 from typing import List
 
+import numpy as np
+
 from hipscat.pixel_math.hipscat_id import HIPSCAT_ID_HEALPIX_ORDER
 
 
@@ -48,12 +50,8 @@ class HealpixPixel:
                 generated at a negative order. Or if delta_order is negative
 
         """
-        if self.order - delta_order < 0:
-            raise ValueError("Pixel Order cannot be below zero")
-        if delta_order < 0:
-            raise ValueError("delta order cannot be below zero")
+        new_pixel = get_lower_order_pixel(self.order, self.pixel, delta_order)
         new_order = self.order - delta_order
-        new_pixel = math.floor(self.pixel / 4**delta_order)
         return HealpixPixel(new_order, new_pixel)
 
     def convert_to_higher_order(self, delta_order: int) -> List[HealpixPixel]:
@@ -71,13 +69,10 @@ class HealpixPixel:
             ValueError: If delta_order + current order is greater than the maximum HEALPix order,
                 pixels cannot be  generated. Or if delta_order is negative
         """
-        if self.order + delta_order > HIPSCAT_ID_HEALPIX_ORDER:
-            raise ValueError(f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}")
-        if delta_order < 0:
-            raise ValueError("delta order cannot be below zero")
+        new_pixels = get_higher_order_pixels(self.order, self.pixel, delta_order)
         pixels = []
         new_order = self.order + delta_order
-        for new_pixel in range(self.pixel * 4**delta_order, (self.pixel + 1) * 4**delta_order):
+        for new_pixel in new_pixels:
             pixels.append(HealpixPixel(new_order, new_pixel))
         return pixels
 
@@ -98,3 +93,43 @@ class HealpixPixel:
 
 
 INVALID_PIXEL = HealpixPixel(-1, -1)
+
+
+def get_lower_order_pixel(order: int, pixel: int, delta_order: int) -> int:
+    """Returns the pixel number at a lower order
+
+    Args:
+        order (int): the order of the pixel
+        pixel (int): the pixel number of the pixel in NESTED ordering
+        delta_order (int): the change in order to the new lower order
+
+    Returns:
+        The pixel number at order (order - delta_order) for the pixel that contains the given pixel
+    """
+    if order - delta_order < 0:
+        raise ValueError("Pixel Order cannot be below zero")
+    if delta_order < 0:
+        raise ValueError("delta order cannot be below zero")
+    new_pixel = pixel >> (2 * delta_order)
+    return new_pixel
+
+
+def get_higher_order_pixels(order: int, pixel: int, delta_order: int) -> np.ndarray:
+    """Returns the pixel numbers at a higher order
+
+    Args:
+        order (int): the order of the pixel
+        pixel (int): the pixel number of the pixel in NESTED ordering
+        delta_order (int): the change in order to the new higher order
+
+    Returns:
+        The list of pixel numbers at order (order + delta_order) for the pixels contained by the given pixel
+    """
+    if order == -1:
+        return np.arange(0, 12)
+    if order + delta_order > HIPSCAT_ID_HEALPIX_ORDER:
+        raise ValueError(f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}")
+    if delta_order < 0:
+        raise ValueError("delta order cannot be below zero")
+    new_pixels = np.arange(pixel << (2 * delta_order), (pixel + 1) << (2*delta_order))
+    return new_pixels
