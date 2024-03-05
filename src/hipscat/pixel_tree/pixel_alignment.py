@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 
 from hipscat.pixel_math import HealpixInputTypes, HealpixPixel, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_tuple
 from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
@@ -84,15 +85,15 @@ def align_trees(
     """
 
     tree_builder = PixelTreeBuilder()
-    pixels_to_search = _get_children_pixels_from_trees([left, right], left.root_pixel.pixel)
+    pixels_to_search = _get_children_pixels_from_trees([left, right], (-1, -1))
 
     while len(pixels_to_search) > 0:
         search_pixel = pixels_to_search.pop(0)
         if search_pixel in left and search_pixel in right:
-            left_node = left[search_pixel]
-            right_node = right[search_pixel]
-            if left_node.node_type == right_node.node_type:
-                if left_node.node_type == PixelNodeType.LEAF:
+            left_node_type = left.get_node_type(search_pixel)
+            right_node_type = right.get_node_type(search_pixel)
+            if left_node_type == right_node_type:
+                if left_node_type == PixelNodeType.LEAF:
                     # Matching leaf nodes get added to the aligned tree
                     tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
                 else:
@@ -100,12 +101,12 @@ def align_trees(
                     pixels_to_search += _get_children_pixels_from_trees([left, right], search_pixel)
             else:
                 # Nodes with non-matching types: one must be a leaf and the other an inner node
-                if left_node.node_type == PixelNodeType.LEAF:
+                if left_node_type == PixelNodeType.LEAF:
                     tree_with_leaf_node = LEFT_TREE_KEY
-                    inner_node = right_node
+                    inner_node = (search_pixel, right)
                 else:
                     tree_with_leaf_node = RIGHT_TREE_KEY
-                    inner_node = left_node
+                    inner_node = (search_pixel, left)
                 if _should_include_all_pixels_from_tree(tree_with_leaf_node, alignment_type):
                     # If the alignment type means fully covering the tree with the leaf node, then
                     # create a leaf node in the aligned tree and split it to match the partitioning
@@ -121,18 +122,18 @@ def align_trees(
             # For nodes that only exist in one tree, include them if the alignment type means that
             # tree should have all its nodes included
             if _should_include_all_pixels_from_tree(LEFT_TREE_KEY, alignment_type):
-                tree_builder.create_node_and_parent_if_not_exist(search_pixel, left[search_pixel].node_type)
-                tree_builder.add_all_descendants_from_node(left[search_pixel])
+                tree_builder.create_node_and_parent_if_not_exist(search_pixel, left.get_node_type(search_pixel))
+                tree_builder.add_all_descendants_from_node((search_pixel, left))
         elif search_pixel in right and search_pixel not in left:
             if _should_include_all_pixels_from_tree(RIGHT_TREE_KEY, alignment_type):
-                tree_builder.create_node_and_parent_if_not_exist(search_pixel, right[search_pixel].node_type)
-                tree_builder.add_all_descendants_from_node(right[search_pixel])
+                tree_builder.create_node_and_parent_if_not_exist(search_pixel, right.get_node_type(search_pixel))
+                tree_builder.add_all_descendants_from_node((search_pixel, right))
     tree = tree_builder.build()
     pixel_mapping = _generate_pixel_mapping_from_tree(left, right, tree)
     return PixelAlignment(tree, pixel_mapping, alignment_type)
 
 
-def _get_children_pixels_from_trees(trees: List[PixelTree], pixel: HealpixInputTypes) -> List[HealpixPixel]:
+def _get_children_pixels_from_trees(trees: List[PixelTree], pixel: HealpixInputTypes) -> List[Tuple[int, int]]:
     """Returns the combined HEALPix pixels that have child nodes of the given pixel from trees
 
     This returns a list of HEALPix pixels, not the actual child nodes, and does not contain
@@ -146,12 +147,12 @@ def _get_children_pixels_from_trees(trees: List[PixelTree], pixel: HealpixInputT
         (List[HealpixPixel]) The list of all HEALPix pixels which have children of the given pixel
         in any of the trees.
     """
-    pixel = get_healpix_pixel(pixel)
+    pixel = get_healpix_tuple(pixel)
     pixels_to_add = set()
     for tree in trees:
         if pixel in tree:
-            for node in tree[pixel].children:
-                pixels_to_add.add(node.pixel)
+            for child_pixel in tree.get_child_pixels(pixel):
+                pixels_to_add.add(child_pixel)
     return list(pixels_to_add)
 
 
@@ -196,23 +197,19 @@ def _generate_pixel_mapping_from_tree(left: PixelTree, right: PixelTree, aligned
         PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: [],
         PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: [],
     }
-    for leaf_node in aligned.root_pixel.get_all_leaf_descendants():
-        left_leaf_nodes = left.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
-        right_leaf_nodes = right.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
-        if len(left_leaf_nodes) == 0:
-            left_leaf_nodes = [None]
-        if len(right_leaf_nodes) == 0:
-            right_leaf_nodes = [None]
-        for left_node in left_leaf_nodes:
-            for right_node in right_leaf_nodes:
-                pixel_mapping_dict[PixelAlignment.ALIGNED_ORDER_COLUMN_NAME].append(leaf_node.hp_order)
-                pixel_mapping_dict[PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME].append(leaf_node.hp_pixel)
-                left_order = left_node.hp_order if left_node is not None else None
-                left_pixel = left_node.hp_pixel if left_node is not None else None
+    for leaf_order, leaf_pixel in aligned.get_leaf_descendent_pixels((-1, -1)):
+        left_leaf_pixels = left.get_leaf_pixels_at_healpix_pixel((leaf_order, leaf_pixel))
+        right_leaf_pixels = right.get_leaf_pixels_at_healpix_pixel((leaf_order, leaf_pixel))
+        if len(left_leaf_pixels) == 0:
+            left_leaf_pixels = [(None, None)]
+        if len(right_leaf_pixels) == 0:
+            right_leaf_pixels = [(None, None)]
+        for left_order, left_pixel in left_leaf_pixels:
+            for right_order, right_pixel in right_leaf_pixels:
+                pixel_mapping_dict[PixelAlignment.ALIGNED_ORDER_COLUMN_NAME].append(leaf_order)
+                pixel_mapping_dict[PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME].append(leaf_pixel)
                 pixel_mapping_dict[PixelAlignment.PRIMARY_ORDER_COLUMN_NAME].append(left_order)
                 pixel_mapping_dict[PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME].append(left_pixel)
-                right_order = right_node.hp_order if right_node is not None else None
-                right_pixel = right_node.hp_pixel if right_node is not None else None
                 pixel_mapping_dict[PixelAlignment.JOIN_ORDER_COLUMN_NAME].append(right_order)
                 pixel_mapping_dict[PixelAlignment.JOIN_PIXEL_COLUMN_NAME].append(right_pixel)
     pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict).astype(pd.Int64Dtype())

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Tuple
 
 import healpy as hp
 import numpy as np
@@ -117,12 +117,13 @@ class PixelTree:
         parent_pixel = pixel.convert_to_lower_order(1) if pixel.order != 0 else HealpixPixel(-1, -1)
         return self[parent_pixel]
 
-    def get_child_node_types(self, pixel: HealpixInputTypes) -> np.ndarray:
+    def get_child_pixels(self, pixel: HealpixInputTypes) -> List[Tuple[int, int]]:
         (order, pixel) = get_healpix_tuple(pixel)
         child_order = order + 1
         child_pixels = get_higher_order_pixels(order, pixel, 1)
-        child_types = np.vectorize(lambda p: self.get_node_type((child_order, p)))(child_pixels)
-        return child_types
+        children_in_tree = [self.contains((child_order, p)) for p in child_pixels]
+        child_pixels_in_tree = [(child_order, p) for p in child_pixels[children_in_tree]]
+        return child_pixels_in_tree
 
     def get_child_nodes(self, pixel: HealpixInputTypes) -> List[PixelNode]:
         pixel = get_healpix_pixel(pixel)
@@ -171,6 +172,48 @@ class PixelTree:
                     # If the catalog doesn't fully cover the sky, it's possible we encounter an
                     # inner node whose leaf children don't cover the search pixel.
                     return lower_node
+                return None
+        return None
+
+    def get_leaf_pixels_at_healpix_pixel(self, pixel: HealpixInputTypes) -> List[Tuple[int, int]]:
+        pixel = get_healpix_tuple(pixel)
+        if pixel in self:
+            return self.get_leaf_descendent_pixels(pixel)
+
+        pixel_in_tree = self._find_first_lower_order_leaf_pixel_in_tree(pixel)
+        if pixel_in_tree is None:
+            return []
+        return [pixel_in_tree]
+
+    def get_leaf_descendent_pixels(self, pixel: HealpixInputTypes) -> List[Tuple[int, int]]:
+        order, pixel = get_healpix_tuple(pixel)
+        leaf_descendants = []
+        self._add_all_leaf_descendants_rec(order, pixel, leaf_descendants)
+        return leaf_descendants
+
+    def _add_all_leaf_descendants_rec(self, order: int, pixel: int, leaf_descendants: List[Tuple[int, int]]):
+        """Recursively add all leaf descendants to list
+
+        list must be created outside function, done for efficiency vs list concat
+        """
+        if self.get_node_type((order, pixel)) == PixelNodeType.LEAF:
+            leaf_descendants.append((order, pixel))
+
+        for child_order, child_pixel in self.get_child_pixels((order, pixel)):
+            # pylint: disable=protected-access
+            self._add_all_leaf_descendants_rec(child_order, child_pixel, leaf_descendants)
+
+    def _find_first_lower_order_leaf_pixel_in_tree(self, pixel: HealpixInputTypes) -> Tuple[int, int] | None:
+        order, pixel = get_healpix_tuple(pixel)
+        for delta_order in range(1, order + 1):
+            lower_pixel = get_lower_order_pixel(order, pixel, delta_order)
+            lower_order = order - delta_order
+            if self.contains((lower_order, lower_pixel)):
+                lower_node_type = self.get_node_type((lower_order, lower_pixel))
+                if lower_node_type == PixelNodeType.LEAF:
+                    # If the catalog doesn't fully cover the sky, it's possible we encounter an
+                    # inner node whose leaf children don't cover the search pixel.
+                    return (lower_order, lower_pixel)
                 return None
         return None
 
