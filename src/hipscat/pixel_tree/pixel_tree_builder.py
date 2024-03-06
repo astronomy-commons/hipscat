@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
+import numpy as np
+
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.healpix_pixel import get_lower_order_pixel, get_higher_order_pixels
 from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel, get_healpix_tuple
@@ -42,10 +44,17 @@ class PixelTreeBuilder:
         Returns:
             The pixel tree with the leaf pixels specified in the list
         """
-        builder = PixelTreeBuilder()
-        for pixel in healpix_pixels:
-            builder.create_node_and_parent_if_not_exist(pixel, PixelNodeType.LEAF)
-        return builder.build()
+        pixel_tuples = [get_healpix_tuple(p) for p in healpix_pixels]
+        pixel_array = np.array(pixel_tuples).T
+        orders = pixel_array[0]
+        pixels = pixel_array[1]
+        max_order = np.max(orders)
+        starts = pixels * 4**(max_order - orders)
+        ends = (pixels + 1) * 4**(max_order - orders)
+        # array = np.vectorize(get_healpix_tuple)(healpix_pixels)
+        result = np.vstack((starts, ends)).T
+        result.sort(axis=0)
+        return PixelTree(result)
 
     def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel

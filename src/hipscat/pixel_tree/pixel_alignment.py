@@ -1,6 +1,9 @@
 from typing import List, Tuple
 
+import numba
+import numpy as np
 import pandas as pd
+from numba import njit
 
 from hipscat.pixel_math import HealpixInputTypes, HealpixPixel, get_healpix_pixel
 from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_tuple
@@ -11,6 +14,18 @@ from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 LEFT_TREE_KEY = "left"
 RIGHT_TREE_KEY = "right"
+
+INNER_ALIGNMENT_TYPE = 0
+LEFT_ALIGNMENT_TYPE = 1
+RIGHT_ALIGNMENT_TYPE = 2
+OUTER_ALIGNMENT_TYPE = 3
+
+ALIGNMENT_TO_INT_TYPE = {
+    PixelAlignmentType.INNER: INNER_ALIGNMENT_TYPE,
+    PixelAlignmentType.LEFT: LEFT_ALIGNMENT_TYPE,
+    PixelAlignmentType.RIGHT: RIGHT_ALIGNMENT_TYPE,
+    PixelAlignmentType.OUTER: OUTER_ALIGNMENT_TYPE,
+}
 
 
 # pylint: disable=R0903
@@ -53,13 +68,11 @@ class PixelAlignment:
         self.pixel_mapping = pixel_mapping
         self.alignment_type = alignment_type
 
-
-# pylint: disable=R0912
+@njit(numba.types.List(numba.int64[:])(numba.int64[:, :], numba.int64[:, :]))
 def align_trees(
-    left: PixelTree,
-    right: PixelTree,
-    alignment_type: PixelAlignmentType = PixelAlignmentType.INNER,
-) -> PixelAlignment:
+    left: np.ndarray,
+    right: np.ndarray,
+) -> np.ndarray:
     """Generate a `PixelAlignment` object from two pixel trees
 
     A `PixelAlignment` represents how two pixel trees align with each other, meaning which pixels
@@ -84,53 +97,85 @@ def align_trees(
         The `PixelAlignment` object with the alignment from the two trees
     """
 
-    tree_builder = PixelTreeBuilder()
-    pixels_to_search = _get_children_pixels_from_trees([left, right], (-1, -1))
+    output = []
+    left_index = 0
+    right_index = 0
+    while left_index < len(left) and right_index < len(right):
+        left_pix = left[left_index]
+        right_pix = right[right_index]
+        if left_pix[0] >= right_pix[1]:
+            # left pix ahead of right, no overlap
+            right_index += 1
+            continue
+        if right_pix[0] >= left_pix[1]:
+            # right pix ahead of left, no overlap
+            left_index += 1
+            continue
+        left_size = left_pix[1] - left_pix[0]
+        right_size = right_pix[1] - right_pix[0]
+        if left_size == right_size:
+            # overlapping + same size => same pixel so add and move both on
+            output.append(left_pix)
+            left_index += 1
+            right_index += 1
+            continue
+        if left_size < right_size:
+            # overlapping and left smaller so add left and move left on
+            output.append(left_pix)
+            left_index += 1
+            continue
+        output.append(right_pix)
+        right_index += 1
+    return output
 
-    while len(pixels_to_search) > 0:
-        search_pixel = pixels_to_search.pop(0)
-        if search_pixel in left and search_pixel in right:
-            left_node_type = left.get_node_type(search_pixel)
-            right_node_type = right.get_node_type(search_pixel)
-            if left_node_type == right_node_type:
-                if left_node_type == PixelNodeType.LEAF:
-                    # Matching leaf nodes get added to the aligned tree
-                    tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
-                else:
-                    # For matching inner nodes search into their children to check for alignment
-                    pixels_to_search += _get_children_pixels_from_trees([left, right], search_pixel)
-            else:
-                # Nodes with non-matching types: one must be a leaf and the other an inner node
-                if left_node_type == PixelNodeType.LEAF:
-                    tree_with_leaf_node = LEFT_TREE_KEY
-                    inner_node = (search_pixel, right)
-                else:
-                    tree_with_leaf_node = RIGHT_TREE_KEY
-                    inner_node = (search_pixel, left)
-                if _should_include_all_pixels_from_tree(tree_with_leaf_node, alignment_type):
-                    # If the alignment type means fully covering the tree with the leaf node, then
-                    # create a leaf node in the aligned tree and split it to match the partitioning
-                    # of the other tree to ensure the node is fully covered
-                    tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
-                    tree_builder.split_leaf_to_match_partitioning(inner_node)
-                else:
-                    # Otherwise just add the subtree from the inner node to include all the
-                    # overlapping pixels
-                    tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.INNER)
-                    tree_builder.add_all_descendants_from_node(inner_node)
-        elif search_pixel in left and search_pixel not in right:
-            # For nodes that only exist in one tree, include them if the alignment type means that
-            # tree should have all its nodes included
-            if _should_include_all_pixels_from_tree(LEFT_TREE_KEY, alignment_type):
-                tree_builder.create_node_and_parent_if_not_exist(search_pixel, left.get_node_type(search_pixel))
-                tree_builder.add_all_descendants_from_node((search_pixel, left))
-        elif search_pixel in right and search_pixel not in left:
-            if _should_include_all_pixels_from_tree(RIGHT_TREE_KEY, alignment_type):
-                tree_builder.create_node_and_parent_if_not_exist(search_pixel, right.get_node_type(search_pixel))
-                tree_builder.add_all_descendants_from_node((search_pixel, right))
-    tree = tree_builder.build()
-    pixel_mapping = _generate_pixel_mapping_from_tree(left, right, tree)
-    return PixelAlignment(tree, pixel_mapping, alignment_type)
+
+    # tree_builder = PixelTreeBuilder()
+    # pixels_to_search = _get_children_pixels_from_trees([left, right], (-1, -1))
+    #
+    # while len(pixels_to_search) > 0:
+    #     search_pixel = pixels_to_search.pop(0)
+    #     if search_pixel in left and search_pixel in right:
+    #         left_node_type = left.get_node_type(search_pixel)
+    #         right_node_type = right.get_node_type(search_pixel)
+    #         if left_node_type == right_node_type:
+    #             if left_node_type == PixelNodeType.LEAF:
+    #                 # Matching leaf nodes get added to the aligned tree
+    #                 tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
+    #             else:
+    #                 # For matching inner nodes search into their children to check for alignment
+    #                 pixels_to_search += _get_children_pixels_from_trees([left, right], search_pixel)
+    #         else:
+    #             # Nodes with non-matching types: one must be a leaf and the other an inner node
+    #             if left_node_type == PixelNodeType.LEAF:
+    #                 tree_with_leaf_node = LEFT_TREE_KEY
+    #                 inner_node = (search_pixel, right)
+    #             else:
+    #                 tree_with_leaf_node = RIGHT_TREE_KEY
+    #                 inner_node = (search_pixel, left)
+    #             if _should_include_all_pixels_from_tree(tree_with_leaf_node, alignment_type):
+    #                 # If the alignment type means fully covering the tree with the leaf node, then
+    #                 # create a leaf node in the aligned tree and split it to match the partitioning
+    #                 # of the other tree to ensure the node is fully covered
+    #                 tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
+    #                 tree_builder.split_leaf_to_match_partitioning(inner_node)
+    #             else:
+    #                 # Otherwise just add the subtree from the inner node to include all the
+    #                 # overlapping pixels
+    #                 tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.INNER)
+    #                 tree_builder.add_all_descendants_from_node(inner_node)
+    #     elif search_pixel in left and search_pixel not in right:
+    #         # For nodes that only exist in one tree, include them if the alignment type means that
+    #         # tree should have all its nodes included
+    #         if _should_include_all_pixels_from_tree(LEFT_TREE_KEY, alignment_type):
+    #             tree_builder.create_node_and_parent_if_not_exist(search_pixel, left.get_node_type(search_pixel))
+    #             tree_builder.add_all_descendants_from_node((search_pixel, left))
+    #     elif search_pixel in right and search_pixel not in left:
+    #         if _should_include_all_pixels_from_tree(RIGHT_TREE_KEY, alignment_type):
+    #             tree_builder.create_node_and_parent_if_not_exist(search_pixel, right.get_node_type(search_pixel))
+    #             tree_builder.add_all_descendants_from_node((search_pixel, right))
+    # tree = tree_builder.build()
+    # pixel_mapping = _generate_pixel_mapping_from_tree(left, right, tree)
+    # return PixelAlignment(tree, pixel_mapping, alignment_type)
 
 
 def _get_children_pixels_from_trees(trees: List[PixelTree], pixel: HealpixInputTypes) -> List[Tuple[int, int]]:

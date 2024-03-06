@@ -26,7 +26,7 @@ class PixelTree:
             order then pixel number
     """
 
-    def __init__(self, pixels: dict[int, dict[int, PixelNodeType]]) -> None:
+    def __init__(self, pixels: np.ndarray) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:
