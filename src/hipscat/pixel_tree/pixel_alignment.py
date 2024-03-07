@@ -69,21 +69,28 @@ def align_trees(
         result_tree, mapping = align_inner_trees(left_aligned, right_aligned)
         result_tree = np.array(result_tree)
         mapping = np.array(mapping).T
-        l_orders = max_n - ((np.vectorize(lambda x: int(x).bit_length())(mapping[1] - mapping[0]) - 1) >> 1)
-        l_pixels = mapping[0] >> (max_n - l_orders)
-        r_orders = max_n - ((np.vectorize(lambda x: int(x).bit_length())(mapping[3] - mapping[2]) - 1) >> 1)
-        r_pixels = mapping[2] >> (max_n - r_orders)
-        a_orders = max_n - ((np.vectorize(lambda x: int(x).bit_length())(mapping[5] - mapping[4]) - 1) >> 1)
-        a_pixels = mapping[4] >> (max_n - a_orders)
-        result_mapping = pd.DataFrame.from_dict({
-            PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: l_orders,
-            PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: l_pixels,
-            PixelAlignment.JOIN_ORDER_COLUMN_NAME: r_orders,
-            PixelAlignment.JOIN_PIXEL_COLUMN_NAME: r_pixels,
-            PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: a_orders,
-            PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
-        })
-        return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
+    else:
+        raise NotImplementedError()
+    result_mapping = get_pixel_mapping_df(mapping, max_n)
+    return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
+
+
+def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
+    l_orders = map_order - ((np.vectorize(lambda x: int(x).bit_length())(mapping[1] - mapping[0]) - 1) >> 1)
+    l_pixels = mapping[0] >> (map_order - l_orders)
+    r_orders = map_order - ((np.vectorize(lambda x: int(x).bit_length())(mapping[3] - mapping[2]) - 1) >> 1)
+    r_pixels = mapping[2] >> (map_order - r_orders)
+    a_orders = map_order - ((np.vectorize(lambda x: int(x).bit_length())(mapping[5] - mapping[4]) - 1) >> 1)
+    a_pixels = mapping[4] >> (map_order - a_orders)
+    result_mapping = pd.DataFrame.from_dict({
+        PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: l_orders,
+        PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: l_pixels,
+        PixelAlignment.JOIN_ORDER_COLUMN_NAME: r_orders,
+        PixelAlignment.JOIN_PIXEL_COLUMN_NAME: r_pixels,
+        PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: a_orders,
+        PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
+    })
+    return result_mapping
 
 
 @njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :]))
