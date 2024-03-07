@@ -51,10 +51,9 @@ class PixelTreeBuilder:
         max_order = np.max(orders)
         starts = pixels * 4**(max_order - orders)
         ends = (pixels + 1) * 4**(max_order - orders)
-        # array = np.vectorize(get_healpix_tuple)(healpix_pixels)
         result = np.vstack((starts, ends)).T
         result.sort(axis=0)
-        return PixelTree(result)
+        return PixelTree(result, max_order)
 
     def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel

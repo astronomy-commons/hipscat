@@ -15,18 +15,6 @@ from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 LEFT_TREE_KEY = "left"
 RIGHT_TREE_KEY = "right"
 
-INNER_ALIGNMENT_TYPE = 0
-LEFT_ALIGNMENT_TYPE = 1
-RIGHT_ALIGNMENT_TYPE = 2
-OUTER_ALIGNMENT_TYPE = 3
-
-ALIGNMENT_TO_INT_TYPE = {
-    PixelAlignmentType.INNER: INNER_ALIGNMENT_TYPE,
-    PixelAlignmentType.LEFT: LEFT_ALIGNMENT_TYPE,
-    PixelAlignmentType.RIGHT: RIGHT_ALIGNMENT_TYPE,
-    PixelAlignmentType.OUTER: OUTER_ALIGNMENT_TYPE,
-}
-
 
 # pylint: disable=R0903
 class PixelAlignment:
@@ -68,11 +56,86 @@ class PixelAlignment:
         self.pixel_mapping = pixel_mapping
         self.alignment_type = alignment_type
 
-@njit(numba.types.List(numba.int64[:])(numba.int64[:, :], numba.int64[:, :]))
+
 def align_trees(
+    left: PixelTree,
+    right: PixelTree,
+    alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
+) -> PixelAlignment:
+    max_n = max(left.order, right.order)
+    left_aligned = left.pixels << (2 * (max_n - left.order))
+    right_aligned = right.pixels << (2 * (max_n - right.order))
+    if alignment_type == PixelAlignmentType.INNER:
+        result_tree, mapping = align_inner_trees(left_aligned, right_aligned)
+        result_tree = np.array(result_tree)
+        mapping = np.array(mapping).T
+        l_orders = max_n - ((np.vectorize(lambda x: int(x).bit_length())(mapping[1] - mapping[0]) - 1) >> 1)
+        l_pixels = mapping[0] >> (max_n - l_orders)
+        r_orders = max_n - ((np.vectorize(lambda x: int(x).bit_length())(mapping[3] - mapping[2]) - 1) >> 1)
+        r_pixels = mapping[2] >> (max_n - r_orders)
+        a_orders = max_n - ((np.vectorize(lambda x: int(x).bit_length())(mapping[5] - mapping[4]) - 1) >> 1)
+        a_pixels = mapping[4] >> (max_n - a_orders)
+        result_mapping = pd.DataFrame.from_dict({
+            PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: l_orders,
+            PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: l_pixels,
+            PixelAlignment.JOIN_ORDER_COLUMN_NAME: r_orders,
+            PixelAlignment.JOIN_PIXEL_COLUMN_NAME: r_pixels,
+            PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: a_orders,
+            PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
+        })
+        return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
+
+
+@njit(numba.types.List(numba.int64[::1])(numba.int64[:, :], numba.int64[:, :], numba.int64[:, :]))
+def get_pixel_mapping(
     left: np.ndarray,
     right: np.ndarray,
-) -> np.ndarray:
+    result: np.ndarray,
+) -> List[np.ndarray]:
+    output = []
+    left_index = 0
+    right_index = 0
+    result_index = 0
+    while left_index < len(left) and right_index < len(right) and result_index < len(result):
+        left_pix = left[left_index]
+        right_pix = right[right_index]
+        result_pix = result[result_index]
+        if result_pix[0] >= left_pix[1]:
+            # right pix ahead of left, no overlap
+            left_index += 1
+            continue
+        if result_pix[0] >= right_pix[1]:
+            # left pix ahead of right, no overlap
+            right_index += 1
+            continue
+        if left_pix[0] >= result_pix[1] and right_pix[0] >= result_pix[1]:
+            result_index += 1
+            continue
+        if left_pix[0] >= right_pix[1]:
+            right_index += 1
+            continue
+        if right_pix[0] >= left_pix[1]:
+            left_index += 1
+            continue
+        output.append(np.concatenate((left_pix, right_pix, result_pix)))
+        left_size = left_pix[1] - left_pix[0]
+        right_size = right_pix[1] - right_pix[0]
+        if left_size == right_size:
+            left_index += 1
+            right_index += 1
+            continue
+        if left_size < right_size:
+            left_index += 1
+            continue
+        right_index += 1
+    return output
+
+
+@njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :]))
+def align_inner_trees(
+    left: np.ndarray,
+    right: np.ndarray,
+) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """Generate a `PixelAlignment` object from two pixel trees
 
     A `PixelAlignment` represents how two pixel trees align with each other, meaning which pixels
@@ -98,6 +161,7 @@ def align_trees(
     """
 
     output = []
+    mapping = []
     left_index = 0
     right_index = 0
     while left_index < len(left) and right_index < len(right):
@@ -116,17 +180,20 @@ def align_trees(
         if left_size == right_size:
             # overlapping + same size => same pixel so add and move both on
             output.append(left_pix)
+            mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
             left_index += 1
             right_index += 1
             continue
         if left_size < right_size:
             # overlapping and left smaller so add left and move left on
             output.append(left_pix)
+            mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
             left_index += 1
             continue
         output.append(right_pix)
+        mapping.append(np.concatenate((left_pix, right_pix, right_pix)))
         right_index += 1
-    return output
+    return output, mapping
 
 
     # tree_builder = PixelTreeBuilder()

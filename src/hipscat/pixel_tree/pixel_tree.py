@@ -26,12 +26,13 @@ class PixelTree:
             order then pixel number
     """
 
-    def __init__(self, pixels: np.ndarray) -> None:
+    def __init__(self, pixels: np.ndarray, order: int) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:
             pixels: Dictionary containing all PixelNodes in the tree
         """
+        self.order = order
         self.pixels = pixels
 
     @property
