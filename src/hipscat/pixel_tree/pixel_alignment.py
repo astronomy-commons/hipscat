@@ -86,51 +86,6 @@ def align_trees(
         return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
 
 
-@njit(numba.types.List(numba.int64[::1])(numba.int64[:, :], numba.int64[:, :], numba.int64[:, :]))
-def get_pixel_mapping(
-    left: np.ndarray,
-    right: np.ndarray,
-    result: np.ndarray,
-) -> List[np.ndarray]:
-    output = []
-    left_index = 0
-    right_index = 0
-    result_index = 0
-    while left_index < len(left) and right_index < len(right) and result_index < len(result):
-        left_pix = left[left_index]
-        right_pix = right[right_index]
-        result_pix = result[result_index]
-        if result_pix[0] >= left_pix[1]:
-            # right pix ahead of left, no overlap
-            left_index += 1
-            continue
-        if result_pix[0] >= right_pix[1]:
-            # left pix ahead of right, no overlap
-            right_index += 1
-            continue
-        if left_pix[0] >= result_pix[1] and right_pix[0] >= result_pix[1]:
-            result_index += 1
-            continue
-        if left_pix[0] >= right_pix[1]:
-            right_index += 1
-            continue
-        if right_pix[0] >= left_pix[1]:
-            left_index += 1
-            continue
-        output.append(np.concatenate((left_pix, right_pix, result_pix)))
-        left_size = left_pix[1] - left_pix[0]
-        right_size = right_pix[1] - right_pix[0]
-        if left_size == right_size:
-            left_index += 1
-            right_index += 1
-            continue
-        if left_size < right_size:
-            left_index += 1
-            continue
-        right_index += 1
-    return output
-
-
 @njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :]))
 def align_inner_trees(
     left: np.ndarray,
