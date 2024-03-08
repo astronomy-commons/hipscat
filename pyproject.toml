@@ -21,6 +21,7 @@ dependencies = [
     "fsspec<=2023.9.2", # Used for abstract filesystems
     "healpy",
     "numba>=0.58",
+    "numpy", 
     "pandas",
     "pyarrow>=14.0.1",
     "typing-extensions>=4.3.0",
@@ -32,27 +33,17 @@ dependencies = [
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
 dev = [
-"adlfs", # abfs filesytem support
+    "adlfs", # abfs filesytem support
     "asv==0.6.1", # Used to compute performance benchmarks
     "black", # auto-formatter
-    "ipykernel", # Support for Jupyter notebooks
-    "ipython", # Also used in building notebooks into Sphinx
-    "matplotlib", # Used in sample notebook intro_notebook.ipynb
     "mypy", # Used for static type checking of files
-    "myst_parser", # Renders markdown alongside RST
-    "nbconvert", # Needed for pre-commit check to clear output from Python notebooks
-    "nbsphinx", # Used to integrate Python notebooks into Sphinx documentation
-    "numpy", # Used in sample notebook intro_notebook.ipynb
     "pre-commit", # Used to run checks before finalizing a git commit
     "pylint", # Used for static linting of files
     "pytest",
     "pytest-cov", # Used to report total code coverage
     "pytest-timeout", # Used to test for code efficiency
     "s3fs", # s3 filesystem support
-    "sphinx", # Used to automatically generate documentation
-        "sphinx-autoapi", # Used to automatically generate api documentation
-    "sphinx-rtd-theme" # Used to render documentation
-    ]
+]
 
 [build-system]
 requires = [
