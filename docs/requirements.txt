@@ -1,10 +1,11 @@
-sphinx
-sphinx-rtd-theme
-sphinx-autoapi
-sphinx-copybutton
-nbsphinx
+
 ipykernel
 ipython
 jupytext
-jupyter
 myst_parser
+nbconvert
+nbsphinx
+sphinx
+sphinx-autoapi
+sphinx-copybutton
+sphinx-rtd-theme
