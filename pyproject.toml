@@ -34,7 +34,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "adlfs", # abfs filesytem support
-    "asv==0.6.1", # Used to compute performance benchmarks
+    "asv==0.6.3", # Used to compute performance benchmarks
     "black", # auto-formatter
     "jupyter", # clear notebook result cells
     "mypy", # Used for static type checking of files
