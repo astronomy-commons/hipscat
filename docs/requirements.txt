@@ -1,7 +1,6 @@
 
 ipykernel
 ipython
-jupyter
 jupytext
 myst_parser
 nbconvert
