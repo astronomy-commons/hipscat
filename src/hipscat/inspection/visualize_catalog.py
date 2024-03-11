@@ -28,7 +28,7 @@ def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], Non
     return file_io.read_fits_image(map_file_pointer, storage_options=storage_options)
 
 
-def plot_points(catalog: Catalog, projection="moll", draw_map=True):
+def plot_points(catalog: Catalog, projection="moll", **kwargs):
     """Create a visual map of the input points of an in-memory catalog.
 
     Args:
@@ -42,15 +42,10 @@ def plot_points(catalog: Catalog, projection="moll", draw_map=True):
     if not catalog.on_disk:
         raise ValueError("on disk catalog required for point-wise visualization")
     point_map = _read_point_map(catalog.catalog_base_dir, storage_options=catalog.storage_options)
-    _plot_healpix_map(
-        point_map,
-        projection,
-        f"Catalog point density map - {catalog.catalog_name}",
-        draw_map=draw_map,
-    )
+    _plot_healpix_map(point_map, projection, f"Catalog point density map - {catalog.catalog_name}", **kwargs)
 
 
-def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
+def plot_pixels(catalog: Catalog, projection="moll", **kwargs):
     """Create a visual map of the pixel density of the catalog.
 
     Args:
@@ -66,11 +61,11 @@ def plot_pixels(catalog: Catalog, projection="moll", draw_map=True):
         pixels=pixels,
         plot_title=f"Catalog pixel density map - {catalog.catalog_name}",
         projection=projection,
-        draw_map=draw_map,
+        **kwargs,
     )
 
 
-def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection="moll", draw_map=True):
+def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection="moll", **kwargs):
     """Create a visual map of the pixel density of a list of pixels.
 
     Args:
@@ -105,10 +100,10 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
             )
         ]
         order_map[exploded_pixels] = pixel.order
-    _plot_healpix_map(order_map, projection, plot_title, cmap=cmap, draw_map=draw_map)
+    _plot_healpix_map(order_map, projection, plot_title, cmap=cmap, **kwargs)
 
 
-def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", draw_map=True):
+def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
     """Perform the plotting of a healpix pixel map.
 
     Args:
@@ -128,11 +123,5 @@ def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", draw_map=T
     else:
         raise NotImplementedError(f"unknown projection: {projection}")
 
-    if draw_map:  # pragma: no cover
-        projection_method(
-            healpix_map,
-            title=title,
-            nest=True,
-            cmap=cmap,
-        )
-        plt.plot()
+    projection_method(healpix_map, title=title, nest=True, cmap=cmap, **kwargs)
+    plt.plot()
