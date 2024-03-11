@@ -5,6 +5,8 @@
 [![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
 
 [![PyPI](https://img.shields.io/pypi/v/hipscat?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/hipscat/)
+[![Conda](https://img.shields.io/conda/vn/conda-forge/hipscat.svg?color=blue&logo=condaforge&logoColor=white)](https://anaconda.org/conda-forge/hipscat)
+
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hipscat/smoke-test.yml)](https://github.com/astronomy-commons/hipscat/actions/workflows/smoke-test.yml)
 [![codecov](https://codecov.io/gh/astronomy-commons/hipscat/branch/main/graph/badge.svg)](https://codecov.io/gh/astronomy-commons/hipscat)
 [![Read the Docs](https://img.shields.io/readthedocs/hipscat)](https://hipscat.readthedocs.io/)
