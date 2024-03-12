@@ -32,23 +32,18 @@ class PixelTree:
         Args:
             pixels: Dictionary containing all PixelNodes in the tree
         """
-        self.order = order
         self.pixels = pixels
-
-    @property
-    def root_pixel(self):
-        return self[(-1, -1)]
+        # store transpose for efficient searches
+        self.pixels_t = pixels.T
+        self.tree_order = order
 
     def __len__(self):
-        """Gets the number of nodes in the tree, including inner nodes and the root node
+        """Gets the number of nodes in the tree
 
         Returns:
-            The number of nodes in the tree, including inner nodes and the root node
+            The number of nodes in the tree
         """
-        pixel_count = 0
-        for _, order_pixels in self.pixels.items():
-            pixel_count += len(order_pixels)
-        return pixel_count
+        return len(self.pixels)
 
     def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel
@@ -61,7 +56,12 @@ class PixelTree:
             True if the tree contains the pixel, False if not
         """
         (order, pixel) = get_healpix_tuple(pixel)
-        return order in self.pixels and pixel in self.pixels[order]
+        if order > self.tree_order:
+            return False
+        d_order = self.tree_order - order
+        pixel_at_tree_order = pixel << 2 * d_order
+        index = np.searchsorted(self.pixels_t[1], pixel_at_tree_order, side='left')
+        return pixel_at_tree_order == self.pixels[index][0] and (self.pixels[index][1] - self.pixels[index][0]) == 1 << 2* d_order
 
     def __contains__(self, item):
         return self.contains(item)
