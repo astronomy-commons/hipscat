@@ -184,23 +184,23 @@ def get_provenance_pointer(catalog_base_dir: FilePointer) -> FilePointer:
 
 
 def get_common_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
-    """Get file pointer to `_metadata` parquet metadata file
-
-    Args:
-        catalog_base_dir: pointer to base catalog directory
-    Returns:
-        File Pointer to the catalog's `_metadata` file
-    """
-    return append_paths_to_pointer(catalog_base_dir, PARQUET_COMMON_METADATA_FILENAME)
-
-
-def get_parquet_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     """Get file pointer to `_common_metadata` parquet metadata file
 
     Args:
         catalog_base_dir: pointer to base catalog directory
     Returns:
         File Pointer to the catalog's `_common_metadata` file
+    """
+    return append_paths_to_pointer(catalog_base_dir, PARQUET_COMMON_METADATA_FILENAME)
+
+
+def get_parquet_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+    """Get file pointer to `_metadata` parquet metadata file
+
+    Args:
+        catalog_base_dir: pointer to base catalog directory
+    Returns:
+        File Pointer to the catalog's `_metadata` file
     """
     return append_paths_to_pointer(catalog_base_dir, PARQUET_METADATA_FILENAME)
 
