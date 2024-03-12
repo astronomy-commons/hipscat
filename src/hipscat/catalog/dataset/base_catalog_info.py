@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from dataclasses import dataclass
 from typing import Any, Dict, Union
@@ -13,8 +15,8 @@ class BaseCatalogInfo:
     """Container class for catalog metadata"""
 
     catalog_name: str = ""
-    catalog_type: CatalogType = None
-    total_rows: int = None
+    catalog_type: CatalogType | None = None
+    total_rows: int | None = None
 
     DEFAULT_TYPE = None
     """The default catalog type for this catalog info type. To be overridden by subclasses.
