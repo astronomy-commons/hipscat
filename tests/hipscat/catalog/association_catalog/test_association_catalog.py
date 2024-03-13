@@ -9,7 +9,6 @@ from hipscat.catalog.association_catalog.association_catalog import AssociationC
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 def test_init_catalog(association_catalog_info, association_catalog_join_pixels):
@@ -25,7 +24,6 @@ def test_init_catalog(association_catalog_info, association_catalog_join_pixels)
     for hp_pixel in catalog.get_healpix_pixels():
         assert hp_pixel in [HealpixPixel(0, 11)]
         assert hp_pixel in catalog.pixel_tree
-        assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
 def test_wrong_catalog_type(association_catalog_info, association_catalog_join_pixels):

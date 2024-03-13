@@ -6,9 +6,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from hipscat.pixel_math.healpix_pixel import get_lower_order_pixel, get_higher_order_pixels
-from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel, get_healpix_tuple
-from hipscat.pixel_tree.pixel_node import PixelNode
+from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_tuple
 from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
@@ -43,6 +41,9 @@ class PixelTreeBuilder:
         Returns:
             The pixel tree with the leaf pixels specified in the list
         """
+        if len(healpix_pixels) == 0:
+            return PixelTree(np.empty((0, 2), dtype=np.int64), 0)
+
         pixel_tuples = [get_healpix_tuple(p) for p in healpix_pixels]
         pixel_array = np.array(pixel_tuples).T
         orders = pixel_array[0]

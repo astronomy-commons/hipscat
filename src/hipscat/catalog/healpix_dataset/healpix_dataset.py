@@ -62,8 +62,8 @@ class HealpixDataset(Dataset):
         if isinstance(pixels, PixelTree):
             return PartitionInfo.from_healpix(
                 [
-                    HealpixPixel(node.hp_order, node.hp_pixel)
-                    for node in pixels.root_pixel.get_all_leaf_descendants()
+                    HealpixPixel(node.order, node.pixel)
+                    for node in pixels.get_healpix_pixels()
                 ]
             )
         if pd.api.types.is_list_like(pixels):

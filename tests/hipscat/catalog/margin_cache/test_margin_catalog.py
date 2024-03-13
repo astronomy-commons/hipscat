@@ -18,7 +18,6 @@ def test_init_catalog(margin_catalog_info, margin_catalog_pixels):
     for hp_pixel in catalog.get_healpix_pixels():
         assert hp_pixel in margin_catalog_pixels
         assert hp_pixel in catalog.pixel_tree
-        assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
 def test_wrong_catalog_type(margin_catalog_info, margin_catalog_pixels):
