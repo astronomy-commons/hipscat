@@ -103,15 +103,7 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
     _plot_healpix_map(order_map, projection, plot_title, cmap=cmap, **kwargs)
 
 
-def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
-    """Perform the plotting of a healpix pixel map.
-
-    Args:
-        healpix_map: array containing the map
-        projection: projection type to display
-        title: title used in image plot
-        cmap: matplotlib colormap to use
-    """
+def get_projection_method(projection):
     if projection == "moll":
         projection_method = hp.mollview
     elif projection == "gnom":
@@ -122,6 +114,19 @@ def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
         projection_method = hp.orthview
     else:
         raise NotImplementedError(f"unknown projection: {projection}")
+    return projection_method
+
+
+def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
+    """Perform the plotting of a healpix pixel map.
+
+    Args:
+        healpix_map: array containing the map
+        projection: projection type to display
+        title: title used in image plot
+        cmap: matplotlib colormap to use
+    """
+    projection_method = get_projection_method(projection)
 
     projection_method(healpix_map, title=title, nest=True, cmap=cmap, **kwargs)
     plt.plot()
