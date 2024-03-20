@@ -104,6 +104,18 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
 
 
 def get_projection_method(projection):
+    """Get the healpy plotting method for a specified projection string
+
+    Args:
+        projection (str):  The map projection to use. Valid values include:
+            - moll - Molleweide projection (default)
+            - gnom - Gnomonic projection
+            - cart - Cartesian projection
+            - orth - Orthographic projection
+
+    Returns:
+        The healpy method that plots a HEALPix map with the specified projection
+    """
     if projection == "moll":
         projection_method = hp.mollview
     elif projection == "gnom":
