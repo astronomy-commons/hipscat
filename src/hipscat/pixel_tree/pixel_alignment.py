@@ -227,4 +227,9 @@ def align_outer_trees(
 
 
 def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
+    """Adds pixels of the greatest possible order to fill output from `add-from` to `add_to`
+
+    Adds these pixels to the mapping as the aligned pixel, with matching pix added as either the left or right
+    side of the mapping and none pixel for the other.
+    """
     pass
