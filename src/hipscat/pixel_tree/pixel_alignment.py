@@ -10,6 +10,10 @@ from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
+LEFT_INCLUDE_ALIGNMENT_TYPES = [PixelAlignmentType.LEFT, PixelAlignmentType.OUTER]
+RIGHT_INCLUDE_ALIGNMENT_TYPES = [PixelAlignmentType.RIGHT, PixelAlignmentType.OUTER]
+
+
 NONE_PIX = np.array([-1, -1])
 LEFT_SIDE = 0
 RIGHT_SIDE = 1
@@ -92,7 +96,11 @@ def align_trees(
         result_tree = np.array(result_tree) if len(result_tree) > 0 else np.empty((0, 2), dtype=np.int64)
         mapping = np.array(mapping).T
     else:
-        raise NotImplementedError()
+        include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
+        include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
+        result_tree, mapping = align_outer_trees(left_aligned, right_aligned, include_all_left, include_all_right)
+        result_tree = np.array(result_tree) if len(result_tree) > 0 else np.empty((0, 2), dtype=np.int64)
+        mapping = np.array(mapping).T
     result_mapping = get_pixel_mapping_df(mapping, max_n)
     return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
 
@@ -223,6 +231,38 @@ def align_outer_trees(
         mapping.append(np.concatenate((left_pix, right_pix, right_pix)))
         added_until = right_pix[1]
         right_index += 1
+    if include_all_right and right_index < len(right):
+        right_pix = right[right_index]
+        if added_until <= right_pix[0]:
+            output.append(right_pix)
+            mapping.append(np.concatenate((NONE_PIX, right_pix, right_pix)))
+            added_until = right_pix[1]
+        elif added_until < right_pix[1]:
+            add_pixels_until(added_until, right_pix[1], right_pix, RIGHT_SIDE, output, mapping)
+            added_until = right_pix[1]
+        right_index += 1
+        while right_index < len(right):
+            right_pix = right[right_index]
+            output.append(right_pix)
+            mapping.append(np.concatenate((NONE_PIX, right_pix, right_pix)))
+            added_until = right_pix[1]
+            right_index += 1
+    if include_all_left and left_index < len(left):
+        left_pix = left[left_index]
+        if added_until <= left_pix[0]:
+            output.append(left_pix)
+            mapping.append(np.concatenate((left_pix, NONE_PIX, left_pix)))
+            added_until = left_pix[1]
+        elif added_until < left_pix[1]:
+            add_pixels_until(added_until, left_pix[1], left_pix, LEFT_SIDE, output, mapping)
+            added_until = left_pix[1]
+        left_index += 1
+        while left_index < len(left):
+            left_pix = left[left_index]
+            output.append(left_pix)
+            mapping.append(np.concatenate((left_pix, NONE_PIX, left_pix)))
+            added_until = left_pix[1]
+            left_index += 1
     return output, mapping
 
 
@@ -232,4 +272,21 @@ def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
     Adds these pixels to the mapping as the aligned pixel, with matching pix added as either the left or right
     side of the mapping and none pixel for the other.
     """
-    pass
+    while add_from < add_to:
+        # maximum power of 4 that is a factor of add_from
+        max_p4_from = add_from & -add_from
+        if int(max_p4_from).bit_length() & 1 == 0:
+            max_p4_from = max_p4_from >> 1
+
+        # maximum power of 4 less than or equal to (add_to - add_from)
+        max_p4_to_log2 = int(add_to - add_from).bit_length() - 1
+        max_p4_to = 1 << (max_p4_to_log2 - (max_p4_to_log2 & 1))
+
+        pixel_size = np.min([max_p4_to, max_p4_from])
+        pixel = np.array([add_from, add_from + pixel_size])
+        output.append(pixel)
+        if pix_side == LEFT_SIDE:
+            mapping.append(np.concatenate((matching_pix, NONE_PIX, pixel)))
+        else:
+            mapping.append(np.concatenate((NONE_PIX, matching_pix, pixel)))
+        add_from = add_from + pixel_size
