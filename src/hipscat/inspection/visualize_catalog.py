@@ -103,14 +103,18 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
     _plot_healpix_map(order_map, projection, plot_title, cmap=cmap, **kwargs)
 
 
-def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
-    """Perform the plotting of a healpix pixel map.
+def get_projection_method(projection):
+    """Get the healpy plotting method for a specified projection string
 
     Args:
-        healpix_map: array containing the map
-        projection: projection type to display
-        title: title used in image plot
-        cmap: matplotlib colormap to use
+        projection (str):  The map projection to use. Valid values include:
+            - moll - Molleweide projection (default)
+            - gnom - Gnomonic projection
+            - cart - Cartesian projection
+            - orth - Orthographic projection
+
+    Returns:
+        The healpy method that plots a HEALPix map with the specified projection
     """
     if projection == "moll":
         projection_method = hp.mollview
@@ -122,6 +126,19 @@ def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
         projection_method = hp.orthview
     else:
         raise NotImplementedError(f"unknown projection: {projection}")
+    return projection_method
+
+
+def _plot_healpix_map(healpix_map, projection, title, cmap="viridis", **kwargs):
+    """Perform the plotting of a healpix pixel map.
+
+    Args:
+        healpix_map: array containing the map
+        projection: projection type to display
+        title: title used in image plot
+        cmap: matplotlib colormap to use
+    """
+    projection_method = get_projection_method(projection)
 
     projection_method(healpix_map, title=title, nest=True, cmap=cmap, **kwargs)
     plt.plot()
