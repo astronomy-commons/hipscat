@@ -65,6 +65,8 @@ class PixelTree:
         d_order = self.tree_order - order
         pixel_at_tree_order = pixel << 2 * d_order
         index = np.searchsorted(self._tree_t[1], pixel_at_tree_order, side='right')
+        if index >= len(self.pixels):
+            return False
         is_same_order = self.pixels[index][0] == order
         return pixel_at_tree_order == self.tree[index][0] and is_same_order
 
@@ -82,48 +84,26 @@ class PixelTree:
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         return np.vectorize(HealpixPixel)(self.pixels.T[0], self.pixels.T[1])
 
-    # pylint: disable=too-many-locals
-    def get_negative_pixels(self) -> List[HealpixPixel]:
-        """Get the leaf nodes at each healpix order that have zero catalog data.
+    @classmethod
+    def from_healpix(cls, healpix_pixels: List[HealpixInputTypes]) -> PixelTree:
+        """Build a tree from a list of constituent healpix pixels
 
-        For example, if an example catalog only had data points in pixel 0 at
-        order 0, then this method would return order 0's pixels 1 through 11.
-        Used for getting full coverage on margin caches.
+        Args:
+            healpix_pixels: list of healpix pixels
 
         Returns:
-            List of HealpixPixels representing the 'negative tree' for the catalog.
+            The pixel tree with the leaf pixels specified in the list
         """
-        max_depth = self.get_max_depth()
-        missing_pixels = []
+        if len(healpix_pixels) == 0:
+            return PixelTree(np.empty((0, 2), dtype=np.int64), 0)
 
-        covered_orders = []
-        for order_i in range(0, max_depth + 1):
-            npix = hp.nside2npix(2**order_i)
-            covered_orders.append(np.zeros(npix))
-
-        for order in range(0, max_depth + 1):
-            next_order_children = []
-            leaf_pixels = []
-
-            for node in pixels_at_order:
-                pixel = node.pixel.pixel
-                covered_orders[order][pixel] = 1
-                if node.node_type == PixelNodeType.LEAF:
-                    leaf_pixels.append(pixel)
-                else:
-                    next_order_children.extend(node.children)
-
-            zero_leafs = np.argwhere(covered_orders[order] == 0).flatten()
-            for pix in zero_leafs:
-                missing_pixels.append(HealpixPixel(order, pix))
-                leaf_pixels.append(pix)
-
-            pixels_at_order = next_order_children
-
-            for order_j in range(order + 1, max_depth + 1):
-                explosion_factor = 4 ** (order_j - order)
-                for pixel in leaf_pixels:
-                    covered_pix = range(pixel * explosion_factor, (pixel + 1) * explosion_factor)
-                    covered_orders[order_j][covered_pix] = 1
-
-        return missing_pixels
+        pixel_tuples = [get_healpix_tuple(p) for p in healpix_pixels]
+        pixel_array = np.array(pixel_tuples).T
+        orders = pixel_array[0]
+        pixels = pixel_array[1]
+        max_order = np.max(orders)
+        starts = pixels * 4**(max_order - orders)
+        ends = (pixels + 1) * 4**(max_order - orders)
+        result = np.vstack((starts, ends)).T
+        result.sort(axis=0)
+        return cls(result, max_order)

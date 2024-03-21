@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-import numpy as np
-
-from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_tuple
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
+from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
@@ -20,37 +17,6 @@ class PixelTreeBuilder:
 
     """
 
-    def __init__(self):
-        self.pixels = {-1: {-1: PixelNodeType.ROOT}}
-
-    def build(self) -> PixelTree:
-        """Build a `PixelTree` object from the nodes created
-
-        Returns:
-            The pixel tree with the nodes created in the builder
-        """
-        return PixelTree(self.pixels)
-
     @staticmethod
     def from_healpix(healpix_pixels: List[HealpixInputTypes]) -> PixelTree:
-        """Build a tree from a list of constituent healpix pixels
-
-        Args:
-            healpix_pixels: list of healpix pixels
-
-        Returns:
-            The pixel tree with the leaf pixels specified in the list
-        """
-        if len(healpix_pixels) == 0:
-            return PixelTree(np.empty((0, 2), dtype=np.int64), 0)
-
-        pixel_tuples = [get_healpix_tuple(p) for p in healpix_pixels]
-        pixel_array = np.array(pixel_tuples).T
-        orders = pixel_array[0]
-        pixels = pixel_array[1]
-        max_order = np.max(orders)
-        starts = pixels * 4**(max_order - orders)
-        ends = (pixels + 1) * 4**(max_order - orders)
-        result = np.vstack((starts, ends)).T
-        result.sort(axis=0)
-        return PixelTree(result, max_order)
+        return PixelTree.from_healpix(healpix_pixels)

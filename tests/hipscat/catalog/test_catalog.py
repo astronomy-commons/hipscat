@@ -486,8 +486,8 @@ def test_generate_negative_tree_pixels_multi_order(small_sky_order1_catalog):
     missing pixels on multiple order.
     """
     # remove one of the order 1 pixels from the catalog.
-    nodes = small_sky_order1_catalog.pixel_tree.root_pixel.children[0].children
-    small_sky_order1_catalog.pixel_tree = PixelTreeBuilder.from_healpix([n.pixel for n in nodes[1:]])
+    nodes = small_sky_order1_catalog.pixel_tree.get_healpix_pixels()
+    small_sky_order1_catalog.pixel_tree = PixelTreeBuilder.from_healpix([n for n in nodes[1:]])
 
     expected_pixels = [
         HealpixPixel(0, 0),
