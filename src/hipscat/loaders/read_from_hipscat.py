@@ -41,7 +41,7 @@ def read_from_hipscat(
         else catalog_type
     )
     loader = _get_loader_from_catalog_type(catalog_type_to_use)
-    return loader.read_from_hipscat(catalog_path)
+    return loader.read_from_hipscat(catalog_path, storage_options=storage_options)
 
 
 def _read_dataset_class_from_metadata(
