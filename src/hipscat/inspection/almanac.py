@@ -10,6 +10,7 @@ from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.inspection.almanac_info import AlmanacInfo
 from hipscat.io.file_io import file_pointer
+from hipscat.loaders import read_from_hipscat
 
 
 class Almanac:
@@ -254,7 +255,7 @@ class Almanac:
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(
+        return read_from_hipscat(
             self.get_almanac_info(catalog_name=catalog_name).catalog_path,
             storage_options=self.storage_options,
         )

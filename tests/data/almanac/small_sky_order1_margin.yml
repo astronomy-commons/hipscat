@@ -1,0 +1,12 @@
+catalog_path: /home/delucchi/git/hipscat/tests/data/small_sky_order1_margin
+catalog_name: small_sky_order1_margin
+catalog_type: margin
+creators: []
+description: ''
+catalog_info:
+  catalog_name: small_sky_order1_margin
+  catalog_type: margin
+  total_rows: 28
+  primary_catalog: small_sky_order1
+  margin_threshold: 7200
+primary: small_sky_order1
