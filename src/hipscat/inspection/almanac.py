@@ -21,11 +21,11 @@ class Almanac:
             include directory indicated in HIPSCAT_ALMANAC_DIR
             environment variable. see AlmanacInfo.get_default_dir
         dirs:
-            additional directories to look for almanac files in. we support a
+            additional directories or files to look for almanac files in. we support a
             few types of input, with different behaviors:
 
-            - ``str`` - a single directory
-            - ``list[str]`` - multiple directories
+            - ``str`` - a single directory (or file)
+            - ``list[str]`` - multiple directories (or files)
             - ``dict[str:str]`` / ``dict[str:list[str]]`` - namespace
               dictionary. for each key in the dictionary, we put all almanac
               entries under a namespace. this is useful if you have name
