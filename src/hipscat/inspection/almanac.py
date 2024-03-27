@@ -10,6 +10,7 @@ from hipscat.catalog.catalog import CatalogType
 from hipscat.catalog.dataset.dataset import Dataset
 from hipscat.inspection.almanac_info import AlmanacInfo
 from hipscat.io.file_io import file_pointer
+from hipscat.loaders import read_from_hipscat
 
 
 class Almanac:
@@ -20,11 +21,11 @@ class Almanac:
             include directory indicated in HIPSCAT_ALMANAC_DIR
             environment variable. see AlmanacInfo.get_default_dir
         dirs:
-            additional directories to look for almanac files in. we support a
+            additional directories or files to look for almanac files in. we support a
             few types of input, with different behaviors:
 
-            - ``str`` - a single directory
-            - ``list[str]`` - multiple directories
+            - ``str`` - a single directory (or file)
+            - ``list[str]`` - multiple directories (or files)
             - ``dict[str:str]`` / ``dict[str:list[str]]`` - namespace
               dictionary. for each key in the dictionary, we put all almanac
               entries under a namespace. this is useful if you have name
@@ -254,7 +255,7 @@ class Almanac:
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return Dataset.read_from_hipscat(
+        return read_from_hipscat(
             self.get_almanac_info(catalog_name=catalog_name).catalog_path,
             storage_options=self.storage_options,
         )
