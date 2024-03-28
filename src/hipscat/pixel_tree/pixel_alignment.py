@@ -164,6 +164,34 @@ def align_inner_trees(
     return output, mapping
 
 
+@njit(numba.types.void(numba.int64, numba.int64, numba.int64[:], numba.int64, numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))
+def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
+    """Adds pixels of the greatest possible order to fill output from `add-from` to `add_to`
+
+    Adds these pixels to the mapping as the aligned pixel, with matching pix added as either the left or right
+    side of the mapping and none pixel for the other.
+    """
+    while add_from < add_to:
+        # maximum power of 4 that is a factor of add_from
+        max_p4_from = add_from & -add_from
+        if max_p4_from & 0xAAAAAAAAAAAAAAA:
+            max_p4_from = max_p4_from >> 1
+
+        # maximum power of 4 less than or equal to (add_to - add_from)
+        max_p4_to_log2 = np.int64(np.log2(add_to - add_from))
+        max_p4_to = 1 << (max_p4_to_log2 - (max_p4_to_log2 & 1))
+
+        pixel_size = min(max_p4_to, max_p4_from)
+        pixel = np.array([add_from, add_from + pixel_size])
+        output.append(pixel)
+        if pix_side == LEFT_SIDE:
+            mapping.append(np.concatenate((matching_pix, NONE_PIX, pixel)))
+        else:
+            mapping.append(np.concatenate((NONE_PIX, matching_pix, pixel)))
+        add_from = add_from + pixel_size
+
+
+@njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean))
 def align_outer_trees(
     left: np.ndarray,
     right: np.ndarray,
@@ -215,7 +243,7 @@ def align_outer_trees(
         if left_size < right_size:
             # overlapping and left smaller so add left and move left on
             if include_all_right and left_pix[0] > right_pix[0] and left_pix[0] > added_until:
-                add_from = np.max([added_until, right_pix[0]])
+                add_from = max(added_until, right_pix[0])
                 add_pixels_until(add_from, left_pix[0], right_pix, RIGHT_SIDE, output, mapping)
             output.append(left_pix)
             mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
@@ -225,7 +253,7 @@ def align_outer_trees(
         # else overlapping and right smaller so add right and move right on
 
         if include_all_left and right_pix[0] > left_pix[0] and right_pix[0] > added_until:
-            add_from = np.max([added_until, left_pix[0]])
+            add_from = max(added_until, left_pix[0])
             add_pixels_until(add_from, right_pix[0], left_pix, LEFT_SIDE, output, mapping)
         output.append(right_pix)
         mapping.append(np.concatenate((left_pix, right_pix, right_pix)))
@@ -264,29 +292,3 @@ def align_outer_trees(
             added_until = left_pix[1]
             left_index += 1
     return output, mapping
-
-
-def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
-    """Adds pixels of the greatest possible order to fill output from `add-from` to `add_to`
-
-    Adds these pixels to the mapping as the aligned pixel, with matching pix added as either the left or right
-    side of the mapping and none pixel for the other.
-    """
-    while add_from < add_to:
-        # maximum power of 4 that is a factor of add_from
-        max_p4_from = add_from & -add_from
-        if int(max_p4_from).bit_length() & 1 == 0:
-            max_p4_from = max_p4_from >> 1
-
-        # maximum power of 4 less than or equal to (add_to - add_from)
-        max_p4_to_log2 = int(add_to - add_from).bit_length() - 1
-        max_p4_to = 1 << (max_p4_to_log2 - (max_p4_to_log2 & 1))
-
-        pixel_size = np.min([max_p4_to, max_p4_from])
-        pixel = np.array([add_from, add_from + pixel_size])
-        output.append(pixel)
-        if pix_side == LEFT_SIDE:
-            mapping.append(np.concatenate((matching_pix, NONE_PIX, pixel)))
-        else:
-            mapping.append(np.concatenate((NONE_PIX, matching_pix, pixel)))
-        add_from = add_from + pixel_size

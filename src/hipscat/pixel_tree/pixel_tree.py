@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-import healpy as hp
 import numpy as np
 
 from hipscat.pixel_math import HealpixInputTypes, HealpixPixel
 from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_tuple
 from hipscat.pixel_math.healpix_pixel_function import get_pixels_from_intervals
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 class PixelTree:
