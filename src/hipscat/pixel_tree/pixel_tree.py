@@ -61,7 +61,7 @@ class PixelTree:
             return False
         d_order = self.tree_order - order
         pixel_at_tree_order = pixel << 2 * d_order
-        index = np.searchsorted(self.tree.T[1], pixel_at_tree_order, side='right')
+        index = np.searchsorted(self.tree.T[1], pixel_at_tree_order, side="right")
         if index >= len(self.pixels):
             return False
         is_same_order = self.pixels[index][0] == order
@@ -99,8 +99,8 @@ class PixelTree:
         orders = pixel_array[0]
         pixels = pixel_array[1]
         max_order = np.max(orders)
-        starts = pixels * 4**(max_order - orders)
-        ends = (pixels + 1) * 4**(max_order - orders)
+        starts = pixels * 4 ** (max_order - orders)
+        ends = (pixels + 1) * 4 ** (max_order - orders)
         result = np.vstack((starts, ends)).T
         result.sort(axis=0)
         return cls(result, max_order)

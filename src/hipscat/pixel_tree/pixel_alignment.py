@@ -61,9 +61,7 @@ class PixelAlignment:
 
 
 def align_trees(
-    left: PixelTree,
-    right: PixelTree,
-    alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
+    left: PixelTree, right: PixelTree, alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
 ) -> PixelAlignment:
     """Generate a `PixelAlignment` object from two pixel trees
 
@@ -93,7 +91,9 @@ def align_trees(
     right_aligned = right.tree << (2 * (max_n - right.tree_order))
     include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
     include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
-    result_tree, mapping = perform_align_trees(left_aligned, right_aligned, include_all_left, include_all_right)
+    result_tree, mapping = perform_align_trees(
+        left_aligned, right_aligned, include_all_left, include_all_right
+    )
     result_tree = np.array(result_tree) if len(result_tree) > 0 else np.empty((0, 2), dtype=np.int64)
     mapping = np.array(mapping).T
     result_mapping = get_pixel_mapping_df(mapping, max_n)
@@ -107,18 +107,29 @@ def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
         a_orders, a_pixels = get_pixels_from_intervals(mapping[4:6].T, map_order).T
     else:
         l_orders, l_pixels, r_orders, r_pixels, a_orders, a_pixels = [], [], [], [], [], []
-    result_mapping = pd.DataFrame.from_dict({
-        PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: l_orders,
-        PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: l_pixels,
-        PixelAlignment.JOIN_ORDER_COLUMN_NAME: r_orders,
-        PixelAlignment.JOIN_PIXEL_COLUMN_NAME: r_pixels,
-        PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: a_orders,
-        PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
-    })
+    result_mapping = pd.DataFrame.from_dict(
+        {
+            PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: l_orders,
+            PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: l_pixels,
+            PixelAlignment.JOIN_ORDER_COLUMN_NAME: r_orders,
+            PixelAlignment.JOIN_PIXEL_COLUMN_NAME: r_pixels,
+            PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: a_orders,
+            PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
+        }
+    )
     return result_mapping
 
 
-@njit(numba.types.void(numba.int64, numba.int64, numba.int64[:], numba.int64, numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))
+@njit(
+    numba.types.void(
+        numba.int64,
+        numba.int64,
+        numba.int64[:],
+        numba.int64,
+        numba.types.List(numba.int64[:]),
+        numba.types.List(numba.int64[::1]),
+    )
+)
 def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
     """Adds pixels of the greatest possible order to fill output from `add-from` to `add_to`
 
@@ -145,7 +156,16 @@ def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
         add_from = add_from + pixel_size
 
 
-@njit(numba.types.void(numba.int64, numba.int64[:, :], numba.int64, numba.int64, numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))
+@njit(
+    numba.types.void(
+        numba.int64,
+        numba.int64[:, :],
+        numba.int64,
+        numba.int64,
+        numba.types.List(numba.int64[:]),
+        numba.types.List(numba.int64[::1]),
+    )
+)
 def add_remaining_pixels(added_until, pixel_list, index, pix_side, output, mapping):
     pix = pixel_list[index]
     if added_until <= pix[0]:
@@ -167,7 +187,11 @@ def add_remaining_pixels(added_until, pixel_list, index, pix_side, output, mappi
         index += 1
 
 
-@njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean))
+@njit(
+    numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(
+        numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean
+    )
+)
 def perform_align_trees(
     left: np.ndarray,
     right: np.ndarray,

@@ -131,5 +131,5 @@ def get_higher_order_pixels(order: int, pixel: int, delta_order: int) -> np.ndar
         raise ValueError(f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}")
     if delta_order < 0:
         raise ValueError("delta order cannot be below zero")
-    new_pixels = np.arange(pixel << (2 * delta_order), (pixel + 1) << (2*delta_order))
+    new_pixels = np.arange(pixel << (2 * delta_order), (pixel + 1) << (2 * delta_order))
     return new_pixels
