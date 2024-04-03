@@ -1,7 +1,7 @@
 from typing import List
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree import align_trees, PixelAlignmentType
+from hipscat.pixel_tree import PixelAlignmentType, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
