@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 
@@ -79,6 +79,11 @@ class PixelTree:
         return self.tree_order
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
+        """Gets a list of HealpixPixels in the tree
+
+        Returns (List[HealpixPixel]):
+            A list of the HEALPix pixels in the tree
+        """
         return np.vectorize(HealpixPixel)(self.pixels.T[0], self.pixels.T[1])
 
     @classmethod

@@ -5,7 +5,6 @@ import pytest
 
 from hipscat.catalog import CatalogType, MarginCatalog, PartitionInfo
 from hipscat.loaders import read_from_hipscat
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 
 def test_init_catalog(margin_catalog_info, margin_catalog_pixels):

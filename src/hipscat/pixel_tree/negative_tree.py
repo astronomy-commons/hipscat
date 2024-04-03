@@ -1,8 +1,20 @@
+from typing import List
+
+from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import align_trees, PixelAlignmentType
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
-def compute_negative_tree_pixels(tree: PixelTree):
+def compute_negative_tree_pixels(tree: PixelTree) -> List[HealpixPixel]:
+    """Computes a 'negative pixel tree' consisting of the pixels needed to cover the full sky not in the tree
+
+    Args:
+        tree (PixelTree): the input tree to compute the negative of
+
+    Returns (List[HealpixPixel]):
+        A list of HEALPix pixels needed to cover the part of the sky not covered by the tree, using the least
+        number of pixels possible.
+    """
     tree_pixels = set(tree.get_healpix_pixels())
     full_tree = PixelTree.from_healpix([(0, i) for i in range(12)])
     alignment = align_trees(full_tree, tree, alignment_type=PixelAlignmentType.OUTER)

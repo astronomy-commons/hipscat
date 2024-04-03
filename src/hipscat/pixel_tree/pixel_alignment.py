@@ -25,7 +25,7 @@ class PixelAlignment:
     or overlap between the catalogs, and a new tree with the smallest pixels from each tree
 
     For more information on the pixel alignment algorithm, view this document:
-    https://docs.google.com/document/d/1YFAQsGCgeEyEZ1IRIam9BbWdN5h2onV6ndO3VM-qjn0/edit?usp=sharing
+    https://docs.google.com/document/d/1gqb8qb3HiEhLGNav55LKKFlNjuusBIsDW7FdTkc5mJU/edit?usp=sharing
 
     Attributes:
         pixel_mapping: A dataframe where each row contains a pixel from each tree that match, and
@@ -70,7 +70,7 @@ def align_trees(
     each tree
 
     For more information on the pixel alignment algorithm, view this document:
-    https://docs.google.com/document/d/1YFAQsGCgeEyEZ1IRIam9BbWdN5h2onV6ndO3VM-qjn0/edit?usp=sharing
+    https://docs.google.com/document/d/1gqb8qb3HiEhLGNav55LKKFlNjuusBIsDW7FdTkc5mJU/edit?usp=sharing
 
     Args:
         left: The left tree to align
@@ -101,6 +101,16 @@ def align_trees(
 
 
 def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
+    """Construct a DataFrame with HEALPix orders and pixels mapping left right and aligned pixels
+
+    Args:
+        mapping (np.ndarray): array of shape (6, len(aligned_pixels)) where the first two rows are the
+            intervals for the left pixels, the next two for right pixels, and the last two for aligned pixels
+        map_order (int): The HEALPix order of the intervals in the mapping array
+
+    Returns:
+        A DataFrame with the orders and pixels of the aligned left and right pixels,
+    """
     if len(mapping) > 0:
         l_orders, l_pixels = get_pixels_from_intervals(mapping[0:2].T, map_order).T
         r_orders, r_pixels = get_pixels_from_intervals(mapping[2:4].T, map_order).T
@@ -117,6 +127,7 @@ def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
             PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
         }
     )
+    result_mapping.replace(-1, None, inplace=True)
     return result_mapping
 
 
@@ -167,6 +178,9 @@ def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
     )
 )
 def add_remaining_pixels(added_until, pixel_list, index, pix_side, output, mapping):
+    """Adds pixels to output and mapping from a given index in a list of pixel intervals"""
+
+    # first pixel may be partially covered
     pix = pixel_list[index]
     if added_until <= pix[0]:
         output.append(pix)
@@ -187,6 +201,7 @@ def add_remaining_pixels(added_until, pixel_list, index, pix_side, output, mappi
         index += 1
 
 
+# pylint: disable=too-many-statements
 @njit(
     numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(
         numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean
@@ -198,6 +213,7 @@ def perform_align_trees(
     include_all_left: bool,
     include_all_right: bool,
 ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+    """Performs an alignment on lists of pixel intervals"""
     added_until = 0
     output = []
     mapping = []
