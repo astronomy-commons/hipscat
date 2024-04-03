@@ -91,25 +91,20 @@ def align_trees(
     max_n = max(left.tree_order, right.tree_order)
     left_aligned = left.tree << (2 * (max_n - left.tree_order))
     right_aligned = right.tree << (2 * (max_n - right.tree_order))
-    if alignment_type == PixelAlignmentType.INNER:
-        result_tree, mapping = align_inner_trees(left_aligned, right_aligned)
-        result_tree = np.array(result_tree) if len(result_tree) > 0 else np.empty((0, 2), dtype=np.int64)
-        mapping = np.array(mapping).T
-    else:
-        include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
-        include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
-        result_tree, mapping = align_outer_trees(left_aligned, right_aligned, include_all_left, include_all_right)
-        result_tree = np.array(result_tree) if len(result_tree) > 0 else np.empty((0, 2), dtype=np.int64)
-        mapping = np.array(mapping).T
+    include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
+    include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
+    result_tree, mapping = perform_align_trees(left_aligned, right_aligned, include_all_left, include_all_right)
+    result_tree = np.array(result_tree) if len(result_tree) > 0 else np.empty((0, 2), dtype=np.int64)
+    mapping = np.array(mapping).T
     result_mapping = get_pixel_mapping_df(mapping, max_n)
     return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
 
 
 def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
     if len(mapping) > 0:
-        l_orders, l_pixels = get_pixels_from_intervals(mapping[0:2], map_order)
-        r_orders, r_pixels = get_pixels_from_intervals(mapping[2:4], map_order)
-        a_orders, a_pixels = get_pixels_from_intervals(mapping[4:6], map_order)
+        l_orders, l_pixels = get_pixels_from_intervals(mapping[0:2].T, map_order).T
+        r_orders, r_pixels = get_pixels_from_intervals(mapping[2:4].T, map_order).T
+        a_orders, a_pixels = get_pixels_from_intervals(mapping[4:6].T, map_order).T
     else:
         l_orders, l_pixels, r_orders, r_pixels, a_orders, a_pixels = [], [], [], [], [], []
     result_mapping = pd.DataFrame.from_dict({
@@ -121,47 +116,6 @@ def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
         PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
     })
     return result_mapping
-
-
-@njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :]))
-def align_inner_trees(
-    left: np.ndarray,
-    right: np.ndarray,
-) -> Tuple[List[np.ndarray], List[np.ndarray]]:
-    output = []
-    mapping = []
-    left_index = 0
-    right_index = 0
-    while left_index < len(left) and right_index < len(right):
-        left_pix = left[left_index]
-        right_pix = right[right_index]
-        if left_pix[0] >= right_pix[1]:
-            # left pix ahead of right, no overlap
-            right_index += 1
-            continue
-        if right_pix[0] >= left_pix[1]:
-            # right pix ahead of left, no overlap
-            left_index += 1
-            continue
-        left_size = left_pix[1] - left_pix[0]
-        right_size = right_pix[1] - right_pix[0]
-        if left_size == right_size:
-            # overlapping + same size => same pixel so add and move both on
-            output.append(left_pix)
-            mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
-            left_index += 1
-            right_index += 1
-            continue
-        if left_size < right_size:
-            # overlapping and left smaller so add left and move left on
-            output.append(left_pix)
-            mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
-            left_index += 1
-            continue
-        output.append(right_pix)
-        mapping.append(np.concatenate((left_pix, right_pix, right_pix)))
-        right_index += 1
-    return output, mapping
 
 
 @njit(numba.types.void(numba.int64, numba.int64, numba.int64[:], numba.int64, numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))
@@ -191,8 +145,30 @@ def add_pixels_until(add_from, add_to, matching_pix, pix_side, output, mapping):
         add_from = add_from + pixel_size
 
 
+@njit(numba.types.void(numba.int64, numba.int64[:, :], numba.int64, numba.int64, numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))
+def add_remaining_pixels(added_until, pixel_list, index, pix_side, output, mapping):
+    pix = pixel_list[index]
+    if added_until <= pix[0]:
+        output.append(pix)
+        if pix_side == LEFT_SIDE:
+            mapping.append(np.concatenate((pix, NONE_PIX, pix)))
+        else:
+            mapping.append(np.concatenate((NONE_PIX, pix, pix)))
+    elif added_until < pix[1]:
+        add_pixels_until(added_until, pix[1], pix, pix_side, output, mapping)
+    index += 1
+    while index < len(pixel_list):
+        pix = pixel_list[index]
+        output.append(pix)
+        if pix_side == LEFT_SIDE:
+            mapping.append(np.concatenate((pix, NONE_PIX, pix)))
+        else:
+            mapping.append(np.concatenate((NONE_PIX, pix, pix)))
+        index += 1
+
+
 @njit(numba.types.Tuple((numba.types.List(numba.int64[:]), numba.types.List(numba.int64[::1])))(numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean))
-def align_outer_trees(
+def perform_align_trees(
     left: np.ndarray,
     right: np.ndarray,
     include_all_left: bool,
@@ -207,25 +183,29 @@ def align_outer_trees(
         left_pix = left[left_index]
         right_pix = right[right_index]
         if left_pix[0] >= right_pix[1]:
-            # left pix ahead of right, no overlap
+            # left pix ahead of right, no overlap, so move right on
             if include_all_right:
                 if added_until <= right_pix[0]:
+                    # should cover right pix and no coverage of right pix => add whole right pix
                     output.append(right_pix)
                     mapping.append(np.concatenate((NONE_PIX, right_pix, right_pix)))
                     added_until = right_pix[1]
                 elif added_until < right_pix[1]:
+                    # should cover right pix and partial coverage of right pix => cover rest of right pix
                     add_pixels_until(added_until, right_pix[1], right_pix, RIGHT_SIDE, output, mapping)
                     added_until = right_pix[1]
             right_index += 1
             continue
         if right_pix[0] >= left_pix[1]:
-            # right pix ahead of left, no overlap
+            # right pix ahead of left, no overlap, so move left on
             if include_all_left:
                 if added_until <= left_pix[0]:
+                    # should cover left pix and no coverage of left pix => add whole left pix
                     output.append(left_pix)
-                    mapping.append(np.concatenate((left_pix, NONE_PIX, right_pix)))
+                    mapping.append(np.concatenate((left_pix, NONE_PIX, left_pix)))
                     added_until = left_pix[1]
                 elif added_until < left_pix[1]:
+                    # should cover left pix and partial coverage of left pix => cover rest of left pix
                     add_pixels_until(added_until, left_pix[1], left_pix, LEFT_SIDE, output, mapping)
                     added_until = left_pix[1]
             left_index += 1
@@ -243,6 +223,8 @@ def align_outer_trees(
         if left_size < right_size:
             # overlapping and left smaller so add left and move left on
             if include_all_right and left_pix[0] > right_pix[0] and left_pix[0] > added_until:
+                # need to cover all of right pix and start of left pix has a gap to current coverage
+                # so fill in gap
                 add_from = max(added_until, right_pix[0])
                 add_pixels_until(add_from, left_pix[0], right_pix, RIGHT_SIDE, output, mapping)
             output.append(left_pix)
@@ -253,42 +235,19 @@ def align_outer_trees(
         # else overlapping and right smaller so add right and move right on
 
         if include_all_left and right_pix[0] > left_pix[0] and right_pix[0] > added_until:
+            # need to cover all of left pix and start of right pix has a gap to current coverage
+            # so fill in gap
             add_from = max(added_until, left_pix[0])
             add_pixels_until(add_from, right_pix[0], left_pix, LEFT_SIDE, output, mapping)
         output.append(right_pix)
         mapping.append(np.concatenate((left_pix, right_pix, right_pix)))
         added_until = right_pix[1]
         right_index += 1
+
+    # After loop, if either tree needs to be fully covered and loop hasn't checked all pixels from that tree
+    # then cover the remaining pixels
     if include_all_right and right_index < len(right):
-        right_pix = right[right_index]
-        if added_until <= right_pix[0]:
-            output.append(right_pix)
-            mapping.append(np.concatenate((NONE_PIX, right_pix, right_pix)))
-            added_until = right_pix[1]
-        elif added_until < right_pix[1]:
-            add_pixels_until(added_until, right_pix[1], right_pix, RIGHT_SIDE, output, mapping)
-            added_until = right_pix[1]
-        right_index += 1
-        while right_index < len(right):
-            right_pix = right[right_index]
-            output.append(right_pix)
-            mapping.append(np.concatenate((NONE_PIX, right_pix, right_pix)))
-            added_until = right_pix[1]
-            right_index += 1
+        add_remaining_pixels(added_until, right, right_index, RIGHT_SIDE, output, mapping)
     if include_all_left and left_index < len(left):
-        left_pix = left[left_index]
-        if added_until <= left_pix[0]:
-            output.append(left_pix)
-            mapping.append(np.concatenate((left_pix, NONE_PIX, left_pix)))
-            added_until = left_pix[1]
-        elif added_until < left_pix[1]:
-            add_pixels_until(added_until, left_pix[1], left_pix, LEFT_SIDE, output, mapping)
-            added_until = left_pix[1]
-        left_index += 1
-        while left_index < len(left):
-            left_pix = left[left_index]
-            output.append(left_pix)
-            mapping.append(np.concatenate((left_pix, NONE_PIX, left_pix)))
-            added_until = left_pix[1]
-            left_index += 1
+        add_remaining_pixels(added_until, left, left_index, LEFT_SIDE, output, mapping)
     return output, mapping

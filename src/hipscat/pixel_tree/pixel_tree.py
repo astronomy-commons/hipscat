@@ -23,21 +23,20 @@ class PixelTree:
             order then pixel number
     """
 
-    def __init__(self, pixels: np.ndarray, order: int) -> None:
+    def __init__(self, tree: np.ndarray, order: int) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:
-            pixels: Dictionary containing all PixelNodes in the tree
+            tree (np.ndarray): sorted array of intervals that represent each pixel in the tree
+            order (int): HEALPix order of the pixel numbers in the intervals
         """
         self.tree_order = order
-        self.tree = pixels
-        # store transpose and orders for efficient searches
-        self._tree_t = pixels.T
+        self.tree = tree
 
-        if not np.all((self._tree_t[0, 1:] - self._tree_t[1, :-1]) >= 0):
+        if not np.all((self.tree.T[0, 1:] - self.tree.T[1, :-1]) >= 0):
             raise ValueError("Invalid Catalog: Tree contains overlapping pixels")
 
-        self.pixels = get_pixels_from_intervals(self._tree_t, self.tree_order).T
+        self.pixels = get_pixels_from_intervals(self.tree, self.tree_order)
 
     def __len__(self):
         """Gets the number of nodes in the tree
@@ -62,7 +61,7 @@ class PixelTree:
             return False
         d_order = self.tree_order - order
         pixel_at_tree_order = pixel << 2 * d_order
-        index = np.searchsorted(self._tree_t[1], pixel_at_tree_order, side='right')
+        index = np.searchsorted(self.tree.T[1], pixel_at_tree_order, side='right')
         if index >= len(self.pixels):
             return False
         is_same_order = self.pixels[index][0] == order
