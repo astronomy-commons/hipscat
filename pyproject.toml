@@ -33,7 +33,7 @@ dependencies = [
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
 dev = [
-    "adlfs", # abfs filesytem support
+    "adlfs", # ablfs filesytem support
     "asv==0.6.3", # Used to compute performance benchmarks
     "black", # auto-formatter
     "jupyter", # clear notebook result cells
