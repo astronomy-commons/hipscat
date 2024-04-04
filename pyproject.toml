@@ -1,6 +1,7 @@
 [project]
 name = "hipscat"
 license = {file = "LICENSE"}
+description = "Hierarchical Progressive Survey Catalog"
 readme = "README.md"
 authors = [
     { name = "LINCC Frameworks", email = "lincc-frameworks-team@lists.lsst.org" }
