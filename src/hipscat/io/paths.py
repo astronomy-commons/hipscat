@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import re
+from typing import List, Dict
 
-from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
+from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer, get_fs
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 
 ORDER_DIRECTORY_PREFIX = "Norder"
@@ -83,6 +84,16 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
         return INVALID_PIXEL
     order, pixel = match.groups()
     return HealpixPixel(int(order), int(pixel))
+
+
+def pixel_catalog_files(catalog_base_dir: FilePointer, pixels: List[HealpixPixel], storage_options: Dict):
+    fs, _ = get_fs(catalog_base_dir, storage_options)
+    base_path_stripped = catalog_base_dir.removesuffix(fs.sep)
+    return [fs.sep.join([base_path_stripped,
+                         f"{ORDER_DIRECTORY_PREFIX}={pixel.order}",
+                         f"{DIR_DIRECTORY_PREFIX}={pixel.pixel // 10000 * 10000}",
+                         f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet"
+                         ]) for pixel in pixels]
 
 
 def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int) -> FilePointer:
