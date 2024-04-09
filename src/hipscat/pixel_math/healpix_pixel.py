@@ -71,7 +71,7 @@ class HealpixPixel:
         new_pixels = get_higher_order_pixels(self.order, self.pixel, delta_order)
         pixels = []
         new_order = self.order + delta_order
-        for new_pixel in new_pixels:
+        pixels=[HealpixPixel(new_order, new_pixel) for new_pixel in new_pixels]
             pixels.append(HealpixPixel(new_order, new_pixel))
         return pixels
 
