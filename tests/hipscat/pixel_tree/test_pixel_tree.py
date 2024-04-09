@@ -1,4 +1,5 @@
 from hipscat.pixel_math import HealpixPixel
+from hipscat.pixel_tree.pixel_tree import PixelTree
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
@@ -16,6 +17,13 @@ def test_pixel_tree_max_depth(pixel_tree_1, pixel_tree_2, pixel_tree_3):
     assert pixel_tree_1.get_max_depth() == 0
     assert pixel_tree_2.get_max_depth() == 2
     assert pixel_tree_3.get_max_depth() == 1
+
+
+def test_pixel_tree_different_tree_order(pixel_tree_2):
+    pixel_tree_2_order_5 = PixelTree.from_healpix(pixel_tree_2.get_healpix_pixels(), tree_order=5)
+    assert pixel_tree_2_order_5.get_max_depth() == 2
+    assert pixel_tree_2_order_5.tree_order == 5
+    assert all(pixel_tree_2_order_5.get_healpix_pixels() == pixel_tree_2.get_healpix_pixels())
 
 
 def test_pixel_tree_contains():

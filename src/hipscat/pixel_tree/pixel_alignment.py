@@ -86,6 +86,8 @@ def align_trees(
         The `PixelAlignment` object with the alignment from the two trees
     """
     max_n = max(left.tree_order, right.tree_order)
+
+    # Shifts left and right intervals to the same order
     left_aligned = left.tree << (2 * (max_n - left.tree_order))
     right_aligned = right.tree << (2 * (max_n - right.tree_order))
     include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES

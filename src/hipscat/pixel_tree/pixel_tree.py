@@ -76,10 +76,10 @@ class PixelTree:
         Returns:
             max depth (or highest healpix order) of the pixels in the tree
         """
-        return self.tree_order
+        return np.max(self.pixels.T[0])
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
-        """Gets a list of HealpixPixels in the tree
+        """Creates a list of HealpixPixels in the tree
 
         Returns (List[HealpixPixel]):
             A list of the HEALPix pixels in the tree
@@ -87,7 +87,7 @@ class PixelTree:
         return np.vectorize(HealpixPixel)(self.pixels.T[0], self.pixels.T[1])
 
     @classmethod
-    def from_healpix(cls, healpix_pixels: List[HealpixInputTypes]) -> PixelTree:
+    def from_healpix(cls, healpix_pixels: List[HealpixInputTypes], tree_order=None) -> PixelTree:
         """Build a tree from a list of constituent healpix pixels
 
         Args:
@@ -103,7 +103,7 @@ class PixelTree:
         pixel_array = np.array(pixel_tuples).T
         orders = pixel_array[0]
         pixels = pixel_array[1]
-        max_order = np.max(orders)
+        max_order = np.max(orders) if tree_order is None else tree_order
         starts = pixels * 4 ** (max_order - orders)
         ends = (pixels + 1) * 4 ** (max_order - orders)
         result = np.vstack((starts, ends)).T

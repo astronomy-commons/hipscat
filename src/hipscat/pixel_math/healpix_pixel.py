@@ -33,6 +33,14 @@ class HealpixPixel:
     def __repr__(self):
         return self.__str__()
 
+    def __getitem__(self, key: int) -> int:
+        if key < 0 or key > 1:
+            raise IndexError("Invalid healpix index")
+        elif key == 0:
+            return self.order
+        else:
+            return self.pixel
+
     def convert_to_lower_order(self, delta_order: int) -> HealpixPixel:
         """Returns the HEALPix pixel that contains the pixel at a lower order
 

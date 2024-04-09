@@ -41,6 +41,14 @@ def test_pixel_str_and_repr():
     assert repr(pix) == test_string
 
 
+def test_pixel_get_item():
+    order = 3
+    pixel = 42
+    pix = HealpixPixel(order=order, pixel=pixel)
+    assert pix[0] == order
+    assert pix[1] == pixel
+
+
 @pytest.mark.parametrize(
     "order, pixel, final_order, final_pixel",
     [

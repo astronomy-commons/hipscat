@@ -35,6 +35,7 @@ def get_pixels_from_intervals(intervals: np.ndarray, tree_order: int) -> np.ndar
         return np.empty((0, 2), dtype=np.int64)
     orders = np.full(intervals.shape[0], fill_value=-1)
     pixels = np.full(intervals.shape[0], fill_value=-1)
+    # alignment uses (-1, -1) as a missing pixel, so we can't use the HEALPix math on these elements
     non_negative_mask = intervals.T[0] >= 0
     start_intervals = intervals.T[0][non_negative_mask]
     end_intervals = intervals.T[1][non_negative_mask]
