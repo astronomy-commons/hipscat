@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 import numba
 import numpy as np
@@ -208,7 +208,7 @@ def _add_remaining_pixels(
 
     # first pixel may be partially covered
     pix = pixel_list[index]
-    if added_until > pix[0] and added_until < pix[1]:
+    if pix[0] < added_until < pix[1]:
         _add_pixels_until(added_until, pix[1], pix, is_left_pixel, mapping)
         index += 1
     if added_until >= pix[1]:

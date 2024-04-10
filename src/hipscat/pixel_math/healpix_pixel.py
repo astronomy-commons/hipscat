@@ -36,7 +36,7 @@ class HealpixPixel:
     def __getitem__(self, key: int) -> int:
         if key < 0 or key > 1:
             raise IndexError("Invalid healpix index")
-        elif key == 0:
+        if key == 0:
             return self.order
         else:
             return self.pixel
