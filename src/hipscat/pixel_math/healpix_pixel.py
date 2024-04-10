@@ -38,8 +38,7 @@ class HealpixPixel:
             raise IndexError("Invalid healpix index")
         if key == 0:
             return self.order
-        else:
-            return self.pixel
+        return self.pixel
 
     def convert_to_lower_order(self, delta_order: int) -> HealpixPixel:
         """Returns the HEALPix pixel that contains the pixel at a lower order
