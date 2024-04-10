@@ -93,9 +93,7 @@ def align_trees(
 
     include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
     include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
-    mapping = perform_align_trees(
-        left_aligned, right_aligned, include_all_left, include_all_right
-    )
+    mapping = perform_align_trees(left_aligned, right_aligned, include_all_left, include_all_right)
     mapping = np.array(mapping).T
     result_tree = mapping[4:6].T if len(mapping) > 0 else np.empty((0, 2), dtype=np.int64)
     result_mapping = get_pixel_mapping_df(mapping, max_n)
@@ -225,11 +223,7 @@ def _add_remaining_pixels(
 
 
 # pylint: disable=too-many-statements
-@njit(
-   numba.types.List(numba.int64[::1])(
-        numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean
-    )
-)
+@njit(numba.types.List(numba.int64[::1])(numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean))
 def perform_align_trees(
     left: np.ndarray,
     right: np.ndarray,
