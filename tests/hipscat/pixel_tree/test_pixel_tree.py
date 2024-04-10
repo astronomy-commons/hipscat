@@ -36,3 +36,4 @@ def test_pixel_tree_contains():
     assert not tree.contains(HealpixPixel(1, 1))
     assert (1, 1) not in tree
     assert HealpixPixel(1, 1) not in tree
+    assert (0, 10) not in tree

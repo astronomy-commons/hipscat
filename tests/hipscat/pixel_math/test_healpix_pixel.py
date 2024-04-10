@@ -47,6 +47,10 @@ def test_pixel_get_item():
     pix = HealpixPixel(order=order, pixel=pixel)
     assert pix[0] == order
     assert pix[1] == pixel
+    with pytest.raises(IndexError):
+        pix[-1]
+    with pytest.raises(IndexError):
+        pix[3]
 
 
 @pytest.mark.parametrize(
