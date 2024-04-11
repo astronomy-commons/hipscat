@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Sequence
 
 import numpy as np
 
@@ -87,11 +87,13 @@ class PixelTree:
         return np.vectorize(HealpixPixel)(self.pixels.T[0], self.pixels.T[1])
 
     @classmethod
-    def from_healpix(cls, healpix_pixels: List[HealpixInputTypes], tree_order=None) -> PixelTree:
+    def from_healpix(cls, healpix_pixels: Sequence[HealpixInputTypes], tree_order=None) -> PixelTree:
         """Build a tree from a list of constituent healpix pixels
 
         Args:
             healpix_pixels: list of healpix pixels
+            tree_order (int): (Default = None) order to generate the tree at. If None, will use the highest
+                order from input pixels
 
         Returns:
             The pixel tree with the leaf pixels specified in the list
