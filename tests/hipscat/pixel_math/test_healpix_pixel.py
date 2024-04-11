@@ -41,6 +41,7 @@ def test_pixel_str_and_repr():
     assert repr(pix) == test_string
 
 
+# pylint: disable=pointless-statement
 def test_pixel_get_item():
     order = 3
     pixel = 42

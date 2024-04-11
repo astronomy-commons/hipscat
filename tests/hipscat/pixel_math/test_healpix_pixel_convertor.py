@@ -1,7 +1,7 @@
 import pytest
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes, get_healpix_pixel, get_healpix_tuple
+from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_pixel, get_healpix_tuple
 
 
 def test_get_healpix_pixel_can_take_either_argument():
