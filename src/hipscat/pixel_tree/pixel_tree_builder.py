@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import Sequence
 
 from hipscat.pixel_math.healpix_pixel_convertor import HealpixInputTypes
 from hipscat.pixel_tree.pixel_tree import PixelTree
@@ -18,7 +18,7 @@ class PixelTreeBuilder:
     """
 
     @staticmethod
-    def from_healpix(healpix_pixels: List[HealpixInputTypes]) -> PixelTree:
+    def from_healpix(healpix_pixels: Sequence[HealpixInputTypes]) -> PixelTree:
         """Build a tree from a list of constituent healpix pixels
 
         Args:
