@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import List
 
-import healpy as hp
 import numpy as np
 
-from hipscat.pixel_math import HealpixInputTypes, HealpixPixel, get_healpix_pixel
-from hipscat.pixel_tree.pixel_node import PixelNode
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
+from hipscat.pixel_math import HealpixInputTypes, HealpixPixel
+from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_tuple
+from hipscat.pixel_math.healpix_pixel_function import get_pixels_from_intervals
 
 
 class PixelTree:
@@ -22,30 +21,30 @@ class PixelTree:
     Attributes:
         pixels: Nested dictionary of pixel nodes stored in the tree. Indexed by HEALPix
             order then pixel number
-        root_pixel: Root node of the tree. Its children are a subset of the
-            12 base HEALPix pixels
     """
 
-    def __init__(self, root_pixel: PixelNode, pixels: dict[int, dict[int, PixelNode]]) -> None:
+    def __init__(self, tree: np.ndarray, order: int) -> None:
         """Initialises a tree object from the nodes in the tree
 
         Args:
-            root_pixel: PixelNode representing the root node in the tree
-            pixels: Dictionary containing all PixelNodes in the tree
+            tree (np.ndarray): sorted array of intervals that represent each pixel in the tree
+            order (int): HEALPix order of the pixel numbers in the intervals
         """
-        self.root_pixel = root_pixel
-        self.pixels = pixels
+        self.tree_order = order
+        self.tree = tree
+
+        if not np.all((self.tree.T[0, 1:] - self.tree.T[1, :-1]) >= 0):
+            raise ValueError("Invalid Catalog: Tree contains overlapping pixels")
+
+        self.pixels = get_pixels_from_intervals(self.tree, self.tree_order)
 
     def __len__(self):
-        """Gets the number of nodes in the tree, including inner nodes and the root node
+        """Gets the number of nodes in the tree
 
         Returns:
-            The number of nodes in the tree, including inner nodes and the root node
+            The number of nodes in the tree
         """
-        pixel_count = 0
-        for _, order_pixels in self.pixels.items():
-            pixel_count += len(order_pixels)
-        return pixel_count
+        return len(self.tree)
 
     def contains(self, pixel: HealpixInputTypes) -> bool:
         """Check if tree contains a node at a given order and pixel
@@ -57,26 +56,19 @@ class PixelTree:
         Returns:
             True if the tree contains the pixel, False if not
         """
-        pixel = get_healpix_pixel(pixel)
-        return pixel.order in self.pixels and pixel.pixel in self.pixels[pixel.order]
+        (order, pixel) = get_healpix_tuple(pixel)
+        if order > self.tree_order:
+            return False
+        d_order = self.tree_order - order
+        pixel_at_tree_order = pixel << 2 * d_order
+        index = np.searchsorted(self.tree.T[1], pixel_at_tree_order, side="right")
+        if index >= len(self.pixels):
+            return False
+        is_same_order = self.pixels[index][0] == order
+        return pixel_at_tree_order == self.tree[index][0] and is_same_order
 
     def __contains__(self, item):
         return self.contains(item)
-
-    def get_node(self, pixel: HealpixInputTypes) -> PixelNode | None:
-        """Get the node at a given pixel
-
-        Args:
-            pixel: HEALPix pixel to get. Either of type `HealpixPixel`
-                or a tuple of (order, pixel)
-
-        Returns:
-            The PixelNode at the index, or None if a node does not exist
-        """
-        pixel = get_healpix_pixel(pixel)
-        if self.contains(pixel):
-            return self.pixels[pixel.order][pixel.pixel]
-        return None
 
     def get_max_depth(self) -> int:
         """Get the max depth (or highest healpix order) represented in the list of pixels.
@@ -84,98 +76,36 @@ class PixelTree:
         Returns:
             max depth (or highest healpix order) of the pixels in the tree
         """
-        return max(self.pixels.keys())
+        return np.max(self.pixels.T[0])
 
-    def __getitem__(self, item):
-        return self.get_node(item)
+    def get_healpix_pixels(self) -> List[HealpixPixel]:
+        """Creates a list of HealpixPixels in the tree
 
-    def get_leaf_nodes_at_healpix_pixel(self, pixel: HealpixInputTypes) -> List[PixelNode]:
-        """Lookup all leaf nodes that contain or are within a given HEALPix pixel
+        Returns (List[HealpixPixel]):
+            A list of the HEALPix pixels in the tree
+        """
+        return np.vectorize(HealpixPixel)(self.pixels.T[0], self.pixels.T[1])
 
-        - Exact matches will return a list with only the matching pixel
-        - A pixel that is within a lower order pixel in the tree will return a list with the lower
-          order pixel
-        - A pixel that has higher order pixels within found in the tree will return a list with all
-          higher order pixels
-        - A pixel with no matching leaf nodes in the tree will return an empty list
+    @classmethod
+    def from_healpix(cls, healpix_pixels: List[HealpixInputTypes], tree_order=None) -> PixelTree:
+        """Build a tree from a list of constituent healpix pixels
 
         Args:
-            pixel: HEALPix pixel of the pixel to lookup
+            healpix_pixels: list of healpix pixels
 
         Returns:
-            A list of the leaf PixelNodes in the tree that align with the specified pixel
+            The pixel tree with the leaf pixels specified in the list
         """
-        pixel = get_healpix_pixel(pixel)
+        if len(healpix_pixels) == 0:
+            return PixelTree(np.empty((0, 2), dtype=np.int64), 0)
 
-        if self.contains(pixel):
-            # Pixel exists in tree. Either a leaf node with an exact match for the search pixel,
-            # or an inner node, so the search pixel will contain leaf nodes at higher orders
-            node_in_tree = self.get_node(pixel)
-            return node_in_tree.get_all_leaf_descendants()
-        # if the pixel doesn't exist in the tree, it's either because the tree doesn't cover the
-        # pixel, or the pixel is at a higher order than the tree at that location, so we search for
-        # lower order nodes in the tree
-        node_in_tree = self._find_first_lower_order_leaf_node_in_tree(pixel)
-        if node_in_tree is None:
-            return []
-        return [node_in_tree]
-
-    def _find_first_lower_order_leaf_node_in_tree(self, pixel: HealpixInputTypes) -> PixelNode | None:
-        pixel = get_healpix_pixel(pixel)
-        for delta_order in range(1, pixel.order + 1):
-            lower_pixel = pixel.convert_to_lower_order(delta_order)
-            if self.contains(lower_pixel):
-                lower_node = self.get_node(lower_pixel)
-                if lower_node.node_type == PixelNodeType.LEAF:
-                    # If the catalog doesn't fully cover the sky, it's possible we encounter an
-                    # inner node whose leaf children don't cover the search pixel.
-                    return lower_node
-                return None
-        return None
-
-    # pylint: disable=too-many-locals
-    def get_negative_pixels(self) -> List[HealpixPixel]:
-        """Get the leaf nodes at each healpix order that have zero catalog data.
-
-        For example, if an example catalog only had data points in pixel 0 at
-        order 0, then this method would return order 0's pixels 1 through 11.
-        Used for getting full coverage on margin caches.
-
-        Returns:
-            List of HealpixPixels representing the 'negative tree' for the catalog.
-        """
-        max_depth = self.get_max_depth()
-        missing_pixels = []
-        pixels_at_order = self.root_pixel.children
-
-        covered_orders = []
-        for order_i in range(0, max_depth + 1):
-            npix = hp.nside2npix(2**order_i)
-            covered_orders.append(np.zeros(npix))
-
-        for order in range(0, max_depth + 1):
-            next_order_children = []
-            leaf_pixels = []
-
-            for node in pixels_at_order:
-                pixel = node.pixel.pixel
-                covered_orders[order][pixel] = 1
-                if node.node_type == PixelNodeType.LEAF:
-                    leaf_pixels.append(pixel)
-                else:
-                    next_order_children.extend(node.children)
-
-            zero_leafs = np.argwhere(covered_orders[order] == 0).flatten()
-            for pix in zero_leafs:
-                missing_pixels.append(HealpixPixel(order, pix))
-                leaf_pixels.append(pix)
-
-            pixels_at_order = next_order_children
-
-            for order_j in range(order + 1, max_depth + 1):
-                explosion_factor = 4 ** (order_j - order)
-                for pixel in leaf_pixels:
-                    covered_pix = range(pixel * explosion_factor, (pixel + 1) * explosion_factor)
-                    covered_orders[order_j][covered_pix] = 1
-
-        return missing_pixels
+        pixel_tuples = [get_healpix_tuple(p) for p in healpix_pixels]
+        pixel_array = np.array(pixel_tuples).T
+        orders = pixel_array[0]
+        pixels = pixel_array[1]
+        max_order = np.max(orders) if tree_order is None else tree_order
+        starts = pixels * 4 ** (max_order - orders)
+        ends = (pixels + 1) * 4 ** (max_order - orders)
+        result = np.vstack((starts, ends)).T
+        result.sort(axis=0)
+        return cls(result, max_order)

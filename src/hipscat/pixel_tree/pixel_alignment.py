@@ -1,15 +1,21 @@
 from typing import List
 
+import numba
+import numpy as np
 import pandas as pd
+from numba import njit
 
-from hipscat.pixel_math import HealpixInputTypes, HealpixPixel, get_healpix_pixel
+from hipscat.pixel_math.healpix_pixel_function import get_pixels_from_intervals
 from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
-LEFT_TREE_KEY = "left"
-RIGHT_TREE_KEY = "right"
+LEFT_INCLUDE_ALIGNMENT_TYPES = [PixelAlignmentType.LEFT, PixelAlignmentType.OUTER]
+RIGHT_INCLUDE_ALIGNMENT_TYPES = [PixelAlignmentType.RIGHT, PixelAlignmentType.OUTER]
+
+
+NONE_PIX = np.array([-1, -1])
+LEFT_SIDE = True
+RIGHT_SIDE = False
 
 
 # pylint: disable=R0903
@@ -18,7 +24,7 @@ class PixelAlignment:
     or overlap between the catalogs, and a new tree with the smallest pixels from each tree
 
     For more information on the pixel alignment algorithm, view this document:
-    https://docs.google.com/document/d/1YFAQsGCgeEyEZ1IRIam9BbWdN5h2onV6ndO3VM-qjn0/edit?usp=sharing
+    https://docs.google.com/document/d/1gqb8qb3HiEhLGNav55LKKFlNjuusBIsDW7FdTkc5mJU/edit?usp=sharing
 
     Attributes:
         pixel_mapping: A dataframe where each row contains a pixel from each tree that match, and
@@ -53,11 +59,8 @@ class PixelAlignment:
         self.alignment_type = alignment_type
 
 
-# pylint: disable=R0912
 def align_trees(
-    left: PixelTree,
-    right: PixelTree,
-    alignment_type: PixelAlignmentType = PixelAlignmentType.INNER,
+    left: PixelTree, right: PixelTree, alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
 ) -> PixelAlignment:
     """Generate a `PixelAlignment` object from two pixel trees
 
@@ -66,7 +69,7 @@ def align_trees(
     each tree
 
     For more information on the pixel alignment algorithm, view this document:
-    https://docs.google.com/document/d/1YFAQsGCgeEyEZ1IRIam9BbWdN5h2onV6ndO3VM-qjn0/edit?usp=sharing
+    https://docs.google.com/document/d/1gqb8qb3HiEhLGNav55LKKFlNjuusBIsDW7FdTkc5mJU/edit?usp=sharing
 
     Args:
         left: The left tree to align
@@ -82,138 +85,233 @@ def align_trees(
     Returns:
         The `PixelAlignment` object with the alignment from the two trees
     """
+    max_n = max(left.tree_order, right.tree_order)
 
-    tree_builder = PixelTreeBuilder()
-    pixels_to_search = _get_children_pixels_from_trees([left, right], left.root_pixel.pixel)
+    # Shifts left and right intervals to the same order
+    left_aligned = left.tree << (2 * (max_n - left.tree_order))
+    right_aligned = right.tree << (2 * (max_n - right.tree_order))
 
-    while len(pixels_to_search) > 0:
-        search_pixel = pixels_to_search.pop(0)
-        if search_pixel in left and search_pixel in right:
-            left_node = left[search_pixel]
-            right_node = right[search_pixel]
-            if left_node.node_type == right_node.node_type:
-                if left_node.node_type == PixelNodeType.LEAF:
-                    # Matching leaf nodes get added to the aligned tree
-                    tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
-                else:
-                    # For matching inner nodes search into their children to check for alignment
-                    pixels_to_search += _get_children_pixels_from_trees([left, right], search_pixel)
-            else:
-                # Nodes with non-matching types: one must be a leaf and the other an inner node
-                if left_node.node_type == PixelNodeType.LEAF:
-                    tree_with_leaf_node = LEFT_TREE_KEY
-                    inner_node = right_node
-                else:
-                    tree_with_leaf_node = RIGHT_TREE_KEY
-                    inner_node = left_node
-                if _should_include_all_pixels_from_tree(tree_with_leaf_node, alignment_type):
-                    # If the alignment type means fully covering the tree with the leaf node, then
-                    # create a leaf node in the aligned tree and split it to match the partitioning
-                    # of the other tree to ensure the node is fully covered
-                    tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.LEAF)
-                    tree_builder.split_leaf_to_match_partitioning(inner_node)
-                else:
-                    # Otherwise just add the subtree from the inner node to include all the
-                    # overlapping pixels
-                    tree_builder.create_node_and_parent_if_not_exist(search_pixel, PixelNodeType.INNER)
-                    tree_builder.add_all_descendants_from_node(inner_node)
-        elif search_pixel in left and search_pixel not in right:
-            # For nodes that only exist in one tree, include them if the alignment type means that
-            # tree should have all its nodes included
-            if _should_include_all_pixels_from_tree(LEFT_TREE_KEY, alignment_type):
-                tree_builder.create_node_and_parent_if_not_exist(search_pixel, left[search_pixel].node_type)
-                tree_builder.add_all_descendants_from_node(left[search_pixel])
-        elif search_pixel in right and search_pixel not in left:
-            if _should_include_all_pixels_from_tree(RIGHT_TREE_KEY, alignment_type):
-                tree_builder.create_node_and_parent_if_not_exist(search_pixel, right[search_pixel].node_type)
-                tree_builder.add_all_descendants_from_node(right[search_pixel])
-    tree = tree_builder.build()
-    pixel_mapping = _generate_pixel_mapping_from_tree(left, right, tree)
-    return PixelAlignment(tree, pixel_mapping, alignment_type)
+    include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
+    include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
+    mapping = perform_align_trees(left_aligned, right_aligned, include_all_left, include_all_right)
+    mapping = np.array(mapping).T
+    result_tree = mapping[4:6].T if len(mapping) > 0 else np.empty((0, 2), dtype=np.int64)
+    result_mapping = get_pixel_mapping_df(mapping, max_n)
+    return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
 
 
-def _get_children_pixels_from_trees(trees: List[PixelTree], pixel: HealpixInputTypes) -> List[HealpixPixel]:
-    """Returns the combined HEALPix pixels that have child nodes of the given pixel from trees
-
-    This returns a list of HEALPix pixels, not the actual child nodes, and does not contain
-    duplicate pixels if a pixel appears in multiple trees.
+def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
+    """Construct a DataFrame with HEALPix orders and pixels mapping left right and aligned pixels
 
     Args:
-        trees (List[PixelTree]): The list of trees to search for children from
-        pixel (HealpixPixel | tuple[int,int]): The pixel to search for children at in all trees
+        mapping (np.ndarray): array of shape (6, len(aligned_pixels)) where the first two rows are the
+            intervals for the left pixels, the next two for right pixels, and the last two for aligned pixels
+        map_order (int): The HEALPix order of the intervals in the mapping array
 
     Returns:
-        (List[HealpixPixel]) The list of all HEALPix pixels which have children of the given pixel
-        in any of the trees.
+        A DataFrame with the orders and pixels of the aligned left and right pixels,
     """
-    pixel = get_healpix_pixel(pixel)
-    pixels_to_add = set()
-    for tree in trees:
-        if pixel in tree:
-            for node in tree[pixel].children:
-                pixels_to_add.add(node.pixel)
-    return list(pixels_to_add)
-
-
-def _should_include_all_pixels_from_tree(tree_type: str, alignment_type: PixelAlignmentType) -> bool:
-    """If for a given alignment type, the left or right tree should include all pixels or just the
-    ones that overlap with the other tree.
-
-    Args:
-        tree_type (str): 'left' for the left tree and 'right' for the right tree
-        alignment_type (PixelAlignmentType): The type of alignment being performed
-
-    Returns:
-        A boolean indicating if the given tree type should include all pixels
-    """
-    left_add_types = [PixelAlignmentType.OUTER, PixelAlignmentType.LEFT]
-    right_add_types = [PixelAlignmentType.OUTER, PixelAlignmentType.RIGHT]
-    return (tree_type == LEFT_TREE_KEY and alignment_type in left_add_types) or (
-        tree_type == RIGHT_TREE_KEY and alignment_type in right_add_types
+    if len(mapping) > 0:
+        l_orders, l_pixels = get_pixels_from_intervals(mapping[0:2].T, map_order).T
+        r_orders, r_pixels = get_pixels_from_intervals(mapping[2:4].T, map_order).T
+        a_orders, a_pixels = get_pixels_from_intervals(mapping[4:6].T, map_order).T
+    else:
+        l_orders, l_pixels, r_orders, r_pixels, a_orders, a_pixels = [], [], [], [], [], []
+    result_mapping = pd.DataFrame.from_dict(
+        {
+            PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: l_orders,
+            PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: l_pixels,
+            PixelAlignment.JOIN_ORDER_COLUMN_NAME: r_orders,
+            PixelAlignment.JOIN_PIXEL_COLUMN_NAME: r_pixels,
+            PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: a_orders,
+            PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: a_pixels,
+        }
     )
+    result_mapping.replace(-1, None, inplace=True)
+    return result_mapping
 
 
-def _generate_pixel_mapping_from_tree(left: PixelTree, right: PixelTree, aligned: PixelTree) -> pd.DataFrame:
-    """Generates a pixel mapping dataframe from two trees and their aligned tree
+@njit(
+    numba.types.void(
+        numba.int64,
+        numba.int64,
+        numba.int64[:],
+        numba.boolean,
+        numba.types.List(numba.int64[::1]),
+    )
+)
+def _add_pixels_until(
+    add_from: int,
+    add_to: int,
+    matching_pix: np.ndarray,
+    is_left_pixel: bool,
+    mapping: List[np.ndarray],
+):
+    """Adds pixels of the greatest possible order to fill output from `add-from` to `add_to`
 
-    The pixel mapping dataframe contains columns for the order and pixel of overlapping pixels in
-    the left, right and aligned trees. The trees are searched through and this table is generated
+    Adds these pixels to the mapping as the aligned pixel, with matching pix added as either the left or right
+    side of the mapping and none pixel for the other.
 
     Args:
-        left (PixelTree): the left tree used to generate the alignment
-        right (PixelTree): the right tree used to generate the alignment
-        aligned (PixelTree): the aligned tree as a result of aligning the left and right trees
-
-    Returns:
-        (pd.DataFrame) The pixel mapping dataframe where each row contains a pixel from the aligned
-        tree and the pixels in the left and right tree that overlap with it
+        add_from (int): The pixel number to add pixels from
+        add_to (int): The pixel number to add pixels to
+        matching_pix (int): The matching pixel from the side of the catalog that exists to map the new pixels
+            to in the mapping
+        is_left_pixel (int): Is the matching pixel from the left side of the alignment
+        mapping (List[np.ndarray]): The List mapping left, right, and aligned pixels to add the new pixels to
     """
-    pixel_mapping_dict = {
-        PixelAlignment.PRIMARY_ORDER_COLUMN_NAME: [],
-        PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME: [],
-        PixelAlignment.JOIN_ORDER_COLUMN_NAME: [],
-        PixelAlignment.JOIN_PIXEL_COLUMN_NAME: [],
-        PixelAlignment.ALIGNED_ORDER_COLUMN_NAME: [],
-        PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME: [],
-    }
-    for leaf_node in aligned.root_pixel.get_all_leaf_descendants():
-        left_leaf_nodes = left.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
-        right_leaf_nodes = right.get_leaf_nodes_at_healpix_pixel(leaf_node.pixel)
-        if len(left_leaf_nodes) == 0:
-            left_leaf_nodes = [None]
-        if len(right_leaf_nodes) == 0:
-            right_leaf_nodes = [None]
-        for left_node in left_leaf_nodes:
-            for right_node in right_leaf_nodes:
-                pixel_mapping_dict[PixelAlignment.ALIGNED_ORDER_COLUMN_NAME].append(leaf_node.hp_order)
-                pixel_mapping_dict[PixelAlignment.ALIGNED_PIXEL_COLUMN_NAME].append(leaf_node.hp_pixel)
-                left_order = left_node.hp_order if left_node is not None else None
-                left_pixel = left_node.hp_pixel if left_node is not None else None
-                pixel_mapping_dict[PixelAlignment.PRIMARY_ORDER_COLUMN_NAME].append(left_order)
-                pixel_mapping_dict[PixelAlignment.PRIMARY_PIXEL_COLUMN_NAME].append(left_pixel)
-                right_order = right_node.hp_order if right_node is not None else None
-                right_pixel = right_node.hp_pixel if right_node is not None else None
-                pixel_mapping_dict[PixelAlignment.JOIN_ORDER_COLUMN_NAME].append(right_order)
-                pixel_mapping_dict[PixelAlignment.JOIN_PIXEL_COLUMN_NAME].append(right_pixel)
-    pixel_mapping = pd.DataFrame.from_dict(pixel_mapping_dict).astype(pd.Int64Dtype())
-    return pixel_mapping
+    while add_from < add_to:
+        # maximum power of 4 that is a factor of add_from
+        max_p4_from = add_from & -add_from
+        if max_p4_from & 0xAAAAAAAAAAAAAAA:
+            max_p4_from = max_p4_from >> 1
+
+        # maximum power of 4 less than or equal to (add_to - add_from)
+        max_p4_to_log2 = np.int64(np.log2(add_to - add_from))
+        max_p4_to = 1 << (max_p4_to_log2 - (max_p4_to_log2 & 1))
+
+        pixel_size = min(max_p4_to, max_p4_from)
+        pixel = np.array([add_from, add_from + pixel_size])
+        if is_left_pixel:
+            mapping.append(np.concatenate((matching_pix, NONE_PIX, pixel)))
+        else:
+            mapping.append(np.concatenate((NONE_PIX, matching_pix, pixel)))
+        add_from = add_from + pixel_size
+
+
+@njit(
+    numba.types.void(
+        numba.int64,
+        numba.int64[:, :],
+        numba.int64,
+        numba.boolean,
+        numba.types.List(numba.int64[::1]),
+    )
+)
+def _add_remaining_pixels(
+    added_until: int,
+    pixel_list: np.ndarray,
+    index: int,
+    is_left_pixel: bool,
+    mapping: List[np.ndarray],
+):
+    """Adds pixels to output and mapping from a given index in a list of pixel intervals
+
+    Args:
+        added_until (int): Where the alignment has been added until
+        pixel_list (np.ndarray): The list of pixels from the side of the alignment to add the remaining
+            pixels of
+        index (int): The index of the pixel list to add the pixels from
+        is_left_pixel (bool): Is the pixel list from left side of the alignment
+        mapping (List[np.ndarray]): The List mapping left, right, and aligned pixels to add the new pixels to
+    """
+
+    # first pixel may be partially covered
+    pix = pixel_list[index]
+    if pix[0] < added_until < pix[1]:
+        _add_pixels_until(added_until, pix[1], pix, is_left_pixel, mapping)
+        index += 1
+    if added_until >= pix[1]:
+        index += 1
+    while index < len(pixel_list):
+        pix = pixel_list[index]
+        if is_left_pixel:
+            mapping.append(np.concatenate((pix, NONE_PIX, pix)))
+        else:
+            mapping.append(np.concatenate((NONE_PIX, pix, pix)))
+        index += 1
+
+
+# pylint: disable=too-many-statements
+@njit(numba.types.List(numba.int64[::1])(numba.int64[:, :], numba.int64[:, :], numba.boolean, numba.boolean))
+def perform_align_trees(
+    left: np.ndarray,
+    right: np.ndarray,
+    include_all_left: bool,
+    include_all_right: bool,
+) -> List[np.ndarray]:
+    """Performs an alignment on arrays of pixel intervals
+
+    Pixel interval lists must be of to the same order
+
+    Args:
+        left (np.ndarray): the left array of intervals
+        right (np.ndarray): the right array of intervals
+        include_all_left (bool): if all pixels from the left tree should be covered in the final alignment
+        include_all_right (bool): if all pixels from the right tree should be covered in the final alignment
+
+    Returns (List[np.ndarray]):
+        The pixel mapping of the matching left, right, and aligned pixels with each row containing an array of
+        [left_order, left_pixel, right_order, right_pixel, aligned_order, aligned_pixel]
+    """
+    added_until = 0
+    mapping = []
+    left_index = 0
+    right_index = 0
+    while left_index < len(left) and right_index < len(right):
+        left_pix = left[left_index]
+        right_pix = right[right_index]
+        if left_pix[0] >= right_pix[1]:
+            # left pix ahead of right, no overlap, so move right on
+            if include_all_right:
+                if added_until <= right_pix[0]:
+                    # should cover right pix and no coverage of right pix => add whole right pix
+                    mapping.append(np.concatenate((NONE_PIX, right_pix, right_pix)))
+                    added_until = right_pix[1]
+                elif added_until < right_pix[1]:
+                    # should cover right pix and partial coverage of right pix => cover rest of right pix
+                    _add_pixels_until(added_until, right_pix[1], right_pix, RIGHT_SIDE, mapping)
+                    added_until = right_pix[1]
+            right_index += 1
+            continue
+        if right_pix[0] >= left_pix[1]:
+            # right pix ahead of left, no overlap, so move left on
+            if include_all_left:
+                if added_until <= left_pix[0]:
+                    # should cover left pix and no coverage of left pix => add whole left pix
+                    mapping.append(np.concatenate((left_pix, NONE_PIX, left_pix)))
+                    added_until = left_pix[1]
+                elif added_until < left_pix[1]:
+                    # should cover left pix and partial coverage of left pix => cover rest of left pix
+                    _add_pixels_until(added_until, left_pix[1], left_pix, LEFT_SIDE, mapping)
+                    added_until = left_pix[1]
+            left_index += 1
+            continue
+        left_size = left_pix[1] - left_pix[0]
+        right_size = right_pix[1] - right_pix[0]
+        if left_size == right_size:
+            # overlapping & same size => same pixel so add and move both on
+            mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
+            added_until = left_pix[1]
+            left_index += 1
+            right_index += 1
+            continue
+        if left_size < right_size:
+            # overlapping and left smaller so add left and move left on
+            if include_all_right and left_pix[0] > right_pix[0] and left_pix[0] > added_until:
+                # need to cover all of right pix and start of left pix has a gap to current coverage
+                # so fill in gap
+                add_from = max(added_until, right_pix[0])
+                _add_pixels_until(add_from, left_pix[0], right_pix, RIGHT_SIDE, mapping)
+            mapping.append(np.concatenate((left_pix, right_pix, left_pix)))
+            added_until = left_pix[1]
+            left_index += 1
+            continue
+        # else overlapping and right smaller so add right and move right on
+
+        if include_all_left and right_pix[0] > left_pix[0] and right_pix[0] > added_until:
+            # need to cover all of left pix and start of right pix has a gap to current coverage
+            # so fill in gap
+            add_from = max(added_until, left_pix[0])
+            _add_pixels_until(add_from, right_pix[0], left_pix, LEFT_SIDE, mapping)
+        mapping.append(np.concatenate((left_pix, right_pix, right_pix)))
+        added_until = right_pix[1]
+        right_index += 1
+
+    # After loop, if either tree needs to be fully covered and loop hasn't checked all pixels from that tree
+    # then cover the remaining pixels
+    if include_all_right and right_index < len(right):
+        _add_remaining_pixels(added_until, right, right_index, RIGHT_SIDE, mapping)
+    if include_all_left and left_index < len(left):
+        _add_remaining_pixels(added_until, left, left_index, LEFT_SIDE, mapping)
+    return mapping
