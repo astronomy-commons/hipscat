@@ -25,6 +25,7 @@ from hipscat.pixel_math.validators import (
     validate_polygon,
     validate_radius,
 )
+from hipscat.pixel_tree.negative_tree import compute_negative_tree_pixels
 
 
 class Catalog(HealpixDataset):
@@ -130,4 +131,4 @@ class Catalog(HealpixDataset):
         Returns:
             List of HealpixPixels representing the 'negative tree' for the catalog.
         """
-        return self.pixel_tree.get_negative_pixels()
+        return compute_negative_tree_pixels(self.pixel_tree)

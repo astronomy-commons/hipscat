@@ -60,12 +60,7 @@ class HealpixDataset(Dataset):
         if isinstance(pixels, PartitionInfo):
             return pixels
         if isinstance(pixels, PixelTree):
-            return PartitionInfo.from_healpix(
-                [
-                    HealpixPixel(node.hp_order, node.hp_pixel)
-                    for node in pixels.root_pixel.get_all_leaf_descendants()
-                ]
-            )
+            return PartitionInfo.from_healpix(pixels.get_healpix_pixels())
         if pd.api.types.is_list_like(pixels):
             return PartitionInfo.from_healpix(pixels)
         raise TypeError("Pixels must be of type PartitionInfo, PixelTree, or List[HealpixPixel]")

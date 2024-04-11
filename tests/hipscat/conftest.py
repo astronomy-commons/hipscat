@@ -2,52 +2,8 @@ import pytest
 
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree.pixel_node import PixelNode
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 
 # pylint: disable= redefined-outer-name
-
-
-@pytest.fixture
-def root_pixel_node_data():
-    return {
-        "pixel": HealpixPixel(-1, -1),
-        "node_type": PixelNodeType.ROOT,
-        "parent": None,
-    }
-
-
-@pytest.fixture
-def root_pixel_node(root_pixel_node_data):
-    return PixelNode(**root_pixel_node_data)
-
-
-@pytest.fixture
-def inner_pixel_node_data(root_pixel_node):
-    return {
-        "pixel": HealpixPixel(0, 1),
-        "node_type": PixelNodeType.INNER,
-        "parent": root_pixel_node,
-    }
-
-
-@pytest.fixture
-def inner_pixel_node(inner_pixel_node_data):
-    return PixelNode(**inner_pixel_node_data)
-
-
-@pytest.fixture
-def leaf_pixel_node_data(inner_pixel_node):
-    return {
-        "pixel": HealpixPixel(1, 12),
-        "node_type": PixelNodeType.LEAF,
-        "parent": inner_pixel_node,
-    }
-
-
-@pytest.fixture
-def leaf_pixel_node(leaf_pixel_node_data):
-    return PixelNode(**leaf_pixel_node_data)
 
 
 @pytest.fixture

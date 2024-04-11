@@ -11,7 +11,6 @@ from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.box_filter import _generate_ra_strip_pixel_tree
 from hipscat.pixel_math.validators import ValidatorsErrors
-from hipscat.pixel_tree.pixel_node_type import PixelNodeType
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
@@ -22,7 +21,6 @@ def test_catalog_load(catalog_info, catalog_pixels):
 
     for hp_pixel in catalog_pixels:
         assert hp_pixel in catalog.pixel_tree
-        assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
 def test_catalog_load_wrong_catalog_info(base_catalog_info, catalog_pixels):
@@ -40,29 +38,26 @@ def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
     partition_info = PartitionInfo.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, partition_info)
     assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
-    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
+    assert len(catalog.pixel_tree.get_healpix_pixels()) == len(catalog_pixels)
     for hp_pixel in catalog_pixels:
         assert hp_pixel in catalog.pixel_tree
-        assert catalog.pixel_tree[hp_pixel].node_type == PixelNodeType.LEAF
 
 
 def test_tree_pixel_input(catalog_info, catalog_pixels):
     tree = PixelTreeBuilder.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, tree)
     assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
-    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
+    assert len(catalog.pixel_tree.get_healpix_pixels()) == len(catalog_pixels)
     for pixel in catalog_pixels:
         assert pixel in catalog.pixel_tree
-        assert catalog.pixel_tree[pixel].node_type == PixelNodeType.LEAF
 
 
 def test_tree_pixel_input_list(catalog_info, catalog_pixels):
     catalog = Catalog(catalog_info, catalog_pixels)
     assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
-    assert len(catalog.pixel_tree.root_pixel.get_all_leaf_descendants()) == len(catalog_pixels)
+    assert len(catalog.pixel_tree.get_healpix_pixels()) == len(catalog_pixels)
     for pixel in catalog_pixels:
         assert pixel in catalog.pixel_tree
-        assert catalog.pixel_tree[pixel].node_type == PixelNodeType.LEAF
 
 
 def test_wrong_pixel_input_type(catalog_info):
@@ -115,7 +110,6 @@ def test_cone_filter(small_sky_order1_catalog):
     assert filtered_pixels == [HealpixPixel(1, 44)]
 
     assert (1, 44) in filtered_catalog.pixel_tree
-    assert len(filtered_catalog.pixel_tree.pixels[1]) == 1
     assert filtered_catalog.catalog_info.total_rows is None
 
 
@@ -143,7 +137,7 @@ def test_cone_filter_multiple_order(catalog_info):
 def test_cone_filter_empty(small_sky_order1_catalog):
     filtered_catalog = small_sky_order1_catalog.filter_by_cone(0, 0, 0.1)
     assert len(filtered_catalog.get_healpix_pixels()) == 0
-    assert len(filtered_catalog.pixel_tree) == 1
+    assert len(filtered_catalog.pixel_tree) == 0
 
 
 def test_cone_filter_invalid_cone_center(small_sky_order1_catalog):
@@ -162,7 +156,6 @@ def test_polygonal_filter(small_sky_order1_catalog):
     assert len(filtered_pixels) == 1
     assert filtered_pixels == [HealpixPixel(1, 46)]
     assert (1, 46) in filtered_catalog.pixel_tree
-    assert len(filtered_catalog.pixel_tree.pixels[1]) == 1
     assert filtered_catalog.catalog_info.total_rows is None
 
 
@@ -202,7 +195,7 @@ def test_polygonal_filter_empty(small_sky_order1_catalog):
     polygon_vertices = [(0, 0), (1, 1), (0, 2)]
     filtered_catalog = small_sky_order1_catalog.filter_by_polygon(polygon_vertices)
     assert len(filtered_catalog.get_healpix_pixels()) == 0
-    assert len(filtered_catalog.pixel_tree) == 1
+    assert len(filtered_catalog.pixel_tree) == 0
 
 
 def test_polygonal_filter_invalid_coordinates(small_sky_order1_catalog):
@@ -304,41 +297,36 @@ def test_box_filter_ra_pixel_tree_generation():
     pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(0, 180), order=1)
     pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(180, 0), order=1)
     assert len(pixel_tree) == len(pixel_tree_complement)
-    assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 
     pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(10, 50), order=1)
     pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(50, 10), order=1)
     assert len(pixel_tree) < len(pixel_tree_complement)
-    assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 
     pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(10, 220), order=1)
     pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(220, 10), order=1)
     assert len(pixel_tree_complement) < len(pixel_tree)
-    assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 
     pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(200, 350), order=1)
     pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(350, 200), order=1)
     assert len(pixel_tree) < len(pixel_tree_complement)
-    assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 
     pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(200, 50), order=1)
     pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(50, 200), order=1)
     assert len(pixel_tree_complement) < len(pixel_tree)
-    assert pixel_tree.pixels[1].values() not in pixel_tree_complement.pixels[1].values()
 
 
 def test_box_filter_dec(small_sky_order1_catalog):
     # The catalog pixels are distributed around the [-90,0] degree range.
     filtered_catalog = small_sky_order1_catalog.filter_by_box(dec=(10, 20))
     assert len(filtered_catalog.get_healpix_pixels()) == 0
-    assert len(filtered_catalog.pixel_tree) == 1
+    assert len(filtered_catalog.pixel_tree) == 0
     assert filtered_catalog.catalog_info.total_rows is None
 
     filtered_catalog_1 = small_sky_order1_catalog.filter_by_box(dec=(-10, 10))
     filtered_pixels_1 = filtered_catalog_1.get_healpix_pixels()
     assert filtered_pixels_1 == [HealpixPixel(1, 47)]
     assert (1, 47) in filtered_catalog_1.pixel_tree
-    assert len(filtered_catalog_1.pixel_tree.pixels[1]) == 1
+    assert len(filtered_catalog_1.pixel_tree) == 1
     assert filtered_catalog_1.catalog_info.total_rows is None
 
     filtered_catalog_2 = small_sky_order1_catalog.filter_by_box(dec=(-30, -20))
@@ -347,7 +335,7 @@ def test_box_filter_dec(small_sky_order1_catalog):
     assert (1, 45) in filtered_catalog_2.pixel_tree
     assert (1, 46) in filtered_catalog_2.pixel_tree
     assert (1, 47) in filtered_catalog_2.pixel_tree
-    assert len(filtered_catalog_2.pixel_tree.pixels[1]) == 3
+    assert len(filtered_catalog_2.pixel_tree) == 3
     assert filtered_catalog_2.catalog_info.total_rows is None
 
 
@@ -381,15 +369,15 @@ def test_box_filter_empty(small_sky_order1_catalog):
     # they are very large in area, and easily overlap with any ra region.
     filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=(0, 10))
     assert len(filtered_catalog.get_healpix_pixels()) == 2
-    assert len(filtered_catalog.pixel_tree) == 4
+    assert len(filtered_catalog.pixel_tree) == 2
 
     filtered_catalog = small_sky_order1_catalog.filter_by_box(dec=(10, 20))
     assert len(filtered_catalog.get_healpix_pixels()) == 0
-    assert len(filtered_catalog.pixel_tree) == 1
+    assert len(filtered_catalog.pixel_tree) == 0
 
     filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=(40, 50), dec=(10, 20))
     assert len(filtered_catalog.get_healpix_pixels()) == 0
-    assert len(filtered_catalog.pixel_tree) == 1
+    assert len(filtered_catalog.pixel_tree) == 0
 
 
 def test_box_filter_invalid_args(small_sky_order1_catalog):
@@ -497,8 +485,8 @@ def test_generate_negative_tree_pixels_multi_order(small_sky_order1_catalog):
     missing pixels on multiple order.
     """
     # remove one of the order 1 pixels from the catalog.
-    nodes = small_sky_order1_catalog.pixel_tree.root_pixel.children[0].children
-    small_sky_order1_catalog.pixel_tree.root_pixel.children[0].children = nodes[1:]
+    nodes = small_sky_order1_catalog.pixel_tree.get_healpix_pixels()
+    small_sky_order1_catalog.pixel_tree = PixelTreeBuilder.from_healpix(nodes[1:])
 
     expected_pixels = [
         HealpixPixel(0, 0),

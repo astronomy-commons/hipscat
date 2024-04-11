@@ -1,16 +1,11 @@
+import numpy as np
+
 from hipscat.pixel_tree.pixel_alignment import align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 def assert_trees_equal(tree1: PixelTree, tree2: PixelTree):
-    assert len(tree1.pixels) == len(tree2.pixels)
-    for order, nodes_at_order in tree1.pixels.items():
-        assert order in tree2.pixels
-        assert len(tree2.pixels[order]) == len(nodes_at_order)
-        for pixel, node in nodes_at_order.items():
-            assert (order, pixel) in tree2
-            tree2_node = tree2[(order, pixel)]
-            assert node.node_type == tree2_node.node_type
+    np.testing.assert_array_equal(tree1.tree, tree2.tree)
 
 
 def test_pixel_tree_alignment_same_tree(pixel_tree_1):
