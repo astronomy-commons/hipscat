@@ -30,7 +30,16 @@ def get_pixel_argsort(pixels: List[HealpixPixel]):
 
 
 def get_pixels_from_intervals(intervals: np.ndarray, tree_order: int) -> np.ndarray:
-    """Computes an array of HEALPix [order, pixel] for an array of intervals"""
+    """Computes an array of HEALPix [order, pixel] for an array of intervals
+
+    Args:
+        intervals (np.ndarray): Array of intervals of the start and end pixel numbers of HEALPix pixels.
+            Must be NESTED numbering scheme.
+        tree_order (int): The order of the pixel numbers in the interval array
+
+    Returns (np.ndarray):
+        An array of [order, pixel] in NESTED numbering scheme for each interval in the array.
+    """
     if intervals.shape[0] == 0:
         return np.empty((0, 2), dtype=np.int64)
     orders = np.full(intervals.shape[0], fill_value=-1)
