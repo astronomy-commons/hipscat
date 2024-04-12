@@ -86,7 +86,11 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
     return HealpixPixel(int(order), int(pixel))
 
 
-def pixel_catalog_files(catalog_base_dir: FilePointer, pixels: List[HealpixPixel], storage_options: Dict):
+def pixel_catalog_files(
+        catalog_base_dir: FilePointer,
+        pixels: List[HealpixPixel],
+        storage_options: Dict | None = None
+):
     fs, _ = get_fs(catalog_base_dir, storage_options)
     base_path_stripped = catalog_base_dir.removesuffix(fs.sep)
     return [fs.sep.join([base_path_stripped,
