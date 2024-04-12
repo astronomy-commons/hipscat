@@ -91,10 +91,13 @@ def align_trees(
     left_aligned = left.tree << (2 * (max_n - left.tree_order))
     right_aligned = right.tree << (2 * (max_n - right.tree_order))
 
-    include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
-    include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
-    mapping = perform_align_trees(left_aligned, right_aligned, include_all_left, include_all_right)
-    mapping = np.array(mapping).T
+    if alignment_type == PixelAlignmentType.INNER:
+        mapping = perform_inner_align_trees(left_aligned, right_aligned)
+    else:
+        include_all_left = alignment_type in LEFT_INCLUDE_ALIGNMENT_TYPES
+        include_all_right = alignment_type in RIGHT_INCLUDE_ALIGNMENT_TYPES
+        mapping = perform_align_trees(left_aligned, right_aligned, include_all_left, include_all_right)
+        mapping = np.array(mapping).T
     result_tree = mapping[4:6].T if len(mapping) > 0 else np.empty((0, 2), dtype=np.int64)
     result_mapping = get_pixel_mapping_df(mapping, max_n)
     return PixelAlignment(PixelTree(result_tree, max_n), result_mapping, alignment_type)
@@ -129,6 +132,62 @@ def get_pixel_mapping_df(mapping: np.ndarray, map_order: int) -> pd.DataFrame:
     )
     result_mapping.replace(-1, None, inplace=True)
     return result_mapping
+
+
+# pylint: disable=too-many-statements
+@njit(numba.int64[::1, :](numba.int64[:, :], numba.int64[:, :]))
+def perform_inner_align_trees(
+    left: np.ndarray,
+    right: np.ndarray,
+) -> np.ndarray:
+    """Performs an inner alignment on arrays of pixel intervals
+
+    Pixel interval lists must be of to the same order
+
+    Args:
+        left (np.ndarray): the left array of intervals
+        right (np.ndarray): the right array of intervals
+
+    Returns (List[np.ndarray]):
+        The pixel mapping of the matching left, right, and aligned pixels with each row containing an array of
+        [left_order, left_pixel, right_order, right_pixel, aligned_order, aligned_pixel]
+    """
+    max_out_len = left.shape[0] + right.shape[0]
+    mapping = np.zeros((max_out_len, 6), dtype=np.int64)
+    left_index = 0
+    right_index = 0
+    out_len = 0
+    while left_index < len(left) and right_index < len(right):
+        left_pix = left[left_index]
+        right_pix = right[right_index]
+        if left_pix[0] >= right_pix[1]:
+            # left pix ahead of right, no overlap, so move right on
+            right_index += 1
+            continue
+        if right_pix[0] >= left_pix[1]:
+            # right pix ahead of left, no overlap, so move left on
+            left_index += 1
+            continue
+        left_size = left_pix[1] - left_pix[0]
+        right_size = right_pix[1] - right_pix[0]
+        if left_size == right_size:
+            # overlapping & same size => same pixel so add and move both on
+            mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (left_pix, right_pix, left_pix)
+            out_len += 1
+            left_index += 1
+            right_index += 1
+            continue
+        if left_size < right_size:
+            # overlapping and left smaller so add left and move left on
+            mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (left_pix, right_pix, left_pix)
+            out_len += 1
+            left_index += 1
+            continue
+        # else overlapping and right smaller so add right and move right on
+        mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (left_pix, right_pix, right_pix)
+        out_len += 1
+        right_index += 1
+    return mapping[:out_len].T
 
 
 @njit(
