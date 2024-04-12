@@ -80,10 +80,12 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
     return FilePointer(split_pointer)
 
 
-def get_full_file_pointer(incomplete_path: str, protocol_path: str) -> FilePointer:
+def get_full_file_pointer(path: str, protocol_path: str) -> FilePointer:
     """Rebuilds the file_pointer with the protocol and account name if required"""
     protocol = get_file_protocol(protocol_path)
-    return FilePointer(f"{protocol}://{incomplete_path}")
+    if not path.startswith(protocol):
+        path = f"{protocol}://{path}"
+    return FilePointer(path)
 
 
 def get_file_pointer_from_path(path: str, include_protocol: str = None) -> FilePointer:
