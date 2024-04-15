@@ -95,7 +95,7 @@ def pixel_catalog_files(
     base_path_stripped = catalog_base_dir.removesuffix(fs.sep)
     return [fs.sep.join([base_path_stripped,
                          f"{ORDER_DIRECTORY_PREFIX}={pixel.order}",
-                         f"{DIR_DIRECTORY_PREFIX}={pixel.pixel // 10000 * 10000}",
+                         f"{DIR_DIRECTORY_PREFIX}={pixel.dir}",
                          f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet"
                          ]) for pixel in pixels]
 
