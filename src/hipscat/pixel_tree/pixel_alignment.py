@@ -192,7 +192,11 @@ def perform_inner_align_trees(
             left_index += 1
             continue
         # else overlapping and right smaller so add right and move right on
-        mapping[out_index][0:2], mapping[out_index][2:4], mapping[out_index][4:6] = (left_pix, right_pix, right_pix)
+        mapping[out_index][0:2], mapping[out_index][2:4], mapping[out_index][4:6] = (
+            left_pix,
+            right_pix,
+            right_pix,
+        )
         out_index += 1
         right_index += 1
     return mapping[:out_index].T
