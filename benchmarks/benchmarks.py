@@ -49,12 +49,24 @@ class Suite:
     def __init__(self) -> None:
         """Just initialize things"""
         self.pixel_list = None
+        self.pixel_tree_1 = None
+        self.pixel_tree_2 = None
 
     def setup(self):
         self.pixel_list = [HealpixPixel(8, pixel) for pixel in np.arange(100000)]
+        self.pixel_tree_1 = PixelTreeBuilder.from_healpix(self.pixel_list)
+        self.pixel_tree_2 = PixelTreeBuilder.from_healpix(
+            [HealpixPixel(9, pixel) for pixel in np.arange(0, 400000, 4)]
+        )
 
     def time_pixel_tree_creation(self):
         PixelTreeBuilder.from_healpix(self.pixel_list)
+
+    def time_inner_pixel_alignment(self):
+        align_trees(self.pixel_tree_1, self.pixel_tree_2)
+
+    def time_outer_pixel_alignment(self):
+        align_trees(self.pixel_tree_1, self.pixel_tree_2, alignment_type="outer")
 
     def time_paths_creation(self):
         pixel_catalog_files("foo/", self.pixel_list)
