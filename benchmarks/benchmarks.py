@@ -12,6 +12,7 @@ import hipscat.pixel_math as hist
 from hipscat.catalog import Catalog, PartitionInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.io.paths import pixel_catalog_files
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, align_trees
 from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
@@ -54,6 +55,9 @@ class Suite:
 
     def time_pixel_tree_creation(self):
         PixelTreeBuilder.from_healpix(self.pixel_list)
+
+    def time_paths_creation(self):
+        pixel_catalog_files("foo/", self.pixel_list)
 
 
 class MetadataSuite:

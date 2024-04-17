@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import re
+from typing import Dict, List
 
-from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer
+from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer, get_fs
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 
 ORDER_DIRECTORY_PREFIX = "Norder"
@@ -83,6 +84,42 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
         return INVALID_PIXEL
     order, pixel = match.groups()
     return HealpixPixel(int(order), int(pixel))
+
+
+def pixel_catalog_files(
+    catalog_base_dir: FilePointer, pixels: List[HealpixPixel], storage_options: Dict | None = None
+) -> List[FilePointer]:
+    """Create a list of path *pointers* for pixel catalog files. This will not create the directory
+    or files.
+
+    The catalog file names will take the HiPS standard form of::
+
+        <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>/Npix=<pixel_number>.parquet
+
+    Where the directory number is calculated using integer division as::
+
+        (pixel_number/10000)*10000
+
+    Args:
+        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        pixels (List[HealpixPixel]): the healpix pixels to create pointers to
+        storage_options (dict): the storage options for the file system to target when generating the paths
+    Returns (List[FilePointer]):
+        A list of paths to the pixels, in the same order as the input pixel list.
+    """
+    fs, _ = get_fs(catalog_base_dir, storage_options)
+    base_path_stripped = catalog_base_dir.removesuffix(fs.sep)
+    return [
+        fs.sep.join(
+            [
+                base_path_stripped,
+                f"{ORDER_DIRECTORY_PREFIX}={pixel.order}",
+                f"{DIR_DIRECTORY_PREFIX}={pixel.dir}",
+                f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet",
+            ]
+        )
+        for pixel in pixels
+    ]
 
 
 def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int) -> FilePointer:

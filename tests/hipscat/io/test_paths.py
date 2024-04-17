@@ -48,6 +48,12 @@ def test_pixel_catalog_file_nonint():
         paths.pixel_catalog_file("/foo", "zero", "five")
 
 
+def test_pixel_catalog_files():
+    expected = ["/foo/Norder=0/Dir=0/Npix=5.parquet", "/foo/Norder=1/Dir=0/Npix=16.parquet"]
+    result = paths.pixel_catalog_files("/foo", [HealpixPixel(0, 5), HealpixPixel(1, 16)])
+    assert expected == result
+
+
 def test_get_healpix_from_path():
     expected = HealpixPixel(5, 34)
 
