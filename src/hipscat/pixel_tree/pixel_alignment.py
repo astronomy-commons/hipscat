@@ -172,14 +172,22 @@ def perform_inner_align_trees(
         right_size = right_pix[1] - right_pix[0]
         if left_size == right_size:
             # overlapping & same size => same pixel so add and move both on
-            mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (left_pix, right_pix, left_pix)
+            mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (
+                left_pix,
+                right_pix,
+                left_pix,
+            )
             out_len += 1
             left_index += 1
             right_index += 1
             continue
         if left_size < right_size:
             # overlapping and left smaller so add left and move left on
-            mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (left_pix, right_pix, left_pix)
+            mapping[out_len][0:2], mapping[out_len][2:4], mapping[out_len][4:6] = (
+                left_pix,
+                right_pix,
+                left_pix,
+            )
             out_len += 1
             left_index += 1
             continue

@@ -66,7 +66,7 @@ class Suite:
         align_trees(self.pixel_tree_1, self.pixel_tree_2)
 
     def time_outer_pixel_alignment(self):
-        align_trees(self.pixel_tree_1, self.pixel_tree_2, alignment_type='outer')
+        align_trees(self.pixel_tree_1, self.pixel_tree_2, alignment_type="outer")
 
     def time_paths_creation(self):
         pixel_catalog_files("foo/", self.pixel_list)
