@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from typing import Any, Dict, List, Tuple, Union
 
@@ -101,7 +103,7 @@ class HealpixDataset(Dataset):
 
     @classmethod
     def _read_moc_from_point_map(
-            cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> MOC | None:
         point_map_path = paths.get_point_map_file_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(point_map_path, storage_options=storage_options):

@@ -106,6 +106,7 @@ def test_load_catalog_small_sky_order1_moc(small_sky_order1_dir):
     assert cat.moc.max_order == skymap_order
     assert np.all(cat.moc.flatten() == np.where(counts_skymap > 0))
 
+
 def test_load_catalog_small_sky_source(small_sky_source_dir):
     """Instantiate a source catalog with 14 pixels"""
     cat = read_from_hipscat(small_sky_source_dir)
