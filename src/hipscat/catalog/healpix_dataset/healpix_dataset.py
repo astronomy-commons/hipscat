@@ -105,6 +105,7 @@ class HealpixDataset(Dataset):
     def _read_moc_from_point_map(
         cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
     ) -> MOC | None:
+        """Reads a MOC object from the `point_map.fits` file if it exists in the catalog directory"""
         point_map_path = paths.get_point_map_file_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(point_map_path, storage_options=storage_options):
             return None
