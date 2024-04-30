@@ -7,6 +7,8 @@ import numpy as np
 import pytest
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
+from hipscat.io import paths
+from hipscat.io.file_io import read_fits_image
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.box_filter import _generate_ra_strip_pixel_tree
@@ -92,6 +94,17 @@ def test_load_catalog_small_sky_order1(small_sky_order1_dir):
     assert cat.catalog_name == "small_sky_order1"
     assert len(cat.get_healpix_pixels()) == 4
 
+
+def test_load_catalog_small_sky_order1_moc(small_sky_order1_dir):
+    """Instantiate a catalog with 4 pixels"""
+    cat = read_from_hipscat(small_sky_order1_dir)
+
+    assert isinstance(cat, Catalog)
+    assert cat.moc is not None
+    counts_skymap = read_fits_image(paths.get_point_map_file_pointer(small_sky_order1_dir))
+    skymap_order = hp.nside2order(hp.npix2nside(len(counts_skymap)))
+    assert cat.moc.max_order == skymap_order
+    assert np.all(cat.moc.flatten() == np.where(counts_skymap > 0))
 
 def test_load_catalog_small_sky_source(small_sky_source_dir):
     """Instantiate a source catalog with 14 pixels"""

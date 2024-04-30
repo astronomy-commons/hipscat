@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 import healpy as hp
 import numpy as np
+from mocpy import MOC
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.catalog_info import CatalogInfo
@@ -49,6 +50,7 @@ class Catalog(HealpixDataset):
         pixels: PixelInputTypes,
         catalog_path: str = None,
         storage_options: Union[Dict[Any, Any], None] = None,
+        moc: MOC | None = None,
     ) -> None:
         """Initializes a Catalog
 
@@ -59,13 +61,14 @@ class Catalog(HealpixDataset):
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
             storage_options: dictionary that contains abstract filesystem credentials
+            moc (mocpy.MOC): MOC object representing the coverage of the catalog
         """
         if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
             raise ValueError(
                 f"Catalog info `catalog_type` must be one of "
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
-        super().__init__(catalog_info, pixels, catalog_path, storage_options)
+        super().__init__(catalog_info, pixels, catalog_path, storage_options, moc)
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap with a cone

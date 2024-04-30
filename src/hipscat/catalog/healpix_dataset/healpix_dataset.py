@@ -1,7 +1,10 @@
 import dataclasses
 from typing import Any, Dict, List, Tuple, Union
 
+import healpy as hp
+import numpy as np
 import pandas as pd
+from mocpy import MOC
 from typing_extensions import Self, TypeAlias
 
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
@@ -32,6 +35,7 @@ class HealpixDataset(Dataset):
         pixels: PixelInputTypes,
         catalog_path: str = None,
         storage_options: Union[Dict[Any, Any], None] = None,
+        moc: MOC | None = None,
     ) -> None:
         """Initializes a Catalog
 
@@ -42,10 +46,12 @@ class HealpixDataset(Dataset):
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
             storage_options: dictionary that contains abstract filesystem credentials
+            moc (mocpy.MOC): MOC object representing the coverage of the catalog
         """
         super().__init__(catalog_info, catalog_path, storage_options)
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
+        self.moc = moc
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         """Get healpix pixel objects for all pixels contained in the catalog.
@@ -84,6 +90,28 @@ class HealpixDataset(Dataset):
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_info = PartitionInfo.read_from_dir(catalog_base_dir, storage_options=storage_options)
         return args + (partition_info,)
+
+    @classmethod
+    def _read_kwargs(
+        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+    ) -> dict:
+        kwargs = super()._read_kwargs(catalog_base_dir, storage_options=storage_options)
+        kwargs["moc"] = cls._read_moc_from_point_map(catalog_base_dir, storage_options)
+        return kwargs
+
+    @classmethod
+    def _read_moc_from_point_map(
+            cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+    ) -> MOC | None:
+        point_map_path = paths.get_point_map_file_pointer(catalog_base_dir)
+        if not file_io.does_file_or_directory_exist(point_map_path, storage_options=storage_options):
+            return None
+        fits_image = file_io.read_fits_image(point_map_path, storage_options=storage_options)
+        order = hp.nside2order(hp.npix2nside(len(fits_image)))
+        boolean_skymap = fits_image.astype(bool)
+        ipix = np.where(boolean_skymap)[0]
+        orders = np.full(ipix.shape, order)
+        return MOC.from_healpix_cells(ipix, orders, order)
 
     @classmethod
     def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
