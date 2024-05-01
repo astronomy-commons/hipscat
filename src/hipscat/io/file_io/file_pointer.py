@@ -65,7 +65,7 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
     if not isinstance(file_pointer, str):
         file_pointer = str(file_pointer)
 
-    if protocol == "file":
+    if "file" in protocol:
         # return the entire filepath for local files
         if "file://" in file_pointer:
             split_pointer = file_pointer.split("file://")[1]
@@ -117,7 +117,7 @@ def strip_leading_slash_for_pyarrow(pointer: FilePointer, protocol: str) -> File
     Returns:
         New file pointer with leading slash removed.
     """
-    if protocol != "file" and str(pointer).startswith("/"):
+    if "file" not in protocol and str(pointer).startswith("/"):
         pointer = FilePointer(str(pointer).replace("/", "", 1))
     return pointer
 
