@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from typing import Any, Dict, Tuple, Union
 
 import pandas as pd
+from mocpy import MOC
 from typing_extensions import TypeAlias
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
@@ -31,11 +34,12 @@ class AssociationCatalog(HealpixDataset):
         pixels: PixelInputTypes,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
+        moc: MOC | None = None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
-        super().__init__(catalog_info, pixels, catalog_path, storage_options=storage_options)
+        super().__init__(catalog_info, pixels, catalog_path, moc=moc, storage_options=storage_options)
         self.join_info = self._get_partition_join_info_from_pixels(join_pixels)
 
     def get_join_pixels(self) -> pd.DataFrame:
