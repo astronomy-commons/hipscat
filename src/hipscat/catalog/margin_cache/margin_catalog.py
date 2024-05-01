@@ -27,8 +27,8 @@ class MarginCatalog(HealpixDataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: dict | None = None,
         moc: MOC | None = None,
+        storage_options: dict | None = None,
     ) -> None:
         """Initializes a Margin Catalog
 
@@ -43,4 +43,6 @@ class MarginCatalog(HealpixDataset):
         """
         if catalog_info.catalog_type != CatalogType.MARGIN:
             raise ValueError(f"Catalog info `catalog_type` must equal {CatalogType.MARGIN}")
-        super().__init__(catalog_info, pixels, catalog_path, storage_options, moc)
+        super().__init__(
+            catalog_info, pixels, catalog_path=catalog_path, storage_options=storage_options, moc=moc
+        )

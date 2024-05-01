@@ -36,8 +36,8 @@ class HealpixDataset(Dataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: Union[Dict[Any, Any], None] = None,
         moc: MOC | None = None,
+        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
 
@@ -50,7 +50,7 @@ class HealpixDataset(Dataset):
             storage_options: dictionary that contains abstract filesystem credentials
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
         """
-        super().__init__(catalog_info, catalog_path, storage_options)
+        super().__init__(catalog_info, catalog_path=catalog_path, storage_options=storage_options)
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
         self.moc = moc

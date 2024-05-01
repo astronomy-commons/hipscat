@@ -49,8 +49,8 @@ class Catalog(HealpixDataset):
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
         catalog_path: str = None,
-        storage_options: Union[Dict[Any, Any], None] = None,
         moc: MOC | None = None,
+        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
 
@@ -68,7 +68,9 @@ class Catalog(HealpixDataset):
                 f"Catalog info `catalog_type` must be one of "
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
-        super().__init__(catalog_info, pixels, catalog_path, storage_options, moc)
+        super().__init__(
+            catalog_info, pixels, catalog_path=catalog_path, storage_options=storage_options, moc=moc
+        )
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap with a cone

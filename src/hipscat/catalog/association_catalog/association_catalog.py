@@ -34,8 +34,8 @@ class AssociationCatalog(HealpixDataset):
         pixels: PixelInputTypes,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
-        storage_options: Union[Dict[Any, Any], None] = None,
         moc: MOC | None = None,
+        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
