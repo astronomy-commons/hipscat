@@ -1,11 +1,13 @@
-from typing import List
+from typing import List, Dict, Callable
 
 import numba
 import numpy as np
 import pandas as pd
+from mocpy import MOC
 from numba import njit
 
 from hipscat.pixel_math.healpix_pixel_function import get_pixels_from_intervals
+from hipscat.pixel_tree.moc_filter import perform_filter_by_moc
 from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
@@ -386,3 +388,25 @@ def perform_align_trees(
     if include_all_left and left_index < len(left):
         _add_remaining_pixels(added_until, left, left_index, LEFT_SIDE, mapping)
     return mapping
+
+
+def filter_alignment_by_moc(alignment: PixelAlignment, moc: MOC) -> PixelAlignment:
+    moc_ranges = moc.to_depth29_ranges
+    tree_29_ranges = alignment.pixel_tree.tree << (2 * (29 - alignment.pixel_tree.tree_order))
+    tree_mask = perform_filter_by_moc(tree_29_ranges, moc_ranges)
+    new_tree = PixelTree(alignment.pixel_tree.tree[tree_mask], alignment.pixel_tree.tree_order)
+    return PixelAlignment(new_tree, alignment.pixel_mapping.iloc[tree_mask], alignment.alignment_type)
+
+
+def align_with_mocs(
+    left_tree, right_tree, left_moc, right_moc, alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
+):
+    moc_intersection_methods: Dict[PixelAlignmentType, Callable[[MOC, MOC], MOC]] = {
+        PixelAlignmentType.INNER: lambda l, r: l.intersection(r),
+        PixelAlignmentType.LEFT: lambda l, r: l,
+        PixelAlignmentType.RIGHT: lambda l, r: r,
+        PixelAlignmentType.OUTER: lambda l, r: l.union(r),
+    }
+    filter_moc = moc_intersection_methods[alignment_type](left_moc, right_moc)
+    alignment = align_trees(left_tree, right_tree, alignment_type=alignment_type)
+    return filter_alignment_by_moc(alignment, filter_moc)

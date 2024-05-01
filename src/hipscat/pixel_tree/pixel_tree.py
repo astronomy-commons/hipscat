@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Sequence
 
 import numpy as np
+from mocpy import MOC
 
 from hipscat.pixel_math import HealpixInputTypes, HealpixPixel
 from hipscat.pixel_math.healpix_pixel_convertor import get_healpix_tuple
@@ -84,7 +85,10 @@ class PixelTree:
         Returns (List[HealpixPixel]):
             A list of the HEALPix pixels in the tree
         """
-        return np.vectorize(HealpixPixel)(self.pixels.T[0], self.pixels.T[1])
+        return [HealpixPixel(p[0], p[1]) for p in self.pixels]
+
+    def to_moc(self) -> MOC:
+        return MOC.from_healpix_cells(self.pixels.T[1], self.pixels.T[0], self.tree_order)
 
     @classmethod
     def from_healpix(cls, healpix_pixels: Sequence[HealpixInputTypes], tree_order=None) -> PixelTree:

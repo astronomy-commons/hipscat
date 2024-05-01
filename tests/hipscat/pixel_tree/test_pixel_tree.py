@@ -1,4 +1,7 @@
+import numpy as np
+
 from hipscat.pixel_math import HealpixPixel
+from hipscat.pixel_math.healpix_pixel import get_higher_order_pixels
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
@@ -22,7 +25,18 @@ def test_pixel_tree_different_tree_order(pixel_tree_2):
     pixel_tree_2_order_5 = PixelTree.from_healpix(pixel_tree_2.get_healpix_pixels(), tree_order=5)
     assert pixel_tree_2_order_5.get_max_depth() == 2
     assert pixel_tree_2_order_5.tree_order == 5
-    assert all(pixel_tree_2_order_5.get_healpix_pixels() == pixel_tree_2.get_healpix_pixels())
+    assert pixel_tree_2_order_5.get_healpix_pixels() == pixel_tree_2.get_healpix_pixels()
+
+
+def test_pixel_tree_to_moc(pixel_tree_2):
+    moc = pixel_tree_2.to_moc()
+    moc_order_pixels = np.concatenate(
+        [
+            get_higher_order_pixels(pixel.order, pixel.pixel, moc.max_order - pixel.order)
+            for pixel in pixel_tree_2.get_healpix_pixels()
+        ]
+    )
+    assert np.all(moc.flatten() == moc_order_pixels)
 
 
 def test_pixel_tree_contains():

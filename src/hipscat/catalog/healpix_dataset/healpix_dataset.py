@@ -13,6 +13,9 @@ from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
 from hipscat.pixel_math import HealpixPixel
+from hipscat.pixel_tree import PixelAlignmentType, PixelAlignment
+from hipscat.pixel_tree.moc_filter import filter_by_moc
+from hipscat.pixel_tree.pixel_alignment import align_with_mocs
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 PixelInputTypes = Union[PartitionInfo, PixelTree, List[HealpixPixel]]
@@ -141,3 +144,12 @@ class HealpixDataset(Dataset):
         """
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
         return self.__class__(filtered_catalog_info, pixels)
+
+    def align(
+        self, other_cat: Self, alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
+    ) -> PixelAlignment:
+        left_moc = self.moc if self.moc is not None else self.pixel_tree.to_moc()
+        right_moc = other_cat.moc if other_cat is not None else other_cat.pixel_tree.to_moc()
+        return align_with_mocs(
+            self.pixel_tree, other_cat.pixel_tree, left_moc, right_moc, alignment_type=alignment_type
+        )
