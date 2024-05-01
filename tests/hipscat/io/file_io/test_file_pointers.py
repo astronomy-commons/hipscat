@@ -112,7 +112,7 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
 
 def test_get_fs():
     filesystem, _ = get_fs("file://")
-    assert filesystem.protocol == "file"
+    assert "file" in filesystem.protocol
 
     # this will fail if the environment installs lakefs to import
     with pytest.raises(ImportError):
