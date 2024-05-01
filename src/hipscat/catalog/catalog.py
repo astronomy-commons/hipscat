@@ -69,7 +69,7 @@ class Catalog(HealpixDataset):
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
         super().__init__(
-            catalog_info, pixels, catalog_path=catalog_path, storage_options=storage_options, moc=moc
+            catalog_info, pixels, catalog_path=catalog_path, moc=moc, storage_options=storage_options
         )
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:

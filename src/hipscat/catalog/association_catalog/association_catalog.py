@@ -39,7 +39,7 @@ class AssociationCatalog(HealpixDataset):
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
-        super().__init__(catalog_info, pixels, catalog_path, storage_options=storage_options, moc=moc)
+        super().__init__(catalog_info, pixels, catalog_path, moc=moc, storage_options=storage_options)
         self.join_info = self._get_partition_join_info_from_pixels(join_pixels)
 
     def get_join_pixels(self) -> pd.DataFrame:
