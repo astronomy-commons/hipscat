@@ -10,7 +10,6 @@ from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
 from hipscat.pixel_tree import PixelAlignmentType, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
 def filter_pixels_by_box(
@@ -92,7 +91,7 @@ def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int) -> 
         )
 
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
-    return PixelTreeBuilder.from_healpix(pixel_list)
+    return PixelTree.from_healpix(pixel_list)
 
 
 def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int) -> PixelTree:
@@ -105,7 +104,7 @@ def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int) -
         nside, hp.query_strip(nside, theta1=colat_rad[0], theta2=colat_rad[1], inclusive=True)
     )
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
-    return PixelTreeBuilder.from_healpix(pixel_list)
+    return PixelTree.from_healpix(pixel_list)
 
 
 def _get_division_ra(ra_range: Tuple[float, float]) -> float | None:

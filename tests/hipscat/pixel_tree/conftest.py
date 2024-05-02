@@ -3,7 +3,7 @@ import os
 import pytest
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 @pytest.fixture
@@ -13,12 +13,12 @@ def pixel_trees_dir(test_data_dir):
 
 @pytest.fixture
 def pixel_tree_1():
-    return PixelTreeBuilder.from_healpix([HealpixPixel(0, 11)])
+    return PixelTree.from_healpix([HealpixPixel(0, 11)])
 
 
 @pytest.fixture
 def pixel_tree_2():
-    return PixelTreeBuilder.from_healpix(
+    return PixelTree.from_healpix(
         [
             HealpixPixel(0, 10),
             HealpixPixel(1, 33),
@@ -35,7 +35,7 @@ def pixel_tree_2():
 
 @pytest.fixture
 def pixel_tree_3():
-    return PixelTreeBuilder.from_healpix(
+    return PixelTree.from_healpix(
         [
             HealpixPixel(0, 8),
             HealpixPixel(1, 36),
@@ -52,7 +52,7 @@ def pixel_tree_3():
 
 @pytest.fixture
 def aligned_trees_2_3_inner():
-    return PixelTreeBuilder.from_healpix(
+    return PixelTree.from_healpix(
         [
             HealpixPixel(1, 33),
             HealpixPixel(1, 35),
@@ -70,7 +70,7 @@ def aligned_trees_2_3_inner():
 
 @pytest.fixture
 def aligned_trees_2_3_left():
-    return PixelTreeBuilder.from_healpix(
+    return PixelTree.from_healpix(
         [
             HealpixPixel(1, 33),
             HealpixPixel(1, 35),
@@ -90,7 +90,7 @@ def aligned_trees_2_3_left():
 
 @pytest.fixture
 def aligned_trees_2_3_right():
-    return PixelTreeBuilder.from_healpix(
+    return PixelTree.from_healpix(
         [
             HealpixPixel(1, 33),
             HealpixPixel(1, 34),
@@ -113,7 +113,7 @@ def aligned_trees_2_3_right():
 
 @pytest.fixture
 def aligned_trees_2_3_outer():
-    return PixelTreeBuilder.from_healpix(
+    return PixelTree.from_healpix(
         [
             HealpixPixel(1, 33),
             HealpixPixel(1, 34),

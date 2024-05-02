@@ -14,7 +14,6 @@ from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 PixelInputTypes = Union[PartitionInfo, PixelTree, List[HealpixPixel]]
 
@@ -76,11 +75,11 @@ class HealpixDataset(Dataset):
     @staticmethod
     def _get_pixel_tree_from_pixels(pixels: PixelInputTypes) -> PixelTree:
         if isinstance(pixels, PartitionInfo):
-            return PixelTreeBuilder.from_healpix(pixels.get_healpix_pixels())
+            return PixelTree.from_healpix(pixels.get_healpix_pixels())
         if isinstance(pixels, PixelTree):
             return pixels
         if pd.api.types.is_list_like(pixels):
-            return PixelTreeBuilder.from_healpix(pixels)
+            return PixelTree.from_healpix(pixels)
         raise TypeError("Pixels must be of type PartitionInfo, PixelTree, or List[HealpixPixel]")
 
     @classmethod

@@ -13,7 +13,7 @@ from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.box_filter import _generate_ra_strip_pixel_tree
 from hipscat.pixel_math.validators import ValidatorsErrors
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 def test_catalog_load(catalog_info, catalog_pixels):
@@ -46,7 +46,7 @@ def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):
 
 
 def test_tree_pixel_input(catalog_info, catalog_pixels):
-    tree = PixelTreeBuilder.from_healpix(catalog_pixels)
+    tree = PixelTree.from_healpix(catalog_pixels)
     catalog = Catalog(catalog_info, tree)
     assert len(catalog.get_healpix_pixels()) == len(catalog_pixels)
     assert len(catalog.pixel_tree.get_healpix_pixels()) == len(catalog_pixels)
@@ -500,7 +500,7 @@ def test_generate_negative_tree_pixels_multi_order(small_sky_order1_catalog):
     """
     # remove one of the order 1 pixels from the catalog.
     nodes = small_sky_order1_catalog.pixel_tree.get_healpix_pixels()
-    small_sky_order1_catalog.pixel_tree = PixelTreeBuilder.from_healpix(nodes[1:])
+    small_sky_order1_catalog.pixel_tree = PixelTree.from_healpix(nodes[1:])
 
     expected_pixels = [
         HealpixPixel(0, 0),

@@ -1,6 +1,5 @@
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
 def test_pixel_tree_length():
@@ -9,7 +8,7 @@ def test_pixel_tree_length():
     for order in orders:
         for length in lengths:
             hp_pixels = [(order, i) for i in range(length)]
-            tree = PixelTreeBuilder.from_healpix(hp_pixels)
+            tree = PixelTree.from_healpix(hp_pixels)
             assert len(tree) == length
 
 
@@ -27,7 +26,7 @@ def test_pixel_tree_different_tree_order(pixel_tree_2):
 
 
 def test_pixel_tree_contains():
-    tree = PixelTreeBuilder.from_healpix([(0, 0)])
+    tree = PixelTree.from_healpix([(0, 0)])
     assert tree.contains((0, 0))
     assert tree.contains(HealpixPixel(0, 0))
     assert (0, 0) in tree

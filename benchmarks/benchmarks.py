@@ -15,7 +15,7 @@ from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.io.paths import pixel_catalog_files
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, align_trees
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
+from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 def time_test_alignment_even_sky():
@@ -54,13 +54,13 @@ class Suite:
 
     def setup(self):
         self.pixel_list = [HealpixPixel(8, pixel) for pixel in np.arange(100000)]
-        self.pixel_tree_1 = PixelTreeBuilder.from_healpix(self.pixel_list)
-        self.pixel_tree_2 = PixelTreeBuilder.from_healpix(
+        self.pixel_tree_1 = PixelTree.from_healpix(self.pixel_list)
+        self.pixel_tree_2 = PixelTree.from_healpix(
             [HealpixPixel(9, pixel) for pixel in np.arange(0, 400000, 4)]
         )
 
     def time_pixel_tree_creation(self):
-        PixelTreeBuilder.from_healpix(self.pixel_list)
+        PixelTree.from_healpix(self.pixel_list)
 
     def time_inner_pixel_alignment(self):
         align_trees(self.pixel_tree_1, self.pixel_tree_2)
@@ -93,8 +93,8 @@ class MetadataSuite:
         partition_info.write_to_file(os.path.join(catalog_path_b, "partition_info.csv"))
 
         ## Fake an association table between the two
-        tree_a = PixelTreeBuilder.from_healpix(pixel_list_a)
-        tree_b = PixelTreeBuilder.from_healpix(pixel_list_b)
+        tree_a = PixelTree.from_healpix(pixel_list_a)
+        tree_b = PixelTree.from_healpix(pixel_list_b)
         alignment = align_trees(tree_a, tree_b)
         alignment_df = alignment.pixel_mapping[
             [
