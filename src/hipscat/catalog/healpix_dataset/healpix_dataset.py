@@ -148,8 +148,31 @@ class HealpixDataset(Dataset):
     def align(
         self, other_cat: Self, alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
     ) -> PixelAlignment:
+        """Performs an alignment to another catalog, using the pixel tree and mocs if available
+
+        An alignment compares the pixel structures of the two catalogs, checking which pixels overlap.
+        The alignment includes the mapping of all pairs of pixels in each tree that overlap with each other,
+        and the aligned tree which consists of the overlapping pixels in the two input catalogs, using the
+        higher order pixels where there is overlap with differing orders.
+
+        For more information, see this document:
+        https://docs.google.com/document/d/1gqb8qb3HiEhLGNav55LKKFlNjuusBIsDW7FdTkc5mJU/edit?usp=sharing
+
+        Args:
+            other_cat (Catalog): The catalog to align to
+            alignment_type (PixelAlignmentType): The type of alignment describing how to handle nodes which
+            exist in one tree but not the other. Mirrors the 'how' argument of a pandas/sql join. Options are:
+
+                - "inner" - only use pixels that appear in both catalogs
+                - "left" - use all pixels that appear in the left catalog and any overlapping from the right
+                - "right" - use all pixels that appear in the right catalog and any overlapping from the left
+                - "outer" - use all pixels from both catalogs
+
+        Returns (PixelAlignment):
+            A `PixelAlignment` object with the alignment from the two catalogs
+        """
         left_moc = self.moc if self.moc is not None else self.pixel_tree.to_moc()
-        right_moc = other_cat.moc if other_cat is not None else other_cat.pixel_tree.to_moc()
+        right_moc = other_cat.moc if other_cat.moc is not None else other_cat.pixel_tree.to_moc()
         return align_with_mocs(
             self.pixel_tree, other_cat.pixel_tree, left_moc, right_moc, alignment_type=alignment_type
         )
