@@ -9,7 +9,6 @@ from typing_extensions import TypeAlias
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 # Pair of spherical sky coordinates (ra, dec)
 SphericalCoordinates: TypeAlias = Tuple[float, float]
@@ -44,4 +43,4 @@ def _generate_polygon_pixel_tree(vertices: np.array, order: int) -> PixelTree:
     and shape (Num vertices, 3), representing the vertices of the polygon."""
     polygon_pixels = hp.query_polygon(hp.order2nside(order), vertices, inclusive=True, nest=True)
     pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in polygon_pixels]
-    return PixelTreeBuilder.from_healpix(pixel_list)
+    return PixelTree.from_healpix(pixel_list)

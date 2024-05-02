@@ -6,7 +6,6 @@ import numpy as np
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.pixel_tree.pixel_tree_builder import PixelTreeBuilder
 
 
 def filter_pixels_by_cone(
@@ -35,4 +34,4 @@ def _generate_cone_pixel_tree(ra: float, dec: float, radius_arcsec: float, order
     radius_radians = np.radians(radius_arcsec / 3600.0)
     cone_pixels = hp.query_disc(n_side, center_vec, radius_radians, inclusive=True, nest=True)
     pixel_list = [HealpixPixel(order, cone_pixel) for cone_pixel in cone_pixels]
-    return PixelTreeBuilder.from_healpix(pixel_list)
+    return PixelTree.from_healpix(pixel_list)
