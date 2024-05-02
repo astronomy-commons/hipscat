@@ -51,8 +51,9 @@ dev = [
 
 [build-system]
 requires = [
+    "pybind11>=2.10.0",
     "setuptools>=62", # Used to build and package the Python project
-    "setuptools_scm>=6.2", # Gets release version from git. Makes it available programmatically
+    "setuptools_scm>=8.0", # Gets release version from git. Makes it available programmatically
 ]
 build-backend = "setuptools.build_meta"
 
