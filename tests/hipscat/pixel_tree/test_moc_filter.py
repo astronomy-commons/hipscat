@@ -23,12 +23,12 @@ def test_moc_filter_lower_order(pixel_tree_2):
     moc = MOC.from_healpix_cells(pixels, orders, 1)
     filtered_tree = filter_by_moc(pixel_tree_2, moc)
     assert filtered_tree.get_healpix_pixels() == [
-            HealpixPixel(2, 128),
-            HealpixPixel(2, 130),
-            HealpixPixel(2, 131),
-            HealpixPixel(1, 44),
-            HealpixPixel(1, 45),
-            HealpixPixel(1, 46),
+        HealpixPixel(2, 128),
+        HealpixPixel(2, 130),
+        HealpixPixel(2, 131),
+        HealpixPixel(1, 44),
+        HealpixPixel(1, 45),
+        HealpixPixel(1, 46),
     ]
 
 
@@ -38,8 +38,8 @@ def test_moc_filter_higher_order(pixel_tree_2):
     moc = MOC.from_healpix_cells(pixels, orders, 3)
     filtered_tree = filter_by_moc(pixel_tree_2, moc)
     assert filtered_tree.get_healpix_pixels() == [
-            HealpixPixel(2, 130),
-            HealpixPixel(0, 10),
+        HealpixPixel(2, 130),
+        HealpixPixel(0, 10),
     ]
 
 
