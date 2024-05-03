@@ -2,7 +2,7 @@ import numpy as np
 
 from hipscat.catalog import Catalog
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree.pixel_alignment import align_trees, align_with_mocs, PixelAlignment
+from hipscat.pixel_tree.pixel_alignment import PixelAlignment, align_trees, align_with_mocs
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 

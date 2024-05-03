@@ -1,17 +1,9 @@
-import numpy as np
 import pytest
 
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree.pixel_tree import PixelTree
-
 
 # pylint: disable= redefined-outer-name
-
-
-def assert_trees_equal(tree1: PixelTree, tree2: PixelTree):
-    np.testing.assert_array_equal(tree1.tree, tree2.tree)
-    assert tree1.tree_order == tree2.tree_order
 
 
 @pytest.fixture

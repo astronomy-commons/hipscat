@@ -13,8 +13,7 @@ from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree import PixelAlignmentType, PixelAlignment
-from hipscat.pixel_tree.moc_filter import filter_by_moc
+from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType
 from hipscat.pixel_tree.pixel_alignment import align_with_mocs
 from hipscat.pixel_tree.pixel_tree import PixelTree
 

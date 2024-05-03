@@ -10,6 +10,15 @@ def filter_by_moc(
     tree: PixelTree,
     moc: MOC,
 ) -> PixelTree:
+    """Filters a pixel tree to only include the pixels that overlap with the pixels in the moc
+
+    Args:
+        tree (PixelTree): The tree to perform the filtering on
+        moc (mocpy.MOC): The moc to use to filter
+
+    Returns:
+        A new PixelTree object with only the pixels from the input tree that overlap with the moc.
+    """
     moc_ranges = moc.to_depth29_ranges
     tree_29_ranges = tree.tree << (2 * (29 - tree.tree_order))
     tree_mask = perform_filter_by_moc(tree_29_ranges, moc_ranges)
@@ -26,7 +35,18 @@ def perform_filter_by_moc(
     tree: np.ndarray,
     moc: np.ndarray,
 ) -> np.ndarray:
-    """Performs filtering with lists of pixel intervals"""
+    """Performs filtering with lists of pixel intervals
+
+    Input interval lists must be at the same order.
+
+    Args:
+        tree (np.ndarray): Array of pixel intervals to be filtered
+        moc (np.ndarray): Array of pixel intervals to be used to filter
+
+    Returns:
+        A boolean array of dimension tree.shape[0] which masks which pixels in tree overlap with the pixels in
+        moc
+    """
     output = np.full(tree.shape[0], fill_value=False, dtype=np.bool_)
     tree_index = 0
     moc_index = 0

@@ -88,6 +88,7 @@ class PixelTree:
         return [HealpixPixel(p[0], p[1]) for p in self.pixels]
 
     def to_moc(self) -> MOC:
+        """Returns the MOC object that covers the same pixels as the tree"""
         return MOC.from_healpix_cells(self.pixels.T[1], self.pixels.T[0], self.tree_order)
 
     @classmethod
