@@ -7,7 +7,7 @@ from mocpy import MOC
 from numba import njit
 
 from hipscat.pixel_math.healpix_pixel_function import get_pixels_from_intervals
-from hipscat.pixel_tree.moc_filter import perform_filter_by_moc, filter_tree_by_mask
+from hipscat.pixel_tree.moc_filter import filter_tree_by_mask, perform_filter_by_moc
 from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
