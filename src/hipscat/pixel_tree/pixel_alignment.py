@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable, Dict, List
 
 import numba
@@ -411,8 +413,8 @@ def filter_alignment_by_moc(alignment: PixelAlignment, moc: MOC) -> PixelAlignme
 def align_with_mocs(
     left_tree: PixelTree,
     right_tree: PixelTree,
-    left_moc: MOC,
-    right_moc: MOC,
+    left_moc: MOC | None,
+    right_moc: MOC | None,
     alignment_type: PixelAlignmentType = PixelAlignmentType.INNER,
 ) -> PixelAlignment:
     """Aligns two pixel trees and mocs together, resulting in a pixel alignment with only aligned pixels that
@@ -434,6 +436,8 @@ def align_with_mocs(
     Returns:
         The PixelAlignment object with the aligned trees filtered by the coverage in the catalogs.
     """
+    left_moc = left_moc if left_moc is not None else left_tree.to_moc()
+    right_moc = right_moc if right_moc is not None else right_tree.to_moc()
     moc_intersection_methods: Dict[PixelAlignmentType, Callable[[MOC, MOC], MOC]] = {
         PixelAlignmentType.INNER: lambda l, r: l.intersection(r),
         PixelAlignmentType.LEFT: lambda l, r: l,
