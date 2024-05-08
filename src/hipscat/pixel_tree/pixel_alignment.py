@@ -1,11 +1,13 @@
-from typing import List
+from typing import Callable, Dict, List
 
 import numba
 import numpy as np
 import pandas as pd
+from mocpy import MOC
 from numba import njit
 
 from hipscat.pixel_math.healpix_pixel_function import get_pixels_from_intervals
+from hipscat.pixel_tree.moc_filter import perform_filter_by_moc
 from hipscat.pixel_tree.pixel_alignment_types import PixelAlignmentType
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
@@ -386,3 +388,58 @@ def perform_align_trees(
     if include_all_left and left_index < len(left):
         _add_remaining_pixels(added_until, left, left_index, LEFT_SIDE, mapping)
     return mapping
+
+
+def filter_alignment_by_moc(alignment: PixelAlignment, moc: MOC) -> PixelAlignment:
+    """Filters an alignment by a moc to only include pixels in the aligned_tree that overlap with the moc,
+    and the corresponding rows in the mapping.
+
+    Args:
+        alignment (PixelAlignment): The pixel alignment to filter
+        moc (mocpy.MOC): The moc to filter by
+
+    Returns:
+        PixelAlignment object with the filtered mapping and tree
+    """
+    moc_ranges = moc.to_depth29_ranges
+    tree_29_ranges = alignment.pixel_tree.tree << (2 * (29 - alignment.pixel_tree.tree_order))
+    tree_mask = perform_filter_by_moc(tree_29_ranges, moc_ranges)
+    new_tree = PixelTree(alignment.pixel_tree.tree[tree_mask], alignment.pixel_tree.tree_order)
+    return PixelAlignment(new_tree, alignment.pixel_mapping.iloc[tree_mask], alignment.alignment_type)
+
+
+def align_with_mocs(
+    left_tree: PixelTree,
+    right_tree: PixelTree,
+    left_moc: MOC,
+    right_moc: MOC,
+    alignment_type: PixelAlignmentType = PixelAlignmentType.INNER,
+) -> PixelAlignment:
+    """Aligns two pixel trees and mocs together, resulting in a pixel alignment with only aligned pixels that
+    have coverage in the mocs.
+
+    Args:
+        left_tree (PixelTree): The left tree to align
+        right_tree (PixelTree): The right tree to align
+        left_moc (mocpy.MOC): the moc with the coverage of the left catalog
+        right_moc (mocpy.MOC): the moc with the coverage of the right catalog
+        alignment_type (PixelAlignmentType): The type of alignment describing how to handle nodes which exist
+            in one tree but not the other. Options are:
+
+                - inner - only use pixels that appear in both catalogs
+                - left - use all pixels that appear in the left catalog and any overlapping from the right
+                - right - use all pixels that appear in the right catalog and any overlapping from the left
+                - outer - use all pixels from both catalogs
+
+    Returns:
+        The PixelAlignment object with the aligned trees filtered by the coverage in the catalogs.
+    """
+    moc_intersection_methods: Dict[PixelAlignmentType, Callable[[MOC, MOC], MOC]] = {
+        PixelAlignmentType.INNER: lambda l, r: l.intersection(r),
+        PixelAlignmentType.LEFT: lambda l, r: l,
+        PixelAlignmentType.RIGHT: lambda l, r: r,
+        PixelAlignmentType.OUTER: lambda l, r: l.union(r),
+    }
+    filter_moc = moc_intersection_methods[alignment_type](left_moc, right_moc)
+    alignment = align_trees(left_tree, right_tree, alignment_type=alignment_type)
+    return filter_alignment_by_moc(alignment, filter_moc)
