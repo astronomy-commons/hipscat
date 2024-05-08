@@ -23,20 +23,7 @@ def filter_by_moc(
     # Convert tree intervals to order 29 to match moc intervals
     tree_29_ranges = tree.tree << (2 * (29 - tree.tree_order))
     tree_mask = perform_filter_by_moc(tree_29_ranges, moc_ranges)
-    return filter_tree_by_mask(tree, tree_mask)
-
-
-def filter_tree_by_mask(tree: PixelTree, mask: np.ndarray) -> PixelTree:
-    """Applies a boolean mask to a pixel tree to filter which pixels are in the tree
-
-    Args:
-        tree (PixelTree): The pixel tree to filter
-        mask (np.ndarray): The mask to filter by
-
-    Returns:
-        A new PixelTree object with only the pixels from the mask, at the same tree order as the original tree
-    """
-    return PixelTree(tree.tree[mask], tree.tree_order)
+    return PixelTree(tree.tree[tree_mask], tree.tree_order)
 
 
 @njit(
