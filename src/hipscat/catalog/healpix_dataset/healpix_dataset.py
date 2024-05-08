@@ -170,8 +170,6 @@ class HealpixDataset(Dataset):
         Returns (PixelAlignment):
             A `PixelAlignment` object with the alignment from the two catalogs
         """
-        left_moc = self.moc if self.moc is not None else self.pixel_tree.to_moc()
-        right_moc = other_cat.moc if other_cat.moc is not None else other_cat.pixel_tree.to_moc()
         return align_with_mocs(
-            self.pixel_tree, other_cat.pixel_tree, left_moc, right_moc, alignment_type=alignment_type
+            self.pixel_tree, other_cat.pixel_tree, self.moc, other_cat.moc, alignment_type=alignment_type
         )
