@@ -236,8 +236,9 @@ def _add_pixels_until(
         mapping (List[np.ndarray]): The List mapping left, right, and aligned pixels to add the new pixels to
     """
     while add_from < add_to:
-        # maximum power of 4 that is a factor of add_from. If add_from is 0, can add any pixel size
-        max_p4_from = 64
+        # maximum power of 4 that is a factor of add_from
+        # If add_from is 0, can add any power of 4, so use largest healpix order of 4**29
+        max_p4_from = 1 << 58
         if add_from != 0:
             max_p4_from = add_from & -add_from
             if max_p4_from & 0xAAAAAAAAAAAAAAA:
