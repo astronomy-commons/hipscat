@@ -242,3 +242,14 @@ def test_catalog_align_outer(pixel_tree_2, pixel_tree_3, aligned_trees_2_3_outer
     alignment = left_cat_with_moc.align(right_cat_with_moc, alignment_type="outer")
     assert_trees_equal(alignment.pixel_tree, both_moc_correct_tree)
     assert_mapping_matches_tree(alignment)
+
+
+def test_outer_align_start_0():
+    left_tree = PixelTree.from_healpix([HealpixPixel(0, 0)])
+    right_tree = PixelTree.from_healpix([HealpixPixel(1, 1)])
+    alignment = align_trees(left_tree, right_tree, alignment_type="outer")
+    expected_tree = PixelTree.from_healpix(
+        [HealpixPixel(1, 0), HealpixPixel(1, 1), HealpixPixel(1, 2), HealpixPixel(1, 3)]
+    )
+    assert_trees_equal(alignment.pixel_tree, expected_tree)
+    assert_mapping_matches_tree(alignment)
