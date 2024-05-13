@@ -237,9 +237,12 @@ def _add_pixels_until(
     """
     while add_from < add_to:
         # maximum power of 4 that is a factor of add_from
-        max_p4_from = add_from & -add_from
-        if max_p4_from & 0xAAAAAAAAAAAAAAA:
-            max_p4_from = max_p4_from >> 1
+        # If add_from is 0, can add any power of 4, so use largest healpix order of 4**29
+        max_p4_from = 1 << 58
+        if add_from != 0:
+            max_p4_from = add_from & -add_from
+            if max_p4_from & 0xAAAAAAAAAAAAAAA:
+                max_p4_from = max_p4_from >> 1
 
         # maximum power of 4 less than or equal to (add_to - add_from)
         max_p4_to_log2 = np.int64(np.log2(add_to - add_from))
