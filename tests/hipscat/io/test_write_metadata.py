@@ -4,6 +4,7 @@ import os
 import shutil
 from pathlib import Path
 
+import healpy as hp
 import numpy.testing as npt
 
 import hipscat.io.write_metadata as io
@@ -202,3 +203,11 @@ def test_read_write_fits_point_map(tmp_path):
 
     output = file_io.read_fits_image(output_file)
     npt.assert_array_equal(output, initial_histogram)
+
+    # Check the metadata of the fits file:
+    map_fits_image = hp.read_map(output_file, h=True)
+
+    header_dict = dict(map_fits_image[1])
+    assert header_dict["ORDERING"] == "NESTED"
+    assert header_dict["PIXTYPE"] == "HEALPIX"
+    assert header_dict["NSIDE"] == 2
