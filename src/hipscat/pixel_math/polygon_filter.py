@@ -4,10 +4,13 @@ from typing import List, Tuple
 
 import healpy as hp
 import numpy as np
+from mocpy import MOC
 from typing_extensions import TypeAlias
 
+import astropy.units as u
+
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.filter import get_filtered_pixel_list
+from hipscat.pixel_tree.moc_filter import filter_by_moc
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 # Pair of spherical sky coordinates (ra, dec)
@@ -32,15 +35,16 @@ def filter_pixels_by_polygon(
         List of HealpixPixel, representing only the pixels that overlap
         with the specified polygonal region, and the maximum pixel order.
     """
+    vertices = np.array(vertices)
     max_order = pixel_tree.get_max_depth()
-    polygon_tree = _generate_polygon_pixel_tree(vertices, max_order)
-    return get_filtered_pixel_list(pixel_tree, polygon_tree)
+    polygon_moc = generate_polygon_moc(vertices, max_order)
+    return filter_by_moc(pixel_tree, polygon_moc).get_healpix_pixels()
 
 
-def _generate_polygon_pixel_tree(vertices: np.array, order: int) -> PixelTree:
-    """Generates a pixel_tree filled with leaf nodes at a given order that overlap within
-    a polygon. Vertices is an array of 3D coordinates, in cartesian representation (x,y,z)
-    and shape (Num vertices, 3), representing the vertices of the polygon."""
+def generate_polygon_moc(vertices: np.array, order: int) -> MOC:
+    """Generates a moc filled with leaf nodes at a given order that overlap within
+    a polygon. Vertices is an array of Spherical coordinates, in representation (ra,dec)
+    and shape (Num vertices, 2), representing the vertices of the polygon."""
     polygon_pixels = hp.query_polygon(hp.order2nside(order), vertices, inclusive=True, nest=True)
-    pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in polygon_pixels]
-    return PixelTree.from_healpix(pixel_list)
+    polygon_orders = np.full(len(polygon_pixels), fill_value=order)
+    return MOC.from_healpix_cells(ipix=polygon_pixels, depth=polygon_orders, max_depth=order)

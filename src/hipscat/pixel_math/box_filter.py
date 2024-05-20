@@ -4,11 +4,11 @@ from typing import Iterable, List, Tuple
 
 import healpy as hp
 import numpy as np
+from mocpy import MOC
 
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.filter import get_filtered_pixel_list
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
-from hipscat.pixel_tree import PixelAlignmentType, align_trees
+from hipscat.pixel_tree.moc_filter import filter_by_moc
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
@@ -28,24 +28,26 @@ def filter_pixels_by_box(
         ascension and/or declination region.
     """
     max_order = pixel_tree.get_max_depth()
+    search_moc = generate_box_moc(ra, dec, max_order)
 
-    filter_tree = None
-    ra_search_tree, dec_search_tree = None, None
-
-    if ra is not None:
-        ra_search_tree = _generate_ra_strip_pixel_tree(ra, max_order)
-        filter_tree = ra_search_tree
-    if dec is not None:
-        dec_search_tree = _generate_dec_strip_pixel_tree(dec, max_order)
-        filter_tree = dec_search_tree
-    if ra_search_tree is not None and dec_search_tree is not None:
-        filter_tree = align_trees(
-            ra_search_tree, dec_search_tree, alignment_type=PixelAlignmentType.INNER
-        ).pixel_tree
-
-    result_pixels = get_filtered_pixel_list(pixel_tree, filter_tree)
+    result_pixels = filter_by_moc(pixel_tree, search_moc).get_healpix_pixels()
 
     return result_pixels
+
+
+def generate_box_moc(ra, dec, order):
+    filter_moc = None
+    ra_search_moc, dec_search_moc = None, None
+
+    if ra is not None:
+        ra_search_moc = _generate_ra_strip_moc(ra, order)
+        filter_moc = ra_search_moc
+    if dec is not None:
+        dec_search_moc = _generate_dec_strip_moc(dec, order)
+        filter_moc = dec_search_moc
+    if ra_search_moc is not None and dec_search_moc is not None:
+        filter_moc = ra_search_moc.intersection(dec_search_moc)
+    return filter_moc
 
 
 def wrap_ra_angles(ra: np.ndarray | Iterable | int | float) -> np.ndarray:
@@ -60,7 +62,7 @@ def wrap_ra_angles(ra: np.ndarray | Iterable | int | float) -> np.ndarray:
     return np.asarray(ra, dtype=float) % 360
 
 
-def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int) -> PixelTree:
+def _generate_ra_strip_moc(ra_range: Tuple[float, float], order: int) -> MOC:
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the ra region."""
     # Subdivide polygons (if needed) in two smaller polygons of at most 180 degrees
     division_ra = _get_division_ra(ra_range)
@@ -90,11 +92,11 @@ def _generate_ra_strip_pixel_tree(ra_range: Tuple[float, float], order: int) -> 
             order,
         )
 
-    pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
-    return PixelTree.from_healpix(pixel_list)
+    orders = np.full(pixels_in_range.shape, fill_value=order)
+    return MOC.from_healpix_cells(ipix=pixels_in_range, depth=orders, max_depth=order)
 
 
-def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int) -> PixelTree:
+def _generate_dec_strip_moc(dec_range: Tuple[float, float], order: int) -> PixelTree:
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the dec region."""
     nside = hp.order2nside(order)
     # Convert declination values to colatitudes, in radians, and revert their order
@@ -103,8 +105,8 @@ def _generate_dec_strip_pixel_tree(dec_range: Tuple[float, float], order: int) -
     pixels_in_range = hp.ring2nest(
         nside, hp.query_strip(nside, theta1=colat_rad[0], theta2=colat_rad[1], inclusive=True)
     )
-    pixel_list = [HealpixPixel(order, polygon_pixel) for polygon_pixel in pixels_in_range]
-    return PixelTree.from_healpix(pixel_list)
+    orders = np.full(pixels_in_range.shape, fill_value=order)
+    return MOC.from_healpix_cells(ipix=pixels_in_range, depth=orders, max_depth=order)
 
 
 def _get_division_ra(ra_range: Tuple[float, float]) -> float | None:

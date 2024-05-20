@@ -122,9 +122,11 @@ class Catalog(HealpixDataset):
             validate_declination_values(dec)
             # Get the coordinates vector on the unit sphere if we were provided
             # with polygon spherical coordinates of ra and dec
-            vertices = hp.ang2vec(ra, dec, lonlat=True)
-        validate_polygon(vertices)
-        return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, vertices))
+            cart_vertices = hp.ang2vec(ra, dec, lonlat=True)
+        else:
+            cart_vertices = vertices
+        validate_polygon(cart_vertices)
+        return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, cart_vertices))
 
     def generate_negative_tree_pixels(self) -> List[HealpixPixel]:
         """Get the leaf nodes at each healpix order that have zero catalog data.

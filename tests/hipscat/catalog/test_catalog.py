@@ -11,7 +11,7 @@ from hipscat.io import paths
 from hipscat.io.file_io import read_fits_image
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.box_filter import _generate_ra_strip_pixel_tree
+from hipscat.pixel_math.box_filter import _generate_ra_strip_moc
 from hipscat.pixel_math.validators import ValidatorsErrors
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
@@ -308,25 +308,25 @@ def test_box_filter_ra_divisions_edge_cases(small_sky_order1_catalog):
 def test_box_filter_ra_pixel_tree_generation():
     """This method tests the pixel tree generation for the ra filter"""
     # The catalog pixels are distributed around the [270,0] degree range.
-    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(0, 180), order=1)
-    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(180, 0), order=1)
-    assert len(pixel_tree) == len(pixel_tree_complement)
+    moc = _generate_ra_strip_moc(ra_range=(0, 180), order=1)
+    moc_complement = _generate_ra_strip_moc(ra_range=(180, 0), order=1)
+    assert len(moc.flatten()) == len(moc_complement.flatten())
 
-    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(10, 50), order=1)
-    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(50, 10), order=1)
-    assert len(pixel_tree) < len(pixel_tree_complement)
+    moc = _generate_ra_strip_moc(ra_range=(10, 50), order=1)
+    moc_complement = _generate_ra_strip_moc(ra_range=(50, 10), order=1)
+    assert len(moc.flatten()) < len(moc_complement.flatten())
 
-    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(10, 220), order=1)
-    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(220, 10), order=1)
-    assert len(pixel_tree_complement) < len(pixel_tree)
+    moc = _generate_ra_strip_moc(ra_range=(10, 220), order=1)
+    moc_complement = _generate_ra_strip_moc(ra_range=(220, 10), order=1)
+    assert len(moc_complement.flatten()) < len(moc.flatten())
 
-    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(200, 350), order=1)
-    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(350, 200), order=1)
-    assert len(pixel_tree) < len(pixel_tree_complement)
+    moc = _generate_ra_strip_moc(ra_range=(200, 350), order=1)
+    moc_complement = _generate_ra_strip_moc(ra_range=(350, 200), order=1)
+    assert len(moc.flatten()) < len(moc_complement.flatten())
 
-    pixel_tree = _generate_ra_strip_pixel_tree(ra_range=(200, 50), order=1)
-    pixel_tree_complement = _generate_ra_strip_pixel_tree(ra_range=(50, 200), order=1)
-    assert len(pixel_tree_complement) < len(pixel_tree)
+    moc = _generate_ra_strip_moc(ra_range=(200, 50), order=1)
+    moc_complement = _generate_ra_strip_moc(ra_range=(50, 200), order=1)
+    assert len(moc_complement.flatten()) < len(moc.flatten())
 
 
 def test_box_filter_dec(small_sky_order1_catalog):
