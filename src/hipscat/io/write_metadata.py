@@ -24,6 +24,8 @@ class HipscatEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Path):
             return str(o)
+        if isinstance(o, (type, np.dtype, pd.core.dtypes.base.ExtensionDtype)):
+            return str(o)
         return super().default(o)  # pragma: no cover
 
 
