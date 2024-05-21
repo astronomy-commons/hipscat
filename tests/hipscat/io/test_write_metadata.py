@@ -27,6 +27,7 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
         "        3,",
         "        5",
         "    ]",
+        r'    "integer_type": "<class \'int\'>"',
         "}",
     ]
 
@@ -35,6 +36,7 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
     dictionary["first_greek"] = "alpha"
     dictionary["first_number"] = 1
     dictionary["first_five_fib"] = [1, 1, 2, 3, 5]
+    dictionary["integer_type"] = int
 
     json_filename = os.path.join(tmp_path, "dictionary.json")
     io.write_json_file(dictionary, json_filename)
