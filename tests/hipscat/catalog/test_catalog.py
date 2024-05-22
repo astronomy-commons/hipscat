@@ -2,9 +2,9 @@
 
 import os
 
+import astropy.units as u
 import healpy as hp
 import numpy as np
-import pandas as pd
 import pytest
 from mocpy import MOC
 
@@ -14,11 +14,8 @@ from hipscat.io.file_io import read_fits_image
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.box_filter import _generate_ra_strip_moc, generate_box_moc
-from hipscat.pixel_math.polygon_filter import generate_polygon_moc
 from hipscat.pixel_math.validators import ValidatorsErrors
 from hipscat.pixel_tree.pixel_tree import PixelTree
-
-import astropy.units as u
 
 
 def test_catalog_load(catalog_info, catalog_pixels):

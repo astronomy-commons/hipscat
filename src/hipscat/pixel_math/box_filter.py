@@ -6,13 +6,21 @@ import healpy as hp
 import numpy as np
 from mocpy import MOC
 
-from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
-from hipscat.pixel_tree.moc_filter import filter_by_moc
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
-def generate_box_moc(ra, dec, order):
+def generate_box_moc(ra: Tuple[float, float], dec: Tuple[float, float], order: int) -> MOC:
+    """Generates a MOC object that covers the specified box area
+
+    Args:
+        ra (Tuple[float, float]): Right ascension range, in [0,360] degrees
+        dec (Tuple[float, float]): Declination range, in [-90,90] degrees
+        order (int): Maximum order of the moc to generate the box at
+
+    Returns:
+        a MOC object that covers the specified box
+    """
     filter_moc = None
     ra_search_moc, dec_search_moc = None, None
 

@@ -133,6 +133,8 @@ class HealpixDataset(Dataset):
             )
 
     def get_max_coverage_order(self):
+        """Gets the maximum HEALPix order for which the coverage of the catalog is known from the pixel
+        tree and moc if it exists"""
         max_order = (
             max(self.moc.max_order, self.pixel_tree.get_max_depth())
             if self.moc is not None
@@ -141,14 +143,14 @@ class HealpixDataset(Dataset):
         return max_order
 
     def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Self:
-        """Filter the pixels in the catalog to only include the requested pixels.
+        """Filter the pixels in the catalog to only include any that overlap with the requested pixels.
 
         Args:
             pixels (List[HealpixPixels]): the pixels to include
 
         Returns:
-            A new catalog with only those pixels. Note that we reset the total_rows
-            to None, instead of performing a scan over the new pixel sizes.
+            A new catalog with only the pixels that overlap with the given pixels. Note that we reset the
+            total_rows to None, as updating would require a scan over the new pixel sizes.
         """
         orders = np.array([p.order for p in pixels])
         pixel_inds = np.array([p.pixel for p in pixels])
@@ -157,6 +159,14 @@ class HealpixDataset(Dataset):
         return self.filter_by_moc(moc)
 
     def filter_by_moc(self, moc: MOC) -> Self:
+        """Filter the pixels in the catalog to only include the pixels that overlap with the moc provided.
+
+        Args:
+            moc (mocpy.MOC): the moc to filter by
+
+        Returns:
+            A new catalog with only the pixels that overlap with the moc. Note that we reset the total_rows
+            to None, as updating would require a scan over the new pixel sizes."""
         filtered_tree = filter_by_moc(self.pixel_tree, moc)
         filtered_moc = self.moc.intersection(moc) if self.moc is not None else None
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)

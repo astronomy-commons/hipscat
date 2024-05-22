@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from mocpy import MOC
-from typing_extensions import TypeAlias, Self
 import healpy as hp
+from mocpy import MOC
+from typing_extensions import Self, TypeAlias
 
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes

@@ -13,13 +13,9 @@ from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.box_filter import wrap_ra_angles, generate_box_moc
+from hipscat.pixel_math.box_filter import generate_box_moc, wrap_ra_angles
 from hipscat.pixel_math.cone_filter import generate_cone_moc
-from hipscat.pixel_math.polygon_filter import (
-    CartesianCoordinates,
-    SphericalCoordinates,
-    generate_polygon_moc,
-)
+from hipscat.pixel_math.polygon_filter import CartesianCoordinates, SphericalCoordinates, generate_polygon_moc
 from hipscat.pixel_math.validators import (
     validate_box_search,
     validate_declination_values,
