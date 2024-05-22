@@ -283,7 +283,6 @@ def test_polygonal_filter_invalid_polygon(small_sky_order1_catalog):
 
 
 def test_box_filter_ra(small_sky_order1_catalog):
-
     ra = (280, 290)
     # The catalog pixels are distributed around the [270,0] degree range.
     filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=ra)
