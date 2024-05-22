@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from mocpy import MOC
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, Self
+import healpy as hp
 
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.catalog.margin_cache import MarginCacheCatalogInfo
+from hipscat.pixel_tree.moc_utils import copy_moc
 
 
 class MarginCatalog(HealpixDataset):
@@ -46,3 +48,14 @@ class MarginCatalog(HealpixDataset):
         super().__init__(
             catalog_info, pixels, catalog_path=catalog_path, moc=moc, storage_options=storage_options
         )
+
+    def filter_by_moc(self, moc: MOC) -> Self:
+        max_order = self.pixel_tree.get_max_depth()
+        max_order_size = hp.nside2resol(2**max_order, arcmin=True)
+        if self.catalog_info.margin_threshold > max_order_size * 60:
+            raise ValueError(
+                f"Cannot Filter Margin: Margin size {self.catalog_info.margin_threshold} is "
+                f"greater than the size of a pixel at the highest order {max_order}."
+            )
+        search_moc = copy_moc(moc).add_neighbours()
+        return super().filter_by_moc(search_moc)
