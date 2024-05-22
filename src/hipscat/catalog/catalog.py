@@ -13,12 +13,12 @@ from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.box_filter import filter_pixels_by_box, wrap_ra_angles
-from hipscat.pixel_math.cone_filter import filter_pixels_by_cone
+from hipscat.pixel_math.box_filter import wrap_ra_angles, generate_box_moc
+from hipscat.pixel_math.cone_filter import generate_cone_moc
 from hipscat.pixel_math.polygon_filter import (
     CartesianCoordinates,
     SphericalCoordinates,
-    filter_pixels_by_polygon,
+    generate_polygon_moc,
 )
 from hipscat.pixel_math.validators import (
     validate_box_search,
@@ -85,7 +85,7 @@ class Catalog(HealpixDataset):
         """
         validate_radius(radius_arcsec)
         validate_declination_values(dec)
-        return self.filter_from_pixel_list(filter_pixels_by_cone(self.pixel_tree, ra, dec, radius_arcsec))
+        return self.filter_by_moc(generate_cone_moc(ra, dec, radius_arcsec, self.get_max_coverage_order()))
 
     def filter_by_box(
         self, ra: Tuple[float, float] | None = None, dec: Tuple[float, float] | None = None
@@ -103,7 +103,7 @@ class Catalog(HealpixDataset):
         """
         ra = tuple(wrap_ra_angles(ra)) if ra else None
         validate_box_search(ra, dec)
-        return self.filter_from_pixel_list(filter_pixels_by_box(self.pixel_tree, ra, dec))
+        return self.filter_by_moc(generate_box_moc(ra, dec, self.get_max_coverage_order()))
 
     def filter_by_polygon(self, vertices: List[SphericalCoordinates] | List[CartesianCoordinates]) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap
@@ -126,7 +126,7 @@ class Catalog(HealpixDataset):
         else:
             cart_vertices = vertices
         validate_polygon(cart_vertices)
-        return self.filter_from_pixel_list(filter_pixels_by_polygon(self.pixel_tree, cart_vertices))
+        return self.filter_by_moc(generate_polygon_moc(cart_vertices, self.get_max_coverage_order()))
 
     def generate_negative_tree_pixels(self) -> List[HealpixPixel]:
         """Get the leaf nodes at each healpix order that have zero catalog data.

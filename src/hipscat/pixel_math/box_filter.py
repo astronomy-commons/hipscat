@@ -12,29 +12,6 @@ from hipscat.pixel_tree.moc_filter import filter_by_moc
 from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
-def filter_pixels_by_box(
-    pixel_tree: PixelTree, ra: Tuple[float, float] | None, dec: Tuple[float, float] | None
-) -> List[HealpixPixel]:
-    """Filter the leaf pixels in a pixel tree to return a partition_info dataframe
-    with the pixels that overlap with a right ascension and/or declination region.
-
-    Args:
-        pixel_tree (PixelTree): The catalog tree to filter pixels from
-        ra (Tuple[float, float]): Right ascension range, in [0,360] degrees
-        dec (Tuple[float, float]): Declination range, in [-90,90] degrees
-
-    Returns:
-        List of HEALPix representing only the pixels that overlap with the right
-        ascension and/or declination region.
-    """
-    max_order = pixel_tree.get_max_depth()
-    search_moc = generate_box_moc(ra, dec, max_order)
-
-    result_pixels = filter_by_moc(pixel_tree, search_moc).get_healpix_pixels()
-
-    return result_pixels
-
-
 def generate_box_moc(ra, dec, order):
     filter_moc = None
     ra_search_moc, dec_search_moc = None, None

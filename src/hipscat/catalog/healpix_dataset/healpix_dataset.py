@@ -132,6 +132,14 @@ class HealpixDataset(Dataset):
                 f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
             )
 
+    def get_max_coverage_order(self):
+        max_order = (
+            max(self.moc.max_order, self.pixel_tree.get_max_depth())
+            if self.moc is not None
+            else self.pixel_tree.get_max_depth()
+        )
+        return max_order
+
     def filter_from_pixel_list(self, pixels: List[HealpixPixel]) -> Self:
         """Filter the pixels in the catalog to only include the requested pixels.
 

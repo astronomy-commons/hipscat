@@ -4,16 +4,21 @@ import os
 
 import healpy as hp
 import numpy as np
+import pandas as pd
 import pytest
+from mocpy import MOC
 
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.io import paths
 from hipscat.io.file_io import read_fits_image
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_math.box_filter import _generate_ra_strip_moc
+from hipscat.pixel_math.box_filter import _generate_ra_strip_moc, generate_box_moc
+from hipscat.pixel_math.polygon_filter import generate_polygon_moc
 from hipscat.pixel_math.validators import ValidatorsErrors
 from hipscat.pixel_tree.pixel_tree import PixelTree
+
+import astropy.units as u
 
 
 def test_catalog_load(catalog_info, catalog_pixels):
@@ -116,8 +121,31 @@ def test_load_catalog_small_sky_source(small_sky_source_dir):
     assert len(cat.get_healpix_pixels()) == 14
 
 
+def test_max_coverage_order(small_sky_order1_catalog):
+    assert small_sky_order1_catalog.get_max_coverage_order() >= small_sky_order1_catalog.moc.max_order
+    assert (
+        small_sky_order1_catalog.get_max_coverage_order()
+        >= small_sky_order1_catalog.pixel_tree.get_max_depth()
+    )
+    high_moc_order = 8
+    test_moc = MOC.from_depth29_ranges(
+        max_depth=high_moc_order, ranges=small_sky_order1_catalog.moc.to_depth29_ranges
+    )
+    small_sky_order1_catalog.moc = test_moc
+    assert small_sky_order1_catalog.get_max_coverage_order() == high_moc_order
+    small_sky_order1_catalog.moc = None
+    assert (
+        small_sky_order1_catalog.get_max_coverage_order()
+        == small_sky_order1_catalog.pixel_tree.get_max_depth()
+    )
+
+
 def test_cone_filter(small_sky_order1_catalog):
-    filtered_catalog = small_sky_order1_catalog.filter_by_cone(315, -66.443, 0.1)
+    ra = 315
+    dec = -66.443
+    radius = 0.1
+
+    filtered_catalog = small_sky_order1_catalog.filter_by_cone(ra, dec, radius)
     filtered_pixels = filtered_catalog.get_healpix_pixels()
 
     assert len(filtered_pixels) == 1
@@ -125,6 +153,15 @@ def test_cone_filter(small_sky_order1_catalog):
 
     assert (1, 44) in filtered_catalog.pixel_tree
     assert filtered_catalog.catalog_info.total_rows is None
+
+    assert filtered_catalog.moc is not None
+    cone_moc = MOC.from_cone(
+        lon=ra * u.deg,
+        lat=dec * u.deg,
+        radius=radius * u.arcsec,
+        max_depth=small_sky_order1_catalog.get_max_coverage_order(),
+    )
+    assert filtered_catalog.moc == cone_moc.intersection(small_sky_order1_catalog.moc)
 
 
 def test_cone_filter_big(small_sky_order1_catalog):
@@ -171,6 +208,14 @@ def test_polygonal_filter(small_sky_order1_catalog):
     assert filtered_pixels == [HealpixPixel(1, 46)]
     assert (1, 46) in filtered_catalog.pixel_tree
     assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.moc is not None
+    ra, dec = np.array(polygon_vertices).T
+    polygon_moc = MOC.from_polygon(
+        lon=ra * u.deg,
+        lat=dec * u.deg,
+        max_depth=small_sky_order1_catalog.get_max_coverage_order(),
+    )
+    assert filtered_catalog.moc == polygon_moc.intersection(small_sky_order1_catalog.moc)
 
 
 def test_polygonal_filter_with_cartesian_coordinates(small_sky_order1_catalog):
@@ -241,8 +286,10 @@ def test_polygonal_filter_invalid_polygon(small_sky_order1_catalog):
 
 
 def test_box_filter_ra(small_sky_order1_catalog):
+
+    ra = (280, 290)
     # The catalog pixels are distributed around the [270,0] degree range.
-    filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=(280, 290))
+    filtered_catalog = small_sky_order1_catalog.filter_by_box(ra=ra)
 
     filtered_pixels = filtered_catalog.get_healpix_pixels()
 
@@ -253,6 +300,10 @@ def test_box_filter_ra(small_sky_order1_catalog):
     assert (1, 46) in filtered_catalog.pixel_tree
     assert len(filtered_catalog.pixel_tree.pixels[1]) == 2
     assert filtered_catalog.catalog_info.total_rows is None
+
+    assert filtered_catalog.moc is not None
+    box_moc = generate_box_moc(ra=ra, dec=None, order=small_sky_order1_catalog.get_max_coverage_order())
+    assert filtered_catalog.moc == box_moc.intersection(small_sky_order1_catalog.moc)
 
 
 def test_box_filter_wrapped_ra(small_sky_order1_catalog):
