@@ -89,3 +89,11 @@ def test_margin_filter(margin_catalog_info, margin_catalog_pixels):
         HealpixPixel(1, 46),
         HealpixPixel(1, 47),
     ]
+
+
+def test_margin_filter_invalid_size(margin_catalog_info, margin_catalog_pixels):
+    margin_catalog_info.margin_threshold = 10000000
+    catalog = MarginCatalog(margin_catalog_info, margin_catalog_pixels)
+    pixels = [HealpixPixel(1, 44)]
+    with pytest.raises(ValueError, match="greater than the size of a pixel"):
+        catalog.filter_from_pixel_list(pixels)
