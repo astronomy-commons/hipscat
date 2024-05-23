@@ -7,7 +7,6 @@ import numpy as np
 from mocpy import MOC
 
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
-from hipscat.pixel_tree.pixel_tree import PixelTree
 
 
 def generate_box_moc(ra: Tuple[float, float], dec: Tuple[float, float], order: int) -> MOC:
