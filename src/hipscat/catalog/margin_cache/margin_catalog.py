@@ -50,7 +50,20 @@ class MarginCatalog(HealpixDataset):
         )
 
     def filter_by_moc(self, moc: MOC) -> Self:
-        max_order = self.pixel_tree.get_max_depth()
+        """Filter the pixels in the margin catalog to only include the margin pixels that overlap with the moc
+
+        For the case of margin pixels, this includes any pixels whose margin areas may overlap with the moc.
+        This is not always done with a high accuracy, but always includes any pixels that will overlap,
+        and may include extra partitions that do not.
+
+        Args:
+            moc (mocpy.MOC): the moc to filter by
+
+        Returns:
+            A new margin catalog with only the pixels that overlap or that have margin area that overlap with
+            the moc. Note that we reset the total_rows to None, as updating would require a scan over the new
+            pixel sizes."""
+        max_order = moc.max_order
         max_order_size = hp.nside2resol(2**max_order, arcmin=True)
         if self.catalog_info.margin_threshold > max_order_size * 60:
             raise ValueError(
