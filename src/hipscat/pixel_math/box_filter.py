@@ -81,7 +81,7 @@ def _generate_ra_strip_moc(ra_range: Tuple[float, float], order: int) -> MOC:
     return MOC.from_healpix_cells(ipix=pixels_in_range, depth=orders, max_depth=order)
 
 
-def _generate_dec_strip_moc(dec_range: Tuple[float, float], order: int) -> PixelTree:
+def _generate_dec_strip_moc(dec_range: Tuple[float, float], order: int) -> MOC:
     """Generates a pixel_tree filled with leaf nodes at a given order that overlap with the dec region."""
     nside = hp.order2nside(order)
     # Convert declination values to colatitudes, in radians, and revert their order
