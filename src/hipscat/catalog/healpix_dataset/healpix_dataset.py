@@ -132,7 +132,7 @@ class HealpixDataset(Dataset):
                 f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
             )
 
-    def get_max_coverage_order(self):
+    def get_max_coverage_order(self) -> int:
         """Gets the maximum HEALPix order for which the coverage of the catalog is known from the pixel
         tree and moc if it exists"""
         max_order = (
