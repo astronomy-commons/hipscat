@@ -9,7 +9,7 @@ from mocpy import MOC
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
 
 
-def generate_box_moc(ra: Tuple[float, float], dec: Tuple[float, float], order: int) -> MOC:
+def generate_box_moc(ra: Tuple[float, float] | None, dec: Tuple[float, float] | None, order: int) -> MOC:
     """Generates a MOC object that covers the specified box area
 
     Args:
