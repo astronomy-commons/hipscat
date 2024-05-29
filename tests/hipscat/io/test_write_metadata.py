@@ -4,6 +4,7 @@ import os
 import shutil
 from pathlib import Path
 
+import numpy as np
 import numpy.testing as npt
 
 import hipscat.io.write_metadata as io
@@ -27,7 +28,14 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
         "        3,",
         "        5",
         "    ]",
-        r'    "integer_type": "<class \'int\'>"',
+        r'    "integer_type": "<class \'int\'>",',
+        '    "np_int": 5000000,',
+        '    "np_float": 1.618,',
+        '    "pixel": "Order: 5, Pixel: 9000",',
+        r'    "pixels": \[',
+        '        "Order: 5, Pixel: 9000",',
+        '        "Order: 5, Pixel: 9001"',
+        "    ]",
         "}",
     ]
 
@@ -37,6 +45,10 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
     dictionary["first_number"] = 1
     dictionary["first_five_fib"] = [1, 1, 2, 3, 5]
     dictionary["integer_type"] = int
+    dictionary["np_int"] = np.uint64(5_000_000)
+    dictionary["np_float"] = np.float64(1.618)
+    dictionary["pixel"] = HealpixPixel(5, 9_000)
+    dictionary["pixels"] = np.array([HealpixPixel(5, 9_000), HealpixPixel(5, 9_001)])
 
     json_filename = os.path.join(tmp_path, "dictionary.json")
     io.write_json_file(dictionary, json_filename)
