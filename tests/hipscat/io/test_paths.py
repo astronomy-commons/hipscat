@@ -54,6 +54,15 @@ def test_pixel_catalog_files():
     assert expected == result
 
 
+def test_pixel_catalog_files_url():
+    expected = [
+        "https://foo/Norder=0/Dir=0/Npix=5.parquet?columns=ID%2CRA%2CDEC%2Cr_auto&filters=r_auto%3C13"
+    ]
+    query_params = {"columns": ["ID", "RA", "DEC", "r_auto"], "filters": ["r_auto<13"]}
+    result = paths.pixel_catalog_files("https://foo", [HealpixPixel(0, 5)], query_params=query_params)
+    assert expected == result
+
+
 def test_get_healpix_from_path():
     expected = HealpixPixel(5, 34)
 
