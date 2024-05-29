@@ -7,6 +7,7 @@ from pathlib import Path
 import healpy as hp
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
@@ -227,3 +228,16 @@ def test_read_write_fits_point_map(tmp_path):
     assert header_dict["NSIDE"] == 2
 
     npt.assert_array_equal(initial_histogram, map_fits_image[0])
+
+
+def test_read_ring_fits_point_map(tmp_path):
+    """Check that we write and can read a FITS file for spatial distribution."""
+    output_file = os.path.join(tmp_path, "point_map.fits")
+    initial_histogram = hist.empty_histogram(1)
+    filled_pixels = [51, 29, 51, 0]
+    initial_histogram[44:] = filled_pixels[:]
+    hp.write_map(output_file, initial_histogram, dtype=np.int64)
+
+    with pytest.warns(UserWarning, match="/hipscat/issues/271"):
+        output = file_io.read_fits_image(output_file)
+        npt.assert_array_equal(output, initial_histogram)
