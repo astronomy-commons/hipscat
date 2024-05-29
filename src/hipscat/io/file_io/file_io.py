@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+import warnings
 from typing import Any, Dict, Tuple, Union
 
 import healpy as hp
@@ -278,8 +279,17 @@ def read_fits_image(map_file_pointer: FilePointer, storage_options: Union[Dict[A
         with file_system.open(map_file_pointer, "rb") as _map_file:
             map_data = _map_file.read()
             _tmp_file.write(map_data)
-            map_fits_image = hp.read_map(_tmp_file.name, nest=True)
-    return map_fits_image
+            map_fits_image = hp.read_map(_tmp_file.name, nest=True, h=True)
+            header_dict = dict(map_fits_image[1])
+            if header_dict["ORDERING"] != "NESTED":
+                warnings.warn(
+                    "point_map.fits file written in RING ordering, due to "
+                    "https://github.com/astronomy-commons/hipscat/issues/271. "
+                    "Converting to NESTED."
+                )
+                map_fits_image = hp.read_map(_tmp_file.name)
+                return map_fits_image
+            return map_fits_image[0]
 
 
 def write_fits_image(

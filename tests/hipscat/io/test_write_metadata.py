@@ -219,9 +219,11 @@ def test_read_write_fits_point_map(tmp_path):
     npt.assert_array_equal(output, initial_histogram)
 
     # Check the metadata of the fits file:
-    map_fits_image = hp.read_map(output_file, h=True)
+    map_fits_image = hp.read_map(output_file, nest=True, h=True)
 
     header_dict = dict(map_fits_image[1])
     assert header_dict["ORDERING"] == "NESTED"
     assert header_dict["PIXTYPE"] == "HEALPIX"
     assert header_dict["NSIDE"] == 2
+
+    npt.assert_array_equal(initial_histogram, map_fits_image[0])
