@@ -12,6 +12,7 @@ import pandas as pd
 
 from hipscat.io import file_io, paths
 from hipscat.io.parquet_metadata import write_parquet_metadata as wpm
+from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 class HipscatEncoder(json.JSONEncoder):
@@ -24,6 +25,14 @@ class HipscatEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Path):
             return str(o)
+        if isinstance(o, (type, np.dtype, pd.core.dtypes.base.ExtensionDtype)):
+            return str(o)
+        if isinstance(o, HealpixPixel):
+            return str(o)
+        if np.issubdtype(o.dtype, np.integer):
+            return int(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
         return super().default(o)  # pragma: no cover
 
 
