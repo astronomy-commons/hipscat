@@ -28,6 +28,9 @@ def test_read_from_file(margin_cache_catalog_info_file, assert_catalog_info_matc
         "catalog_name",
         "catalog_type",
         "total_rows",
+        "epoch",
+        "ra_column",
+        "dec_column",
         "primary_catalog",
         "margin_threshold",
     ]:
