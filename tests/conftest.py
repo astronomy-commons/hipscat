@@ -134,12 +134,14 @@ def source_catalog_info_with_extra() -> dict:
 
 
 @pytest.fixture
-def margin_cache_catalog_info_data(catalog_info_data) -> dict:
+def margin_cache_catalog_info_data() -> dict:
     return {
-        **catalog_info_data,
         "catalog_name": "test_margin",
         "catalog_type": "margin",
         "total_rows": 100,
+        "epoch": "J2000",
+        "ra_column": "ra",
+        "dec_column": "dec",
         "primary_catalog": "test_name",
         "margin_threshold": 0.5,
     }
