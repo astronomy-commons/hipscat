@@ -58,7 +58,8 @@ def test_type_missing(margin_cache_catalog_info_data):
 
 def test_wrong_type(margin_cache_catalog_info_data, catalog_info_data):
     with pytest.raises(TypeError, match="unexpected"):
-        MarginCacheCatalogInfo(**catalog_info_data)
+        unexpected_info = {**catalog_info_data, "invalid_key": "unknown"}
+        MarginCacheCatalogInfo(**unexpected_info)
 
     with pytest.raises(ValueError, match=f"{CatalogType.MARGIN}"):
         init_data = margin_cache_catalog_info_data.copy()

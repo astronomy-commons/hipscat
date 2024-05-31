@@ -2,12 +2,13 @@
 
 from dataclasses import dataclass
 
+from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 
 
 @dataclass
-class MarginCacheCatalogInfo(BaseCatalogInfo):
+class MarginCacheCatalogInfo(CatalogInfo):
     """Catalog Info for a HiPSCat Margin Cache table"""
 
     primary_catalog: str = None
