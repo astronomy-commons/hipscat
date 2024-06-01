@@ -21,7 +21,7 @@ dependencies = [
     "astropy",
     "fsspec>=2023.10.0", # Used for abstract filesystems
     "healpy",
-    "matplotlib>=3.3,<3.9",
+    "matplotlib>=3.3,<3.10",
     "mocpy",
     "numba>=0.58",
     "numpy", 
