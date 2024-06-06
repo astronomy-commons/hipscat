@@ -28,6 +28,9 @@ def test_read_from_file(margin_cache_catalog_info_file, assert_catalog_info_matc
         "catalog_name",
         "catalog_type",
         "total_rows",
+        "epoch",
+        "ra_column",
+        "dec_column",
         "primary_catalog",
         "margin_threshold",
     ]:
@@ -58,7 +61,8 @@ def test_type_missing(margin_cache_catalog_info_data):
 
 def test_wrong_type(margin_cache_catalog_info_data, catalog_info_data):
     with pytest.raises(TypeError, match="unexpected"):
-        MarginCacheCatalogInfo(**catalog_info_data)
+        unexpected_info = {**catalog_info_data, "invalid_key": "unknown"}
+        MarginCacheCatalogInfo(**unexpected_info)
 
     with pytest.raises(ValueError, match=f"{CatalogType.MARGIN}"):
         init_data = margin_cache_catalog_info_data.copy()

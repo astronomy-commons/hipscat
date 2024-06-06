@@ -139,6 +139,9 @@ def margin_cache_catalog_info_data() -> dict:
         "catalog_name": "test_margin",
         "catalog_type": "margin",
         "total_rows": 100,
+        "epoch": "J2000",
+        "ra_column": "ra",
+        "dec_column": "dec",
         "primary_catalog": "test_name",
         "margin_threshold": 0.5,
     }
