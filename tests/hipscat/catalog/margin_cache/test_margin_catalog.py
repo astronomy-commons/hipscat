@@ -37,7 +37,7 @@ def test_read_from_file(margin_catalog_path, margin_catalog_pixels):
 
     assert isinstance(catalog, MarginCatalog)
     assert catalog.on_disk
-    assert catalog.catalog_path == margin_catalog_path
+    assert catalog.catalog_path == str(margin_catalog_path)
     assert len(catalog.get_healpix_pixels()) == len(margin_catalog_pixels)
     assert catalog.get_healpix_pixels() == margin_catalog_pixels
 
@@ -58,7 +58,7 @@ def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalo
     with pytest.raises(FileNotFoundError):
         read_from_hipscat(os.path.join("path", "empty"))
 
-    catalog_path = os.path.join(tmp_path, "empty")
+    catalog_path = tmp_path / "empty"
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
@@ -66,7 +66,7 @@ def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalo
         read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
-    file_name = os.path.join(catalog_path, "catalog_info.json")
+    file_name = catalog_path / "catalog_info.json"
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write(json.dumps(margin_cache_catalog_info_data))
 

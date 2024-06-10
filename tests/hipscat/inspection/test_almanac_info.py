@@ -29,7 +29,7 @@ def test_write_to_file(tmp_path, association_catalog_path):
 
     almanac_info.write_to_file(tmp_path, default_dir=False)
 
-    new_info = AlmanacInfo.from_file(os.path.join(tmp_path, "small_sky_to_small_sky_order1.yml"))
+    new_info = AlmanacInfo.from_file(tmp_path / "small_sky_to_small_sky_order1.yml")
 
     assert new_info.catalog_name == almanac_info.catalog_name
 

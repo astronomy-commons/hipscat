@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from hipscat.pixel_math import HealpixPixel
@@ -8,7 +6,7 @@ from hipscat.pixel_tree.pixel_tree import PixelTree
 
 @pytest.fixture
 def pixel_trees_dir(test_data_dir):
-    return os.path.join(test_data_dir, "pixel_trees")
+    return test_data_dir / "pixel_trees"
 
 
 @pytest.fixture

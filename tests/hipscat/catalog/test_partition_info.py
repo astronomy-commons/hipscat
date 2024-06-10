@@ -1,7 +1,5 @@
 """Tests of partition info functionality"""
 
-import os
-
 import numpy.testing as npt
 import pandas as pd
 import pytest
@@ -38,7 +36,7 @@ def test_load_partition_info_from_metadata(small_sky_dir, small_sky_source_dir, 
 
 def test_load_partition_info_from_metadata_fail(tmp_path):
     empty_dataframe = pd.DataFrame()
-    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    metadata_filename = tmp_path / "empty_metadata.parquet"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.raises(ValueError, match="missing Norder"):
         PartitionInfo.read_from_file(metadata_filename)
@@ -47,7 +45,7 @@ def test_load_partition_info_from_metadata_fail(tmp_path):
         PartitionInfo.read_from_file(metadata_filename, strict=True)
 
     non_healpix_dataframe = pd.DataFrame({"data": [0], "Npix": [45]})
-    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    metadata_filename = tmp_path / "non_healpix_metadata.parquet"
     non_healpix_dataframe.to_parquet(metadata_filename)
     with pytest.raises(ValueError, match="missing Norder"):
         PartitionInfo.read_from_file(metadata_filename)
@@ -58,13 +56,13 @@ def test_load_partition_info_from_metadata_fail(tmp_path):
 
 def test_load_partition_info_from_dir_fail(tmp_path):
     empty_dataframe = pd.DataFrame()
-    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    metadata_filename = tmp_path / "empty_metadata.parquet"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.raises(FileNotFoundError, match="_metadata or partition info"):
         PartitionInfo.read_from_dir(tmp_path)
 
     # The file is there, but doesn't have the required content.
-    metadata_filename = os.path.join(tmp_path, "_metadata")
+    metadata_filename = tmp_path / "_metadata"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.warns(UserWarning, match="slow"):
         with pytest.raises(ValueError, match="missing Norder"):
@@ -88,12 +86,12 @@ def test_load_partition_info_small_sky_order1(small_sky_order1_dir):
 
 
 def test_load_partition_no_file(tmp_path):
-    wrong_path = os.path.join(tmp_path, "_metadata")
+    wrong_path = tmp_path / "_metadata"
     wrong_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
         PartitionInfo.read_from_file(wrong_pointer)
 
-    wrong_path = os.path.join(tmp_path, "partition_info.csv")
+    wrong_path = tmp_path, "partition_info.csv"
     wrong_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
         PartitionInfo.read_from_csv(wrong_pointer)
@@ -152,7 +150,7 @@ def test_load_partition_info_from_dir_and_write(tmp_path, pixel_list_depth_first
     ##  - full path to the csv file
     info.write_to_file()
     info.write_to_file(catalog_path=tmp_path)
-    info.write_to_file(partition_info_file=os.path.join(tmp_path, "new_csv.csv"))
+    info.write_to_file(partition_info_file=tmp_path / "new_csv.csv")
 
     ## Can write out the _metadata file by providing:
     ##  - no arguments

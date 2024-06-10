@@ -475,7 +475,7 @@ def test_empty_directory(tmp_path):
     with pytest.raises(FileNotFoundError):
         read_from_hipscat(os.path.join("path", "empty"))
 
-    catalog_path = os.path.join(tmp_path, "empty")
+    catalog_path = tmp_path / "empty"
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
@@ -483,7 +483,7 @@ def test_empty_directory(tmp_path):
         read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
-    file_name = os.path.join(catalog_path, "catalog_info.json")
+    file_name = catalog_path / "catalog_info.json"
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write('{"catalog_name":"empty", "catalog_type":"source"}')
 

@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 import pytest
 
@@ -22,14 +20,14 @@ def test_wrong_columns(association_catalog_join_pixels):
 
 
 def test_read_from_metadata(association_catalog_join_pixels, association_catalog_path):
-    file_pointer = file_io.get_file_pointer_from_path(os.path.join(association_catalog_path, "_metadata"))
+    file_pointer = file_io.get_file_pointer_from_path(association_catalog_path / "_metadata")
     info = PartitionJoinInfo.read_from_file(file_pointer)
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
 
 
 def test_read_from_metadata_fail(tmp_path):
     empty_dataframe = pd.DataFrame()
-    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    metadata_filename = tmp_path / "empty_metadata.parquet"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.raises(ValueError, match="missing columns"):
         PartitionJoinInfo.read_from_file(metadata_filename)
@@ -41,7 +39,7 @@ def test_read_from_metadata_fail(tmp_path):
     valid_ish_dataframe = pd.DataFrame(
         {"data": [0], "Norder": [3], "Npix": [45], "join_Norder": [3], "join_Npix": [45]}
     )
-    metadata_filename = os.path.join(tmp_path, "test_metadata.parquet")
+    metadata_filename = tmp_path / "test_metadata.parquet"
     valid_ish_dataframe.to_parquet(metadata_filename)
     PartitionJoinInfo.read_from_file(metadata_filename)
 
@@ -57,13 +55,13 @@ def test_read_from_metadata_fail(tmp_path):
 
 def test_load_partition_join_info_from_dir_fail(tmp_path):
     empty_dataframe = pd.DataFrame()
-    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    metadata_filename = tmp_path / "empty_metadata.parquet"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.raises(FileNotFoundError, match="_metadata or partition join info"):
         PartitionJoinInfo.read_from_dir(tmp_path)
 
     # The file is there, but doesn't have the required content.
-    metadata_filename = os.path.join(tmp_path, "_metadata")
+    metadata_filename = tmp_path / "_metadata"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.warns(UserWarning, match="slow"):
         with pytest.raises(ValueError, match="missing columns"):
@@ -91,7 +89,7 @@ def test_metadata_file_round_trip(association_catalog_join_pixels, tmp_path):
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
     info.write_to_metadata_files(tmp_path)
 
-    file_pointer = file_io.get_file_pointer_from_path(os.path.join(tmp_path, "_metadata"))
+    file_pointer = file_io.get_file_pointer_from_path(tmp_path / "_metadata")
     new_info = PartitionJoinInfo.read_from_file(file_pointer)
     pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
 
@@ -101,7 +99,7 @@ def test_csv_file_round_trip(association_catalog_join_pixels, tmp_path):
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
     info.write_to_csv(tmp_path)
 
-    file_pointer = file_io.get_file_pointer_from_path(os.path.join(tmp_path, "partition_join_info.csv"))
+    file_pointer = file_io.get_file_pointer_from_path(tmp_path / "partition_join_info.csv")
     new_info = PartitionJoinInfo.read_from_csv(file_pointer)
     pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
 
@@ -113,7 +111,7 @@ def test_read_from_csv(association_catalog_partition_join_file, association_cata
 
 
 def test_read_from_missing_file(tmp_path):
-    wrong_path = os.path.join(tmp_path, "wrong")
+    wrong_path = tmp_path / "wrong"
     file_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
         PartitionJoinInfo.read_from_csv(file_pointer)
