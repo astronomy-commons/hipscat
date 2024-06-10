@@ -11,6 +11,7 @@ from hipscat.io.file_io import (
     load_json_file,
     load_parquet_to_pandas,
     make_directory,
+    read_parquet_dataset,
     read_parquet_file_to_pandas,
     remove_directory,
     write_dataframe_to_csv,
@@ -113,3 +114,24 @@ def test_read_parquet_data(tmp_path):
     file_pointer = get_file_pointer_from_path(test_file_path)
     dataframe = read_parquet_file_to_pandas(file_pointer)
     pd.testing.assert_frame_equal(dataframe, random_df)
+
+
+def test_read_parquet_dataset(small_sky_dir, small_sky_order1_dir):
+    (_, ds) = read_parquet_dataset(os.path.join(small_sky_dir, "Norder=0"))
+
+    assert ds.count_rows() == 131
+
+    (_, ds) = read_parquet_dataset([os.path.join(small_sky_dir, "Norder=0", "Dir=0", "Npix=11.parquet")])
+
+    assert ds.count_rows() == 131
+
+    (_, ds) = read_parquet_dataset(
+        [
+            os.path.join(small_sky_order1_dir, "Norder=1", "Dir=0", "Npix=44.parquet"),
+            os.path.join(small_sky_order1_dir, "Norder=1", "Dir=0", "Npix=45.parquet"),
+            os.path.join(small_sky_order1_dir, "Norder=1", "Dir=0", "Npix=46.parquet"),
+            os.path.join(small_sky_order1_dir, "Norder=1", "Dir=0", "Npix=47.parquet"),
+        ]
+    )
+
+    assert ds.count_rows() == 131
