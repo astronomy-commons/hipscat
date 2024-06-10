@@ -1,5 +1,4 @@
 import json
-import os
 
 import numpy as np
 import pandas as pd
@@ -21,7 +20,7 @@ from hipscat.io.paths import pixel_catalog_file
 
 
 def test_make_directory(tmp_path):
-    test_dir_path = os.path.join(tmp_path, "test_path")
+    test_dir_path = tmp_path / "test_path"
     assert not does_file_or_directory_exist(test_dir_path)
     test_dir_pointer = get_file_pointer_from_path(test_dir_path)
     make_directory(test_dir_pointer)
@@ -29,7 +28,7 @@ def test_make_directory(tmp_path):
 
 
 def test_make_existing_directory_raises(tmp_path):
-    test_dir_path = os.path.join(tmp_path, "test_path")
+    test_dir_path = tmp_path / "test_path"
     make_directory(test_dir_path)
     assert does_file_or_directory_exist(test_dir_path)
     test_dir_pointer = get_file_pointer_from_path(test_dir_path)
@@ -38,9 +37,9 @@ def test_make_existing_directory_raises(tmp_path):
 
 
 def test_make_existing_directory_existok(tmp_path):
-    test_dir_path = os.path.join(tmp_path, "test_path")
+    test_dir_path = tmp_path / "test_path"
     make_directory(test_dir_path)
-    test_inner_dir_path = os.path.join(test_dir_path, "test_inner")
+    test_inner_dir_path = test_dir_path / "test_inner"
     make_directory(test_inner_dir_path)
     assert does_file_or_directory_exist(test_dir_path)
     assert does_file_or_directory_exist(test_inner_dir_path)
@@ -51,7 +50,7 @@ def test_make_existing_directory_existok(tmp_path):
 
 
 def test_make_and_remove_directory(tmp_path):
-    test_dir_path = os.path.join(tmp_path, "test_path")
+    test_dir_path = tmp_path / "test_path"
     assert not does_file_or_directory_exist(test_dir_path)
     test_dir_pointer = get_file_pointer_from_path(test_dir_path)
     make_directory(test_dir_pointer)
@@ -69,7 +68,7 @@ def test_make_and_remove_directory(tmp_path):
 
 
 def test_write_string_to_file(tmp_path):
-    test_file_path = os.path.join(tmp_path, "text_file.txt")
+    test_file_path = tmp_path / "text_file.txt"
     test_file_pointer = get_file_pointer_from_path(test_file_path)
     test_string = "this is a test"
     write_string_to_file(test_file_pointer, test_string, encoding="utf-8")
@@ -81,7 +80,7 @@ def test_write_string_to_file(tmp_path):
 
 
 def test_load_json(small_sky_dir):
-    catalog_info_path = os.path.join(small_sky_dir, "catalog_info.json")
+    catalog_info_path = small_sky_dir / "catalog_info.json"
     json_dict = None
     with open(catalog_info_path, "r", encoding="utf-8") as json_file:
         json_dict = json.load(json_file)
@@ -99,7 +98,7 @@ def test_load_parquet_to_pandas(small_sky_dir):
 
 def test_write_df_to_csv(tmp_path):
     random_df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
-    test_file_path = os.path.join(tmp_path, "test.csv")
+    test_file_path = tmp_path / "test.csv"
     test_file_pointer = get_file_pointer_from_path(test_file_path)
     write_dataframe_to_csv(random_df, test_file_pointer, index=False)
     loaded_df = pd.read_csv(test_file_path)
@@ -108,7 +107,7 @@ def test_write_df_to_csv(tmp_path):
 
 def test_read_parquet_data(tmp_path):
     random_df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
-    test_file_path = os.path.join(tmp_path, "test.parquet")
+    test_file_path = tmp_path / "test.parquet"
     random_df.to_parquet(test_file_path)
     file_pointer = get_file_pointer_from_path(test_file_path)
     dataframe = read_parquet_file_to_pandas(file_pointer)

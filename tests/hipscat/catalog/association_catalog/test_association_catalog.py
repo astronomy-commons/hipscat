@@ -54,7 +54,7 @@ def test_read_from_file(association_catalog_path, association_catalog_join_pixel
 
     assert isinstance(catalog, AssociationCatalog)
     assert catalog.on_disk
-    assert catalog.catalog_path == association_catalog_path
+    assert catalog.catalog_path == str(association_catalog_path)
     assert len(catalog.get_join_pixels()) == 4
     assert len(catalog.get_healpix_pixels()) == 1
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
@@ -73,7 +73,7 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
     with pytest.raises(FileNotFoundError):
         read_from_hipscat(os.path.join("path", "empty"))
 
-    catalog_path = os.path.join(tmp_path, "empty")
+    catalog_path = tmp_path / "empty"
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
@@ -81,7 +81,7 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
         AssociationCatalog.read_from_hipscat(catalog_path)
 
     ## catalog_info file exists - getting closer
-    file_name = os.path.join(catalog_path, "catalog_info.json")
+    file_name = catalog_path / "catalog_info.json"
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write(json.dumps(association_catalog_info_data))
 
@@ -101,17 +101,17 @@ def test_csv_round_trip(tmp_path, association_catalog_info_data, association_cat
     with pytest.raises(FileNotFoundError):
         read_from_hipscat(os.path.join("path", "empty"))
 
-    catalog_path = os.path.join(tmp_path, "empty")
+    catalog_path = tmp_path / "empty"
     os.makedirs(catalog_path, exist_ok=True)
 
-    file_name = os.path.join(catalog_path, "catalog_info.json")
+    file_name = catalog_path / "catalog_info.json"
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         metadata_file.write(json.dumps(association_catalog_info_data))
 
     with pytest.raises(FileNotFoundError, match="partition"):
         read_from_hipscat(catalog_path)
 
-    file_name = os.path.join(catalog_path, "partition_info.csv")
+    file_name = catalog_path / "partition_info.csv"
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         # dump some garbage in there - just needs to exist.
         metadata_file.write(json.dumps(association_catalog_info_data))

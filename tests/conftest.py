@@ -1,5 +1,6 @@
 import dataclasses
 import os.path
+from pathlib import Path
 from typing import List
 
 import pandas as pd
@@ -27,32 +28,32 @@ TEST_DIR = os.path.dirname(__file__)
 
 @pytest.fixture
 def test_data_dir():
-    return os.path.join(TEST_DIR, DATA_DIR_NAME)
+    return Path(TEST_DIR) / DATA_DIR_NAME
 
 
 @pytest.fixture
 def almanac_dir(test_data_dir):
-    return os.path.join(test_data_dir, ALMANAC_DIR_NAME)
+    return test_data_dir / ALMANAC_DIR_NAME
 
 
 @pytest.fixture
 def small_sky_dir(test_data_dir):
-    return os.path.join(test_data_dir, SMALL_SKY_DIR_NAME)
+    return test_data_dir / SMALL_SKY_DIR_NAME
 
 
 @pytest.fixture
 def small_sky_order1_dir(test_data_dir):
-    return os.path.join(test_data_dir, SMALL_SKY_ORDER1_DIR_NAME)
+    return test_data_dir / SMALL_SKY_ORDER1_DIR_NAME
 
 
 @pytest.fixture
 def small_sky_to_small_sky_order1_dir(test_data_dir):
-    return os.path.join(test_data_dir, SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME)
+    return test_data_dir / SMALL_SKY_TO_SMALL_SKY_ORDER1_DIR_NAME
 
 
 @pytest.fixture
 def small_sky_source_object_index_dir(test_data_dir):
-    return os.path.join(test_data_dir, SMALL_SKY_SOURCE_OBJECT_INDEX_DIR_NAME)
+    return test_data_dir / SMALL_SKY_SOURCE_OBJECT_INDEX_DIR_NAME
 
 
 @pytest.fixture
@@ -172,12 +173,12 @@ def index_catalog_info_with_extra() -> dict:
 
 @pytest.fixture
 def dataset_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "info_only", "dataset")
+    return test_data_dir / "info_only" / "dataset"
 
 
 @pytest.fixture
 def base_catalog_info_file(dataset_path) -> str:
-    return os.path.join(dataset_path, "catalog_info.json")
+    return dataset_path / "catalog_info.json"
 
 
 @pytest.fixture
@@ -187,12 +188,12 @@ def base_catalog_info(base_catalog_info_data) -> BaseCatalogInfo:
 
 @pytest.fixture
 def catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "info_only", "catalog")
+    return test_data_dir / "info_only" / "catalog"
 
 
 @pytest.fixture
 def catalog_info_file(catalog_path) -> str:
-    return os.path.join(catalog_path, "catalog_info.json")
+    return catalog_path / "catalog_info.json"
 
 
 @pytest.fixture
@@ -218,7 +219,7 @@ def margin_catalog_pixels() -> List[HealpixPixel]:
 
 @pytest.fixture
 def margin_catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_order1_margin")
+    return test_data_dir / "small_sky_order1_margin"
 
 
 @pytest.fixture
@@ -228,32 +229,32 @@ def catalog_pixels() -> List[HealpixPixel]:
 
 @pytest.fixture
 def association_catalog_path(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_to_small_sky_order1")
+    return test_data_dir / "small_sky_to_small_sky_order1"
 
 
 @pytest.fixture
 def association_catalog_info_file(association_catalog_path) -> str:
-    return os.path.join(association_catalog_path, "catalog_info.json")
+    return association_catalog_path / "catalog_info.json"
 
 
 @pytest.fixture
 def index_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "info_only", "index_catalog", "catalog_info.json")
+    return test_data_dir / "info_only" / "index_catalog" / "catalog_info.json"
 
 
 @pytest.fixture
 def margin_cache_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "info_only", "margin_cache", "catalog_info.json")
+    return test_data_dir / "info_only" / "margin_cache" / "catalog_info.json"
 
 
 @pytest.fixture
 def source_catalog_info_file(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_source", "catalog_info.json")
+    return test_data_dir / "small_sky_source" / "catalog_info.json"
 
 
 @pytest.fixture
 def small_sky_source_dir(test_data_dir) -> str:
-    return os.path.join(test_data_dir, "small_sky_source")
+    return test_data_dir / "small_sky_source"
 
 
 @pytest.fixture
@@ -284,7 +285,7 @@ def association_catalog_info(association_catalog_info_data) -> AssociationCatalo
 
 @pytest.fixture
 def association_catalog_partition_join_file(association_catalog_path) -> str:
-    return os.path.join(association_catalog_path, "partition_join_info.csv")
+    return association_catalog_path / "partition_join_info.csv"
 
 
 @pytest.fixture
@@ -302,7 +303,7 @@ def association_catalog_join_pixels() -> pd.DataFrame:
 @pytest.fixture
 def default_almanac(almanac_dir, test_data_dir):
     """Set up default environment variables and fetch default almanac data."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = almanac_dir
-    os.environ["HIPSCAT_DEFAULT_DIR"] = test_data_dir
+    os.environ["HIPSCAT_ALMANAC_DIR"] = str(almanac_dir)
+    os.environ["HIPSCAT_DEFAULT_DIR"] = str(test_data_dir)
 
     return Almanac()

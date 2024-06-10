@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -23,7 +23,7 @@ def test_get_pointer_from_path(tmp_path):
 
 
 def test_get_basename_from_filepointer(tmp_path):
-    catalog_info_string = os.path.join(tmp_path, "catalog_info.json")
+    catalog_info_string = tmp_path / "catalog_info.json"
     catalog_info_pointer = get_file_pointer_from_path(catalog_info_string)
     assert get_basename_from_filepointer(catalog_info_pointer) == "catalog_info.json"
 
@@ -31,30 +31,30 @@ def test_get_basename_from_filepointer(tmp_path):
 def test_file_or_dir_exist(small_sky_dir):
     small_sky_pointer = get_file_pointer_from_path(small_sky_dir)
     assert does_file_or_directory_exist(small_sky_pointer)
-    catalog_info_string = os.path.join(small_sky_dir, "catalog_info.json")
+    catalog_info_string = small_sky_dir / "catalog_info.json"
     catalog_info_pointer = get_file_pointer_from_path(catalog_info_string)
     assert does_file_or_directory_exist(catalog_info_pointer)
 
 
 def test_file_or_dir_exist_false(small_sky_dir):
-    small_sky_pointer = get_file_pointer_from_path(small_sky_dir + "incorrect file")
+    small_sky_pointer = get_file_pointer_from_path(str(small_sky_dir) + "incorrect file")
     assert not does_file_or_directory_exist(small_sky_pointer)
 
 
 def test_append_paths_to_pointer(tmp_path):
     test_paths = ["folder", "file.txt"]
-    test_path = os.path.join(tmp_path, *test_paths)
+    test_path = tmp_path / "folder" / "file.txt"
     tmp_pointer = get_file_pointer_from_path(str(tmp_path))
-    assert append_paths_to_pointer(tmp_pointer, *test_paths) == test_path
+    assert append_paths_to_pointer(tmp_pointer, *test_paths) == str(test_path)
 
 
 def test_is_regular_file(small_sky_dir):
-    catalog_info_file = os.path.join(small_sky_dir, "catalog_info.json")
+    catalog_info_file = small_sky_dir / "catalog_info.json"
     assert is_regular_file(catalog_info_file)
 
     assert not is_regular_file(small_sky_dir)
 
-    partition_dir = os.path.join(small_sky_dir, "Norder=0")
+    partition_dir = small_sky_dir / "Norder=0"
     assert not is_regular_file(partition_dir)
 
 
@@ -88,9 +88,7 @@ def test_directory_has_contents(small_sky_order1_dir, tmp_path):
 def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     small_sky_contents = get_directory_contents(small_sky_order1_dir)
 
-    for i, content in enumerate(small_sky_contents):
-        if not content.startswith("/"):
-            small_sky_contents[i] = f"/{content}"
+    small_sky_paths = [Path(p) for p in small_sky_contents]
 
     expected = [
         "Norder=1",
@@ -103,9 +101,9 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
         "provenance_info.json",
     ]
 
-    expected = [os.path.join(small_sky_order1_dir, file_name) for file_name in expected]
+    expected = [small_sky_order1_dir / file_name for file_name in expected]
 
-    assert small_sky_contents == expected
+    assert small_sky_paths == expected
 
     assert len(get_directory_contents(tmp_path)) == 0
 
@@ -142,8 +140,8 @@ def test_strip_leading_slash_for_pyarrow():
         strip_leading_slash_for_pyarrow(test_leading_slash_filename, protocol="abfs")
         == "bucket/path/test.txt"
     )
-    test_non_leading_slash_filenaem = get_file_pointer_from_path("bucket/path/test.txt")
+    test_non_leading_slash_filename = get_file_pointer_from_path("bucket/path/test.txt")
     assert (
-        strip_leading_slash_for_pyarrow(test_non_leading_slash_filenaem, protocol="abfs")
+        strip_leading_slash_for_pyarrow(test_non_leading_slash_filename, protocol="abfs")
         == "bucket/path/test.txt"
     )

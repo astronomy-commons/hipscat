@@ -1,6 +1,5 @@
 """Tests of file IO (reads and writes)"""
 
-import os
 import shutil
 
 import pandas as pd
@@ -21,25 +20,25 @@ def test_write_parquet_metadata(
     tmp_path, small_sky_dir, basic_catalog_parquet_metadata, check_parquet_schema
 ):
     """Copy existing catalog and create new metadata files for it"""
-    catalog_base_dir = os.path.join(tmp_path, "catalog")
+    catalog_base_dir = tmp_path / "catalog"
     shutil.copytree(
         small_sky_dir,
         catalog_base_dir,
     )
     write_parquet_metadata(catalog_base_dir)
-    check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata)
+    check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(catalog_base_dir, "_common_metadata"),
+        catalog_base_dir / "_common_metadata",
         basic_catalog_parquet_metadata,
         0,
     )
     ## Re-write - should still have the same properties.
     write_parquet_metadata(catalog_base_dir)
-    check_parquet_schema(os.path.join(catalog_base_dir, "_metadata"), basic_catalog_parquet_metadata)
+    check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(catalog_base_dir, "_common_metadata"),
+        catalog_base_dir / "_common_metadata",
         basic_catalog_parquet_metadata,
         0,
     )
@@ -50,7 +49,7 @@ def test_write_parquet_metadata_order1(
 ):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
-    temp_path = os.path.join(tmp_path, "catalog")
+    temp_path = tmp_path / "catalog"
     shutil.copytree(
         small_sky_order1_dir,
         temp_path,
@@ -59,13 +58,13 @@ def test_write_parquet_metadata_order1(
     write_parquet_metadata(temp_path)
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        os.path.join(temp_path, "_metadata"),
+        temp_path / "_metadata",
         basic_catalog_parquet_metadata,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(temp_path, "_common_metadata"),
+        temp_path / "_common_metadata",
         basic_catalog_parquet_metadata,
         0,
     )
@@ -76,7 +75,7 @@ def test_write_parquet_metadata_sorted(
 ):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
-    temp_path = os.path.join(tmp_path, "catalog")
+    temp_path = tmp_path / "catalog"
     shutil.copytree(
         small_sky_order1_dir,
         temp_path,
@@ -85,13 +84,13 @@ def test_write_parquet_metadata_sorted(
     write_parquet_metadata(temp_path)
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        os.path.join(temp_path, "_metadata"),
+        temp_path / "_metadata",
         basic_catalog_parquet_metadata,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(temp_path, "_common_metadata"),
+        temp_path / "_common_metadata",
         basic_catalog_parquet_metadata,
         0,
     )
@@ -99,10 +98,10 @@ def test_write_parquet_metadata_sorted(
 
 def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
     """Create an index-like catalog, and test metadata creation."""
-    temp_path = os.path.join(tmp_path, "index")
+    temp_path = tmp_path / "index"
 
-    index_parquet_path = os.path.join(temp_path, "Parts=0", "part_000_of_001.parquet")
-    file_io.make_directory(os.path.join(temp_path, "Parts=0"))
+    index_parquet_path = temp_path / "Parts=0" / "part_000_of_001.parquet"
+    file_io.make_directory(temp_path / "Parts=0")
     basic_index = pd.DataFrame({"_hipscat_id": [4000, 4001], "ps1_objid": [700, 800]})
     file_io.write_dataframe_to_parquet(basic_index, index_parquet_path)
 
@@ -114,10 +113,10 @@ def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
     )
 
     write_parquet_metadata(temp_path, order_by_healpix=False)
-    check_parquet_schema(os.path.join(tmp_path, "index", "_metadata"), index_catalog_parquet_metadata)
+    check_parquet_schema(tmp_path / "index" / "_metadata", index_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        os.path.join(tmp_path, "index", "_common_metadata"),
+        tmp_path / "index" / "_common_metadata",
         index_catalog_parquet_metadata,
         0,
     )
@@ -164,21 +163,19 @@ def test_get_healpix_pixel_from_metadata(small_sky_dir):
 
 def test_get_healpix_pixel_from_metadata_min_max(tmp_path):
     good_healpix_dataframe = pd.DataFrame({"data": [0, 1], "Norder": [1, 1], "Npix": [44, 44]})
-    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    metadata_filename = tmp_path / "non_healpix_metadata.parquet"
     good_healpix_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
     pixel = get_healpix_pixel_from_metadata(single_metadata)
     assert pixel == HealpixPixel(1, 44)
 
     non_healpix_dataframe = pd.DataFrame({"data": [0, 1], "Npix": [45, 44]})
-    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
     non_healpix_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
     with pytest.raises(ValueError, match="Npix stat min != max"):
         get_healpix_pixel_from_metadata(single_metadata)
 
     non_healpix_dataframe = pd.DataFrame({"data": [0, 1], "Norder": [5, 6]})
-    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
     non_healpix_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
     with pytest.raises(ValueError, match="Norder stat min != max"):
@@ -187,14 +184,14 @@ def test_get_healpix_pixel_from_metadata_min_max(tmp_path):
 
 def test_get_healpix_pixel_from_metadata_fail(tmp_path):
     empty_dataframe = pd.DataFrame()
-    metadata_filename = os.path.join(tmp_path, "empty_metadata.parquet")
+    metadata_filename = tmp_path / "empty_metadata.parquet"
     empty_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
     with pytest.raises(ValueError, match="empty table"):
         get_healpix_pixel_from_metadata(single_metadata)
 
     non_healpix_dataframe = pd.DataFrame({"data": [0], "Npix": [45]})
-    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    metadata_filename = tmp_path / "non_healpix_metadata.parquet"
     non_healpix_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
     with pytest.raises(ValueError, match="missing Norder"):
@@ -204,7 +201,7 @@ def test_get_healpix_pixel_from_metadata_fail(tmp_path):
 def test_get_healpix_pixel_from_metadata_columns(tmp_path):
     """Test fetching the healpix pixel from columns with non-default names."""
     non_healpix_dataframe = pd.DataFrame({"data": [1], "Npix": [45], "join_Norder": [2], "join_Npix": [3]})
-    metadata_filename = os.path.join(tmp_path, "non_healpix_metadata.parquet")
+    metadata_filename = tmp_path / "non_healpix_metadata.parquet"
     non_healpix_dataframe.to_parquet(metadata_filename)
     single_metadata = file_io.read_parquet_metadata(metadata_filename)
     with pytest.raises(ValueError, match="missing Norder"):
