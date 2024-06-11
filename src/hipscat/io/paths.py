@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import re
 from typing import Dict, List
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+from fsspec.implementations.http import HTTPFileSystem
 
 from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer, get_fs
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
@@ -87,7 +90,10 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
 
 
 def pixel_catalog_files(
-    catalog_base_dir: FilePointer, pixels: List[HealpixPixel], storage_options: Dict | None = None
+    catalog_base_dir: FilePointer,
+    pixels: List[HealpixPixel],
+    query_params: dict = None,
+    storage_options: Dict | None = None,
 ) -> List[FilePointer]:
     """Create a list of path *pointers* for pixel catalog files. This will not create the directory
     or files.
@@ -103,23 +109,53 @@ def pixel_catalog_files(
     Args:
         catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
         pixels (List[HealpixPixel]): the healpix pixels to create pointers to
+        query_params (dict): Params to append to URL. Ex: {'cols': ['ra', 'dec'], 'fltrs': ['r>=10', 'g<18']}
         storage_options (dict): the storage options for the file system to target when generating the paths
+
     Returns (List[FilePointer]):
         A list of paths to the pixels, in the same order as the input pixel list.
     """
     fs, _ = get_fs(catalog_base_dir, storage_options)
     base_path_stripped = catalog_base_dir.removesuffix(fs.sep)
+
+    url_params = ""
+    if isinstance(fs, HTTPFileSystem) and query_params:
+        url_params = dict_to_query_urlparams(query_params)
+
     return [
         fs.sep.join(
             [
                 base_path_stripped,
                 f"{ORDER_DIRECTORY_PREFIX}={pixel.order}",
                 f"{DIR_DIRECTORY_PREFIX}={pixel.dir}",
-                f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet",
+                f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet" + url_params,
             ]
         )
         for pixel in pixels
     ]
+
+
+def dict_to_query_urlparams(query_params: dict) -> str:
+    """Converts a dictionary to a url query parameter string
+
+    Args:
+        query_params (dict): dictionary of query parameters.
+    Returns:
+        query parameter string to append to a url
+    """
+
+    if not query_params:
+        return ""
+
+    query = {}
+    for key, value in query_params.items():
+        if isinstance(value, list):
+            value = ",".join(value).replace(" ", "")
+        query[key] = value
+
+    # Build the query string and add the "?" prefix
+    url_params = "?" + urlencode(query, doseq=True)
+    return url_params
 
 
 def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int) -> FilePointer:

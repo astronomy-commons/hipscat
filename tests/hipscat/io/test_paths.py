@@ -54,6 +54,30 @@ def test_pixel_catalog_files():
     assert expected == result
 
 
+def test_pixel_catalog_files_w_query_params():
+    expected = [
+        "https://foo/Norder=0/Dir=0/Npix=5.parquet?columns=ID%2CRA%2CDEC%2Cr_auto&filters=r_auto%3C13"
+    ]
+    query_params = {"columns": ["ID", "RA", "DEC", "r_auto"], "filters": ["r_auto<13"]}
+    result = paths.pixel_catalog_files("https://foo", [HealpixPixel(0, 5)], query_params=query_params)
+    assert expected == result
+
+
+def test_dict_to_query_urlparams():
+    expected = "?columns=ID%2CRA%2CDEC%2Cr_auto&filters=r_auto%3C13"
+    query_params = {"columns": ["ID", "RA", "DEC", "r_auto"], "filters": ["r_auto<13"]}
+    result = paths.dict_to_query_urlparams(query_params)
+    assert result == expected
+
+    expected = "?columns=ID%2CRA%2CDEC%2Cr_auto&filters=r_auto%3C13"
+    query_params = {"columns": [" ID", "RA ", "DEC ", "r_auto"], "filters": ["r_auto < 13"]}
+    result = paths.dict_to_query_urlparams(query_params)
+    assert result == expected
+
+    result = paths.dict_to_query_urlparams({})
+    assert result == ""
+
+
 def test_get_healpix_from_path():
     expected = HealpixPixel(5, 34)
 
