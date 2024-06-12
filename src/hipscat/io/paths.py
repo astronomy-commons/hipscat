@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from typing import Dict, List
-from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+from urllib.parse import urlencode
 
 from fsspec.implementations.http import HTTPFileSystem
 
