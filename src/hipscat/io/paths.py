@@ -92,7 +92,7 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
 def pixel_catalog_files(
     catalog_base_dir: FilePointer,
     pixels: List[HealpixPixel],
-    query_params: dict = None,
+    query_params: Dict | None = None,
     storage_options: Dict | None = None,
 ) -> List[FilePointer]:
     """Create a list of path *pointers* for pixel catalog files. This will not create the directory
@@ -135,7 +135,7 @@ def pixel_catalog_files(
     ]
 
 
-def dict_to_query_urlparams(query_params: dict) -> str:
+def dict_to_query_urlparams(query_params: Dict | None = None) -> str:
     """Converts a dictionary to a url query parameter string
 
     Args:
