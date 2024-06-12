@@ -77,6 +77,18 @@ def test_dict_to_query_urlparams():
     result = paths.dict_to_query_urlparams({})
     assert result == ""
 
+    result = paths.dict_to_query_urlparams(None)
+    assert result == ""
+
+    result = paths.dict_to_query_urlparams({"": ""})
+    assert result == ""
+
+    result = paths.dict_to_query_urlparams({None: ""})
+    assert result == ""
+
+    result = paths.dict_to_query_urlparams({"": "nonempty"})
+    assert result == ""
+
 
 def test_get_healpix_from_path():
     expected = HealpixPixel(5, 34)

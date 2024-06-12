@@ -149,9 +149,14 @@ def dict_to_query_urlparams(query_params: dict) -> str:
 
     query = {}
     for key, value in query_params.items():
+        if not all([key, value]):
+            continue
         if isinstance(value, list):
             value = ",".join(value).replace(" ", "")
         query[key] = value
+
+    if not query:
+        return ""
 
     # Build the query string and add the "?" prefix
     url_params = "?" + urlencode(query, doseq=True)
