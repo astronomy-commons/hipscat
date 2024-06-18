@@ -46,6 +46,9 @@ def handle_pandas_storage_options(
         storage_options_copy = storage_options.copy()
         headers = storage_options_copy.pop("headers")
         storage_options_copy = {**storage_options_copy, **headers}
+    else:
+        # Handle reference storage_options_copy before assignment
+        storage_options_copy = storage_options
 
     return storage_options_copy
 
