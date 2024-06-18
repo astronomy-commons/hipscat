@@ -1,5 +1,6 @@
 from .file_io import (
     delete_file,
+    handle_pandas_storage_options,
     load_csv_to_pandas,
     load_json_file,
     load_parquet_to_pandas,
@@ -16,7 +17,6 @@ from .file_io import (
     write_fits_image,
     write_parquet_metadata,
     write_string_to_file,
-    handle_pandas_storage_options,
 )
 from .file_pointer import (
     FilePointer,
