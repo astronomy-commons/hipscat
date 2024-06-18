@@ -36,6 +36,15 @@ def make_directory(
     file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
     file_system.makedirs(file_pointer, exist_ok=exist_ok)
 
+def handle_pandas_storage_options(storage_options: Union[Dict[Any, Any], None]) -> Union[Dict[Any, Any], None]:
+    """Handle storage options for pandas read/write methods."""
+    if storage_options is not None and "headers" in storage_options:
+        # Copy the storage options to avoid modifying the original dictionary
+        storage_options_copy = storage_options.copy() 
+        headers = storage_options_copy.pop("headers")
+        storage_options_copy = {**storage_options_copy, **headers}
+    
+    return storage_options_copy
 
 def remove_directory(
     file_pointer: FilePointer, ignore_errors=False, storage_options: Union[Dict[Any, Any], None] = None
@@ -130,7 +139,9 @@ def load_csv_to_pandas(
     Returns:
         pandas dataframe loaded from CSV
     """
-    return pd.read_csv(file_pointer, storage_options=storage_options, **kwargs)
+    
+    pd_storage_option = handle_pandas_storage_options(storage_options)
+    return pd.read_csv(file_pointer, storage_options=pd_storage_option, **kwargs)
 
 
 def load_parquet_to_pandas(
@@ -145,7 +156,8 @@ def load_parquet_to_pandas(
     Returns:
         pandas dataframe loaded from parquet
     """
-    return pd.read_parquet(file_pointer, storage_options=storage_options, **kwargs)
+    pd_storage_option = handle_pandas_storage_options(storage_options)
+    return pd.read_parquet(file_pointer, storage_options=pd_storage_option, **kwargs)
 
 
 def write_dataframe_to_csv(
@@ -353,4 +365,5 @@ def read_parquet_file_to_pandas(
     Returns:
         Pandas DataFrame with the data from the parquet file
     """
-    return pd.read_parquet(file_pointer, storage_options=storage_options, **kwargs)
+    pd_storage_option = handle_pandas_storage_options(storage_options)
+    return pd.read_parquet(file_pointer, storage_options=pd_storage_option, **kwargs)

@@ -16,6 +16,7 @@ from .file_io import (
     write_fits_image,
     write_parquet_metadata,
     write_string_to_file,
+    handle_pandas_storage_options,
 )
 from .file_pointer import (
     FilePointer,
