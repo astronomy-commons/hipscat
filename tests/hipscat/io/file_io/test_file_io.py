@@ -50,7 +50,7 @@ def test_handle_pandas_storage_options():
     storage_options_str = {"key1": "value1", "key2": None}
     assert storage_options_str == handle_pandas_storage_options(storage_options)
 
-    assert None == handle_pandas_storage_options(None)
+    assert None is handle_pandas_storage_options(None)
 
 
 def test_make_existing_directory_raises(tmp_path):
