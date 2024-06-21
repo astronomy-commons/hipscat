@@ -20,8 +20,9 @@ from __future__ import annotations
 
 from typing import List
 
-import healpy as hp
 import numpy as np
+
+import hipscat.pixel_math.healpix_shim as hp
 
 HIPSCAT_ID_COLUMN = "_hipscat_index"
 HIPSCAT_ID_HEALPIX_ORDER = 19

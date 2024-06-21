@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Tuple
 
-import healpy as hp
 import numpy as np
 from mocpy import MOC
 from typing_extensions import TypeAlias
+
+import hipscat.pixel_math.healpix_shim as hp
 
 # Pair of spherical sky coordinates (ra, dec)
 SphericalCoordinates: TypeAlias = Tuple[float, float]

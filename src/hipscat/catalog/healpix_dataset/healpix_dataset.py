@@ -3,12 +3,12 @@ from __future__ import annotations
 import dataclasses
 from typing import Any, Dict, List, Tuple, Union
 
-import healpy as hp
 import numpy as np
 import pandas as pd
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths

@@ -3,13 +3,13 @@
 import shutil
 from pathlib import Path
 
-import healpy as hp
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.io import file_io
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 

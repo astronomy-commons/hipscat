@@ -5,7 +5,6 @@ import tempfile
 import warnings
 from typing import Any, Dict, Tuple, Union
 
-import healpy as hp
 import numpy as np
 import pandas as pd
 import pyarrow.dataset as pds
@@ -13,6 +12,7 @@ import pyarrow.parquet as pq
 import yaml
 from pyarrow.dataset import Dataset
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
 
 

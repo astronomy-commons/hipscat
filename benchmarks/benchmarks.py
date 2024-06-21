@@ -5,10 +5,10 @@ https://asv.readthedocs.io/en/stable/writing_benchmarks.html."""
 
 import os
 
-import healpy as hp
 import numpy as np
 
 import hipscat.pixel_math as hist
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog import Catalog, PartitionInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_info import CatalogInfo

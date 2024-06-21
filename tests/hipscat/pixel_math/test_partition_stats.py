@@ -1,12 +1,12 @@
 """Tests of histogram calculations"""
 
-import healpy as hp
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pytest
 
 import hipscat.pixel_math as hist
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
