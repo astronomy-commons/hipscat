@@ -10,6 +10,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 from matplotlib import pyplot as plt
 
+import hipscat.pixel_math.healpix_shim as hs
 from hipscat.catalog import Catalog
 from hipscat.io import file_io, paths
 from hipscat.pixel_math import HealpixPixel
@@ -90,7 +91,7 @@ def plot_pixel_list(pixels: List[HealpixPixel], plot_title: str = "", projection
         colors = plt.cm.viridis(np.linspace(0, 1, num_colors))  # pylint: disable=no-member
         cmap = mcolors.LinearSegmentedColormap.from_list("my_colormap", colors, num_colors)
 
-    order_map = np.full(hp.order2npix(max_order), hp.pixelfunc.UNSEEN)
+    order_map = np.full(hs.order2npix(max_order), hs.unseen_pixel())
 
     for pixel in pixels:
         explosion_factor = 4 ** (max_order - pixel.order)

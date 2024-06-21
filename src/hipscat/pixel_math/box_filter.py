@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Iterable, List, Tuple
 
-import healpy as hp
 import numpy as np
 from mocpy import MOC
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.pixel_math.polygon_filter import SphericalCoordinates
 
 
@@ -64,7 +64,7 @@ def _generate_ra_strip_moc(ra_range: Tuple[float, float], order: int) -> MOC:
             order,
         )
     else:
-        # HEALpy will assume the polygon of smallest area by default
+        # We assume the polygon of smallest area by default
         # e.g. for ra_ranges of [10,50], [200,10] or [350,10]
         pixels_in_range = _get_pixels_for_subpolygons(
             [

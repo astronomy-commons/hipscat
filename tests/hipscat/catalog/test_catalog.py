@@ -3,11 +3,11 @@
 import os
 
 import astropy.units as u
-import healpy as hp
 import numpy as np
 import pytest
 from mocpy import MOC
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog import Catalog, CatalogType, PartitionInfo
 from hipscat.io import paths
 from hipscat.io.file_io import read_fits_image

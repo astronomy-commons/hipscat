@@ -1,10 +1,10 @@
 """Test construction (and de-construction) of the hipscat ID"""
 
-import healpy as hp
 import numpy as np
 import numpy.testing as npt
 import pytest
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.pixel_math.hipscat_id import (
     HIPSCAT_ID_HEALPIX_ORDER,
     compute_hipscat_id,

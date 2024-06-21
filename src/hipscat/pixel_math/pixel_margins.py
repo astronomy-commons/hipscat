@@ -1,7 +1,8 @@
 """Utilities for find the pixels of higher orders that surround a given healpixel."""
 
-import healpy as hp
 import numpy as np
+
+import hipscat.pixel_math.healpix_shim as hp
 
 # see the documentation for get_edge() about this variable
 _edge_vectors = [

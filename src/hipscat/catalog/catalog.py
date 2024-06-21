@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple, Union
 
-import healpy as hp
 import numpy as np
 from mocpy import MOC
 from typing_extensions import TypeAlias
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes

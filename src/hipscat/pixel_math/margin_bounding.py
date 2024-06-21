@@ -1,9 +1,10 @@
 """Utilities to build bounding boxes around healpixels that include a neighor margin."""
 
-import healpy as hp
 import numpy as np
 from astropy.coordinates import SkyCoord
 from numba import njit
+
+import hipscat.pixel_math.healpix_shim as hp
 
 
 def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=100, chunk_size=1000):

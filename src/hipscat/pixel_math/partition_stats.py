@@ -1,9 +1,9 @@
 """Utilities for generating and manipulating object count histograms"""
 
-import healpy as hp
 import numpy as np
 import pandas as pd
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
