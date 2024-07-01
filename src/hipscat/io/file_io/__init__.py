@@ -1,6 +1,5 @@
 from .file_io import (
     delete_file,
-    handle_pandas_storage_options,
     load_csv_to_pandas,
     load_json_file,
     load_parquet_to_pandas,

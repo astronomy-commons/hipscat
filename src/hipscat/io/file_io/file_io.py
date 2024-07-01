@@ -37,20 +37,17 @@ def make_directory(
     file_system.makedirs(file_pointer, exist_ok=exist_ok)
 
 
-def handle_pandas_storage_options(
-    storage_options: Union[Dict[Any, Any], None]
-) -> Union[Dict[Any, Any], None]:
-    """Handle storage options for pandas read/write methods."""
+def unnest_headers_for_pandas(storage_options: Union[Dict[Any, Any], None]) -> Union[Dict[Any, Any], None]:
+    """Handle storage options for pandas read/write methods.
+    This is needed because fsspec http storage options are nested under the "headers" key,
+    see https://github.com/astronomy-commons/hipscat/issues/295
+    """
     if storage_options is not None and "headers" in storage_options:
         # Copy the storage options to avoid modifying the original dictionary
         storage_options_copy = storage_options.copy()
         headers = storage_options_copy.pop("headers")
-        storage_options_copy = {**storage_options_copy, **headers}
-    else:
-        # Handle reference storage_options_copy before assignment
-        storage_options_copy = storage_options
-
-    return storage_options_copy
+        return {**storage_options_copy, **headers}
+    return storage_options
 
 
 def remove_directory(
@@ -147,7 +144,7 @@ def load_csv_to_pandas(
         pandas dataframe loaded from CSV
     """
 
-    pd_storage_option = handle_pandas_storage_options(storage_options)
+    pd_storage_option = unnest_headers_for_pandas(storage_options)
     return pd.read_csv(file_pointer, storage_options=pd_storage_option, **kwargs)
 
 
@@ -163,7 +160,7 @@ def load_parquet_to_pandas(
     Returns:
         pandas dataframe loaded from parquet
     """
-    pd_storage_option = handle_pandas_storage_options(storage_options)
+    pd_storage_option = unnest_headers_for_pandas(storage_options)
     return pd.read_parquet(file_pointer, storage_options=pd_storage_option, **kwargs)
 
 
@@ -372,5 +369,5 @@ def read_parquet_file_to_pandas(
     Returns:
         Pandas DataFrame with the data from the parquet file
     """
-    pd_storage_option = handle_pandas_storage_options(storage_options)
+    pd_storage_option = unnest_headers_for_pandas(storage_options)
     return pd.read_parquet(file_pointer, storage_options=pd_storage_option, **kwargs)
