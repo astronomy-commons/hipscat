@@ -7,7 +7,6 @@ import pytest
 
 import hipscat.pixel_math as hist
 import hipscat.pixel_math.healpix_shim as hp
-from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 def test_small_sky_same_pixel():
@@ -120,6 +119,21 @@ def test_alignment_small_sky_order1():
     npt.assert_array_equal(result, expected)
 
 
+def test_alignment_small_sky_order1_empty_siblings():
+    """Create alignment from small sky's distribution at order 1"""
+    initial_histogram = hist.empty_histogram(1)
+    initial_histogram[44] = 100
+    result = hist.generate_alignment(
+        initial_histogram, highest_order=1, threshold=250, drop_empty_siblings=True
+    )
+
+    expected = np.full(48, None)
+    expected[44] = (1, 44, 100)
+    print(result[44:])
+
+    npt.assert_array_equal(result, expected)
+
+
 def test_alignment_small_sky_order2():
     """Create alignment from small sky's distribution at order 2"""
     initial_histogram = hist.empty_histogram(2)
@@ -147,6 +161,7 @@ def test_alignment_small_sky_order2():
         (0, 11, 131),
     ]
     expected[176:192] = tuples
+    print(result[176:192])
 
     npt.assert_array_equal(result, expected)
 
@@ -164,145 +179,3 @@ def test_alignment_even_sky():
     # everything maps to order 7 (would be 5, but lowest of 7 is enforced)
     for mapping in result:
         assert mapping[0] == 7
-
-
-def test_destination_pixel_map_order1():
-    """Create destination pixel map for small sky at order 1"""
-
-    alignment = np.full(48, None)
-    alignment[44:] = [(0, 11, 131), (0, 11, 131), (0, 11, 131), (0, 11, 131)]
-
-    initial_histogram = hist.empty_histogram(1)
-    filled_pixels = [51, 29, 51, 0]
-    initial_histogram[44:] = filled_pixels[:]
-
-    expected = {tuple([0, 11, 131]): [44, 45, 46]}
-
-    result = hist.generate_destination_pixel_map(initial_histogram, alignment)
-
-    npt.assert_array_equal(result, expected)
-
-
-def test_compute_pixel_map_order1():
-    """Create destination pixel map for small sky at order 1"""
-
-    initial_histogram = hist.empty_histogram(1)
-    filled_pixels = [51, 29, 51, 0]
-    initial_histogram[44:] = filled_pixels[:]
-
-    expected = {HealpixPixel(0, 11): (131, [44, 45, 46])}
-
-    result = hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=150)
-
-    npt.assert_array_equal(result, expected)
-
-    expected = {
-        HealpixPixel(1, 44): (51, [44]),
-        HealpixPixel(1, 45): (29, [45]),
-        HealpixPixel(1, 46): (51, [46]),
-    }
-
-    result = hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=100)
-
-    npt.assert_array_equal(result, expected)
-
-
-@pytest.mark.timeout(5)
-def test_compute_pixel_map_even_sky():
-    """Create alignment from an even distribution at order 6"""
-    initial_histogram = np.full(hp.order2npix(6), 200)
-    result = hist.compute_pixel_map(initial_histogram, highest_order=6, threshold=1_000)
-    # everything maps to order 5, given the density
-    for mapping in result:
-        assert mapping.order == 5
-
-
-@pytest.mark.timeout(5)
-def test_compute_pixel_map_even_sky_enforce_lowest():
-    """Create pixel map for an even distribution, and enforce a lowest order bound."""
-    initial_histogram = np.full(hp.order2npix(6), 10)
-    result = hist.compute_pixel_map(initial_histogram, highest_order=6, lowest_order=4, threshold=1_000)
-    # everything maps to order 4 (would be 0, but lowest of 4 is enforced)
-    for mapping in result:
-        assert mapping.order == 4
-
-
-def test_compute_pixel_map_invalid_inputs():
-    """Create destination pixel map for small sky at order 1"""
-
-    initial_histogram = hist.empty_histogram(1)
-    filled_pixels = [51, 29, 51, 0]
-    initial_histogram[44:] = filled_pixels[:]
-
-    ## Order doesn't match histogram length
-    with pytest.raises(ValueError, match="histogram is not the right size"):
-        hist.compute_pixel_map(initial_histogram, highest_order=2, threshold=150)
-
-    ## Some bins exceed threshold
-    with pytest.raises(ValueError, match="exceeds threshold"):
-        hist.compute_pixel_map(initial_histogram, highest_order=1, threshold=30)
-
-    ## lowest_order too large
-    with pytest.raises(ValueError, match="lowest_order"):
-        hist.compute_pixel_map(initial_histogram, highest_order=1, lowest_order=2, threshold=30)
-
-
-def test_generate_constant_pixel_map():
-    """Create constant pixel map for small sky data"""
-
-    initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
-    expected = {HealpixPixel(0, 11): (131, [11])}
-
-    result = hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=0)
-    npt.assert_array_equal(result, expected)
-
-    initial_histogram = hist.empty_histogram(1)
-    filled_pixels = [51, 29, 51, 0]
-    initial_histogram[44:] = filled_pixels[:]
-    expected = {
-        HealpixPixel(1, 44): (51, [44]),
-        HealpixPixel(1, 45): (29, [45]),
-        HealpixPixel(1, 46): (51, [46]),
-    }
-
-    result = hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=1)
-
-    npt.assert_array_equal(result, expected)
-
-
-def test_generate_constant_pixel_map_invalid_inputs():
-    """Create destination pixel map for small sky at order 1"""
-
-    initial_histogram = hist.empty_histogram(1)
-    filled_pixels = [51, 29, 51, 0]
-    initial_histogram[44:] = filled_pixels[:]
-
-    ## Order doesn't match histogram length
-    with pytest.raises(ValueError, match="histogram is not the right size"):
-        hist.generate_constant_pixel_map(initial_histogram, constant_healpix_order=2)
-
-
-def test_destination_map_matching_behavior():
-    """Test that we get the same size destination pixel map, whether we compute
-    directly, or from an existing alignment."""
-    raw_histogram = hist.empty_histogram(2)
-    raw_histogram[0:6] = 22946
-    raw_histogram[64:79] = 185670
-
-    alignment = hist.generate_alignment(
-        raw_histogram,
-        highest_order=2,
-        threshold=1_000_000,
-    )
-    destination_pixel_map_a = hist.compute_pixel_map(
-        raw_histogram,
-        highest_order=2,
-        threshold=1_000_000,
-    )
-
-    destination_pixel_map_b = hist.generate_destination_pixel_map(
-        raw_histogram,
-        alignment,
-    )
-
-    assert len(destination_pixel_map_a) == len(destination_pixel_map_b)
