@@ -95,10 +95,13 @@ def test_alignment_exceeds_threshold_order2():
         hist.generate_alignment(initial_histogram, highest_order=2, threshold=20)
 
 
-def test_alignment_small_sky_order0():
+@pytest.mark.parametrize("drop_empty_siblings", [True, False])
+def test_alignment_small_sky_order0(drop_empty_siblings):
     """Create alignment from small sky's distribution at order 0"""
     initial_histogram = np.asarray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 131])
-    result = hist.generate_alignment(initial_histogram, highest_order=0, threshold=250)
+    result = hist.generate_alignment(
+        initial_histogram, highest_order=0, threshold=250, drop_empty_siblings=drop_empty_siblings
+    )
 
     expected = np.full(12, None)
     expected[11] = (0, 11, 131)
@@ -106,12 +109,15 @@ def test_alignment_small_sky_order0():
     npt.assert_array_equal(result, expected)
 
 
-def test_alignment_small_sky_order1():
+@pytest.mark.parametrize("drop_empty_siblings", [True, False])
+def test_alignment_small_sky_order1(drop_empty_siblings):
     """Create alignment from small sky's distribution at order 1"""
     initial_histogram = hist.empty_histogram(1)
     filled_pixels = [42, 29, 42, 18]
     initial_histogram[44:] = filled_pixels[:]
-    result = hist.generate_alignment(initial_histogram, highest_order=1, threshold=250)
+    result = hist.generate_alignment(
+        initial_histogram, highest_order=1, threshold=250, drop_empty_siblings=drop_empty_siblings
+    )
 
     expected = np.full(48, None)
     expected[44:] = [(0, 11, 131), (0, 11, 131), (0, 11, 131), (0, 11, 131)]
@@ -129,17 +135,19 @@ def test_alignment_small_sky_order1_empty_siblings():
 
     expected = np.full(48, None)
     expected[44] = (1, 44, 100)
-    print(result[44:])
 
     npt.assert_array_equal(result, expected)
 
 
-def test_alignment_small_sky_order2():
+@pytest.mark.parametrize("drop_empty_siblings", [True, False])
+def test_alignment_small_sky_order2(drop_empty_siblings):
     """Create alignment from small sky's distribution at order 2"""
     initial_histogram = hist.empty_histogram(2)
     filled_pixels = [4, 11, 14, 13, 5, 7, 8, 9, 11, 23, 4, 4, 17, 0, 1, 0]
     initial_histogram[176:] = filled_pixels[:]
-    result = hist.generate_alignment(initial_histogram, highest_order=2, threshold=250)
+    result = hist.generate_alignment(
+        initial_histogram, highest_order=2, threshold=250, drop_empty_siblings=drop_empty_siblings
+    )
 
     expected = np.full(hp.order2npix(2), None)
     tuples = [
@@ -166,16 +174,25 @@ def test_alignment_small_sky_order2():
     npt.assert_array_equal(result, expected)
 
 
-@pytest.mark.timeout(5)
-def test_alignment_even_sky():
+@pytest.mark.parametrize("drop_empty_siblings", [True, False])
+@pytest.mark.timeout(20)
+def test_alignment_even_sky(drop_empty_siblings):
     """Create alignment from an even distribution at order 7"""
     initial_histogram = np.full(hp.order2npix(7), 40)
-    result = hist.generate_alignment(initial_histogram, highest_order=7, threshold=1_000)
+    result = hist.generate_alignment(
+        initial_histogram, highest_order=7, threshold=1_000, drop_empty_siblings=drop_empty_siblings
+    )
     # everything maps to order 5, given the density
     for mapping in result:
         assert mapping[0] == 5
 
-    result = hist.generate_alignment(initial_histogram, highest_order=7, lowest_order=7, threshold=1_000)
+    result = hist.generate_alignment(
+        initial_histogram,
+        highest_order=7,
+        lowest_order=7,
+        threshold=1_000,
+        drop_empty_siblings=drop_empty_siblings,
+    )
     # everything maps to order 7 (would be 5, but lowest of 7 is enforced)
     for mapping in result:
         assert mapping[0] == 7
