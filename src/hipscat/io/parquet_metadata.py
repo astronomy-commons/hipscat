@@ -88,6 +88,9 @@ def write_parquet_metadata(
         storage_options: dictionary that contains abstract filesystem credentials
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
+
+    Returns:
+        sum of the number of rows in the dataset.
     """
     ignore_prefixes = [
         "intermediate",
@@ -104,6 +107,7 @@ def write_parquet_metadata(
     metadata_collector = []
     # Collect the healpix pixels so we can sort before writing.
     healpix_pixels = []
+    total_rows = 0
 
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
@@ -120,6 +124,7 @@ def write_parquet_metadata(
 
             healpix_pixels.append(healpix_pixel)
         metadata_collector.append(single_metadata)
+        total_rows += single_metadata.num_rows
 
     ## Write out the two metadata files
     if output_path is None:
@@ -141,6 +146,7 @@ def write_parquet_metadata(
     file_io.write_parquet_metadata(
         dataset.schema, common_metadata_file_pointer, storage_options=storage_options
     )
+    return total_rows
 
 
 def write_parquet_metadata_for_batches(
@@ -162,7 +168,7 @@ def write_parquet_metadata_for_batches(
         for batch_list in batches:
             temp_info_table = pa.Table.from_batches(batch_list)
             pq.write_to_dataset(temp_info_table, temp_pq_file)
-        write_parquet_metadata(temp_pq_file, storage_options=storage_options, output_path=output_path)
+        return write_parquet_metadata(temp_pq_file, storage_options=storage_options, output_path=output_path)
 
 
 def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
