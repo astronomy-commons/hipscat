@@ -124,7 +124,8 @@ def test_write_to_file_sorted(tmp_path, pixel_list_depth_first, pixel_list_bread
     even though the original pixel list is in Norder-major sorting (depth-first)."""
     partition_info = PartitionInfo.from_healpix(pixel_list_depth_first)
     npt.assert_array_equal(pixel_list_depth_first, partition_info.get_healpix_pixels())
-    partition_info.write_to_metadata_files(tmp_path)
+    total_rows = partition_info.write_to_metadata_files(tmp_path)
+    assert total_rows == 9
 
     partition_info_pointer = paths.get_parquet_metadata_pointer(tmp_path)
     new_partition_info = PartitionInfo.read_from_file(partition_info_pointer)
@@ -155,5 +156,7 @@ def test_load_partition_info_from_dir_and_write(tmp_path, pixel_list_depth_first
     ## Can write out the _metadata file by providing:
     ##  - no arguments
     ##  - new catalog directory
-    info.write_to_metadata_files()
-    info.write_to_metadata_files(catalog_path=tmp_path)
+    total_rows = info.write_to_metadata_files()
+    assert total_rows == 9
+    total_rows = info.write_to_metadata_files(catalog_path=tmp_path)
+    assert total_rows == 9

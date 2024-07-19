@@ -25,7 +25,8 @@ def test_write_parquet_metadata(
         small_sky_dir,
         catalog_base_dir,
     )
-    write_parquet_metadata(catalog_base_dir)
+    total_rows = write_parquet_metadata(catalog_base_dir)
+    assert total_rows == 131
     check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
@@ -34,7 +35,8 @@ def test_write_parquet_metadata(
         0,
     )
     ## Re-write - should still have the same properties.
-    write_parquet_metadata(catalog_base_dir)
+    total_rows = write_parquet_metadata(catalog_base_dir)
+    assert total_rows == 131
     check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
@@ -55,7 +57,8 @@ def test_write_parquet_metadata_order1(
         temp_path,
     )
 
-    write_parquet_metadata(temp_path)
+    total_rows = write_parquet_metadata(temp_path)
+    assert total_rows == 131
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
         temp_path / "_metadata",
@@ -81,7 +84,8 @@ def test_write_parquet_metadata_sorted(
         temp_path,
     )
 
-    write_parquet_metadata(temp_path)
+    total_rows = write_parquet_metadata(temp_path)
+    assert total_rows == 131
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
         temp_path / "_metadata",
@@ -112,7 +116,9 @@ def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
         ]
     )
 
-    write_parquet_metadata(temp_path, order_by_healpix=False)
+    total_rows = write_parquet_metadata(temp_path, order_by_healpix=False)
+    assert total_rows == 2
+
     check_parquet_schema(tmp_path / "index" / "_metadata", index_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
