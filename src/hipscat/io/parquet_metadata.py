@@ -162,6 +162,9 @@ def write_parquet_metadata_for_batches(
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
         storage_options: dictionary that contains abstract filesystem credentials
+
+    Returns:
+        sum of the number of rows in the dataset.
     """
 
     with tempfile.TemporaryDirectory() as temp_pq_file:

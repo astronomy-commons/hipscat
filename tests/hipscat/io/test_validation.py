@@ -19,7 +19,8 @@ def test_is_valid_catalog(tmp_path, small_sky_catalog, small_sky_pixels):
 
     # The catalog is valid if both the catalog_info and _metadata files exist,
     # and the catalog_info is in a valid format
-    PartitionInfo.from_healpix(small_sky_pixels).write_to_metadata_files(catalog_dir_pointer)
+    total_rows = PartitionInfo.from_healpix(small_sky_pixels).write_to_metadata_files(catalog_dir_pointer)
+    assert total_rows == 1
     assert is_valid_catalog(catalog_dir_pointer)
 
     # A partition_info file alone is also not enough
