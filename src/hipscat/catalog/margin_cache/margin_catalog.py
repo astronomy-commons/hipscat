@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
 
@@ -8,7 +9,6 @@ from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hipscat.catalog.margin_cache import MarginCacheCatalogInfo
 from hipscat.pixel_tree.moc_utils import copy_moc
-import pyarrow as pa
 
 
 class MarginCatalog(HealpixDataset):
@@ -49,7 +49,12 @@ class MarginCatalog(HealpixDataset):
         if catalog_info.catalog_type != CatalogType.MARGIN:
             raise ValueError(f"Catalog info `catalog_type` must equal {CatalogType.MARGIN}")
         super().__init__(
-            catalog_info, pixels, catalog_path=catalog_path, moc=moc, schema=schema, storage_options=storage_options
+            catalog_info,
+            pixels,
+            catalog_path=catalog_path,
+            moc=moc,
+            schema=schema,
+            storage_options=storage_options,
         )
 
     def filter_by_moc(self, moc: MOC) -> Self:

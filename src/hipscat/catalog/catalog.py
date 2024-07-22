@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
+import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import TypeAlias
 
@@ -23,7 +24,7 @@ from hipscat.pixel_math.validators import (
     validate_radius,
 )
 from hipscat.pixel_tree.negative_tree import compute_negative_tree_pixels
-import pyarrow as pa
+
 
 class Catalog(HealpixDataset):
     """A HiPSCat Catalog with data stored in a HEALPix Hive partitioned structure
@@ -67,7 +68,12 @@ class Catalog(HealpixDataset):
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
         super().__init__(
-            catalog_info, pixels, catalog_path=catalog_path, moc=moc, schema=schema, storage_options=storage_options
+            catalog_info,
+            pixels,
+            catalog_path=catalog_path,
+            moc=moc,
+            schema=schema,
+            storage_options=storage_options,
         )
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:

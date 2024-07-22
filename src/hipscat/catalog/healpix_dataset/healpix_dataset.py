@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
 
@@ -18,7 +19,6 @@ from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType
 from hipscat.pixel_tree.moc_filter import filter_by_moc
 from hipscat.pixel_tree.pixel_alignment import align_with_mocs
 from hipscat.pixel_tree.pixel_tree import PixelTree
-import pyarrow as pa
 
 PixelInputTypes = Union[PartitionInfo, PixelTree, List[HealpixPixel]]
 
@@ -125,7 +125,9 @@ class HealpixDataset(Dataset):
         return MOC.from_healpix_cells(ipix, orders, order)
 
     @classmethod
-    def _read_schema_from_metadata(cls, catalog_base_dir: FilePointer, storage_options: dict | None = None) -> pa.Schema | None:
+    def _read_schema_from_metadata(
+        cls, catalog_base_dir: FilePointer, storage_options: dict | None = None
+    ) -> pa.Schema | None:
         """Reads the schema information stored in the _metadata file"""
         common_metadata_file = paths.get_common_metadata_pointer(catalog_base_dir)
         if file_io.does_file_or_directory_exist(common_metadata_file, storage_options=storage_options):
