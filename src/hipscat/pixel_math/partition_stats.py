@@ -150,7 +150,26 @@ def _get_alignment_dropping_siblings(nested_sums, highest_order, lowest_order, t
     keep spatially isolated areas in pixels of higher order.
 
     This method can be slower than the above `_get_alignment` method, and so should only be used
-    when the smaller area pixels are desired."""
+    when the smaller area pixels are desired.
+
+    This uses a form of hiearchical agglomeration (building a tree bottom-up). For each cell
+    at order n, we look at the counts in all 4 subcells at order (n+1). We have two numeric
+    values that are easy to compute that we can refer to easily:
+
+    - quad_sum: the total number of counts in this cell
+    - quad_max: the largest count within the 4 subcells
+
+    Our agglomeration criteria (the conditions under which we collapse) must BOTH be met:
+
+    - total number in cell is less than the global threshold (quad_sum <= threshold)
+    - more than one subcell contains values (quad_sum != quad_max) (if exactly 1
+      subcell contains counts, then all of the quad_sum will come from that single quad_max)
+
+    Inversely, we will NOT collapse when EITHER is true:
+
+    - total number in cell is greater than the threshold
+    - only one subcell contains values
+    """
     order_map = np.array(
         [highest_order if count > 0 else -1 for count in nested_sums[highest_order]], dtype=np.int32
     )
