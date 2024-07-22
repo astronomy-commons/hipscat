@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 import hipscat.pixel_math.healpix_shim as hp
-from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
 def empty_histogram(highest_order):
@@ -56,7 +55,9 @@ def generate_histogram(
     return histogram_result
 
 
-def generate_alignment(histogram, highest_order=10, lowest_order=0, threshold=1_000_000):
+def generate_alignment(
+    histogram, highest_order=10, lowest_order=0, threshold=1_000_000, drop_empty_siblings=False
+):
     """Generate alignment from high order pixels to those of equal or lower order
 
     We may initially find healpix pixels at order 10, but after aggregating up to the pixel
@@ -71,6 +72,7 @@ def generate_alignment(histogram, highest_order=10, lowest_order=0, threshold=1_
         lowest_order (int): the lowest healpix order (e.g. 1-5). specifying a lowest order
             constrains the partitioning to prevent spatially large pixels.
         threshold (int): the maximum number of objects allowed in a single pixel
+        drop_empty_siblings (bool): if 3 of 4 pixels are empty, keep only the non-empty pixel
     Returns:
         one-dimensional numpy array of integer 3-tuples, where the value at each index corresponds
         to the destination pixel at order less than or equal to the `highest_order`.
@@ -104,6 +106,16 @@ def generate_alignment(histogram, highest_order=10, lowest_order=0, threshold=1_
             parent_pixel = index >> 2
             nested_sums[parent_order][parent_pixel] += nested_sums[read_order][index]
 
+    if drop_empty_siblings:
+        return _get_alignment_dropping_siblings(nested_sums, highest_order, lowest_order, threshold)
+    return _get_alignment(nested_sums, highest_order, lowest_order, threshold)
+
+
+def _get_alignment(nested_sums, highest_order, lowest_order, threshold):
+    """Method to aggregate pixels up to the threshold.
+
+    Checks from low order (large areas), drilling down into higher orders (smaller areas) to
+    find the appropriate order for an area of sky."""
     nested_alignment = []
     for i in range(0, highest_order + 1):
         nested_alignment.append(np.full(hp.order2npix(i), None))
@@ -131,151 +143,63 @@ def generate_alignment(histogram, highest_order=10, lowest_order=0, threshold=1_
     return nested_alignment[highest_order]
 
 
-def generate_destination_pixel_map(histogram, pixel_map):
-    """Generate mapping from destination pixel to all the constituent pixels.
+def _get_alignment_dropping_siblings(nested_sums, highest_order, lowest_order, threshold):
+    """Method to aggregate pixels up to the threshold that collapses completely empty pixels away.
 
-    Args:
-        histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
-        pixel_map (:obj:`np.array`): one-dimensional numpy array of integer 3-tuples.
-            See :func:`generate_alignment` for more details on this format.
-    Returns:
-        dictionary that maps the integer 3-tuple of a pixel at destination order to the set of
-        indexes in histogram for the pixels at the original healpix order
+    Checks from higher order (smaller areas) out to lower order (large areas). In this way, we are able to
+    keep spatially isolated areas in pixels of higher order.
+
+    This method can be slower than the above `_get_alignment` method, and so should only be used
+    when the smaller area pixels are desired.
+
+    This uses a form of hiearchical agglomeration (building a tree bottom-up). For each cell
+    at order n, we look at the counts in all 4 subcells at order (n+1). We have two numeric
+    values that are easy to compute that we can refer to easily:
+
+    - quad_sum: the total number of counts in this cell
+    - quad_max: the largest count within the 4 subcells
+
+    Our agglomeration criteria (the conditions under which we collapse) must BOTH be met:
+
+    - total number in cell is less than the global threshold (quad_sum <= threshold)
+    - more than one subcell contains values (quad_sum != quad_max) (if exactly 1
+      subcell contains counts, then all of the quad_sum will come from that single quad_max)
+
+    Inversely, we will NOT collapse when EITHER is true:
+
+    - total number in cell is greater than the threshold
+    - only one subcell contains values
     """
-
-    # Find all distinct destination pixels
-    non_none_elements = pixel_map[pixel_map != np.array(None)]
-    unique_pixels = np.unique(non_none_elements)
-
-    # Compute the order from the number of pixels at the level.
-    max_order = hp.npix2order(len(histogram))
-
-    result = {}
-    for order, pixel, count in unique_pixels:
-        # Find all constituent pixels at the histogram's order
-        explosion_factor = 4 ** (max_order - int(order))
-        start_pixel = int(pixel) * explosion_factor
-        end_pixel = (int(pixel) + 1) * explosion_factor
-
-        non_zero_indexes = np.nonzero(histogram[start_pixel:end_pixel])[0] + start_pixel
-        result[(order, pixel, count)] = non_zero_indexes.tolist()
-
-    return result
-
-
-def compute_pixel_map(histogram, highest_order=10, lowest_order=0, threshold=1_000_000):
-    # pylint: disable=too-many-locals
-    """Generate alignment from high order pixels to those of equal or lower order
-
-    We may initially find healpix pixels at order 10, but after aggregating up to the pixel
-    threshold, some final pixels are order 4 or 7. This method provides a map from destination
-    healpix pixels at a lower order to the origin pixels at the highest order. This may be used
-    as an input into later partitioning map reduce steps.
-
-    Args:
-        histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
-        highest_order (int):  the highest healpix order (e.g. 0-10)
-        lowest_order (int): the lowest healpix order (e.g. 1-5). specifying a lowest order
-            constrains the partitioning to prevent spatially large pixels.
-        threshold (int): the maximum number of objects allowed in a single pixel
-    Returns:
-        dictionary that maps the HealpixPixel (a pixel at destination order) to a tuple of
-        origin pixel information.
-
-        The tuple contains the following:
-
-        - 0 - the total number of rows found in this destination pixel
-        - 1 - the set of indexes in histogram for the pixels at the original healpix order.
-    Raises:
-        ValueError: if the histogram is the wrong size, or some initial histogram bins
-            exceed threshold.
-    """
-    if len(histogram) != hp.order2npix(highest_order):
-        raise ValueError("histogram is not the right size")
-    if lowest_order > highest_order:
-        raise ValueError("lowest_order should be less than highest_order")
-    max_bin = np.amax(histogram)
-    if max_bin > threshold:
-        raise ValueError(f"single pixel count {max_bin} exceeds threshold {threshold}")
-
-    nested_sums = []
-
-    for order in range(0, highest_order):
-        explosion_factor = 4 ** (highest_order - order)
-        nested_sums.append(histogram.reshape(-1, explosion_factor).sum(axis=1))
-    nested_sums.append(histogram)
-
-    ## Determine the lowest order that does not exceed the threshold
-    orders_at_threshold = [lowest_order if 0 < k <= threshold else None for k in nested_sums[lowest_order]]
-    for order in range(lowest_order + 1, highest_order + 1):
-        new_orders_at_threshold = np.array(
-            [order if 0 < k <= threshold else None for k in nested_sums[order]]
-        )
-        parent_alignment = np.repeat(orders_at_threshold, 4, axis=0)
-        orders_at_threshold = [
-            parent_order if parent_order is not None else new_order
-            for parent_order, new_order in zip(parent_alignment, new_orders_at_threshold)
-        ]
-
-    ## Zip up the orders and the pixel numbers.
-    healpix_pixels = np.array(
-        [
-            HealpixPixel(order, pixel >> 2 * (highest_order - order)) if order is not None else None
-            for order, pixel in zip(orders_at_threshold, np.arange(0, len(orders_at_threshold)))
-        ]
+    order_map = np.array(
+        [highest_order if count > 0 else -1 for count in nested_sums[highest_order]], dtype=np.int32
     )
+    for pixel_order in range(highest_order - 1, lowest_order - 1, -1):
+        for quad_start_index in range(0, hp.order2npix(pixel_order)):
+            quad_sum = nested_sums[pixel_order][quad_start_index]
+            quad_max = max(nested_sums[pixel_order + 1][quad_start_index * 4 : quad_start_index * 4 + 4])
 
-    ## Create a map from healpix pixel to origin pixel data
-    non_none_elements = healpix_pixels[healpix_pixels != np.array(None)]
-    unique_pixels = np.unique(non_none_elements)
+            if quad_sum != quad_max and quad_sum <= threshold:
+                ## Condition where we want to collapse pixels to the lower order (larger area)
+                explosion_factor = 4 ** (highest_order - pixel_order)
+                exploded_pixels = [
+                    *range(
+                        quad_start_index * explosion_factor,
+                        (quad_start_index + 1) * explosion_factor,
+                    )
+                ]
+                order_map[exploded_pixels] = pixel_order
 
-    result = {}
-    for healpix_pixel in unique_pixels:
-        # Find all nonzero constituent pixels at the histogram's order
-        explosion_factor = 4 ** (highest_order - healpix_pixel.order)
-        start_pixel = healpix_pixel.pixel * explosion_factor
-        end_pixel = (healpix_pixel.pixel + 1) * explosion_factor
-
-        non_zero_indexes = np.nonzero(histogram[start_pixel:end_pixel])[0] + start_pixel
-        result[healpix_pixel] = (
-            nested_sums[healpix_pixel.order][healpix_pixel.pixel],
-            non_zero_indexes.tolist(),
+    # Construct our results.
+    nested_alignment = [
+        (
+            (intended_order, pixel_high_index >> 2 * (highest_order - intended_order))
+            if intended_order >= 0
+            else None
         )
-    return result
+        for pixel_high_index, intended_order in enumerate(order_map)
+    ]
+    nested_alignment = [
+        (tup[0], tup[1], nested_sums[tup[0]][tup[1]]) if tup else None for tup in nested_alignment
+    ]
 
-
-def generate_constant_pixel_map(histogram, constant_healpix_order):
-    """Special case of creating a destination pixel map where you want to
-    preserve some constant healpix order across the sky.
-
-    NB:
-        - this method filters out pixels with no counts
-        - no upper thresholds are applied, and single pixel may contain many rows
-
-    Args:
-        histogram (:obj:`np.array`): one-dimensional numpy array of long integers where the
-            value at each index corresponds to the number of objects found at the healpix pixel.
-        constant_healpix_order (int):  the desired healpix order (e.g. 0-10)
-    Returns:
-        dictionary that maps non-empty bins as HealpixPixel to a tuple of origin pixel
-        information.
-
-        The tuple contains the following:
-
-        - 0 - the total number of rows found in this destination pixel, same as the origin bin
-        - 1 - the set of indexes in histogram for the pixels at the original healpix
-          order, which will be a list containing only the origin pixel.
-    Raises:
-        ValueError: if the histogram is the wrong size
-    """
-    if len(histogram) != hp.order2npix(constant_healpix_order):
-        raise ValueError("histogram is not the right size")
-
-    non_zero_indexes = np.nonzero(histogram)[0]
-    healpix_pixels = [HealpixPixel(constant_healpix_order, pixel) for pixel in non_zero_indexes]
-
-    value_list = [(histogram[pixel], [pixel]) for pixel in non_zero_indexes]
-
-    return dict(zip(healpix_pixels, value_list))
+    return np.array(nested_alignment, dtype="object")

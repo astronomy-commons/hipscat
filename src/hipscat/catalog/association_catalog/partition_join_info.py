@@ -77,6 +77,9 @@ class PartitionJoinInfo:
             catalog_path (FilePointer): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
+        Returns:
+            sum of the number of rows in the dataset.
+
         Raises:
             ValueError: if no path is provided, and could not be inferred.
         """
@@ -101,7 +104,7 @@ class PartitionJoinInfo:
             for primary_pixel, join_pixels in self.primary_to_join_map().items()
         ]
 
-        write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
+        return write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
     def write_to_csv(self, catalog_path: FilePointer = None, storage_options: dict = None):
         """Write all partition data to CSV files.
