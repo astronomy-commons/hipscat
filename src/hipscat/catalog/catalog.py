@@ -46,6 +46,8 @@ class Catalog(HealpixDataset):
         pixels: PixelInputTypes,
         catalog_path: str = None,
         moc: MOC | None = None,
+        *,
+        file_system=None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
@@ -65,7 +67,12 @@ class Catalog(HealpixDataset):
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
         super().__init__(
-            catalog_info, pixels, catalog_path=catalog_path, moc=moc, storage_options=storage_options
+            catalog_info,
+            pixels,
+            catalog_path=catalog_path,
+            moc=moc,
+            file_system=file_system,
+            storage_options=storage_options,
         )
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:

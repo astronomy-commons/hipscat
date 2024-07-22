@@ -73,7 +73,12 @@ def get_healpix_pixel_from_metadata(
 
 
 def write_parquet_metadata(
-    catalog_path: str, order_by_healpix=True, storage_options: dict = None, output_path: str = None
+    catalog_path: str,
+    order_by_healpix=True,
+    output_path: str = None,
+    *,
+    file_system=None,
+    storage_options: dict = None,
 ):
     """Generate parquet metadata, using the already-partitioned parquet files
     for this catalog.
@@ -85,9 +90,10 @@ def write_parquet_metadata(
         catalog_path (str): base path for the catalog
         order_by_healpix (bool): use False if the dataset is not to be reordered by
             breadth-first healpix pixel (e.g. secondary indexes)
-        storage_options: dictionary that contains abstract filesystem credentials
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
+        file_system: fsspec or pyarrow filesystem, default None
+        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         sum of the number of rows in the dataset.
@@ -100,6 +106,7 @@ def write_parquet_metadata(
 
     (dataset_path, dataset) = file_io.read_parquet_dataset(
         catalog_path,
+        file_system=file_system,
         storage_options=storage_options,
         ignore_prefixes=ignore_prefixes,
         exclude_invalid_files=True,
@@ -111,7 +118,9 @@ def write_parquet_metadata(
 
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
-        single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
+        single_metadata = file_io.read_parquet_metadata(
+            hips_file_pointer, file_system=file_system, storage_options=storage_options
+        )
 
         # Users must set the file path of each chunk before combining the metadata.
         relative_path = hips_file[len(dataset_path) :]
@@ -141,16 +150,21 @@ def write_parquet_metadata(
         metadata_file_pointer,
         metadata_collector=metadata_collector,
         write_statistics=True,
+        file_system=file_system,
         storage_options=storage_options,
     )
     file_io.write_parquet_metadata(
-        dataset.schema, common_metadata_file_pointer, storage_options=storage_options
+        dataset.schema, common_metadata_file_pointer, file_system=file_system, storage_options=storage_options
     )
     return total_rows
 
 
 def write_parquet_metadata_for_batches(
-    batches: List[List[pa.RecordBatch]], output_path: str = None, storage_options: dict = None
+    batches: List[List[pa.RecordBatch]],
+    output_path: str = None,
+    *,
+    file_system=None,
+    storage_options: dict = None,
 ):
     """Write parquet metadata files for some pyarrow table batches.
     This writes the batches to a temporary parquet dataset using local storage, and
@@ -161,6 +175,7 @@ def write_parquet_metadata_for_batches(
             into tables by the inner list.
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
@@ -171,19 +186,24 @@ def write_parquet_metadata_for_batches(
         for batch_list in batches:
             temp_info_table = pa.Table.from_batches(batch_list)
             pq.write_to_dataset(temp_info_table, temp_pq_file)
-        return write_parquet_metadata(temp_pq_file, storage_options=storage_options, output_path=output_path)
+        return write_parquet_metadata(
+            temp_pq_file, file_system=file_system, storage_options=storage_options, output_path=output_path
+        )
 
 
-def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
+def read_row_group_fragments(metadata_file: str, *, file_system=None, storage_options: dict = None):
     """Generator for metadata fragment row groups in a parquet metadata file.
 
     Args:
         metadata_file (str): path to `_metadata` file.
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    if not file_io.is_regular_file(metadata_file, storage_options=storage_options):
+    if not file_io.is_regular_file(metadata_file, file_system=file_system, storage_options=storage_options):
         metadata_file = paths.get_parquet_metadata_pointer(metadata_file)
-    file_system, file_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
+    file_system, file_pointer = get_fs(
+        file_pointer=metadata_file, file_system=file_system, storage_options=storage_options
+    )
     file_pointer = strip_leading_slash_for_pyarrow(file_pointer, file_system.protocol)
     dataset = pds.parquet_dataset(file_pointer, filesystem=file_system)
 

@@ -32,7 +32,9 @@ class IndexCatalog(Dataset):
             that may contain rows for the id values
         """
         metadata_file = paths.get_parquet_metadata_pointer(self.catalog_base_dir)
-        file_system, metadata_file = get_fs(file_pointer=metadata_file, storage_options=self.storage_options)
+        file_system, metadata_file = get_fs(
+            file_pointer=metadata_file, file_system=self.file_system, storage_options=self.storage_options
+        )
 
         # pyarrow.dataset requires the pointer not lead with a slash
         metadata_file = strip_leading_slash_for_pyarrow(metadata_file, file_system.protocol)
