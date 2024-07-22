@@ -87,6 +87,9 @@ class PartitionInfo:
             catalog_path (FilePointer): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
+        Returns:
+            sum of the number of rows in the dataset.
+
         Raises:
             ValueError: if no path is provided, and could not be inferred.
         """
@@ -109,7 +112,7 @@ class PartitionInfo:
             for pixel in self.get_healpix_pixels()
         ]
 
-        write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
+        return write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
     @classmethod
     def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionInfo:
