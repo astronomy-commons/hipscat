@@ -23,7 +23,7 @@ from hipscat.pixel_math.validators import (
     validate_radius,
 )
 from hipscat.pixel_tree.negative_tree import compute_negative_tree_pixels
-
+import pyarrow as pa
 
 class Catalog(HealpixDataset):
     """A HiPSCat Catalog with data stored in a HEALPix Hive partitioned structure
@@ -46,6 +46,7 @@ class Catalog(HealpixDataset):
         pixels: PixelInputTypes,
         catalog_path: str = None,
         moc: MOC | None = None,
+        schema: pa.Schema | None = None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
@@ -56,8 +57,9 @@ class Catalog(HealpixDataset):
                 list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
-            storage_options: dictionary that contains abstract filesystem credentials
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
+            schema (pa.Schema): The pyarrow schema for the catalog
+            storage_options: dictionary that contains abstract filesystem credentials
         """
         if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
             raise ValueError(
@@ -65,7 +67,7 @@ class Catalog(HealpixDataset):
                 f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
             )
         super().__init__(
-            catalog_info, pixels, catalog_path=catalog_path, moc=moc, storage_options=storage_options
+            catalog_info, pixels, catalog_path=catalog_path, moc=moc, schema=schema, storage_options=storage_options
         )
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:

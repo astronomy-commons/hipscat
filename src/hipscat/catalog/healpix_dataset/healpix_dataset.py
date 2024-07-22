@@ -12,11 +12,13 @@ import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import FilePointer, file_io, paths
+from hipscat.io.file_io import read_parquet_metadata
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType
 from hipscat.pixel_tree.moc_filter import filter_by_moc
 from hipscat.pixel_tree.pixel_alignment import align_with_mocs
 from hipscat.pixel_tree.pixel_tree import PixelTree
+import pyarrow as pa
 
 PixelInputTypes = Union[PartitionInfo, PixelTree, List[HealpixPixel]]
 
@@ -39,6 +41,7 @@ class HealpixDataset(Dataset):
         pixels: PixelInputTypes,
         catalog_path: str = None,
         moc: MOC | None = None,
+        schema: pa.Schema | None = None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
@@ -49,13 +52,15 @@ class HealpixDataset(Dataset):
                 list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
-            storage_options: dictionary that contains abstract filesystem credentials
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
+            schema (pa.Schema): The pyarrow schema for the catalog
+            storage_options: dictionary that contains abstract filesystem credentials
         """
         super().__init__(catalog_info, catalog_path=catalog_path, storage_options=storage_options)
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
         self.moc = moc
+        self.schema = schema
 
     def get_healpix_pixels(self) -> List[HealpixPixel]:
         """Get healpix pixel objects for all pixels contained in the catalog.
@@ -101,6 +106,7 @@ class HealpixDataset(Dataset):
     ) -> dict:
         kwargs = super()._read_kwargs(catalog_base_dir, storage_options=storage_options)
         kwargs["moc"] = cls._read_moc_from_point_map(catalog_base_dir, storage_options)
+        kwargs["schema"] = cls._read_schema_from_metadata(catalog_base_dir, storage_options)
         return kwargs
 
     @classmethod
@@ -117,6 +123,15 @@ class HealpixDataset(Dataset):
         ipix = np.where(boolean_skymap)[0]
         orders = np.full(ipix.shape, order)
         return MOC.from_healpix_cells(ipix, orders, order)
+
+    @classmethod
+    def _read_schema_from_metadata(cls, catalog_base_dir: FilePointer, storage_options: dict | None = None) -> pa.Schema | None:
+        """Reads the schema information stored in the _metadata file"""
+        common_metadata_file = paths.get_common_metadata_pointer(catalog_base_dir)
+        if file_io.does_file_or_directory_exist(common_metadata_file, storage_options=storage_options):
+            metadata = read_parquet_metadata(common_metadata_file, storage_options=storage_options)
+            return metadata.schema.to_arrow_schema()
+        return None
 
     @classmethod
     def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
@@ -170,7 +185,7 @@ class HealpixDataset(Dataset):
         filtered_tree = filter_by_moc(self.pixel_tree, moc)
         filtered_moc = self.moc.intersection(moc) if self.moc is not None else None
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
-        return self.__class__(filtered_catalog_info, filtered_tree, moc=filtered_moc)
+        return self.__class__(filtered_catalog_info, filtered_tree, moc=filtered_moc, schema=self.schema)
 
     def align(
         self, other_cat: Self, alignment_type: PixelAlignmentType = PixelAlignmentType.INNER
