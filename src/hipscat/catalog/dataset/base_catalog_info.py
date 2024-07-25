@@ -62,7 +62,6 @@ class BaseCatalogInfo:
         Returns:
             A CatalogInfo object with the data from the `catalog_info.json` file
         """
-        print("catalog_info_file", catalog_info_file)
         metadata_keywords = file_io.load_json_file(
             catalog_info_file, file_system=file_system, storage_options=storage_options
         )

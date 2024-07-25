@@ -86,13 +86,16 @@ class Almanac:
 
         files = []
         for input_path in directory:
-            if os.path.isfile(input_path):
+            if file_pointer.is_regular_file(
+                input_path,
+                file_system=self.file_system,
+                storage_options=self.storage_options,
+            ):
                 files.append(input_path)
                 continue
 
             path_contents = file_pointer.get_directory_contents(
                 input_path,
-                include_protocol=True,
                 file_system=self.file_system,
                 storage_options=self.storage_options,
             )

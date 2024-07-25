@@ -77,6 +77,10 @@ def write_parquet_metadata(
     order_by_healpix=True,
     output_path: str = None,
     *,
+    input_file_system=None,
+    input_storage_options: dict = None,
+    output_file_system=None,
+    output_storage_options: dict = None,
     file_system=None,
     storage_options: dict = None,
 ):
@@ -92,22 +96,35 @@ def write_parquet_metadata(
             breadth-first healpix pixel (e.g. secondary indexes)
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
-        file_system: fsspec or pyarrow filesystem, default None
-        storage_options: dictionary that contains abstract filesystem credentials
+        input_file_system: fsspec or pyarrow filesystem for input parquet files, default None
+        input_storage_options: dictionary that contains abstract filesystem credentials
+            for the INPUT file system
+        output_file_system: fsspec or pyarrow filesystem for output, default None
+        output_storage_options: dictionary that contains abstract filesystem credentials
+            for the OUTPUT file system
+        file_system: fsspec or pyarrow filesystem for input AND output files, default None
+        input_storage_options: dictionary that contains abstract filesystem credentials
+            for both INPUT AND OUTPUT file system
 
     Returns:
         sum of the number of rows in the dataset.
     """
+    # pylint: disable=too-many-locals
     ignore_prefixes = [
         "intermediate",
         "_common_metadata",
         "_metadata",
     ]
 
+    input_file_system = input_file_system or file_system
+    input_storage_options = input_storage_options or storage_options
+    output_file_system = output_file_system or file_system
+    output_storage_options = output_storage_options or storage_options
+
     (dataset_path, dataset) = file_io.read_parquet_dataset(
         catalog_path,
-        file_system=file_system,
-        storage_options=storage_options,
+        file_system=input_file_system,
+        storage_options=input_storage_options,
         ignore_prefixes=ignore_prefixes,
         exclude_invalid_files=True,
     )
@@ -119,7 +136,7 @@ def write_parquet_metadata(
     for hips_file in dataset.files:
         hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
         single_metadata = file_io.read_parquet_metadata(
-            hips_file_pointer, file_system=file_system, storage_options=storage_options
+            hips_file_pointer, file_system=input_file_system, storage_options=input_storage_options
         )
 
         # Users must set the file path of each chunk before combining the metadata.
@@ -150,11 +167,14 @@ def write_parquet_metadata(
         metadata_file_pointer,
         metadata_collector=metadata_collector,
         write_statistics=True,
-        file_system=file_system,
-        storage_options=storage_options,
+        file_system=output_file_system,
+        storage_options=output_storage_options,
     )
     file_io.write_parquet_metadata(
-        dataset.schema, common_metadata_file_pointer, file_system=file_system, storage_options=storage_options
+        dataset.schema,
+        common_metadata_file_pointer,
+        file_system=output_file_system,
+        storage_options=output_storage_options,
     )
     return total_rows
 
@@ -187,7 +207,10 @@ def write_parquet_metadata_for_batches(
             temp_info_table = pa.Table.from_batches(batch_list)
             pq.write_to_dataset(temp_info_table, temp_pq_file)
         return write_parquet_metadata(
-            temp_pq_file, file_system=file_system, storage_options=storage_options, output_path=output_path
+            temp_pq_file,
+            output_file_system=file_system,
+            output_storage_options=storage_options,
+            output_path=output_path,
         )
 
 

@@ -98,7 +98,7 @@ class HealpixDataset(Dataset):
         file_system=None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> Tuple[CatalogInfoClass, PartitionInfo]:
-        args = super()._read_args(catalog_base_dir, storage_options=storage_options)
+        args = super()._read_args(catalog_base_dir, file_system=file_system, storage_options=storage_options)
         partition_info = PartitionInfo.read_from_dir(
             catalog_base_dir, file_system=file_system, storage_options=storage_options
         )
@@ -147,7 +147,7 @@ class HealpixDataset(Dataset):
     def _check_files_exist(
         cls, catalog_base_dir: FilePointer, *, file_system=None, storage_options: dict = None
     ):
-        super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
+        super()._check_files_exist(catalog_base_dir, file_system=file_system, storage_options=storage_options)
 
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)

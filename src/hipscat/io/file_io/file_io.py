@@ -11,6 +11,7 @@ import pyarrow.dataset as pds
 import pyarrow.parquet as pq
 import yaml
 from pyarrow.dataset import Dataset
+from pyarrow.fs import FSSpecHandler, PyFileSystem
 
 import hipscat.pixel_math.healpix_shim as hp
 from hipscat.io.file_io.file_pointer import FilePointer, get_fs, strip_leading_slash_for_pyarrow
@@ -174,8 +175,34 @@ def load_csv_to_pandas(
     Returns:
         pandas dataframe loaded from CSV
     """
-    pd_storage_option = unnest_headers_for_pandas(storage_options)
-    return pd.read_csv(file_pointer, storage_options=pd_storage_option, **kwargs)
+    file_system, file_pointer = get_fs(file_pointer, file_system=file_system, storage_options=storage_options)
+    with file_system.open(file_pointer, "r") as csv_file:
+        frame = pd.read_csv(csv_file, **kwargs)
+    return frame
+
+
+def load_csv_to_pandas_generator(
+    file_pointer: FilePointer,
+    chunksize=10_000,
+    *,
+    file_system=None,
+    storage_options: Union[Dict[Any, Any], None] = None,
+    **kwargs,
+) -> pd.DataFrame:
+    """Load a csv file to a pandas dataframe
+
+    Args:
+        file_pointer: location of csv file to load
+        file_system: fsspec or pyarrow filesystem, default None
+        storage_options: dictionary that contains abstract filesystem credentials
+        **kwargs: arguments to pass to pandas `read_csv` loading method
+    Returns:
+        pandas dataframe loaded from CSV
+    """
+    file_system, file_pointer = get_fs(file_pointer, file_system=file_system, storage_options=storage_options)
+    with file_system.open(file_pointer, "r") as csv_file:
+        with pd.read_csv(csv_file, chunksize=chunksize, **kwargs) as reader:
+            yield from reader
 
 
 def load_parquet_to_pandas(
@@ -297,27 +324,14 @@ def read_parquet_dataset(
         )
         source = strip_leading_slash_for_pyarrow(source, file_system.protocol)
 
+    pyarrow_fs = PyFileSystem(FSSpecHandler(file_system))
     dataset = pds.dataset(
         source,
-        filesystem=file_system,
+        filesystem=pyarrow_fs,
         format="parquet",
         **kwargs,
     )
     return (source, dataset)
-
-
-def read_parquet_file(
-    file_pointer: FilePointer, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
-):
-    """Read parquet file from file pointer.
-
-    Args:
-        file_pointer: location of file to read metadata from
-        file_system: fsspec or pyarrow filesystem, default None
-        storage_options: dictionary that contains abstract filesystem credentials
-    """
-    file_system, file_pointer = get_fs(file_pointer, file_system=file_system, storage_options=storage_options)
-    return pq.ParquetFile(file_pointer, filesystem=file_system)
 
 
 def write_parquet_metadata(
