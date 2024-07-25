@@ -493,16 +493,16 @@ score=yes
 ignore-comments=yes
 
 # Docstrings are removed from the similarity computation
-ignore-docstrings=yes
+ignore-docstrings=no
 
 # Imports are removed from the similarity computation
 ignore-imports=yes
 
 # Signatures are removed from the similarity computation
-ignore-signatures=yes
+ignore-signatures=no
 
 # Minimum lines number of a similarity.
-min-similarity-lines=6
+min-similarity-lines=8
 
 
 [SPELLING]

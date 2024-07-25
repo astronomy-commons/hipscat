@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 from hipscat.io import file_io, paths
-from hipscat.io.parquet_metadata import write_parquet_metadata as wpm
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
@@ -124,21 +123,6 @@ def write_partition_info(
 
     file_io.write_dataframe_to_csv(
         data_frame, partition_info_pointer, index=False, storage_options=storage_options
-    )
-
-
-def write_parquet_metadata(catalog_path, storage_options: Union[Dict[Any, Any], None] = None):
-    """Generate parquet metadata, using the already-partitioned parquet files
-    for this catalog
-
-    Args:
-        catalog_path (str): base path for the catalog
-        storage_options: dictionary that contains abstract filesystem credentials
-    """
-    wpm(
-        catalog_path=catalog_path,
-        storage_options=storage_options,
-        output_path=catalog_path,
     )
 
 

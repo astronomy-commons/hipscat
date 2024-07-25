@@ -4,6 +4,7 @@ from .file_io import FilePointer, get_file_pointer_from_path
 from .parquet_metadata import (
     read_row_group_fragments,
     row_group_stat_single_value,
+    write_parquet_metadata,
     write_parquet_metadata_for_batches,
 )
 from .paths import (
@@ -18,9 +19,4 @@ from .paths import (
     pixel_catalog_file,
     pixel_directory,
 )
-from .write_metadata import (
-    write_catalog_info,
-    write_parquet_metadata,
-    write_partition_info,
-    write_provenance_info,
-)
+from .write_metadata import write_catalog_info, write_partition_info, write_provenance_info
