@@ -2,6 +2,7 @@ import json
 import os
 
 import pandas as pd
+import pyarrow as pa
 import pytest
 
 from hipscat.catalog import CatalogType
@@ -49,7 +50,9 @@ def test_different_join_pixels_type(association_catalog_info, association_catalo
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)
 
 
-def test_read_from_file(association_catalog_path, association_catalog_join_pixels):
+def test_read_from_file(
+    association_catalog_path, association_catalog_join_pixels, association_catalog_schema
+):
     catalog = read_from_hipscat(association_catalog_path)
 
     assert isinstance(catalog, AssociationCatalog)
@@ -65,6 +68,9 @@ def test_read_from_file(association_catalog_path, association_catalog_join_pixel
     assert info.primary_column == "id"
     assert info.join_catalog == "small_sky_order1"
     assert info.join_column == "id"
+
+    assert isinstance(catalog.schema, pa.Schema)
+    assert catalog.schema.equals(association_catalog_schema)
 
 
 def test_empty_directory(tmp_path, association_catalog_info_data, association_catalog_join_pixels):
@@ -121,5 +127,6 @@ def test_csv_round_trip(tmp_path, association_catalog_info_data, association_cat
     part_info = PartitionJoinInfo(association_catalog_join_pixels)
     part_info.write_to_csv(catalog_path=catalog_path)
 
-    catalog = read_from_hipscat(catalog_path)
+    with pytest.warns(UserWarning, match="_common_metadata or _metadata files not found"):
+        catalog = read_from_hipscat(catalog_path)
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)

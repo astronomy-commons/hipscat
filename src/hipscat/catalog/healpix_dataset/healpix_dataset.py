@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import warnings
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
@@ -128,17 +129,26 @@ class HealpixDataset(Dataset):
     def _read_schema_from_metadata(
         cls, catalog_base_dir: FilePointer, storage_options: dict | None = None
     ) -> pa.Schema | None:
-        """Reads the schema information stored in the _metadata file"""
+        """Reads the schema information stored in the _common_metadata or _metadata files."""
         common_metadata_file = paths.get_common_metadata_pointer(catalog_base_dir)
-        if file_io.does_file_or_directory_exist(common_metadata_file, storage_options=storage_options):
-            metadata = read_parquet_metadata(common_metadata_file, storage_options=storage_options)
-            return metadata.schema.to_arrow_schema()
-        return None
+        common_metadata_exists = file_io.does_file_or_directory_exist(
+            common_metadata_file, storage_options=storage_options
+        )
+        metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
+        metadata_exists = file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options)
+        if not (common_metadata_exists or metadata_exists):
+            warnings.warn(
+                "_common_metadata or _metadata files not found for this catalog."
+                "The arrow schema will not be set."
+            )
+            return None
+        schema_file = common_metadata_file if common_metadata_exists else metadata_file
+        metadata = read_parquet_metadata(schema_file, storage_options=storage_options)
+        return metadata.schema.to_arrow_schema()
 
     @classmethod
     def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
-
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         if not (

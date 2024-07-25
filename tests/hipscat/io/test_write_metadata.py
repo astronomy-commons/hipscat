@@ -178,9 +178,7 @@ def test_write_partition_info_float(assert_text_file_matches, tmp_path):
     assert_text_file_matches(expected_lines, metadata_filename)
 
 
-def test_write_parquet_metadata(
-    tmp_path, small_sky_dir, basic_catalog_parquet_metadata, check_parquet_schema
-):
+def test_write_parquet_metadata(tmp_path, small_sky_dir, small_sky_schema, check_parquet_schema):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = tmp_path / "catalog"
     shutil.copytree(
@@ -188,20 +186,20 @@ def test_write_parquet_metadata(
         catalog_base_dir,
     )
     io.write_parquet_metadata(catalog_base_dir)
-    check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
+    check_parquet_schema(catalog_base_dir / "_metadata", small_sky_schema)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         catalog_base_dir / "_common_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         0,
     )
     ## Re-write - should still have the same properties.
     io.write_parquet_metadata(catalog_base_dir)
-    check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
+    check_parquet_schema(catalog_base_dir / "_metadata", small_sky_schema)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         catalog_base_dir / "_common_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         0,
     )
 

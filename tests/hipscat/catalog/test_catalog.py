@@ -4,6 +4,7 @@ import os
 
 import astropy.units as u
 import numpy as np
+import pyarrow as pa
 import pytest
 from mocpy import MOC
 
@@ -79,13 +80,16 @@ def test_get_pixels_list(catalog_info, catalog_pixels):
     assert pixels == catalog_pixels
 
 
-def test_load_catalog_small_sky(small_sky_dir):
+def test_load_catalog_small_sky(small_sky_dir, small_sky_schema):
     """Instantiate a catalog with 1 pixel"""
     cat = read_from_hipscat(small_sky_dir)
 
     assert isinstance(cat, Catalog)
     assert cat.catalog_name == "small_sky"
     assert len(cat.get_healpix_pixels()) == 1
+
+    assert isinstance(cat.schema, pa.Schema)
+    assert cat.schema.equals(small_sky_schema)
 
 
 def test_load_catalog_small_sky_order1(small_sky_order1_dir):
@@ -109,13 +113,16 @@ def test_load_catalog_small_sky_order1_moc(small_sky_order1_dir):
     assert np.all(cat.moc.flatten() == np.where(counts_skymap > 0))
 
 
-def test_load_catalog_small_sky_source(small_sky_source_dir):
+def test_load_catalog_small_sky_source(small_sky_source_dir, small_sky_source_schema):
     """Instantiate a source catalog with 14 pixels"""
     cat = read_from_hipscat(small_sky_source_dir)
 
     assert isinstance(cat, Catalog)
     assert cat.catalog_name == "small_sky_source"
     assert len(cat.get_healpix_pixels()) == 14
+
+    assert isinstance(cat.schema, pa.Schema)
+    assert cat.schema.equals(small_sky_source_schema)
 
 
 def test_max_coverage_order(small_sky_order1_catalog):
