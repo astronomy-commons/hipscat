@@ -3,7 +3,6 @@
 import re
 
 import numpy.testing as npt
-import pyarrow as pa
 import pytest
 
 from hipscat.io import file_io
@@ -46,23 +45,6 @@ def assert_text_file_matches():
             )
 
     return assert_text_file_matches
-
-
-@pytest.fixture
-def basic_catalog_parquet_metadata():
-    return pa.schema(
-        [
-            pa.field("id", pa.int64()),
-            pa.field("ra", pa.float64()),
-            pa.field("dec", pa.float64()),
-            pa.field("ra_error", pa.int64()),
-            pa.field("dec_error", pa.int64()),
-            pa.field("Norder", pa.uint8()),
-            pa.field("Dir", pa.uint64()),
-            pa.field("Npix", pa.uint64()),
-            pa.field("_hipscat_index", pa.uint64()),
-        ]
-    )
 
 
 @pytest.fixture

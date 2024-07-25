@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 
 import pandas as pd
+import pyarrow as pa
 import pytest
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
@@ -169,6 +170,76 @@ def index_catalog_info_with_extra() -> dict:
         "indexing_column": "id",
         "extra_columns": ["foo", "bar"],
     }
+
+
+@pytest.fixture
+def small_sky_schema() -> pa.Schema:
+    return pa.schema(
+        [
+            pa.field("id", pa.int64()),
+            pa.field("ra", pa.float64()),
+            pa.field("dec", pa.float64()),
+            pa.field("ra_error", pa.int64()),
+            pa.field("dec_error", pa.int64()),
+            pa.field("Norder", pa.uint8()),
+            pa.field("Dir", pa.uint64()),
+            pa.field("Npix", pa.uint64()),
+            pa.field("_hipscat_index", pa.uint64()),
+        ]
+    )
+
+
+@pytest.fixture
+def small_sky_source_schema() -> pa.Schema:
+    return pa.schema(
+        [
+            pa.field("source_id", pa.int64()),
+            pa.field("source_ra", pa.float64()),
+            pa.field("source_dec", pa.float64()),
+            pa.field("mjd", pa.float64()),
+            pa.field("mag", pa.float64()),
+            pa.field("band", pa.string()),
+            pa.field("object_id", pa.int64()),
+            pa.field("object_ra", pa.float64()),
+            pa.field("object_dec", pa.float64()),
+            pa.field("Norder", pa.uint8()),
+            pa.field("Dir", pa.uint64()),
+            pa.field("Npix", pa.uint64()),
+            pa.field("_hipscat_index", pa.uint64()),
+        ]
+    )
+
+
+@pytest.fixture
+def association_catalog_schema() -> pa.Schema:
+    return pa.schema(
+        [
+            pa.field("Norder", pa.int64()),
+            pa.field("Npix", pa.int64()),
+            pa.field("join_Norder", pa.int64()),
+            pa.field("join_Npix", pa.int64()),
+        ]
+    )
+
+
+@pytest.fixture
+def margin_catalog_schema() -> pa.Schema:
+    return pa.schema(
+        [
+            pa.field("id", pa.int64()),
+            pa.field("ra", pa.float64()),
+            pa.field("dec", pa.float64()),
+            pa.field("ra_error", pa.int64()),
+            pa.field("dec_error", pa.int64()),
+            pa.field("Norder", pa.uint8()),
+            pa.field("Dir", pa.uint64()),
+            pa.field("Npix", pa.uint64()),
+            pa.field("_hipscat_index", pa.uint64()),
+            pa.field("margin_Norder", pa.uint8()),
+            pa.field("margin_Dir", pa.uint64()),
+            pa.field("margin_Npix", pa.uint64()),
+        ]
+    )
 
 
 @pytest.fixture

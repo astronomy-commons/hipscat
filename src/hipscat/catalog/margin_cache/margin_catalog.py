@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
 
@@ -30,6 +31,7 @@ class MarginCatalog(HealpixDataset):
         pixels: PixelInputTypes,
         catalog_path: str = None,
         moc: MOC | None = None,
+        schema: pa.Schema | None = None,
         storage_options: dict | None = None,
     ) -> None:
         """Initializes a Margin Catalog
@@ -40,13 +42,19 @@ class MarginCatalog(HealpixDataset):
                 list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
-            storage_options: dictionary that contains abstract filesystem credentials
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
+            schema (pa.Schema): The pyarrow schema for the catalog
+            storage_options: dictionary that contains abstract filesystem credentials
         """
         if catalog_info.catalog_type != CatalogType.MARGIN:
             raise ValueError(f"Catalog info `catalog_type` must equal {CatalogType.MARGIN}")
         super().__init__(
-            catalog_info, pixels, catalog_path=catalog_path, moc=moc, storage_options=storage_options
+            catalog_info,
+            pixels,
+            catalog_path=catalog_path,
+            moc=moc,
+            schema=schema,
+            storage_options=storage_options,
         )
 
     def filter_by_moc(self, moc: MOC) -> Self:

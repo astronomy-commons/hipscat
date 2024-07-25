@@ -16,9 +16,7 @@ from hipscat.io.parquet_metadata import (
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
 
 
-def test_write_parquet_metadata(
-    tmp_path, small_sky_dir, basic_catalog_parquet_metadata, check_parquet_schema
-):
+def test_write_parquet_metadata(tmp_path, small_sky_dir, small_sky_schema, check_parquet_schema):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = tmp_path / "catalog"
     shutil.copytree(
@@ -27,27 +25,27 @@ def test_write_parquet_metadata(
     )
     total_rows = write_parquet_metadata(catalog_base_dir)
     assert total_rows == 131
-    check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
+    check_parquet_schema(catalog_base_dir / "_metadata", small_sky_schema)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         catalog_base_dir / "_common_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         0,
     )
     ## Re-write - should still have the same properties.
     total_rows = write_parquet_metadata(catalog_base_dir)
     assert total_rows == 131
-    check_parquet_schema(catalog_base_dir / "_metadata", basic_catalog_parquet_metadata)
+    check_parquet_schema(catalog_base_dir / "_metadata", small_sky_schema)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         catalog_base_dir / "_common_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         0,
     )
 
 
 def test_write_parquet_metadata_order1(
-    tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata, check_parquet_schema
+    tmp_path, small_sky_order1_dir, small_sky_schema, check_parquet_schema
 ):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
@@ -62,19 +60,19 @@ def test_write_parquet_metadata_order1(
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
         temp_path / "_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         temp_path / "_common_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         0,
     )
 
 
 def test_write_parquet_metadata_sorted(
-    tmp_path, small_sky_order1_dir, basic_catalog_parquet_metadata, check_parquet_schema
+    tmp_path, small_sky_order1_dir, small_sky_schema, check_parquet_schema
 ):
     """Copy existing catalog and create new metadata files for it,
     using a catalog with multiple files."""
@@ -89,13 +87,13 @@ def test_write_parquet_metadata_sorted(
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
         temp_path / "_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
         temp_path / "_common_metadata",
-        basic_catalog_parquet_metadata,
+        small_sky_schema,
         0,
     )
 
