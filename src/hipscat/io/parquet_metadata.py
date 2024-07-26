@@ -1,7 +1,7 @@
 """Utility functions for handling parquet metadata files"""
 
 import tempfile
-from typing import List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pyarrow as pa
@@ -73,7 +73,10 @@ def get_healpix_pixel_from_metadata(
 
 
 def write_parquet_metadata(
-    catalog_path: str, order_by_healpix=True, storage_options: dict = None, output_path: str = None
+    catalog_path: str,
+    order_by_healpix=True,
+    output_path: str = None,
+    storage_options: Union[Dict[Any, Any], None] = None,
 ):
     """Generate parquet metadata, using the already-partitioned parquet files
     for this catalog.
