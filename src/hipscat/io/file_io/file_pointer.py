@@ -71,7 +71,7 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
             split_pointer = file_pointer.split("file://")[1]
         else:
             split_pointer = file_pointer
-    elif "http" in protocol:
+    elif protocol.startswith("http"):
         # http/https should include the protocol in the file path
         split_pointer = file_pointer  # don't split
     else:
