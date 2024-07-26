@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import warnings
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Generator, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -143,9 +143,32 @@ def load_csv_to_pandas(
     Returns:
         pandas dataframe loaded from CSV
     """
+    file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
+    with file_system.open(file_pointer, "r") as csv_file:
+        frame = pd.read_csv(csv_file, **kwargs)
+    return frame
 
-    pd_storage_option = unnest_headers_for_pandas(storage_options)
-    return pd.read_csv(file_pointer, storage_options=pd_storage_option, **kwargs)
+
+def load_csv_to_pandas_generator(
+    file_pointer: FilePointer,
+    chunksize=10_000,
+    *,
+    storage_options: Union[Dict[Any, Any], None] = None,
+    **kwargs,
+) -> Generator[pd.DataFrame]:
+    """Load a csv file to a pandas dataframe
+    Args:
+        file_pointer: location of csv file to load
+        file_system: fsspec or pyarrow filesystem, default None
+        storage_options: dictionary that contains abstract filesystem credentials
+        **kwargs: arguments to pass to pandas `read_csv` loading method
+    Returns:
+        pandas dataframe loaded from CSV
+    """
+    file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
+    with file_system.open(file_pointer, "r") as csv_file:
+        with pd.read_csv(csv_file, chunksize=chunksize, **kwargs) as reader:
+            yield from reader
 
 
 def load_parquet_to_pandas(
@@ -249,17 +272,6 @@ def read_parquet_dataset(
         **kwargs,
     )
     return (source, dataset)
-
-
-def read_parquet_file(file_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None):
-    """Read parquet file from file pointer.
-
-    Args:
-        file_pointer: location of file to read metadata from
-        storage_options: dictionary that contains abstract filesystem credentials
-    """
-    file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
-    return pq.ParquetFile(file_pointer, filesystem=file_system)
 
 
 def write_parquet_metadata(

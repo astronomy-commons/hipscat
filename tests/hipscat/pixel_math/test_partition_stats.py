@@ -169,7 +169,6 @@ def test_alignment_small_sky_order2(drop_empty_siblings):
         (0, 11, 131),
     ]
     expected[176:192] = tuples
-    print(result[176:192])
 
     npt.assert_array_equal(result, expected)
 
