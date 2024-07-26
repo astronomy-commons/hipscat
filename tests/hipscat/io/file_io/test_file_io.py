@@ -7,6 +7,8 @@ import pytest
 from hipscat.io.file_io import (
     delete_file,
     get_file_pointer_from_path,
+    load_csv_to_pandas,
+    load_csv_to_pandas_generator,
     load_json_file,
     load_parquet_to_pandas,
     make_directory,
@@ -113,6 +115,21 @@ def test_load_json(small_sky_dir):
     catalog_info_pointer = get_file_pointer_from_path(catalog_info_path)
     loaded_json_dict = load_json_file(catalog_info_pointer, encoding="utf-8")
     assert loaded_json_dict == json_dict
+
+
+def test_load_csv_to_pandas(small_sky_source_dir):
+    partition_info_path = small_sky_source_dir / "partition_info.csv"
+    frame = load_csv_to_pandas(partition_info_path)
+    assert len(frame) == 14
+
+
+def test_load_csv_to_pandas_generator(small_sky_source_dir):
+    partition_info_path = small_sky_source_dir / "partition_info.csv"
+    num_reads = 0
+    for frame in load_csv_to_pandas_generator(partition_info_path, chunksize=7):
+        assert len(frame) == 7
+        num_reads += 1
+    assert num_reads == 2
 
 
 def test_load_parquet_to_pandas(small_sky_dir):
