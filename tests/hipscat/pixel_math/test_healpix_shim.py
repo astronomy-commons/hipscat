@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 
 from hipscat.pixel_math import healpix_shim as hps
@@ -22,3 +21,10 @@ def test_order2avgsize2order():
     order = np.arange(20)
     nside = hps.order2nside(order)
     assert_array_equal(hps.avgsize2order(hps.nside2resol(nside, arcmin=True)), order)
+
+
+def test_margin2order():
+    """Test margin2order for some pre-computed values"""
+    margin_thr_arcmin = np.array([1 / 60, 10 / 60, 1, 5, 60])
+    orders = np.array([17, 13, 11, 8, 5])
+    assert_array_equal(hps.margin2order(margin_thr_arcmin), orders)

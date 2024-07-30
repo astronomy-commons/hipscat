@@ -1,5 +1,5 @@
-import numpy as np
 import healpy as hp
+import numpy as np
 
 # pylint: disable=missing-function-docstring
 
@@ -149,6 +149,7 @@ def mindist2avgsize(mindist: np.ndarray) -> np.ndarray:
         between pixels.
     """
     return mindist * 1.6
+
 
 def avgsize2order(avg_size_arcmin: np.ndarray) -> np.ndarray:
     """Get the largest order with average healpix size larger than avg_size_arcmin
