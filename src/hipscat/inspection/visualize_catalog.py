@@ -16,7 +16,9 @@ from hipscat.io import file_io, paths
 from hipscat.pixel_math import HealpixPixel
 
 
-def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], None] = None):
+def _read_point_map(
+    catalog_base_dir, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
+):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
@@ -26,10 +28,14 @@ def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], Non
         corresponds to the number of objects found at the healpix pixel.
     """
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
-    return file_io.read_fits_image(map_file_pointer, storage_options=storage_options)
+    return file_io.read_fits_image(map_file_pointer, file_system=file_system, storage_options=storage_options)
 
 
-def plot_points(catalog: Catalog, projection="moll", **kwargs):
+def plot_points(
+    catalog: Catalog,
+    projection="moll",
+    **kwargs,
+):
     """Create a visual map of the input points of an in-memory catalog.
 
     Args:
@@ -42,7 +48,9 @@ def plot_points(catalog: Catalog, projection="moll", **kwargs):
     """
     if not catalog.on_disk:
         raise ValueError("on disk catalog required for point-wise visualization")
-    point_map = _read_point_map(catalog.catalog_base_dir, storage_options=catalog.storage_options)
+    point_map = _read_point_map(
+        catalog.catalog_base_dir, file_system=catalog.file_system, storage_options=catalog.storage_options
+    )
     _plot_healpix_map(point_map, projection, f"Catalog point density map - {catalog.catalog_name}", **kwargs)
 
 

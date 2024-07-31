@@ -70,11 +70,14 @@ class PartitionJoinInfo:
         primary_to_join = dict(primary_to_join)
         return primary_to_join
 
-    def write_to_metadata_files(self, catalog_path: FilePointer = None, storage_options: dict = None):
+    def write_to_metadata_files(
+        self, catalog_path: FilePointer = None, *, file_system=None, storage_options: dict = None
+    ):
         """Generate parquet metadata, using the known partitions.
 
         Args:
             catalog_path (FilePointer): base path for the catalog
+            file_system: fsspec or pyarrow filesystem, default None
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
@@ -104,9 +107,13 @@ class PartitionJoinInfo:
             for primary_pixel, join_pixels in self.primary_to_join_map().items()
         ]
 
-        return write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
+        return write_parquet_metadata_for_batches(
+            batches, catalog_path, file_system=file_system, storage_options=storage_options
+        )
 
-    def write_to_csv(self, catalog_path: FilePointer = None, storage_options: dict = None):
+    def write_to_csv(
+        self, catalog_path: FilePointer = None, *, file_system=None, storage_options: dict = None
+    ):
         """Write all partition data to CSV files.
 
         Two files will be written:
@@ -118,6 +125,7 @@ class PartitionJoinInfo:
         Args:
             catalog_path: FilePointer to the directory where the
                 `partition_join_info.csv` file will be written
+            file_system: fsspec or pyarrow filesystem, default None
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Raises:
@@ -130,18 +138,26 @@ class PartitionJoinInfo:
 
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_path)
         file_io.write_dataframe_to_csv(
-            self.data_frame, partition_join_info_file, index=False, storage_options=storage_options
+            self.data_frame,
+            partition_join_info_file,
+            index=False,
+            file_system=file_system,
+            storage_options=storage_options,
         )
 
         primary_pixels = self.primary_to_join_map().keys()
         partition_info_pointer = paths.get_partition_info_pointer(catalog_path)
         partition_info = PartitionInfo.from_healpix(primary_pixels)
         partition_info.write_to_file(
-            partition_info_file=partition_info_pointer, storage_options=storage_options
+            partition_info_file=partition_info_pointer,
+            file_system=file_system,
+            storage_options=storage_options,
         )
 
     @classmethod
-    def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionJoinInfo:
+    def read_from_dir(
+        cls, catalog_base_dir: FilePointer, *, file_system=None, storage_options: dict = None
+    ) -> PartitionJoinInfo:
         """Read partition join info from a file within a hipscat directory.
 
         This will look for a `partition_join_info.csv` file, and if not found, will look for
@@ -151,6 +167,7 @@ class PartitionJoinInfo:
 
         Args:
             catalog_base_dir: path to the root directory of the catalog
+            file_system: fsspec or pyarrow filesystem, default None
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
@@ -161,14 +178,18 @@ class PartitionJoinInfo:
         """
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
-        if file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options):
+        if file_io.does_file_or_directory_exist(
+            partition_join_info_file, file_system=file_system, storage_options=storage_options
+        ):
             pixel_frame = PartitionJoinInfo._read_from_csv(
-                partition_join_info_file, storage_options=storage_options
+                partition_join_info_file, file_system=file_system, storage_options=storage_options
             )
-        elif file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options):
+        elif file_io.does_file_or_directory_exist(
+            metadata_file, file_system=file_system, storage_options=storage_options
+        ):
             warnings.warn("Reading partitions from parquet metadata. This is typically slow.")
             pixel_frame = PartitionJoinInfo._read_from_metadata_file(
-                metadata_file, storage_options=storage_options
+                metadata_file, file_system=file_system, storage_options=storage_options
             )
         else:
             raise FileNotFoundError(
@@ -178,32 +199,48 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+        cls,
+        metadata_file: FilePointer,
+        strict: bool = False,
+        *,
+        file_system=None,
+        storage_options: dict = None,
     ) -> PartitionJoinInfo:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
             metadata_file (FilePointer): FilePointer to the `_metadata` file
-            storage_options (dict): dictionary that contains abstract filesystem credentials
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
+            file_system: fsspec or pyarrow filesystem, default None
+            storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
         """
-        return cls(cls._read_from_metadata_file(metadata_file, strict, storage_options))
+        return cls(
+            cls._read_from_metadata_file(
+                metadata_file, strict, file_system=file_system, storage_options=storage_options
+            )
+        )
 
     @classmethod
     def _read_from_metadata_file(
-        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+        cls,
+        metadata_file: FilePointer,
+        strict: bool = False,
+        *,
+        file_system=None,
+        storage_options: dict = None,
     ) -> pd.DataFrame:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
             metadata_file (FilePointer): FilePointer to the `_metadata` file
-            storage_options (dict): dictionary that contains abstract filesystem credentials
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
+            file_system: fsspec or pyarrow filesystem, default None
+            storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
@@ -217,12 +254,16 @@ class PartitionJoinInfo:
                         row_group_stat_single_value(row_group, cls.JOIN_ORDER_COLUMN_NAME),
                         row_group_stat_single_value(row_group, cls.JOIN_PIXEL_COLUMN_NAME),
                     )
-                    for row_group in read_row_group_fragments(metadata_file, storage_options)
+                    for row_group in read_row_group_fragments(
+                        metadata_file, file_system=file_system, storage_options=storage_options
+                    )
                 ],
                 columns=cls.COLUMN_NAMES,
             )
         else:
-            total_metadata = file_io.read_parquet_metadata(metadata_file, storage_options)
+            total_metadata = file_io.read_parquet_metadata(
+                metadata_file, file_system=file_system, storage_options=storage_options
+            )
             num_row_groups = total_metadata.num_row_groups
 
             first_row_group = total_metadata.row_group(0)
@@ -273,37 +314,45 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_csv(
-        cls, partition_join_info_file: FilePointer, storage_options: dict = None
+        cls, partition_join_info_file: FilePointer, *, file_system=None, storage_options: dict = None
     ) -> PartitionJoinInfo:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
             partition_join_info_file (FilePointer): FilePointer to the `partition_join_info.csv` file
+            file_system: fsspec or pyarrow filesystem, default None
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
         """
-        return cls(cls._read_from_csv(partition_join_info_file, storage_options))
+        return cls(
+            cls._read_from_csv(
+                partition_join_info_file, file_system=file_system, storage_options=storage_options
+            )
+        )
 
     @classmethod
     def _read_from_csv(
-        cls, partition_join_info_file: FilePointer, storage_options: dict = None
+        cls, partition_join_info_file: FilePointer, *, file_system=None, storage_options: dict = None
     ) -> pd.DataFrame:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
             partition_join_info_file (FilePointer): FilePointer to the `partition_join_info.csv` file
+            file_system: fsspec or pyarrow filesystem, default None
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
         """
         if not file_io.does_file_or_directory_exist(
-            partition_join_info_file, storage_options=storage_options
+            partition_join_info_file, file_system=file_system, storage_options=storage_options
         ):
             raise FileNotFoundError(
                 f"No partition join info found where expected: {str(partition_join_info_file)}"
             )
 
-        return file_io.load_csv_to_pandas(partition_join_info_file, storage_options=storage_options)
+        return file_io.load_csv_to_pandas(
+            partition_join_info_file, file_system=file_system, storage_options=storage_options
+        )

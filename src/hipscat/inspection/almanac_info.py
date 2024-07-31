@@ -76,11 +76,12 @@ class AlmanacInfo:
 
     @classmethod
     def from_catalog_dir(
-        cls, catalog_base_dir: str, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: str, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
         catalog_info = catalog_info_factory.from_catalog_dir(
             catalog_base_dir=file_io.get_file_pointer_from_path(catalog_base_dir),
+            file_system=file_system,
             storage_options=storage_options,
         )
         args = {
@@ -93,12 +94,14 @@ class AlmanacInfo:
         return cls(**args)
 
     @classmethod
-    def from_file(cls, file: str, storage_options: Union[Dict[Any, Any], None] = None) -> Self:
+    def from_file(
+        cls, file: str, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
+    ) -> Self:
         """Create almanac information from an almanac file."""
         _, fmt = os.path.splitext(file)
         if fmt != ".yml":
             raise ValueError(f"Unsupported file format {fmt}")
-        metadata = file_io.file_io.read_yaml(file, storage_options=storage_options)
+        metadata = file_io.file_io.read_yaml(file, file_system=file_system, storage_options=storage_options)
         return cls(**metadata)
 
     def write_to_file(
@@ -106,6 +109,8 @@ class AlmanacInfo:
         directory=None,
         default_dir=True,
         fmt="yml",
+        *,
+        file_system=None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ):
         """Write the almanac to an almanac file"""
@@ -118,7 +123,9 @@ class AlmanacInfo:
         file_path = file_io.append_paths_to_pointer(
             file_io.get_file_pointer_from_path(directory), f"{self.catalog_name}.{fmt}"
         )
-        if file_io.does_file_or_directory_exist(file_path, storage_options=storage_options):
+        if file_io.does_file_or_directory_exist(
+            file_path, file_system=file_system, storage_options=storage_options
+        ):
             raise ValueError(f"File already exists at path {str(file_path)}")
 
         args = {
@@ -143,4 +150,6 @@ class AlmanacInfo:
         else:
             raise ValueError(f"Unsupported file format {fmt}")
 
-        file_io.write_string_to_file(file_path, encoded_string, storage_options=storage_options)
+        file_io.write_string_to_file(
+            file_path, encoded_string, file_system=file_system, storage_options=storage_options
+        )

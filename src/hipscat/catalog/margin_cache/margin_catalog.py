@@ -27,11 +27,13 @@ class MarginCatalog(HealpixDataset):
 
     def __init__(
         self,
-        catalog_info: CatalogInfoClass,
+        catalog_info: MarginCacheCatalogInfo,
         pixels: PixelInputTypes,
         catalog_path: str = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
+        *,
+        file_system=None,
         storage_options: dict | None = None,
     ) -> None:
         """Initializes a Margin Catalog
@@ -44,6 +46,7 @@ class MarginCatalog(HealpixDataset):
                 Does not load the catalog from this path, only store as metadata
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
             schema (pa.Schema): The pyarrow schema for the catalog
+            file_system: fsspec or pyarrow filesystem, default None
             storage_options: dictionary that contains abstract filesystem credentials
         """
         if catalog_info.catalog_type != CatalogType.MARGIN:
@@ -54,6 +57,7 @@ class MarginCatalog(HealpixDataset):
             catalog_path=catalog_path,
             moc=moc,
             schema=schema,
+            file_system=file_system,
             storage_options=storage_options,
         )
 
