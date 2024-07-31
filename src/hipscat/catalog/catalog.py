@@ -48,6 +48,8 @@ class Catalog(HealpixDataset):
         catalog_path: str = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
+        *,
+        file_system=None,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
@@ -73,6 +75,7 @@ class Catalog(HealpixDataset):
             catalog_path=catalog_path,
             moc=moc,
             schema=schema,
+            file_system=file_system,
             storage_options=storage_options,
         )
 

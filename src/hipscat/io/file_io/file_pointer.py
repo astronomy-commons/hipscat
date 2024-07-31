@@ -25,17 +25,20 @@ def get_file_protocol(pointer: FilePointer) -> str:
 
 
 def get_fs(
-    file_pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+    file_pointer: FilePointer, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
 ) -> Tuple[fsspec.filesystem, FilePointer]:
     """Create the abstract filesystem
 
     Args:
         file_pointer: filesystem pathway
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
     Raises:
         ImportError: if environment cannot import necessary libraries for
             fsspec filesystems.
     """
+    if file_system is not None:
+        return file_system, file_pointer
     if storage_options is None:
         storage_options = {}
     protocol = get_file_protocol(file_pointer)
@@ -60,6 +63,7 @@ def get_file_pointer_for_fs(protocol: str, file_pointer: FilePointer) -> FilePoi
 
     Args:
         protocol: str filesytem protocol, file, abfs, or s3
+        file_system: fsspec or pyarrow filesystem, default None
         file_pointer: filesystem pathway
     """
     if not isinstance(file_pointer, str):
@@ -137,32 +141,36 @@ def append_paths_to_pointer(pointer: FilePointer, *paths: str) -> FilePointer:
 
 
 def does_file_or_directory_exist(
-    pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+    pointer: FilePointer, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
 ) -> bool:
     """Checks if a file or directory exists for a given file pointer
 
     Args:
         pointer: File Pointer to check if file or directory exists at
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if file or directory at `pointer` exists, False if not
     """
-    file_system, pointer = get_fs(pointer, storage_options)
+    file_system, pointer = get_fs(pointer, file_system=file_system, storage_options=storage_options)
     return file_system.exists(pointer)
 
 
-def is_regular_file(pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_regular_file(
+    pointer: FilePointer, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
+) -> bool:
     """Checks if a regular file (NOT a directory) exists for a given file pointer.
 
     Args:
         pointer: File Pointer to check if a regular file
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if regular file at `pointer` exists, False if not or is a directory
     """
-    file_system, pointer = get_fs(pointer, storage_options)
+    file_system, pointer = get_fs(pointer, file_system=file_system, storage_options=storage_options)
     return file_system.isfile(pointer)
 
 
@@ -170,6 +178,7 @@ def find_files_matching_path(
     pointer: FilePointer,
     *paths: str,
     include_protocol=False,
+    file_system=None,
     storage_options: Union[Dict[Any, Any], None] = None,
 ) -> List[FilePointer]:
     """Find files or directories matching the provided path parts.
@@ -180,12 +189,13 @@ def find_files_matching_path(
             directory or file names may be replaced with `*` as a matcher.
         include_protocol: boolean on whether or not to include the filesystem protocol in the
             returned directory contents
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
     Returns:
         New file pointers to files found matching the path
     """
     matcher = append_paths_to_pointer(pointer, *paths)
-    file_system, _ = get_fs(pointer, storage_options)
+    file_system, _ = get_fs(pointer, file_system=file_system, storage_options=storage_options)
 
     contents = [get_file_pointer_from_path(x) for x in file_system.glob(matcher)]
 
@@ -195,21 +205,31 @@ def find_files_matching_path(
     return contents
 
 
-def directory_has_contents(pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def directory_has_contents(
+    pointer: FilePointer, *, file_system=None, storage_options: Union[Dict[Any, Any], None] = None
+) -> bool:
     """Checks if a directory already has some contents (any files or subdirectories)
 
     Args:
         pointer: File Pointer to check for existing contents
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if there are any files or subdirectories below this directory.
     """
-    return len(find_files_matching_path(pointer, "*", storage_options=storage_options)) > 0
+    return (
+        len(find_files_matching_path(pointer, "*", file_system=file_system, storage_options=storage_options))
+        > 0
+    )
 
 
 def get_directory_contents(
-    pointer: FilePointer, include_protocol=False, storage_options: Union[Dict[Any, Any], None] = None
+    pointer: FilePointer,
+    include_protocol=False,
+    *,
+    file_system=None,
+    storage_options: Union[Dict[Any, Any], None] = None,
 ) -> List[FilePointer]:
     """Finds all files and directories in the specified directory.
 
@@ -219,12 +239,13 @@ def get_directory_contents(
         pointer: File Pointer in which to find contents
         include_protocol: boolean on whether or not to include the filesystem protocol in the
             returned directory contents
+        file_system: fsspec or pyarrow filesystem, default None
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         New file pointers to files or subdirectories below this directory.
     """
-    file_system, file_pointer = get_fs(pointer, storage_options)
+    file_system, file_pointer = get_fs(pointer, file_system=file_system, storage_options=storage_options)
     contents = file_system.listdir(file_pointer)
     contents = [FilePointer(x["name"]) for x in contents]
 
