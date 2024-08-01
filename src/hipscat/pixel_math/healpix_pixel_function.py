@@ -29,6 +29,25 @@ def get_pixel_argsort(pixels: List[HealpixPixel]):
     return np.argsort(constant_breadth_pixel, kind="stable")
 
 
+def sort_pixels(pixels: List[HealpixPixel]):
+    """Perform an sort of a list of HealpixPixels.
+
+    This will order the pixels according to a breadth-first traversal of the healpix
+    pixel hierarchy, not merely by increasing order by Norder/Npix (depth-first ordering).
+    This is similar to ordering fully by _hipscat_index.
+
+    Args:
+        pixels (List[HealpixPixel]): array to sort
+
+    Returns:
+        pixels sorted in breadth-first order
+    """
+    if pixels is None or len(pixels) == 0:
+        return []
+    argsort = get_pixel_argsort(pixels)
+    return np.array(pixels)[argsort]
+
+
 def get_pixels_from_intervals(intervals: np.ndarray, tree_order: int) -> np.ndarray:
     """Computes an array of HEALPix [order, pixel] for an array of intervals
 
