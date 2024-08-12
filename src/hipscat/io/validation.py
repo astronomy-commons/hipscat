@@ -18,15 +18,21 @@ from hipscat.pixel_math.healpix_pixel_function import sort_pixels
 # pylint: disable=too-many-statements,too-many-locals
 def is_valid_catalog(
     pointer: FilePointer,
-    strict=False,
-    fail_fast=False,
-    verbose=True,
+    strict: bool = False,
+    fail_fast: bool = False,
+    verbose: bool = True,
     storage_options: Union[Dict[Any, Any], None] = None,
 ) -> bool:
     """Checks if a catalog is valid for a given base catalog pointer
 
     Args:
         pointer (FilePointer): pointer to base catalog directory
+        strict (bool): should we perform additional checking that every optional
+            file exists, and contains valid, consistent information.
+        fail_fast (bool): if performing strict checks, should we return at the first
+            failure, or continue and find all problems?
+        verbose (bool): if performing strict checks, should we print out counts,
+            progress, and approximate sky coverage?
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
@@ -59,16 +65,16 @@ def is_valid_catalog(
         is_valid = False
 
     if not is_catalog_info_valid(pointer, storage_options=storage_options):
-        handle_error("catalog_info.json file is invalid.")
+        handle_error("catalog_info.json file does not exist.")
 
     if not is_partition_info_valid(pointer, storage_options=storage_options):
-        handle_error("partition_info.csv file is invalid.")
+        handle_error("partition_info.csv file does not exist.")
 
     if not is_metadata_valid(pointer, storage_options=storage_options):
-        handle_error("_metadata file is invalid.")
+        handle_error("_metadata file does not exist.")
 
     if not is_common_metadata_valid(pointer, storage_options=storage_options):
-        handle_error("_common_metadata file is invalid.")
+        handle_error("_common_metadata file does not exist.")
 
     if not is_valid:
         # Even if we're not failing fast, we need to stop here if the metadata
@@ -153,9 +159,7 @@ def is_valid_catalog(
     return is_valid
 
 
-def is_catalog_info_valid(
-    pointer: FilePointer, re_raise=False, storage_options: Union[Dict[Any, Any], None] = None
-) -> bool:
+def is_catalog_info_valid(pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
     """Checks if catalog_info is valid for a given base catalog pointer
 
     Args:
@@ -166,14 +170,11 @@ def is_catalog_info_valid(
         True if the catalog_info file exists, and it is correctly formatted,
         False otherwise
     """
-    is_valid = True
     try:
         from_catalog_dir(pointer, storage_options=storage_options)
-    except (FileNotFoundError, ValueError, NotImplementedError) as e:
-        if re_raise:
-            raise e
-        is_valid = False
-    return is_valid
+    except (FileNotFoundError, ValueError, NotImplementedError):
+        return False
+    return True
 
 
 def is_partition_info_valid(

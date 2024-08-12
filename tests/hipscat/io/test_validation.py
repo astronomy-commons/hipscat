@@ -132,10 +132,10 @@ def test_is_valid_catalog_verbose_fail(tmp_path, capsys):
 
     captured = capsys.readouterr().out
     assert "Validating catalog at path" in captured
-    assert "catalog_info.json file is invalid" in captured
-    assert "partition_info.csv file is invalid" in captured
-    assert "_metadata file is invalid" in captured
-    assert "_common_metadata file is invalid" in captured
+    assert "catalog_info.json file does not exist" in captured
+    assert "partition_info.csv file does not exist" in captured
+    assert "_metadata file does not exist" in captured
+    assert "_common_metadata file does not exist" in captured
 
 
 def test_is_valid_catalog_verbose_success(small_sky_dir, capsys):
