@@ -166,7 +166,7 @@ def load_csv_to_pandas_generator(
         pandas dataframe loaded from CSV
     """
     file_system, file_pointer = get_fs(file_pointer, storage_options=storage_options)
-    with file_system.open(file_pointer, "r") as csv_file:
+    with file_system.open(file_pointer, "r", **kwargs) as csv_file:
         with pd.read_csv(csv_file, chunksize=chunksize, **kwargs) as reader:
             yield from reader
 
