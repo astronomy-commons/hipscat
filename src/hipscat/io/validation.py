@@ -65,7 +65,7 @@ def is_valid_catalog(
         is_valid = False
 
     if not is_catalog_info_valid(pointer, storage_options=storage_options):
-        handle_error("catalog_info.json file does not exist.")
+        handle_error("catalog_info.json file does not exist or is invalid.")
 
     if not is_partition_info_valid(pointer, storage_options=storage_options):
         handle_error("partition_info.csv file does not exist.")
