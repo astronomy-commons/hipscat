@@ -15,23 +15,8 @@ def pixel_tree_1():
 
 
 @pytest.fixture
-def pixel_tree_2_pixels():
-    return [
-        HealpixPixel(2, 128),
-        HealpixPixel(2, 130),
-        HealpixPixel(2, 131),
-        HealpixPixel(1, 33),
-        HealpixPixel(1, 35),
-        HealpixPixel(0, 10),
-        HealpixPixel(1, 44),
-        HealpixPixel(1, 45),
-        HealpixPixel(1, 46),
-    ]
-
-
-@pytest.fixture
-def pixel_tree_2(pixel_tree_2_pixels):
-    return PixelTree.from_healpix(pixel_tree_2_pixels)
+def pixel_tree_2(pixel_list_breadth_first):
+    return PixelTree.from_healpix(pixel_list_breadth_first)
 
 
 @pytest.fixture
