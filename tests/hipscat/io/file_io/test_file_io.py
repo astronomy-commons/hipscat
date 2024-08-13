@@ -126,7 +126,7 @@ def test_load_csv_to_pandas(small_sky_source_dir):
 def test_load_csv_to_pandas_generator(small_sky_source_dir):
     partition_info_path = small_sky_source_dir / "partition_info.csv"
     num_reads = 0
-    for frame in load_csv_to_pandas_generator(partition_info_path, chunksize=7):
+    for frame in load_csv_to_pandas_generator(partition_info_path, chunksize=7, compression=None):
         assert len(frame) == 7
         num_reads += 1
     assert num_reads == 2
