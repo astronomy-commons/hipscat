@@ -1,9 +1,9 @@
 import json
 
 import numpy as np
+import pandas as pd
 import pytest
 
-import pandas as pd
 from hipscat.io.file_io import (
     delete_file,
     get_file_pointer_from_path,
