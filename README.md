@@ -1,4 +1,4 @@
-<img src="https://github.com/lincc-frameworks/tape/blob/main/docs/DARK_Combo_sm.png?raw=true" width="300" height="100">
+<img src="https://github.com/astronomy-commons/lsdb.io/blob/main/assets/img/lincc-logo.png?raw=true" width="300" height="100">
 
 # HiPSCat
 
