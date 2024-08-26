@@ -4,7 +4,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-import hipscat.pixel_math as pm
+import hipscat.pixel_math.pixel_margins as pm
 
 
 def test_get_margin():
@@ -137,36 +137,3 @@ def test_edge_greater_than_7():
         pm.get_edge(2, 5, 8)
 
     assert str(value_error.value) == "edge can only be values between 0 and 7 (see docstring)"
-
-
-def test_pixel_is_polar_north():
-    """Check to make sure pixel_is_polar works for a pixel at the north pole."""
-    order = 2
-    pix = 31
-
-    polar, pole = pm.pixel_is_polar(order, pix)
-
-    assert polar
-    assert pole == "North"
-
-
-def test_pixel_is_polar_south():
-    """Check to make sure pixel_is_polar works for a pixel at the south pole."""
-    order = 2
-    pix = 160
-
-    polar, pole = pm.pixel_is_polar(order, pix)
-
-    assert polar
-    assert pole == "South"
-
-
-def test_pixel_is_polar_non_pole():
-    """Check to make sure pixel_is_polar works for non-polar pixels."""
-    order = 2
-    pix = 105
-
-    polar, pole = pm.pixel_is_polar(order, pix)
-
-    assert not polar
-    assert pole == ""

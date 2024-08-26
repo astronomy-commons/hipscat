@@ -90,7 +90,7 @@ def get_margin(order, pix, d_order):
     _, _, pix_face = hp.pix2xyf(nside, pix, nest=True)
     _, _, faces = hp.pix2xyf(nside, neighbors, nest=True)
 
-    # indices which tell get_edge() which edge/verted to return
+    # indices which tell get_edge() which edge/vertex to return
     # for a given pixel. The default order is compatible with the
     # order returned by hp.get_all_neighbours().
     which = np.arange(8)
@@ -114,26 +114,3 @@ def get_margin(order, pix, d_order):
             margins.append(get_edge(d_order, pixel, edge))
     margins = np.concatenate(margins)
     return margins
-
-
-def pixel_is_polar(order, pix):
-    """Checks if a healpixel is a polar pixel.
-
-    Args:
-        order (int): the healpix order of the pixel to be checked.
-        pix (int): the id of a healpixel to be checked. must be in the nested id scheme.
-    Returns:
-        tuple of a boolean and a string, the boolean indicating whether the pixel
-        polar and the string denoting which pole it is ('North' or 'South')).
-        string is empty in the case that the pixel isn't polar.
-    """
-    nside = hp.order2nside(order)
-    npix = hp.nside2npix(nside)
-    ring_pix = hp.nest2ring(nside, pix)
-
-    # in the ring numbering scheme, the first and last 4 pixels are the poles.
-    if ring_pix <= 3:
-        return (True, "North")
-    if ring_pix >= npix - 4:
-        return (True, "South")
-    return (False, "")
