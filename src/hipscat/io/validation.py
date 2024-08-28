@@ -2,13 +2,14 @@ import warnings
 from typing import Any, Dict, Union
 
 import numpy as np
+from upath import UPath
 
 import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.dataset.catalog_info_factory import from_catalog_dir
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import get_common_metadata_pointer, get_parquet_metadata_pointer, get_partition_info_pointer
 from hipscat.io.file_io import read_parquet_dataset
-from hipscat.io.file_io.file_pointer import FilePointer, is_regular_file
+from hipscat.io.file_io.file_pointer import is_regular_file
 from hipscat.io.paths import get_healpix_from_path
 from hipscat.loaders import read_from_hipscat
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL
@@ -17,7 +18,7 @@ from hipscat.pixel_math.healpix_pixel_function import sort_pixels
 
 # pylint: disable=too-many-statements,too-many-locals
 def is_valid_catalog(
-    pointer: FilePointer,
+    pointer: UPath,
     strict: bool = False,
     fail_fast: bool = False,
     verbose: bool = True,
@@ -26,7 +27,7 @@ def is_valid_catalog(
     """Checks if a catalog is valid for a given base catalog pointer
 
     Args:
-        pointer (FilePointer): pointer to base catalog directory
+        pointer (UPath): pointer to base catalog directory
         strict (bool): should we perform additional checking that every optional
             file exists, and contains valid, consistent information.
         fail_fast (bool): if performing strict checks, should we return at the first
@@ -159,11 +160,11 @@ def is_valid_catalog(
     return is_valid
 
 
-def is_catalog_info_valid(pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_catalog_info_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
     """Checks if catalog_info is valid for a given base catalog pointer
 
     Args:
-        pointer (FilePointer): pointer to base catalog directory
+        pointer (UPath): pointer to base catalog directory
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
@@ -177,13 +178,11 @@ def is_catalog_info_valid(pointer: FilePointer, storage_options: Union[Dict[Any,
     return True
 
 
-def is_partition_info_valid(
-    pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-) -> bool:
+def is_partition_info_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
     """Checks if partition_info is valid for a given base catalog pointer
 
     Args:
-        pointer (FilePointer): pointer to base catalog directory
+        pointer (UPath): pointer to base catalog directory
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
@@ -194,11 +193,11 @@ def is_partition_info_valid(
     return partition_info_exists
 
 
-def is_metadata_valid(pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_metadata_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
     """Checks if _metadata is valid for a given base catalog pointer
 
     Args:
-        pointer (FilePointer): pointer to base catalog directory
+        pointer (UPath): pointer to base catalog directory
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
@@ -209,13 +208,11 @@ def is_metadata_valid(pointer: FilePointer, storage_options: Union[Dict[Any, Any
     return metadata_file_exists
 
 
-def is_common_metadata_valid(
-    pointer: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-) -> bool:
+def is_common_metadata_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
     """Checks if _common_metadata is valid for a given base catalog pointer
 
     Args:
-        pointer (FilePointer): pointer to base catalog directory
+        pointer (UPath): pointer to base catalog directory
         storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:

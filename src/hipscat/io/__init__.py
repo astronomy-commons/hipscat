@@ -1,6 +1,5 @@
 """Utilities for reading and writing catalog files"""
 
-from .file_io import FilePointer, get_file_pointer_from_path
 from .parquet_metadata import (
     read_row_group_fragments,
     row_group_stat_single_value,

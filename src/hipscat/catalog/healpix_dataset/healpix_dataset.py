@@ -9,11 +9,12 @@ import pandas as pd
 import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
+from upath import UPath
 
 import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 from hipscat.io.file_io import read_parquet_metadata
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType
@@ -94,7 +95,7 @@ class HealpixDataset(Dataset):
     @classmethod
     def _read_args(
         cls,
-        catalog_base_dir: FilePointer,
+        catalog_base_dir: UPath,
         storage_options: Union[Dict[Any, Any], None] = None,
     ) -> Tuple[CatalogInfoClass, PartitionInfo]:
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
@@ -103,7 +104,7 @@ class HealpixDataset(Dataset):
 
     @classmethod
     def _read_kwargs(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None
     ) -> dict:
         kwargs = super()._read_kwargs(catalog_base_dir, storage_options=storage_options)
         kwargs["moc"] = cls._read_moc_from_point_map(catalog_base_dir, storage_options)
@@ -112,7 +113,7 @@ class HealpixDataset(Dataset):
 
     @classmethod
     def _read_moc_from_point_map(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None
     ) -> MOC | None:
         """Reads a MOC object from the `point_map.fits` file if it exists in the catalog directory"""
         point_map_path = paths.get_point_map_file_pointer(catalog_base_dir)
@@ -127,7 +128,7 @@ class HealpixDataset(Dataset):
 
     @classmethod
     def _read_schema_from_metadata(
-        cls, catalog_base_dir: FilePointer, storage_options: dict | None = None
+        cls, catalog_base_dir: UPath, storage_options: dict | None = None
     ) -> pa.Schema | None:
         """Reads the schema information stored in the _common_metadata or _metadata files."""
         common_metadata_file = paths.get_common_metadata_pointer(catalog_base_dir)
@@ -147,7 +148,7 @@ class HealpixDataset(Dataset):
         return metadata.schema.to_arrow_schema()
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
+    def _check_files_exist(cls, catalog_base_dir: UPath, storage_options: dict = None):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)

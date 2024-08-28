@@ -8,9 +8,10 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 import pyarrow as pa
+from upath import UPath
 
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 from hipscat.io.parquet_metadata import (
     read_row_group_fragments,
     row_group_stat_single_value,
@@ -70,11 +71,11 @@ class PartitionJoinInfo:
         primary_to_join = dict(primary_to_join)
         return primary_to_join
 
-    def write_to_metadata_files(self, catalog_path: FilePointer = None, storage_options: dict = None):
+    def write_to_metadata_files(self, catalog_path: UPath = None, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.
 
         Args:
-            catalog_path (FilePointer): base path for the catalog
+            catalog_path (UPath): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
@@ -106,7 +107,7 @@ class PartitionJoinInfo:
 
         return write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
-    def write_to_csv(self, catalog_path: FilePointer = None, storage_options: dict = None):
+    def write_to_csv(self, catalog_path: UPath = None, storage_options: dict = None):
         """Write all partition data to CSV files.
 
         Two files will be written:
@@ -116,7 +117,7 @@ class PartitionJoinInfo:
               join catalogs.
 
         Args:
-            catalog_path: FilePointer to the directory where the
+            catalog_path: UPath to the directory where the
                 `partition_join_info.csv` file will be written
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
@@ -141,7 +142,7 @@ class PartitionJoinInfo:
         )
 
     @classmethod
-    def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionJoinInfo:
+    def read_from_dir(cls, catalog_base_dir: UPath, storage_options: dict = None) -> PartitionJoinInfo:
         """Read partition join info from a file within a hipscat directory.
 
         This will look for a `partition_join_info.csv` file, and if not found, will look for
@@ -178,12 +179,12 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+        cls, metadata_file: UPath, strict: bool = False, storage_options: dict = None
     ) -> PartitionJoinInfo:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
-            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            metadata_file (UPath): UPath to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
@@ -195,12 +196,12 @@ class PartitionJoinInfo:
 
     @classmethod
     def _read_from_metadata_file(
-        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+        cls, metadata_file: UPath, strict: bool = False, storage_options: dict = None
     ) -> pd.DataFrame:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
-            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            metadata_file (UPath): UPath to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
@@ -273,12 +274,12 @@ class PartitionJoinInfo:
 
     @classmethod
     def read_from_csv(
-        cls, partition_join_info_file: FilePointer, storage_options: dict = None
+        cls, partition_join_info_file: UPath, storage_options: dict = None
     ) -> PartitionJoinInfo:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
-            partition_join_info_file (FilePointer): FilePointer to the `partition_join_info.csv` file
+            partition_join_info_file (UPath): UPath to the `partition_join_info.csv` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
@@ -287,13 +288,11 @@ class PartitionJoinInfo:
         return cls(cls._read_from_csv(partition_join_info_file, storage_options))
 
     @classmethod
-    def _read_from_csv(
-        cls, partition_join_info_file: FilePointer, storage_options: dict = None
-    ) -> pd.DataFrame:
+    def _read_from_csv(cls, partition_join_info_file: UPath, storage_options: dict = None) -> pd.DataFrame:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
-            partition_join_info_file (FilePointer): FilePointer to the `partition_join_info.csv` file
+            partition_join_info_file (UPath): UPath to the `partition_join_info.csv` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:

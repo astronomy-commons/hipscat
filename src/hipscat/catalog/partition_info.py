@@ -8,8 +8,9 @@ from typing import List
 import numpy as np
 import pandas as pd
 import pyarrow as pa
+from upath import UPath
 
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 from hipscat.io.parquet_metadata import (
     read_row_group_fragments,
     row_group_stat_single_value,
@@ -48,8 +49,8 @@ class PartitionInfo:
 
     def write_to_file(
         self,
-        partition_info_file: FilePointer = None,
-        catalog_path: FilePointer = None,
+        partition_info_file: UPath = None,
+        catalog_path: UPath = None,
         storage_options: dict = None,
     ):
         """Write all partition data to CSV file.
@@ -57,7 +58,7 @@ class PartitionInfo:
         If no paths are provided, the catalog base directory from the `read_from_dir` call is used.
 
         Args:
-            partition_info_file: FilePointer to where the `partition_info.csv`
+            partition_info_file: UPath to where the `partition_info.csv`
                 file will be written.
             catalog_path: base directory for a catalog where the `partition_info.csv`
                 file will be written.
@@ -78,13 +79,13 @@ class PartitionInfo:
             self.as_dataframe(), partition_info_file, index=False, storage_options=storage_options
         )
 
-    def write_to_metadata_files(self, catalog_path: FilePointer = None, storage_options: dict = None):
+    def write_to_metadata_files(self, catalog_path: UPath = None, storage_options: dict = None):
         """Generate parquet metadata, using the known partitions.
 
         If no catalog_path is provided, the catalog base directory from the `read_from_dir` call is used.
 
         Args:
-            catalog_path (FilePointer): base path for the catalog
+            catalog_path (UPath): base path for the catalog
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
@@ -115,7 +116,7 @@ class PartitionInfo:
         return write_parquet_metadata_for_batches(batches, catalog_path, storage_options)
 
     @classmethod
-    def read_from_dir(cls, catalog_base_dir: FilePointer, storage_options: dict = None) -> PartitionInfo:
+    def read_from_dir(cls, catalog_base_dir: UPath, storage_options: dict = None) -> PartitionInfo:
         """Read partition info from a file within a hipscat directory.
 
         This will look for a `partition_info.csv` file, and if not found, will look for
@@ -150,12 +151,12 @@ class PartitionInfo:
 
     @classmethod
     def read_from_file(
-        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+        cls, metadata_file: UPath, strict: bool = False, storage_options: dict = None
     ) -> PartitionInfo:
         """Read partition info from a `_metadata` file to create an object
 
         Args:
-            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            metadata_file (UPath): UPath to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
@@ -167,12 +168,12 @@ class PartitionInfo:
 
     @classmethod
     def _read_from_metadata_file(
-        cls, metadata_file: FilePointer, strict: bool = False, storage_options: dict = None
+        cls, metadata_file: UPath, strict: bool = False, storage_options: dict = None
     ) -> List[HealpixPixel]:
         """Read partition info list from a `_metadata` file.
 
         Args:
-            metadata_file (FilePointer): FilePointer to the `_metadata` file
+            metadata_file (UPath): UPath to the `_metadata` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
@@ -221,11 +222,11 @@ class PartitionInfo:
         return list(dict.fromkeys(pixel_list))
 
     @classmethod
-    def read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
+    def read_from_csv(cls, partition_info_file: UPath, storage_options: dict = None) -> PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
-            partition_info_file (FilePointer): FilePointer to the `partition_info.csv` file
+            partition_info_file (UPath): UPath to the `partition_info.csv` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:
@@ -234,11 +235,11 @@ class PartitionInfo:
         return cls(cls._read_from_csv(partition_info_file, storage_options))
 
     @classmethod
-    def _read_from_csv(cls, partition_info_file: FilePointer, storage_options: dict = None) -> PartitionInfo:
+    def _read_from_csv(cls, partition_info_file: UPath, storage_options: dict = None) -> PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
-            partition_info_file (FilePointer): FilePointer to the `partition_info.csv` file
+            partition_info_file (UPath): UPath to the `partition_info.csv` file
             storage_options (dict): dictionary that contains abstract filesystem credentials
 
         Returns:

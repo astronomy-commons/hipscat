@@ -20,8 +20,7 @@ def test_wrong_columns(association_catalog_join_pixels):
 
 
 def test_read_from_metadata(association_catalog_join_pixels, association_catalog_path):
-    file_pointer = file_io.get_file_pointer_from_path(association_catalog_path / "_metadata")
-    info = PartitionJoinInfo.read_from_file(file_pointer)
+    info = PartitionJoinInfo.read_from_file(association_catalog_path / "_metadata")
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
 
 
@@ -90,8 +89,7 @@ def test_metadata_file_round_trip(association_catalog_join_pixels, tmp_path):
     total_rows = info.write_to_metadata_files(tmp_path)
     assert total_rows == 4
 
-    file_pointer = file_io.get_file_pointer_from_path(tmp_path / "_metadata")
-    new_info = PartitionJoinInfo.read_from_file(file_pointer)
+    new_info = PartitionJoinInfo.read_from_file(tmp_path / "_metadata")
     pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
 
 
@@ -100,22 +98,18 @@ def test_csv_file_round_trip(association_catalog_join_pixels, tmp_path):
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
     info.write_to_csv(tmp_path)
 
-    file_pointer = file_io.get_file_pointer_from_path(tmp_path / "partition_join_info.csv")
-    new_info = PartitionJoinInfo.read_from_csv(file_pointer)
+    new_info = PartitionJoinInfo.read_from_csv(tmp_path / "partition_join_info.csv")
     pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
 
 
 def test_read_from_csv(association_catalog_partition_join_file, association_catalog_join_pixels):
-    file_pointer = file_io.get_file_pointer_from_path(association_catalog_partition_join_file)
-    info = PartitionJoinInfo.read_from_csv(file_pointer)
+    info = PartitionJoinInfo.read_from_csv(association_catalog_partition_join_file)
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
 
 
 def test_read_from_missing_file(tmp_path):
-    wrong_path = tmp_path / "wrong"
-    file_pointer = file_io.get_file_pointer_from_path(wrong_path)
     with pytest.raises(FileNotFoundError):
-        PartitionJoinInfo.read_from_csv(file_pointer)
+        PartitionJoinInfo.read_from_csv(tmp_path / "wrong")
 
 
 def test_load_partition_info_from_dir_and_write(tmp_path, association_catalog_join_pixels):

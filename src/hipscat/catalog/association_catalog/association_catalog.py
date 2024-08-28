@@ -6,12 +6,13 @@ import pandas as pd
 import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import TypeAlias
+from upath import UPath
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 
 
 class AssociationCatalog(HealpixDataset):
@@ -67,7 +68,7 @@ class AssociationCatalog(HealpixDataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir, storage_options=storage_options)
         partition_join_info = PartitionJoinInfo.read_from_dir(
@@ -76,7 +77,7 @@ class AssociationCatalog(HealpixDataset):
         return args + (partition_join_info,)
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
+    def _check_files_exist(cls, catalog_base_dir: UPath, storage_options: dict = None):
         super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)

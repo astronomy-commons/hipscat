@@ -5,9 +5,10 @@ from dataclasses import dataclass
 from typing import Any, Dict, Union
 
 from typing_extensions import Self
+from upath import UPath
 
 from hipscat.catalog.catalog_type import CatalogType
-from hipscat.io import FilePointer, file_io
+from hipscat.io import file_io
 
 
 @dataclass
@@ -46,12 +47,12 @@ class BaseCatalogInfo:
 
     @classmethod
     def read_from_metadata_file(
-        cls, catalog_info_file: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_info_file: UPath, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Self:
         """Read catalog info from the `catalog_info.json` metadata file
 
         Args:
-            catalog_info_file: FilePointer pointing to the `catalog_info.json` file
+            catalog_info_file: UPath pointing to the `catalog_info.json` file
             storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:

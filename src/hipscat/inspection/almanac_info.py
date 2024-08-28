@@ -80,7 +80,7 @@ class AlmanacInfo:
     ) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
         catalog_info = catalog_info_factory.from_catalog_dir(
-            catalog_base_dir=file_io.get_file_pointer_from_path(catalog_base_dir),
+            catalog_base_dir=file_io.get_upath(catalog_base_dir),
             storage_options=storage_options,
         )
         args = {
@@ -115,9 +115,8 @@ class AlmanacInfo:
         if default_dir:
             directory = AlmanacInfo.get_default_dir()
 
-        file_path = file_io.append_paths_to_pointer(
-            file_io.get_file_pointer_from_path(directory), f"{self.catalog_name}.{fmt}"
-        )
+        file_path = file_io.get_upath(directory) / f"{self.catalog_name}.{fmt}"
+
         if file_io.does_file_or_directory_exist(file_path, storage_options=storage_options):
             raise ValueError(f"File already exists at path {str(file_path)}")
 

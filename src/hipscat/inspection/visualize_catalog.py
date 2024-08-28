@@ -26,6 +26,8 @@ def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], Non
         corresponds to the number of objects found at the healpix pixel.
     """
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
+    print("map_file_pointer", map_file_pointer)
+    print("so", map_file_pointer.storage_options)
     return file_io.read_fits_image(map_file_pointer, storage_options=storage_options)
 
 

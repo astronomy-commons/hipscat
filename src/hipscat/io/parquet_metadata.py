@@ -9,7 +9,9 @@ import pyarrow.dataset as pds
 import pyarrow.parquet as pq
 
 from hipscat.io import file_io, paths
-from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
+
+# from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
+from hipscat.io.file_io.file_pointer import get_upath
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 from hipscat.pixel_math.healpix_pixel_function import get_pixel_argsort
 
@@ -113,7 +115,7 @@ def write_parquet_metadata(
     total_rows = 0
 
     for hips_file in dataset.files:
-        hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
+        hips_file_pointer = file_io.get_upath(hips_file)
         single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
 
         # Users must set the file path of each chunk before combining the metadata.
@@ -135,7 +137,7 @@ def write_parquet_metadata(
     if order_by_healpix:
         argsort = get_pixel_argsort(healpix_pixels)
         metadata_collector = np.array(metadata_collector)[argsort]
-    catalog_base_dir = file_io.get_file_pointer_from_path(output_path)
+    catalog_base_dir = file_io.get_upath(output_path)
     metadata_file_pointer = paths.get_parquet_metadata_pointer(catalog_base_dir)
     common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
@@ -184,11 +186,13 @@ def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
         metadata_file (str): path to `_metadata` file.
         storage_options: dictionary that contains abstract filesystem credentials
     """
+    metadata_file = get_upath(metadata_file)
     if not file_io.is_regular_file(metadata_file, storage_options=storage_options):
         metadata_file = paths.get_parquet_metadata_pointer(metadata_file)
-    file_system, file_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
-    file_pointer = strip_leading_slash_for_pyarrow(file_pointer, file_system.protocol)
-    dataset = pds.parquet_dataset(file_pointer, filesystem=file_system)
+
+    # file_system, file_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
+    # file_pointer = strip_leading_slash_for_pyarrow(file_pointer, file_system.protocol)
+    dataset = pds.parquet_dataset(metadata_file, filesystem=metadata_file.fs)
 
     for frag in dataset.get_fragments():
         yield from frag.row_groups

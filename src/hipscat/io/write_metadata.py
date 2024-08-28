@@ -9,6 +9,7 @@ from typing import Any, Dict, Union
 
 import numpy as np
 import pandas as pd
+from upath import UPath
 
 from hipscat.io import file_io, paths
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
@@ -37,7 +38,7 @@ class HipscatEncoder(json.JSONEncoder):
 
 def write_json_file(
     metadata_dictionary: dict,
-    file_pointer: file_io.FilePointer,
+    file_pointer: UPath,
     storage_options: Union[Dict[Any, Any], None] = None,
 ):
     """Convert metadata_dictionary to a json string and print to file.
@@ -66,7 +67,7 @@ def write_catalog_info(catalog_base_dir, dataset_info, storage_options: Union[Di
 
 
 def write_provenance_info(
-    catalog_base_dir: file_io.FilePointer,
+    catalog_base_dir: UPath,
     dataset_info,
     tool_args: dict,
     storage_options: Union[Dict[Any, Any], None] = None,
@@ -92,7 +93,7 @@ def write_provenance_info(
 
 
 def write_partition_info(
-    catalog_base_dir: file_io.FilePointer,
+    catalog_base_dir: UPath,
     destination_healpix_pixel_map: dict,
     storage_options: Union[Dict[Any, Any], None] = None,
 ):
@@ -135,6 +136,6 @@ def write_fits_map(catalog_path, histogram: np.ndarray, storage_options: Union[D
             value at each index corresponds to the number of objects found at the healpix pixel.
         storage_options: dictionary that contains abstract filesystem credentials
     """
-    catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
+    catalog_base_dir = file_io.get_upath(catalog_path)
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
     file_io.write_fits_image(histogram, map_file_pointer, storage_options=storage_options)

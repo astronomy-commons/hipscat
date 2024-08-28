@@ -47,7 +47,7 @@ def read_from_hipscat(
 def _read_dataset_class_from_metadata(
     catalog_base_path: str, storage_options: dict | None = None
 ) -> CatalogType:
-    catalog_base_dir = io.file_io.get_file_pointer_from_path(catalog_base_path)
+    catalog_base_dir = io.file_io.get_upath(catalog_base_path)
     catalog_info_path = io.paths.get_catalog_info_pointer(catalog_base_dir)
     catalog_info = BaseCatalogInfo.read_from_metadata_file(catalog_info_path, storage_options=storage_options)
     return catalog_info.catalog_type

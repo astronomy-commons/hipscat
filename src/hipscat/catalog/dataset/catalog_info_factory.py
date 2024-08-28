@@ -1,6 +1,8 @@
 import dataclasses
 from typing import Any, Dict, Optional, Union
 
+from upath import UPath
+
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
@@ -8,7 +10,7 @@ from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
 from hipscat.catalog.index.index_catalog_info import IndexCatalogInfo
 from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCatalogInfo
 from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 
 CATALOG_TYPE_TO_INFO_CLASS = {
     CatalogType.OBJECT: CatalogInfo,
@@ -51,7 +53,7 @@ def create_catalog_info(keywords: dict, catalog_type: Optional[CatalogType] = No
     return ci_class(**catalog_info_keywords)
 
 
-def from_catalog_dir(catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None):
+def from_catalog_dir(catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None):
     """Generate a typed catalog info object from the type specified in the
     catalog info file.
 

@@ -1,9 +1,10 @@
 from typing import Any, Dict, Tuple, Union
 
 from typing_extensions import Self
+from upath import UPath
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 
 
 class Dataset:
@@ -35,7 +36,7 @@ class Dataset:
         self.catalog_path = catalog_path
         self.on_disk = catalog_path is not None
         self.storage_options = storage_options
-        self.catalog_base_dir = file_io.get_file_pointer_from_path(self.catalog_path)
+        self.catalog_base_dir = file_io.get_upath(self.catalog_path)
 
     @classmethod
     def read_from_hipscat(
@@ -50,7 +51,7 @@ class Dataset:
         Returns:
             The initialized catalog object
         """
-        catalog_base_dir = file_io.get_file_pointer_from_path(catalog_path)
+        catalog_base_dir = file_io.get_upath(catalog_path)
         cls._check_files_exist(catalog_base_dir, storage_options=storage_options)
         args = cls._read_args(catalog_base_dir, storage_options=storage_options)
         kwargs = cls._read_kwargs(catalog_base_dir, storage_options=storage_options)
@@ -58,7 +59,7 @@ class Dataset:
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None
     ) -> Tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         catalog_info = cls.CatalogInfoClass.read_from_metadata_file(
@@ -68,14 +69,12 @@ class Dataset:
 
     @classmethod
     def _read_kwargs(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None
     ) -> dict:
-        return {"catalog_path": str(catalog_base_dir), "storage_options": storage_options}
+        return {"catalog_path": catalog_base_dir, "storage_options": storage_options}
 
     @classmethod
-    def _check_files_exist(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-    ):
+    def _check_files_exist(cls, catalog_base_dir: UPath, storage_options: Union[Dict[Any, Any], None] = None):
         if not file_io.does_file_or_directory_exist(catalog_base_dir, storage_options=storage_options):
             raise FileNotFoundError(f"No directory exists at {str(catalog_base_dir)}")
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
