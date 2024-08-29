@@ -219,6 +219,7 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
     ]
     return get_upath(base_dir).joinpath(*partition_tokens)
 
+
 def get_catalog_info_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `catalog_info.json` metadata file
 
