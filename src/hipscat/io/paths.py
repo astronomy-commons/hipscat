@@ -29,7 +29,7 @@ POINT_MAP_FILENAME = "point_map.fits"
 
 
 def pixel_directory(
-    catalog_base_dir: UPath,
+    catalog_base_dir: UPath | None,
     pixel_order: int,
     pixel_number: int | None = None,
     directory_number: int | None = None,
@@ -91,7 +91,7 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
 
 
 def pixel_catalog_files(
-    catalog_base_dir: UPath,
+    catalog_base_dir: UPath | None,
     pixels: List[HealpixPixel],
     query_params: Dict | None = None,
 ) -> List[UPath]:
@@ -166,7 +166,7 @@ def dict_to_query_urlparams(query_params: Dict | None = None) -> str:
 
 
 def pixel_catalog_file(
-    catalog_base_dir: UPath, pixel: HealpixPixel, query_params: Dict | None = None
+    catalog_base_dir: UPath | None, pixel: HealpixPixel, query_params: Dict | None = None
 ) -> UPath:
     """Create path *pointer* for a pixel catalog file. This will not create the directory
     or file.

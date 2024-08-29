@@ -32,7 +32,7 @@ class Dataset:
         self.catalog_base_dir = file_io.get_upath(self.catalog_path)
 
     @classmethod
-    def read_from_hipscat(cls, catalog_path: str) -> Self:
+    def read_from_hipscat(cls, catalog_path: UPath | str) -> Self:
         """Reads a HiPSCat Catalog from a HiPSCat directory
 
         Args:
