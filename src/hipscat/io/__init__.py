@@ -8,7 +8,6 @@ from .parquet_metadata import (
 )
 from .paths import (
     create_hive_directory_name,
-    create_hive_parquet_file_name,
     get_catalog_info_pointer,
     get_common_metadata_pointer,
     get_parquet_metadata_pointer,

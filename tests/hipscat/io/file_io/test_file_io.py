@@ -50,6 +50,8 @@ def test_make_and_remove_directory(tmp_path):
     test_dir_path = tmp_path / "test_path"
     assert not does_file_or_directory_exist(test_dir_path)
     make_directory(test_dir_path)
+    make_directory(test_dir_path / "subdirectory")
+    (test_dir_path / "subdirectory" / "file").touch()
     assert does_file_or_directory_exist(test_dir_path)
     remove_directory(test_dir_path)
     assert not does_file_or_directory_exist(test_dir_path)

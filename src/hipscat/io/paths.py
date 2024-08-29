@@ -219,28 +219,6 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
     ]
     return get_upath(base_dir).joinpath(*partition_tokens)
 
-
-def create_hive_parquet_file_name(base_dir, partition_token_names, partition_token_values):
-    """Create path *pointer* for a single parquet with hive partitioning naming.
-
-    The file name will have the form of::
-
-        <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>.parquet
-
-    Args:
-        catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
-        partition_token_names (list[string]): list of partition name parts.
-        partition_token_values (list[string]): list of partition values that
-            correspond to the token name parts.
-    """
-    partition_tokens = [
-        f"{name}={value}" for name, value in zip(partition_token_names, partition_token_values)
-    ]
-    partition_tokens[-1] = f"{partition_tokens[-1]}.parquet"
-
-    return get_upath(base_dir).joinpath(*partition_tokens)
-
-
 def get_catalog_info_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `catalog_info.json` metadata file
 
