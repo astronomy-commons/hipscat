@@ -94,7 +94,6 @@ def pixel_catalog_files(
     catalog_base_dir: UPath,
     pixels: List[HealpixPixel],
     query_params: Dict | None = None,
-    storage_options: Dict | None = None,
 ) -> List[UPath]:
     """Create a list of path *pointers* for pixel catalog files. This will not create the directory
     or files.
@@ -111,7 +110,6 @@ def pixel_catalog_files(
         catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
         pixels (List[HealpixPixel]): the healpix pixels to create pointers to
         query_params (dict): Params to append to URL. Ex: {'cols': ['ra', 'dec'], 'fltrs': ['r>=10', 'g<18']}
-        storage_options (dict): the storage options for the file system to target when generating the paths
 
     Returns (List[str]):
         A list of paths to the pixels, in the same order as the input pixel list.

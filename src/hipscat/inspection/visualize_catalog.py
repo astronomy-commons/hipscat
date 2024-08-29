@@ -3,7 +3,7 @@
 NB: Testing validity of generated plots is currently not tested in our unit test suite.
 """
 
-from typing import Any, Dict, List, Union
+from typing import List
 
 import healpy as hp
 import matplotlib.colors as mcolors
@@ -16,7 +16,7 @@ from hipscat.io import file_io, paths
 from hipscat.pixel_math import HealpixPixel
 
 
-def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], None] = None):
+def _read_point_map(catalog_base_dir):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
@@ -26,9 +26,7 @@ def _read_point_map(catalog_base_dir, storage_options: Union[Dict[Any, Any], Non
         corresponds to the number of objects found at the healpix pixel.
     """
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
-    print("map_file_pointer", map_file_pointer)
-    print("so", map_file_pointer.storage_options)
-    return file_io.read_fits_image(map_file_pointer, storage_options=storage_options)
+    return file_io.read_fits_image(map_file_pointer)
 
 
 def plot_points(catalog: Catalog, projection="moll", **kwargs):
@@ -44,7 +42,7 @@ def plot_points(catalog: Catalog, projection="moll", **kwargs):
     """
     if not catalog.on_disk:
         raise ValueError("on disk catalog required for point-wise visualization")
-    point_map = _read_point_map(catalog.catalog_base_dir, storage_options=catalog.storage_options)
+    point_map = _read_point_map(catalog.catalog_base_dir)
     _plot_healpix_map(point_map, projection, f"Catalog point density map - {catalog.catalog_name}", **kwargs)
 
 

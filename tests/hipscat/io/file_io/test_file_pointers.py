@@ -1,8 +1,6 @@
 from pathlib import Path
 
-import pytest
-
-from hipscat.io.file_io import (  # strip_leading_slash_for_pyarrow,
+from hipscat.io.file_io import (
     append_paths_to_pointer,
     directory_has_contents,
     does_file_or_directory_exist,
@@ -10,8 +8,6 @@ from hipscat.io.file_io import (  # strip_leading_slash_for_pyarrow,
     get_directory_contents,
     is_regular_file,
 )
-
-# from hipscat.io.file_io.file_pointer import get_fs
 
 
 def test_file_or_dir_exist(small_sky_dir):

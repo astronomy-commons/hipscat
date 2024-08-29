@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Any, Dict, Union
 
 import numpy as np
 import pandas as pd
@@ -36,42 +35,31 @@ class HipscatEncoder(json.JSONEncoder):
         return super().default(o)  # pragma: no cover
 
 
-def write_json_file(
-    metadata_dictionary: dict,
-    file_pointer: UPath,
-    storage_options: Union[Dict[Any, Any], None] = None,
-):
+def write_json_file(metadata_dictionary: dict, file_pointer: UPath):
     """Convert metadata_dictionary to a json string and print to file.
 
     Args:
         metadata_dictionary (:obj:`dictionary`): a dictionary of key-value pairs
         file_pointer (str): destination for the json file
-        storage_options: dictionary that contains abstract filesystem credentials
     """
     dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=HipscatEncoder)
-    file_io.write_string_to_file(file_pointer, dumped_metadata + "\n", storage_options=storage_options)
+    file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 
-def write_catalog_info(catalog_base_dir, dataset_info, storage_options: Union[Dict[Any, Any], None] = None):
+def write_catalog_info(catalog_base_dir, dataset_info):
     """Write a catalog_info.json file with catalog metadata
 
     Args:
         catalog_base_dir (str): base directory for catalog, where file will be written
         dataset_info (:obj:`BaseCatalogInfo`) base metadata for the catalog
-        storage_options: dictionary that contains abstract filesystem credentials
     """
     metadata = dataclasses.asdict(dataset_info)
     catalog_info_pointer = paths.get_catalog_info_pointer(catalog_base_dir)
 
-    write_json_file(metadata, catalog_info_pointer, storage_options=storage_options)
+    write_json_file(metadata, catalog_info_pointer)
 
 
-def write_provenance_info(
-    catalog_base_dir: UPath,
-    dataset_info,
-    tool_args: dict,
-    storage_options: Union[Dict[Any, Any], None] = None,
-):
+def write_provenance_info(catalog_base_dir: UPath, dataset_info, tool_args: dict):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
@@ -79,7 +67,6 @@ def write_provenance_info(
         dataset_info (:obj:`BaseCatalogInfo`) base metadata for the catalog
         tool_args (:obj:`dict`): dictionary of additional arguments provided by the tool creating
             this catalog.
-        storage_options: dictionary that contains abstract filesystem credentials
     """
     metadata = dataclasses.asdict(dataset_info)
     metadata["version"] = version("hipscat")
@@ -89,14 +76,10 @@ def write_provenance_info(
     metadata["tool_args"] = tool_args
 
     metadata_pointer = paths.get_provenance_pointer(catalog_base_dir)
-    write_json_file(metadata, metadata_pointer, storage_options=storage_options)
+    write_json_file(metadata, metadata_pointer)
 
 
-def write_partition_info(
-    catalog_base_dir: UPath,
-    destination_healpix_pixel_map: dict,
-    storage_options: Union[Dict[Any, Any], None] = None,
-):
+def write_partition_info(catalog_base_dir: UPath, destination_healpix_pixel_map: dict):
     """Write all partition data to CSV file.
 
     Args:
@@ -106,8 +89,6 @@ def write_partition_info(
 
                 - 0 - the total number of rows found in this destination pixel
                 - 1 - the set of indexes in histogram for the pixels at the original healpix order
-
-        storage_options: dictionary that contains abstract filesystem credentials
     """
     partition_info_pointer = paths.get_partition_info_pointer(catalog_base_dir)
     data_frame = pd.DataFrame(destination_healpix_pixel_map.keys())
@@ -122,20 +103,17 @@ def write_partition_info(
     # Reorder the columns to match full path, and force to integer types.
     data_frame = data_frame[["Norder", "Dir", "Npix", "num_rows"]].astype(int)
 
-    file_io.write_dataframe_to_csv(
-        data_frame, partition_info_pointer, index=False, storage_options=storage_options
-    )
+    file_io.write_dataframe_to_csv(data_frame, partition_info_pointer, index=False)
 
 
-def write_fits_map(catalog_path, histogram: np.ndarray, storage_options: Union[Dict[Any, Any], None] = None):
+def write_fits_map(catalog_path, histogram: np.ndarray):
     """Write the object spatial distribution information to a healpix FITS file.
 
     Args:
         catalog_path (str): base path for the catalog
         histogram (:obj:`np.ndarray`): one-dimensional numpy array of long integers where the
             value at each index corresponds to the number of objects found at the healpix pixel.
-        storage_options: dictionary that contains abstract filesystem credentials
     """
     catalog_base_dir = file_io.get_upath(catalog_path)
     map_file_pointer = paths.get_point_map_file_pointer(catalog_base_dir)
-    file_io.write_fits_image(histogram, map_file_pointer, storage_options=storage_options)
+    file_io.write_fits_image(histogram, map_file_pointer)

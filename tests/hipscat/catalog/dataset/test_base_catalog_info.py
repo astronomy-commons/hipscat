@@ -3,7 +3,6 @@ import json
 import pytest
 
 from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.io import file_io
 
 
 def test_fields_init(base_catalog_info_data, assert_catalog_info_matches_dict):

@@ -16,40 +16,14 @@ from hipscat.io.file_io import (
     write_dataframe_to_csv,
     write_string_to_file,
 )
-from hipscat.io.file_io.file_io import unnest_headers_for_pandas
 from hipscat.io.file_io.file_pointer import does_file_or_directory_exist
-from hipscat.io.paths import pixel_catalog_file
-from hipscat.pixel_math.healpix_pixel import HealpixPixel
+
 
 def test_make_directory(tmp_path):
     test_dir_path = tmp_path / "test_path"
     assert not does_file_or_directory_exist(test_dir_path)
     make_directory(test_dir_path)
     assert does_file_or_directory_exist(test_dir_path)
-
-
-def test_unnest_headers_for_pandas():
-    storage_options = {
-        "headers": {"Authorization": "Bearer my_token"},
-    }
-    storage_options_str = {"Authorization": "Bearer my_token"}
-    assert storage_options_str == unnest_headers_for_pandas(storage_options)
-
-    storage_options = {
-        "key1": "value1",
-        "headers": {"Authorization": "Bearer my_token", "Content": "X"},
-    }
-    storage_options_str = {"key1": "value1", "Authorization": "Bearer my_token", "Content": "X"}
-    assert storage_options_str == unnest_headers_for_pandas(storage_options)
-
-    storage_options = {
-        "key1": "value1",
-        "key2": None,
-    }
-    storage_options_str = {"key1": "value1", "key2": None}
-    assert storage_options_str == unnest_headers_for_pandas(storage_options)
-
-    assert None is unnest_headers_for_pandas(None)
 
 
 def test_make_existing_directory_raises(tmp_path):

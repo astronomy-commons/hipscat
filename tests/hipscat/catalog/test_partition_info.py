@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from hipscat.catalog import PartitionInfo
-from hipscat.io import file_io, paths
+from hipscat.io import paths
 from hipscat.pixel_math import HealpixPixel
 
 

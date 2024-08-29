@@ -48,6 +48,7 @@ def test_pixel_catalog_file_w_query_params():
     result = paths.pixel_catalog_file("https://foo", HealpixPixel(0, 5), query_params=query_params)
     assert expected == str(result)
 
+
 def test_pixel_catalog_file_nonint():
     """Simple case with non-integer inputs"""
     with pytest.raises(AttributeError):

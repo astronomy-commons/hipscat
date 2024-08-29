@@ -1,5 +1,4 @@
 import warnings
-from typing import Any, Dict, Union
 
 import numpy as np
 from upath import UPath
@@ -22,7 +21,6 @@ def is_valid_catalog(
     strict: bool = False,
     fail_fast: bool = False,
     verbose: bool = True,
-    storage_options: Union[Dict[Any, Any], None] = None,
 ) -> bool:
     """Checks if a catalog is valid for a given base catalog pointer
 
@@ -34,16 +32,14 @@ def is_valid_catalog(
             failure, or continue and find all problems?
         verbose (bool): if performing strict checks, should we print out counts,
             progress, and approximate sky coverage?
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if both the catalog_info and partition_info files are
         valid, False otherwise
     """
     if not strict:
-        return is_catalog_info_valid(pointer, storage_options=storage_options) and (
-            is_partition_info_valid(pointer, storage_options=storage_options)
-            or is_metadata_valid(pointer, storage_options=storage_options)
+        return is_catalog_info_valid(pointer) and (
+            is_partition_info_valid(pointer) or is_metadata_valid(pointer)
         )
 
     if verbose:
@@ -65,16 +61,16 @@ def is_valid_catalog(
             warnings.warn(msg)
         is_valid = False
 
-    if not is_catalog_info_valid(pointer, storage_options=storage_options):
+    if not is_catalog_info_valid(pointer):
         handle_error("catalog_info.json file does not exist or is invalid.")
 
-    if not is_partition_info_valid(pointer, storage_options=storage_options):
+    if not is_partition_info_valid(pointer):
         handle_error("partition_info.csv file does not exist.")
 
-    if not is_metadata_valid(pointer, storage_options=storage_options):
+    if not is_metadata_valid(pointer):
         handle_error("_metadata file does not exist.")
 
-    if not is_common_metadata_valid(pointer, storage_options=storage_options):
+    if not is_common_metadata_valid(pointer):
         handle_error("_common_metadata file does not exist.")
 
     if not is_valid:
@@ -94,17 +90,13 @@ def is_valid_catalog(
 
     # Use both strategies of reading the partition info: strict and !strict.
     metadata_pixels = sort_pixels(
-        PartitionInfo.read_from_file(
-            metadata_file, strict=True, storage_options=storage_options
-        ).get_healpix_pixels()
+        PartitionInfo.read_from_file(metadata_file, strict=True).get_healpix_pixels()
     )
     if not np.array_equal(expected_pixels, metadata_pixels):
         handle_error("Partition pixels differ between catalog and _metadata file (strict)")
 
     metadata_pixels = sort_pixels(
-        PartitionInfo.read_from_file(
-            metadata_file, strict=False, storage_options=storage_options
-        ).get_healpix_pixels()
+        PartitionInfo.read_from_file(metadata_file, strict=False).get_healpix_pixels()
     )
     if not np.array_equal(expected_pixels, metadata_pixels):
         handle_error("Partition pixels differ between catalog and _metadata file (non-strict)")
@@ -130,7 +122,6 @@ def is_valid_catalog(
         pointer,
         ignore_prefixes=ignore_prefixes,
         exclude_invalid_files=False,
-        storage_options=storage_options,
     )
 
     parquet_path_pixels = []
@@ -160,64 +151,60 @@ def is_valid_catalog(
     return is_valid
 
 
-def is_catalog_info_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_catalog_info_valid(pointer: UPath) -> bool:
     """Checks if catalog_info is valid for a given base catalog pointer
 
     Args:
         pointer (UPath): pointer to base catalog directory
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if the catalog_info file exists, and it is correctly formatted,
         False otherwise
     """
     try:
-        from_catalog_dir(pointer, storage_options=storage_options)
+        from_catalog_dir(pointer)
     except (FileNotFoundError, ValueError, NotImplementedError):
         return False
     return True
 
 
-def is_partition_info_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_partition_info_valid(pointer: UPath) -> bool:
     """Checks if partition_info is valid for a given base catalog pointer
 
     Args:
         pointer (UPath): pointer to base catalog directory
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if the partition_info file exists, False otherwise
     """
     partition_info_pointer = get_partition_info_pointer(pointer)
-    partition_info_exists = is_regular_file(partition_info_pointer, storage_options=storage_options)
+    partition_info_exists = is_regular_file(partition_info_pointer)
     return partition_info_exists
 
 
-def is_metadata_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_metadata_valid(pointer: UPath) -> bool:
     """Checks if _metadata is valid for a given base catalog pointer
 
     Args:
         pointer (UPath): pointer to base catalog directory
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if the _metadata file exists, False otherwise
     """
     metadata_file = get_parquet_metadata_pointer(pointer)
-    metadata_file_exists = is_regular_file(metadata_file, storage_options=storage_options)
+    metadata_file_exists = is_regular_file(metadata_file)
     return metadata_file_exists
 
 
-def is_common_metadata_valid(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_common_metadata_valid(pointer: UPath) -> bool:
     """Checks if _common_metadata is valid for a given base catalog pointer
 
     Args:
         pointer (UPath): pointer to base catalog directory
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if the _common_metadata file exists, False otherwise
     """
     metadata_file = get_common_metadata_pointer(pointer)
-    metadata_file_exists = is_regular_file(metadata_file, storage_options=storage_options)
+    metadata_file_exists = is_regular_file(metadata_file)
     return metadata_file_exists

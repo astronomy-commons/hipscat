@@ -1,7 +1,5 @@
-import os
-from typing import Any, Dict, List, NewType, Tuple, Union
+from typing import List
 
-import fsspec
 from upath import UPath
 
 
@@ -29,50 +27,39 @@ def append_paths_to_pointer(pointer: UPath, *paths: str) -> UPath:
     return pointer.joinpath(*paths)
 
 
-def does_file_or_directory_exist(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def does_file_or_directory_exist(pointer: UPath) -> bool:
     """Checks if a file or directory exists for a given file pointer
 
     Args:
         pointer: File Pointer to check if file or directory exists at
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if file or directory at `pointer` exists, False if not
     """
-    # file_system, pointer = pointer, storage_options)
-    # return file_system.exists(pointer)
     pointer = get_upath(pointer)
     return pointer.exists()
 
 
-def is_regular_file(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def is_regular_file(pointer: UPath) -> bool:
     """Checks if a regular file (NOT a directory) exists for a given file pointer.
 
     Args:
         pointer: File Pointer to check if a regular file
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if regular file at `pointer` exists, False if not or is a directory
     """
-    # file_system, pointer = get_fs(pointer, storage_options)
-    # return file_system.isfile(pointer)
     pointer = get_upath(pointer)
     return pointer.is_file()
 
 
-def find_files_matching_path(
-    pointer: UPath,
-    *paths: str,
-    storage_options: Union[Dict[Any, Any], None] = None,
-) -> List[UPath]:
+def find_files_matching_path(pointer: UPath, *paths: str) -> List[UPath]:
     """Find files or directories matching the provided path parts.
 
     Args:
         pointer: base File Pointer in which to find contents
         paths: any number of directory names optionally followed by a file name.
             directory or file names may be replaced with `*` as a matcher.
-        storage_options: dictionary that contains abstract filesystem credentials
     Returns:
         New file pointers to files found matching the path
     """
@@ -93,30 +80,26 @@ def find_files_matching_path(
     return contents
 
 
-def directory_has_contents(pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None) -> bool:
+def directory_has_contents(pointer: UPath) -> bool:
     """Checks if a directory already has some contents (any files or subdirectories)
 
     Args:
         pointer: File Pointer to check for existing contents
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         True if there are any files or subdirectories below this directory.
     """
     pointer = get_upath(pointer)
-    return len(find_files_matching_path(pointer, "*", storage_options=storage_options)) > 0
+    return len(find_files_matching_path(pointer, "*")) > 0
 
 
-def get_directory_contents(
-    pointer: UPath, storage_options: Union[Dict[Any, Any], None] = None
-) -> List[UPath]:
+def get_directory_contents(pointer: UPath) -> List[UPath]:
     """Finds all files and directories in the specified directory.
 
     NB: This is not recursive, and will return only the first level of directory contents.
 
     Args:
         pointer: File Pointer in which to find contents
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         New file pointers to files or subdirectories below this directory.

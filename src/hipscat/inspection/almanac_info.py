@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union
+from typing import List
 
 import yaml
 from typing_extensions import Self
@@ -18,7 +18,6 @@ class AlmanacInfo:
     """Container for parsed almanac information."""
 
     file_path: str = ""
-    storage_options: Union[Dict[Any, Any], None] = field(default_factory=dict)
     namespace: str = ""
     catalog_path: str = ""
     catalog_name: str = ""
@@ -75,13 +74,10 @@ class AlmanacInfo:
         return default_dir
 
     @classmethod
-    def from_catalog_dir(
-        cls, catalog_base_dir: str, storage_options: Union[Dict[Any, Any], None] = None
-    ) -> Self:
+    def from_catalog_dir(cls, catalog_base_dir: str) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
         catalog_info = catalog_info_factory.from_catalog_dir(
-            catalog_base_dir=file_io.get_upath(catalog_base_dir),
-            storage_options=storage_options,
+            catalog_base_dir=file_io.get_upath(catalog_base_dir)
         )
         args = {
             "catalog_path": catalog_base_dir,
@@ -93,12 +89,12 @@ class AlmanacInfo:
         return cls(**args)
 
     @classmethod
-    def from_file(cls, file: str, storage_options: Union[Dict[Any, Any], None] = None) -> Self:
+    def from_file(cls, file: str) -> Self:
         """Create almanac information from an almanac file."""
         _, fmt = os.path.splitext(file)
         if fmt != ".yml":
             raise ValueError(f"Unsupported file format {fmt}")
-        metadata = file_io.file_io.read_yaml(file, storage_options=storage_options)
+        metadata = file_io.file_io.read_yaml(file)
         return cls(**metadata)
 
     def write_to_file(
@@ -106,7 +102,6 @@ class AlmanacInfo:
         directory=None,
         default_dir=True,
         fmt="yml",
-        storage_options: Union[Dict[Any, Any], None] = None,
     ):
         """Write the almanac to an almanac file"""
         if default_dir and directory:
@@ -117,7 +112,7 @@ class AlmanacInfo:
 
         file_path = file_io.get_upath(directory) / f"{self.catalog_name}.{fmt}"
 
-        if file_io.does_file_or_directory_exist(file_path, storage_options=storage_options):
+        if file_io.does_file_or_directory_exist(file_path):
             raise ValueError(f"File already exists at path {str(file_path)}")
 
         args = {
@@ -142,4 +137,4 @@ class AlmanacInfo:
         else:
             raise ValueError(f"Unsupported file format {fmt}")
 
-        file_io.write_string_to_file(file_path, encoded_string, storage_options=storage_options)
+        file_io.write_string_to_file(file_path, encoded_string)

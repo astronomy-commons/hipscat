@@ -2,7 +2,6 @@ import dataclasses
 import json
 
 from hipscat.catalog.catalog_info import CatalogInfo
-from hipscat.io import file_io
 
 
 def test_catalog_info(catalog_info_data, assert_catalog_info_matches_dict):

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Dict, Union
 
 from typing_extensions import Self
 from upath import UPath
@@ -46,19 +45,16 @@ class BaseCatalogInfo:
         return formatted_string
 
     @classmethod
-    def read_from_metadata_file(
-        cls, catalog_info_file: UPath, storage_options: Union[Dict[Any, Any], None] = None
-    ) -> Self:
+    def read_from_metadata_file(cls, catalog_info_file: UPath) -> Self:
         """Read catalog info from the `catalog_info.json` metadata file
 
         Args:
             catalog_info_file: UPath pointing to the `catalog_info.json` file
-            storage_options: dictionary that contains abstract filesystem credentials
 
         Returns:
             A CatalogInfo object with the data from the `catalog_info.json` file
         """
-        metadata_keywords = file_io.load_json_file(catalog_info_file, storage_options=storage_options)
+        metadata_keywords = file_io.load_json_file(catalog_info_file)
         catalog_info_keywords = {}
         for field in dataclasses.fields(cls):
             if field.name in metadata_keywords:

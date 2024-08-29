@@ -5,7 +5,6 @@ import pytest
 
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.index.index_catalog_info import IndexCatalogInfo
-from hipscat.io import file_io
 
 
 def test_index_catalog_info(

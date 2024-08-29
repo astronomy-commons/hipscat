@@ -5,7 +5,6 @@ import pytest
 
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCatalogInfo
-from hipscat.io import file_io
 
 
 def test_margin_cache_catalog_info(margin_cache_catalog_info_data, assert_catalog_info_matches_dict):
