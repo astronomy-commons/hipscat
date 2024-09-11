@@ -192,3 +192,32 @@ def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
 
     for frag in dataset.get_fragments():
         yield from frag.row_groups
+
+
+def aggregate_statistics(metadata_file: str, storage_options: dict = None):
+    column_names = []
+
+    total_metadata = file_io.read_parquet_metadata(metadata_file, storage_options)
+    num_row_groups = total_metadata.num_row_groups
+    first_row_group = total_metadata.row_group(0)
+    num_columns = first_row_group.num_columns
+
+    column_names = [first_row_group.column(col).path_in_schema for col in range(0, num_columns)]
+    extrema = [
+        (first_row_group.column(col).statistics.min, first_row_group.column(col).statistics.max)
+        for col in range(0, num_columns)
+    ]
+
+    for row_group_index in range(1, num_row_groups):
+        row_group = total_metadata.row_group(row_group_index)
+        row_extrema = [
+            (row_group.column(col).statistics.min, row_group.column(col).statistics.max)
+            for col in range(0, num_columns)
+        ]
+        extrema = [
+            (min(extrema[col][0], row_extrema[col][0]), max(extrema[col][1], row_extrema[col][1]))
+            for col in range(0, num_columns)
+        ]
+
+    for col in range(0, num_columns):
+        print(f"{column_names[col]} \t\t {extrema[col][0]}\t\t {extrema[col][1]}")

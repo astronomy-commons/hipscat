@@ -11,6 +11,7 @@ from hipscat.io.parquet_metadata import (
     get_healpix_pixel_from_metadata,
     read_row_group_fragments,
     row_group_stat_single_value,
+    aggregate_statistics,
     write_parquet_metadata,
 )
 from hipscat.pixel_math.healpix_pixel import HealpixPixel
@@ -134,6 +135,12 @@ def test_row_group_fragments(small_sky_order1_dir):
         num_row_groups += 1
 
     assert num_row_groups == 4
+
+
+def test_aggregate_statistics(small_sky_order1_dir):
+    partition_info_file = paths.get_parquet_metadata_pointer(small_sky_order1_dir)
+
+    aggregate_statistics(partition_info_file)
 
 
 def test_row_group_fragments_with_dir(small_sky_order1_dir):
