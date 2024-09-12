@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type, Union
+from typing import Type
 
 from upath import UPath
 
