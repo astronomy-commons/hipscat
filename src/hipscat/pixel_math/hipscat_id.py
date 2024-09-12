@@ -4,7 +4,7 @@ Compute the hipscat index field
 This index is defined as a 64-bit integer which has two parts:
     - healpix pixel (at order 19)
     - incrementing counter (within same healpix, for uniqueness)
-    
+
 ::
 
     |------------------------------------------|-------------------|

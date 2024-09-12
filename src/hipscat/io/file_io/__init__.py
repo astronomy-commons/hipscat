@@ -3,7 +3,6 @@ from .file_io import (
     load_csv_to_pandas,
     load_csv_to_pandas_generator,
     load_json_file,
-    load_parquet_to_pandas,
     load_text_file,
     make_directory,
     read_fits_image,
@@ -18,16 +17,11 @@ from .file_io import (
     write_string_to_file,
 )
 from .file_pointer import (
-    FilePointer,
     append_paths_to_pointer,
     directory_has_contents,
     does_file_or_directory_exist,
     find_files_matching_path,
-    get_basename_from_filepointer,
     get_directory_contents,
-    get_file_pointer_for_fs,
-    get_file_pointer_from_path,
-    get_file_protocol,
+    get_upath,
     is_regular_file,
-    strip_leading_slash_for_pyarrow,
 )

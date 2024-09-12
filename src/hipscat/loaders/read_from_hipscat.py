@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Type
+
+from upath import UPath
 
 from hipscat import io
 from hipscat.catalog import AssociationCatalog, Catalog, CatalogType, Dataset, MarginCatalog
@@ -16,11 +19,7 @@ CATALOG_TYPE_TO_CLASS = {
 }
 
 
-def read_from_hipscat(
-    catalog_path: str,
-    catalog_type: CatalogType | None = None,
-    storage_options: dict | None = None,
-) -> Dataset:
+def read_from_hipscat(catalog_path: str | Path | UPath, catalog_type: CatalogType | None = None) -> Dataset:
     """Reads a HiPSCat Catalog from a HiPSCat directory
 
     Args:
@@ -30,26 +29,21 @@ def read_from_hipscat(
             cannot allow a return type specified by a loaded value, so to use the correct return
             type for type checking, the type of the catalog can be specified here. Use by specifying
             the hipscat class for that catalog.
-        storage_options (dict): dictionary that contains abstract filesystem credentials
 
     Returns:
         The initialized catalog object
     """
     catalog_type_to_use = (
-        _read_dataset_class_from_metadata(catalog_path, storage_options=storage_options)
-        if catalog_type is None
-        else catalog_type
+        _read_dataset_class_from_metadata(catalog_path) if catalog_type is None else catalog_type
     )
     loader = _get_loader_from_catalog_type(catalog_type_to_use)
-    return loader.read_from_hipscat(catalog_path, storage_options=storage_options)
+    return loader.read_from_hipscat(catalog_path)
 
 
-def _read_dataset_class_from_metadata(
-    catalog_base_path: str, storage_options: dict | None = None
-) -> CatalogType:
-    catalog_base_dir = io.file_io.get_file_pointer_from_path(catalog_base_path)
+def _read_dataset_class_from_metadata(catalog_base_path: str) -> CatalogType:
+    catalog_base_dir = io.file_io.get_upath(catalog_base_path)
     catalog_info_path = io.paths.get_catalog_info_pointer(catalog_base_dir)
-    catalog_info = BaseCatalogInfo.read_from_metadata_file(catalog_info_path, storage_options=storage_options)
+    catalog_info = BaseCatalogInfo.read_from_metadata_file(catalog_info_path)
     return catalog_info.catalog_type
 
 

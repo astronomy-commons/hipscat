@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import Any, Dict, List, Union
+from typing import List
 
 import pandas as pd
 
@@ -33,14 +33,11 @@ class Almanac:
               catalogs.
     """
 
-    def __init__(
-        self, include_default_dir=True, dirs=None, storage_options: Union[Dict[Any, Any], None] = None
-    ):
+    def __init__(self, include_default_dir=True, dirs=None):
         """Create new almanac."""
         self.files = {}
         self.entries = {}
         self.dir_to_catalog_name = {}
-        self.storage_options = storage_options
         self._init_files(include_default_dir=include_default_dir, dirs=dirs)
         self._init_catalog_objects()
         self._init_catalog_links()
@@ -84,9 +81,7 @@ class Almanac:
                 files.append(input_path)
                 continue
 
-            path_contents = file_pointer.get_directory_contents(
-                input_path, include_protocol=True, storage_options=self.storage_options
-            )
+            path_contents = file_pointer.get_directory_contents(input_path)
             input_paths = [x for x in path_contents if str(x).endswith(".yml")]
             input_paths.sort()
             files.extend(input_paths)
@@ -101,7 +96,7 @@ class Almanac:
         in the previous steps."""
         for namespace, files in self.files.items():
             for file in files:
-                catalog_info = AlmanacInfo.from_file(file, storage_options=self.storage_options)
+                catalog_info = AlmanacInfo.from_file(file)
                 catalog_info.namespace = namespace
                 if namespace:
                     full_name = f"{namespace}:{catalog_info.catalog_name}"
@@ -217,9 +212,9 @@ class Almanac:
             linked_text = self.dir_to_catalog_name[resolved_path]
 
         resolved_name = linked_text
-        if not resolved_name in self.entries:
+        if resolved_name not in self.entries:
             resolved_name = f"{namespace}:{linked_text}"
-            if not resolved_name in self.entries:
+            if resolved_name not in self.entries:
                 return None
         return self.entries[resolved_name]
 
@@ -255,7 +250,4 @@ class Almanac:
 
         This will load the ``catalog_info.join`` and other relevant metadata files
         from disk."""
-        return read_from_hipscat(
-            self.get_almanac_info(catalog_name=catalog_name).catalog_path,
-            storage_options=self.storage_options,
-        )
+        return read_from_hipscat(self.get_almanac_info(catalog_name=catalog_name).catalog_path)

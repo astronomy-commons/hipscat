@@ -2,7 +2,6 @@ import dataclasses
 import json
 
 from hipscat.catalog.catalog_info import CatalogInfo
-from hipscat.io import file_io
 
 
 def test_catalog_info(catalog_info_data, assert_catalog_info_matches_dict):
@@ -28,8 +27,7 @@ def test_str(catalog_info_data):
 
 
 def test_read_from_file(catalog_info_file, assert_catalog_info_matches_dict):
-    cat_info_fp = file_io.get_file_pointer_from_path(catalog_info_file)
-    catalog_info = CatalogInfo.read_from_metadata_file(cat_info_fp)
+    catalog_info = CatalogInfo.read_from_metadata_file(catalog_info_file)
     for column in [
         "catalog_name",
         "catalog_type",

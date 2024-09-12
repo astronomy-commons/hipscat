@@ -7,8 +7,9 @@ from typing import Dict, List
 from urllib.parse import urlencode
 
 from fsspec.implementations.http import HTTPFileSystem
+from upath import UPath
 
-from hipscat.io.file_io.file_pointer import FilePointer, append_paths_to_pointer, get_fs
+from hipscat.io.file_io.file_pointer import get_upath
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 
 ORDER_DIRECTORY_PREFIX = "Norder"
@@ -28,11 +29,11 @@ POINT_MAP_FILENAME = "point_map.fits"
 
 
 def pixel_directory(
-    catalog_base_dir: FilePointer,
+    catalog_base_dir: UPath | None,
     pixel_order: int,
     pixel_number: int | None = None,
     directory_number: int | None = None,
-) -> FilePointer:
+) -> UPath:
     """Create path pointer for a pixel directory. This will not create the directory.
 
     One of pixel_number or directory_number is required. The directory name will
@@ -45,12 +46,12 @@ def pixel_directory(
         (pixel_number/10000)*10000
 
     Args:
-        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
         pixel_order (int): the healpix order of the pixel
         directory_number (int): directory number
         pixel_number (int): the healpix pixel
     Returns:
-        FilePointer directory name
+        UPath directory name
     """
     norder = int(pixel_order)
     if directory_number is not None:
@@ -90,11 +91,10 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
 
 
 def pixel_catalog_files(
-    catalog_base_dir: FilePointer,
+    catalog_base_dir: UPath | None,
     pixels: List[HealpixPixel],
     query_params: Dict | None = None,
-    storage_options: Dict | None = None,
-) -> List[FilePointer]:
+) -> List[UPath]:
     """Create a list of path *pointers* for pixel catalog files. This will not create the directory
     or files.
 
@@ -107,25 +107,27 @@ def pixel_catalog_files(
         (pixel_number/10000)*10000
 
     Args:
-        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
         pixels (List[HealpixPixel]): the healpix pixels to create pointers to
         query_params (dict): Params to append to URL. Ex: {'cols': ['ra', 'dec'], 'fltrs': ['r>=10', 'g<18']}
-        storage_options (dict): the storage options for the file system to target when generating the paths
 
-    Returns (List[FilePointer]):
+    Returns (List[str]):
         A list of paths to the pixels, in the same order as the input pixel list.
     """
-    fs, _ = get_fs(catalog_base_dir, storage_options)
-    base_path_stripped = catalog_base_dir.removesuffix(fs.sep)
+    catalog_base_dir = get_upath(catalog_base_dir)
+    fs = catalog_base_dir.fs
+    base_path = str(catalog_base_dir)
+    if not base_path.endswith(fs.sep):
+        base_path += fs.sep
 
     url_params = ""
     if isinstance(fs, HTTPFileSystem) and query_params:
         url_params = dict_to_query_urlparams(query_params)
 
     return [
-        fs.sep.join(
+        base_path
+        + fs.sep.join(
             [
-                base_path_stripped,
                 f"{ORDER_DIRECTORY_PREFIX}={pixel.order}",
                 f"{DIR_DIRECTORY_PREFIX}={pixel.dir}",
                 f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet" + url_params,
@@ -163,7 +165,9 @@ def dict_to_query_urlparams(query_params: Dict | None = None) -> str:
     return url_params
 
 
-def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_number: int) -> FilePointer:
+def pixel_catalog_file(
+    catalog_base_dir: UPath | None, pixel: HealpixPixel, query_params: Dict | None = None
+) -> UPath:
     """Create path *pointer* for a pixel catalog file. This will not create the directory
     or file.
 
@@ -176,16 +180,23 @@ def pixel_catalog_file(catalog_base_dir: FilePointer, pixel_order: int, pixel_nu
         (pixel_number/10000)*10000
 
     Args:
-        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
-        pixel_order (int): the healpix order of the pixel
-        pixel_number (int): the healpix pixel
+        catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
+        pixel (HealpixPixel): the healpix pixel to create path to
+        query_params (dict): Params to append to URL. Ex: {'cols': ['ra', 'dec'], 'fltrs': ['r>=10', 'g<18']}
     Returns:
         string catalog file name
     """
-    return create_hive_parquet_file_name(
-        catalog_base_dir,
-        [ORDER_DIRECTORY_PREFIX, DIR_DIRECTORY_PREFIX, PIXEL_DIRECTORY_PREFIX],
-        [int(pixel_order), int(pixel_number / 10_000) * 10_000, int(pixel_number)],
+    catalog_base_dir = get_upath(catalog_base_dir)
+
+    url_params = ""
+    if isinstance(catalog_base_dir.fs, HTTPFileSystem) and query_params:
+        url_params = dict_to_query_urlparams(query_params)
+
+    return (
+        catalog_base_dir
+        / f"{ORDER_DIRECTORY_PREFIX}={pixel.order}"
+        / f"{DIR_DIRECTORY_PREFIX}={pixel.dir}"
+        / f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet{url_params}"
     )
 
 
@@ -198,7 +209,7 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
         <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>
 
     Args:
-        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
+        catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
         partition_token_names (list[string]): list of partition name parts.
         partition_token_values (list[string]): list of partition values that
             correspond to the token name parts.
@@ -206,29 +217,10 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
     partition_tokens = [
         f"{name}={value}" for name, value in zip(partition_token_names, partition_token_values)
     ]
-    return append_paths_to_pointer(base_dir, *partition_tokens)
+    return get_upath(base_dir).joinpath(*partition_tokens)
 
 
-def create_hive_parquet_file_name(base_dir, partition_token_names, partition_token_values):
-    """Create path *pointer* for a single parquet with hive partitioning naming.
-
-    The file name will have the form of::
-
-        <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>.parquet
-
-    Args:
-        catalog_base_dir (FilePointer): base directory of the catalog (includes catalog name)
-        partition_token_names (list[string]): list of partition name parts.
-        partition_token_values (list[string]): list of partition values that
-            correspond to the token name parts.
-    """
-    partition_tokens = [
-        f"{name}={value}" for name, value in zip(partition_token_names, partition_token_values)
-    ]
-    return f"{append_paths_to_pointer(base_dir, *partition_tokens)}.parquet"
-
-
-def get_catalog_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_catalog_info_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `catalog_info.json` metadata file
 
     Args:
@@ -236,10 +228,10 @@ def get_catalog_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     Returns:
         File Pointer to the catalog's `catalog_info.json` file
     """
-    return append_paths_to_pointer(catalog_base_dir, CATALOG_INFO_FILENAME)
+    return get_upath(catalog_base_dir) / CATALOG_INFO_FILENAME
 
 
-def get_partition_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_partition_info_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `partition_info.csv` metadata file
 
     Args:
@@ -247,10 +239,10 @@ def get_partition_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     Returns:
         File Pointer to the catalog's `partition_info.csv` file
     """
-    return append_paths_to_pointer(catalog_base_dir, PARTITION_INFO_FILENAME)
+    return get_upath(catalog_base_dir) / PARTITION_INFO_FILENAME
 
 
-def get_provenance_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_provenance_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `provenance_info.json` metadata file
 
     Args:
@@ -258,10 +250,10 @@ def get_provenance_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     Returns:
         File Pointer to the catalog's `provenance_info.json` file
     """
-    return append_paths_to_pointer(catalog_base_dir, PROVENANCE_INFO_FILENAME)
+    return get_upath(catalog_base_dir) / PROVENANCE_INFO_FILENAME
 
 
-def get_common_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_common_metadata_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `_common_metadata` parquet metadata file
 
     Args:
@@ -269,10 +261,10 @@ def get_common_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     Returns:
         File Pointer to the catalog's `_common_metadata` file
     """
-    return append_paths_to_pointer(catalog_base_dir, PARQUET_COMMON_METADATA_FILENAME)
+    return get_upath(catalog_base_dir) / PARQUET_COMMON_METADATA_FILENAME
 
 
-def get_parquet_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_parquet_metadata_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `_metadata` parquet metadata file
 
     Args:
@@ -280,10 +272,10 @@ def get_parquet_metadata_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     Returns:
         File Pointer to the catalog's `_metadata` file
     """
-    return append_paths_to_pointer(catalog_base_dir, PARQUET_METADATA_FILENAME)
+    return get_upath(catalog_base_dir) / PARQUET_METADATA_FILENAME
 
 
-def get_point_map_file_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_point_map_file_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `point_map.fits` FITS image file.
 
     Args:
@@ -291,10 +283,10 @@ def get_point_map_file_pointer(catalog_base_dir: FilePointer) -> FilePointer:
     Returns:
         File Pointer to the catalog's `point_map.fits` FITS image file.
     """
-    return append_paths_to_pointer(catalog_base_dir, POINT_MAP_FILENAME)
+    return get_upath(catalog_base_dir) / POINT_MAP_FILENAME
 
 
-def get_partition_join_info_pointer(catalog_base_dir: FilePointer) -> FilePointer:
+def get_partition_join_info_pointer(catalog_base_dir: UPath) -> UPath:
     """Get file pointer to `partition_join_info.csv` association metadata file
 
     Args:
@@ -302,4 +294,4 @@ def get_partition_join_info_pointer(catalog_base_dir: FilePointer) -> FilePointe
     Returns:
         File Pointer to the catalog's `partition_join_info.csv` association metadata file
     """
-    return append_paths_to_pointer(catalog_base_dir, PARTITION_JOIN_INFO_FILENAME)
+    return get_upath(catalog_base_dir) / PARTITION_JOIN_INFO_FILENAME

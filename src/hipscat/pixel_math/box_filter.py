@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Tuple
+from collections.abc import Iterable
+from typing import List, Tuple
 
 import numpy as np
 from mocpy import MOC

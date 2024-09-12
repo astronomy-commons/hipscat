@@ -2,18 +2,19 @@ from __future__ import annotations
 
 import dataclasses
 import warnings
-from typing import Any, Dict, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
+from upath import UPath
 
 import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 from hipscat.io.file_io import read_parquet_metadata
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, PixelAlignmentType
@@ -43,7 +44,6 @@ class HealpixDataset(Dataset):
         catalog_path: str = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
-        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         """Initializes a Catalog
 
@@ -55,9 +55,8 @@ class HealpixDataset(Dataset):
                 Does not load the catalog from this path, only store as metadata
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
             schema (pa.Schema): The pyarrow schema for the catalog
-            storage_options: dictionary that contains abstract filesystem credentials
         """
-        super().__init__(catalog_info, catalog_path=catalog_path, storage_options=storage_options)
+        super().__init__(catalog_info, catalog_path=catalog_path)
         self.partition_info = self._get_partition_info_from_pixels(pixels)
         self.pixel_tree = self._get_pixel_tree_from_pixels(pixels)
         self.moc = moc
@@ -92,33 +91,25 @@ class HealpixDataset(Dataset):
         raise TypeError("Pixels must be of type PartitionInfo, PixelTree, or List[HealpixPixel]")
 
     @classmethod
-    def _read_args(
-        cls,
-        catalog_base_dir: FilePointer,
-        storage_options: Union[Dict[Any, Any], None] = None,
-    ) -> Tuple[CatalogInfoClass, PartitionInfo]:
-        args = super()._read_args(catalog_base_dir, storage_options=storage_options)
-        partition_info = PartitionInfo.read_from_dir(catalog_base_dir, storage_options=storage_options)
+    def _read_args(cls, catalog_base_dir: UPath) -> Tuple[CatalogInfoClass, PartitionInfo]:
+        args = super()._read_args(catalog_base_dir)
+        partition_info = PartitionInfo.read_from_dir(catalog_base_dir)
         return args + (partition_info,)
 
     @classmethod
-    def _read_kwargs(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-    ) -> dict:
-        kwargs = super()._read_kwargs(catalog_base_dir, storage_options=storage_options)
-        kwargs["moc"] = cls._read_moc_from_point_map(catalog_base_dir, storage_options)
-        kwargs["schema"] = cls._read_schema_from_metadata(catalog_base_dir, storage_options)
+    def _read_kwargs(cls, catalog_base_dir: UPath) -> dict:
+        kwargs = super()._read_kwargs(catalog_base_dir)
+        kwargs["moc"] = cls._read_moc_from_point_map(catalog_base_dir)
+        kwargs["schema"] = cls._read_schema_from_metadata(catalog_base_dir)
         return kwargs
 
     @classmethod
-    def _read_moc_from_point_map(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
-    ) -> MOC | None:
+    def _read_moc_from_point_map(cls, catalog_base_dir: UPath) -> MOC | None:
         """Reads a MOC object from the `point_map.fits` file if it exists in the catalog directory"""
         point_map_path = paths.get_point_map_file_pointer(catalog_base_dir)
-        if not file_io.does_file_or_directory_exist(point_map_path, storage_options=storage_options):
+        if not file_io.does_file_or_directory_exist(point_map_path):
             return None
-        fits_image = file_io.read_fits_image(point_map_path, storage_options=storage_options)
+        fits_image = file_io.read_fits_image(point_map_path)
         order = hp.nside2order(hp.npix2nside(len(fits_image)))
         boolean_skymap = fits_image.astype(bool)
         ipix = np.where(boolean_skymap)[0]
@@ -126,16 +117,12 @@ class HealpixDataset(Dataset):
         return MOC.from_healpix_cells(ipix, orders, order)
 
     @classmethod
-    def _read_schema_from_metadata(
-        cls, catalog_base_dir: FilePointer, storage_options: dict | None = None
-    ) -> pa.Schema | None:
+    def _read_schema_from_metadata(cls, catalog_base_dir: UPath) -> pa.Schema | None:
         """Reads the schema information stored in the _common_metadata or _metadata files."""
         common_metadata_file = paths.get_common_metadata_pointer(catalog_base_dir)
-        common_metadata_exists = file_io.does_file_or_directory_exist(
-            common_metadata_file, storage_options=storage_options
-        )
+        common_metadata_exists = file_io.does_file_or_directory_exist(common_metadata_file)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
-        metadata_exists = file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options)
+        metadata_exists = file_io.does_file_or_directory_exist(metadata_file)
         if not (common_metadata_exists or metadata_exists):
             warnings.warn(
                 "_common_metadata or _metadata files not found for this catalog."
@@ -143,17 +130,17 @@ class HealpixDataset(Dataset):
             )
             return None
         schema_file = common_metadata_file if common_metadata_exists else metadata_file
-        metadata = read_parquet_metadata(schema_file, storage_options=storage_options)
+        metadata = read_parquet_metadata(schema_file)
         return metadata.schema.to_arrow_schema()
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
-        super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
+    def _check_files_exist(cls, catalog_base_dir: UPath):
+        super()._check_files_exist(catalog_base_dir)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         if not (
-            file_io.does_file_or_directory_exist(partition_info_file, storage_options=storage_options)
-            or file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options)
+            file_io.does_file_or_directory_exist(partition_info_file)
+            or file_io.does_file_or_directory_exist(metadata_file)
         ):
             raise FileNotFoundError(
                 f"_metadata or partition info file is required in catalog directory {catalog_base_dir}"
@@ -193,7 +180,7 @@ class HealpixDataset(Dataset):
 
         Returns:
             A new catalog with only the pixels that overlap with the moc. Note that we reset the total_rows
-            to None, as updating would require a scan over the new pixel sizes."""
+        to None, as updating would require a scan over the new pixel sizes."""
         filtered_tree = filter_by_moc(self.pixel_tree, moc)
         filtered_moc = self.moc.intersection(moc) if self.moc is not None else None
         filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)

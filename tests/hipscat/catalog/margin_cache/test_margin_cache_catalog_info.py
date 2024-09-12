@@ -5,7 +5,6 @@ import pytest
 
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.margin_cache.margin_cache_catalog_info import MarginCacheCatalogInfo
-from hipscat.io import file_io
 
 
 def test_margin_cache_catalog_info(margin_cache_catalog_info_data, assert_catalog_info_matches_dict):
@@ -22,8 +21,7 @@ def test_str(margin_cache_catalog_info_data):
 
 
 def test_read_from_file(margin_cache_catalog_info_file, assert_catalog_info_matches_dict):
-    cat_info_fp = file_io.get_file_pointer_from_path(margin_cache_catalog_info_file)
-    catalog_info = MarginCacheCatalogInfo.read_from_metadata_file(cat_info_fp)
+    catalog_info = MarginCacheCatalogInfo.read_from_metadata_file(margin_cache_catalog_info_file)
     for column in [
         "catalog_name",
         "catalog_type",

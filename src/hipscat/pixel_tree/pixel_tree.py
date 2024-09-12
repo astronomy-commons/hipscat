@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Sequence
+from collections.abc import Sequence
+from typing import List
 
 import numpy as np
 from mocpy import MOC

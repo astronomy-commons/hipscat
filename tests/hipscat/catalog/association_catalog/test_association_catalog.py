@@ -57,7 +57,7 @@ def test_read_from_file(
 
     assert isinstance(catalog, AssociationCatalog)
     assert catalog.on_disk
-    assert catalog.catalog_path == str(association_catalog_path)
+    assert catalog.catalog_path == association_catalog_path
     assert len(catalog.get_join_pixels()) == 4
     assert len(catalog.get_healpix_pixels()) == 1
     pd.testing.assert_frame_equal(catalog.get_join_pixels(), association_catalog_join_pixels)

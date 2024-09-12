@@ -5,7 +5,6 @@ import pytest
 
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.source_catalog.source_catalog_info import SourceCatalogInfo
-from hipscat.io import file_io
 
 
 def test_source_catalog_info(
@@ -30,8 +29,7 @@ def test_str(source_catalog_info_with_extra):
 
 
 def test_read_from_file(source_catalog_info_file, assert_catalog_info_matches_dict):
-    cat_info_fp = file_io.get_file_pointer_from_path(source_catalog_info_file)
-    catalog_info = SourceCatalogInfo.read_from_metadata_file(cat_info_fp)
+    catalog_info = SourceCatalogInfo.read_from_metadata_file(source_catalog_info_file)
     for column in [
         "catalog_name",
         "catalog_type",

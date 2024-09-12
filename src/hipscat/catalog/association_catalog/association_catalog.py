@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple, Union
+from typing import Tuple, Union
 
 import pandas as pd
 import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import TypeAlias
+from upath import UPath
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hipscat.catalog.catalog_type import CatalogType
 from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
-from hipscat.io import FilePointer, file_io, paths
+from hipscat.io import file_io, paths
 
 
 class AssociationCatalog(HealpixDataset):
@@ -37,13 +38,10 @@ class AssociationCatalog(HealpixDataset):
         catalog_path=None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
-        storage_options: Union[Dict[Any, Any], None] = None,
     ) -> None:
         if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
             raise ValueError("Catalog info `catalog_type` must be 'association'")
-        super().__init__(
-            catalog_info, pixels, catalog_path, moc=moc, schema=schema, storage_options=storage_options
-        )
+        super().__init__(catalog_info, pixels, catalog_path, moc=moc, schema=schema)
         self.join_info = self._get_partition_join_info_from_pixels(join_pixels)
 
     def get_join_pixels(self) -> pd.DataFrame:
@@ -67,22 +65,20 @@ class AssociationCatalog(HealpixDataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: FilePointer, storage_options: Union[Dict[Any, Any], None] = None
+        cls, catalog_base_dir: UPath
     ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
-        args = super()._read_args(catalog_base_dir, storage_options=storage_options)
-        partition_join_info = PartitionJoinInfo.read_from_dir(
-            catalog_base_dir, storage_options=storage_options
-        )
+        args = super()._read_args(catalog_base_dir)
+        partition_join_info = PartitionJoinInfo.read_from_dir(catalog_base_dir)
         return args + (partition_join_info,)
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: FilePointer, storage_options: dict = None):
-        super()._check_files_exist(catalog_base_dir, storage_options=storage_options)
+    def _check_files_exist(cls, catalog_base_dir: UPath):
+        super()._check_files_exist(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)
         if not (
-            file_io.does_file_or_directory_exist(partition_join_info_file, storage_options=storage_options)
-            or file_io.does_file_or_directory_exist(metadata_file, storage_options=storage_options)
+            file_io.does_file_or_directory_exist(partition_join_info_file)
+            or file_io.does_file_or_directory_exist(metadata_file)
         ):
             raise FileNotFoundError(
                 f"_metadata or partition join info file is required in catalog directory {catalog_base_dir}"

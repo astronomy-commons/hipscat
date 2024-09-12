@@ -1,6 +1,5 @@
 """Utilities for reading and writing catalog files"""
 
-from .file_io import FilePointer, get_file_pointer_from_path
 from .parquet_metadata import (
     read_row_group_fragments,
     row_group_stat_single_value,
@@ -9,7 +8,6 @@ from .parquet_metadata import (
 )
 from .paths import (
     create_hive_directory_name,
-    create_hive_parquet_file_name,
     get_catalog_info_pointer,
     get_common_metadata_pointer,
     get_parquet_metadata_pointer,
