@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Type
+from pathlib import Path
+from typing import Type, Union
+
+from upath import UPath
 
 from hipscat import io
 from hipscat.catalog import AssociationCatalog, Catalog, CatalogType, Dataset, MarginCatalog
@@ -16,7 +19,7 @@ CATALOG_TYPE_TO_CLASS = {
 }
 
 
-def read_from_hipscat(catalog_path: str, catalog_type: CatalogType | None = None) -> Dataset:
+def read_from_hipscat(catalog_path: str | Path | UPath, catalog_type: CatalogType | None = None) -> Dataset:
     """Reads a HiPSCat Catalog from a HiPSCat directory
 
     Args:

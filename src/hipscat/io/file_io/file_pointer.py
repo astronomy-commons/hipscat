@@ -1,9 +1,12 @@
+from __future__ import annotations
+
+from pathlib import Path
 from typing import List
 
 from upath import UPath
 
 
-def get_upath(path) -> UPath:
+def get_upath(path: str | Path | UPath) -> UPath:
     """Returns a file pointer from a path string"""
     if not path:
         return None
