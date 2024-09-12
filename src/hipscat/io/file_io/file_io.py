@@ -293,7 +293,7 @@ def delete_file(file_handle: UPath):
     file_handle.unlink()
 
 
-def read_parquet_file_to_pandas(file_pointer: UPath, **kwargs) -> pd.DataFrame:
+def read_parquet_file_to_pandas(file_pointer: UPath, file_open_kwargs: dict = None, **kwargs) -> pd.DataFrame:
     """Reads a parquet file to a pandas DataFrame
 
     Args:
@@ -304,5 +304,7 @@ def read_parquet_file_to_pandas(file_pointer: UPath, **kwargs) -> pd.DataFrame:
         Pandas DataFrame with the data from the parquet file
     """
     file_pointer = get_upath(file_pointer)
-    with file_pointer.open("rb", **kwargs) as parquet_file:
+    if file_open_kwargs is None:
+        file_open_kwargs = {}
+    with file_pointer.open("rb", **file_open_kwargs) as parquet_file:
         return pd.read_parquet(parquet_file, **kwargs)
