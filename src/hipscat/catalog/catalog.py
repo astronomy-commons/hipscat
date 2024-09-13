@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
@@ -46,7 +47,7 @@ class Catalog(HealpixDataset):
         self,
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
-        catalog_path: UPath = None,
+        catalog_path: str | Path | UPath | None = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
     ) -> None:

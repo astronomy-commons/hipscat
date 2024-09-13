@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import dataclasses
+from pathlib import Path
 from typing import Optional
 
 from upath import UPath
@@ -53,7 +56,7 @@ def create_catalog_info(keywords: dict, catalog_type: Optional[CatalogType] = No
     return ci_class(**catalog_info_keywords)
 
 
-def from_catalog_dir(catalog_base_dir: UPath):
+def from_catalog_dir(catalog_base_dir: str | Path | UPath):
     """Generate a typed catalog info object from the type specified in the
     catalog info file.
 

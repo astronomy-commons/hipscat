@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import warnings
+from pathlib import Path
 
 import numpy as np
 from upath import UPath
@@ -17,7 +20,7 @@ from hipscat.pixel_math.healpix_pixel_function import sort_pixels
 
 # pylint: disable=too-many-statements,too-many-locals
 def is_valid_catalog(
-    pointer: UPath,
+    pointer: str | Path | UPath,
     strict: bool = False,
     fail_fast: bool = False,
     verbose: bool = True,
@@ -151,7 +154,7 @@ def is_valid_catalog(
     return is_valid
 
 
-def is_catalog_info_valid(pointer: UPath) -> bool:
+def is_catalog_info_valid(pointer: str | Path | UPath) -> bool:
     """Checks if catalog_info is valid for a given base catalog pointer
 
     Args:
@@ -168,7 +171,7 @@ def is_catalog_info_valid(pointer: UPath) -> bool:
     return True
 
 
-def is_partition_info_valid(pointer: UPath) -> bool:
+def is_partition_info_valid(pointer: str | Path | UPath) -> bool:
     """Checks if partition_info is valid for a given base catalog pointer
 
     Args:
@@ -182,7 +185,7 @@ def is_partition_info_valid(pointer: UPath) -> bool:
     return partition_info_exists
 
 
-def is_metadata_valid(pointer: UPath) -> bool:
+def is_metadata_valid(pointer: str | Path | UPath) -> bool:
     """Checks if _metadata is valid for a given base catalog pointer
 
     Args:
@@ -196,7 +199,7 @@ def is_metadata_valid(pointer: UPath) -> bool:
     return metadata_file_exists
 
 
-def is_common_metadata_valid(pointer: UPath) -> bool:
+def is_common_metadata_valid(pointer: str | Path | UPath) -> bool:
     """Checks if _common_metadata is valid for a given base catalog pointer
 
     Args:

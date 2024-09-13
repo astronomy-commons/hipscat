@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from pathlib import Path
 from typing import Dict, List
 
 import numpy as np
@@ -71,7 +72,7 @@ class PartitionJoinInfo:
         primary_to_join = dict(primary_to_join)
         return primary_to_join
 
-    def write_to_metadata_files(self, catalog_path: UPath = None):
+    def write_to_metadata_files(self, catalog_path: str | Path | UPath | None = None):
         """Generate parquet metadata, using the known partitions.
 
         Args:
@@ -106,7 +107,7 @@ class PartitionJoinInfo:
 
         return write_parquet_metadata_for_batches(batches, catalog_path)
 
-    def write_to_csv(self, catalog_path: UPath = None):
+    def write_to_csv(self, catalog_path: str | Path | UPath | None = None):
         """Write all partition data to CSV files.
 
         Two files will be written:
@@ -116,7 +117,7 @@ class PartitionJoinInfo:
               join catalogs.
 
         Args:
-            catalog_path: UPath to the directory where the
+            catalog_path: path to the directory where the
                 `partition_join_info.csv` file will be written
 
         Raises:
@@ -136,7 +137,7 @@ class PartitionJoinInfo:
         partition_info.write_to_file(partition_info_file=partition_info_pointer)
 
     @classmethod
-    def read_from_dir(cls, catalog_base_dir: UPath) -> PartitionJoinInfo:
+    def read_from_dir(cls, catalog_base_dir: str | Path | UPath | None = None) -> PartitionJoinInfo:
         """Read partition join info from a file within a hipscat directory.
 
         This will look for a `partition_join_info.csv` file, and if not found, will look for
@@ -167,11 +168,11 @@ class PartitionJoinInfo:
         return cls(pixel_frame, catalog_base_dir)
 
     @classmethod
-    def read_from_file(cls, metadata_file: UPath, strict: bool = False) -> PartitionJoinInfo:
+    def read_from_file(cls, metadata_file: str | Path | UPath, strict: bool = False) -> PartitionJoinInfo:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
-            metadata_file (UPath): UPath to the `_metadata` file
+            metadata_file (UPath): path to the `_metadata` file
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
 
@@ -181,11 +182,13 @@ class PartitionJoinInfo:
         return cls(cls._read_from_metadata_file(metadata_file, strict))
 
     @classmethod
-    def _read_from_metadata_file(cls, metadata_file: UPath, strict: bool = False) -> pd.DataFrame:
+    def _read_from_metadata_file(
+        cls, metadata_file: str | Path | UPath, strict: bool = False
+    ) -> pd.DataFrame:
         """Read partition join info from a `_metadata` file to create an object
 
         Args:
-            metadata_file (UPath): UPath to the `_metadata` file
+            metadata_file (UPath): path to the `_metadata` file
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
 
@@ -256,11 +259,11 @@ class PartitionJoinInfo:
         return pixel_frame
 
     @classmethod
-    def read_from_csv(cls, partition_join_info_file: UPath) -> PartitionJoinInfo:
+    def read_from_csv(cls, partition_join_info_file: str | Path | UPath) -> PartitionJoinInfo:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
-            partition_join_info_file (UPath): UPath to the `partition_join_info.csv` file
+            partition_join_info_file (UPath): path to the `partition_join_info.csv` file
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file
@@ -268,11 +271,11 @@ class PartitionJoinInfo:
         return cls(cls._read_from_csv(partition_join_info_file))
 
     @classmethod
-    def _read_from_csv(cls, partition_join_info_file: UPath) -> pd.DataFrame:
+    def _read_from_csv(cls, partition_join_info_file: str | Path | UPath) -> pd.DataFrame:
         """Read partition join info from a `partition_join_info.csv` file to create an object
 
         Args:
-            partition_join_info_file (UPath): UPath to the `partition_join_info.csv` file
+            partition_join_info_file (UPath): path to the `partition_join_info.csv` file
 
         Returns:
             A `PartitionJoinInfo` object with the data from the file

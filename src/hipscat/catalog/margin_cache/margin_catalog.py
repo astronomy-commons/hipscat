@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
+from upath import UPath
 
 import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.catalog_type import CatalogType
@@ -29,7 +32,7 @@ class MarginCatalog(HealpixDataset):
         self,
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
-        catalog_path: str = None,
+        catalog_path: str | Path | UPath | None = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
     ) -> None:

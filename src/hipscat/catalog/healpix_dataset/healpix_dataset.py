@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import warnings
+from pathlib import Path
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -41,7 +42,7 @@ class HealpixDataset(Dataset):
         self,
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
-        catalog_path: str = None,
+        catalog_path: str | Path | UPath | None = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
     ) -> None:
@@ -91,20 +92,20 @@ class HealpixDataset(Dataset):
         raise TypeError("Pixels must be of type PartitionInfo, PixelTree, or List[HealpixPixel]")
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: UPath) -> Tuple[CatalogInfoClass, PartitionInfo]:
+    def _read_args(cls, catalog_base_dir: str | Path | UPath) -> Tuple[CatalogInfoClass, PartitionInfo]:
         args = super()._read_args(catalog_base_dir)
         partition_info = PartitionInfo.read_from_dir(catalog_base_dir)
         return args + (partition_info,)
 
     @classmethod
-    def _read_kwargs(cls, catalog_base_dir: UPath) -> dict:
+    def _read_kwargs(cls, catalog_base_dir: str | Path | UPath) -> dict:
         kwargs = super()._read_kwargs(catalog_base_dir)
         kwargs["moc"] = cls._read_moc_from_point_map(catalog_base_dir)
         kwargs["schema"] = cls._read_schema_from_metadata(catalog_base_dir)
         return kwargs
 
     @classmethod
-    def _read_moc_from_point_map(cls, catalog_base_dir: UPath) -> MOC | None:
+    def _read_moc_from_point_map(cls, catalog_base_dir: str | Path | UPath) -> MOC | None:
         """Reads a MOC object from the `point_map.fits` file if it exists in the catalog directory"""
         point_map_path = paths.get_point_map_file_pointer(catalog_base_dir)
         if not file_io.does_file_or_directory_exist(point_map_path):
@@ -117,7 +118,7 @@ class HealpixDataset(Dataset):
         return MOC.from_healpix_cells(ipix, orders, order)
 
     @classmethod
-    def _read_schema_from_metadata(cls, catalog_base_dir: UPath) -> pa.Schema | None:
+    def _read_schema_from_metadata(cls, catalog_base_dir: str | Path | UPath) -> pa.Schema | None:
         """Reads the schema information stored in the _common_metadata or _metadata files."""
         common_metadata_file = paths.get_common_metadata_pointer(catalog_base_dir)
         common_metadata_exists = file_io.does_file_or_directory_exist(common_metadata_file)
@@ -134,7 +135,7 @@ class HealpixDataset(Dataset):
         return metadata.schema.to_arrow_schema()
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: UPath):
+    def _check_files_exist(cls, catalog_base_dir: str | Path | UPath):
         super()._check_files_exist(catalog_base_dir)
         partition_info_file = paths.get_partition_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)

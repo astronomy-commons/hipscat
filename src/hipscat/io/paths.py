@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlencode
 
@@ -29,7 +30,7 @@ POINT_MAP_FILENAME = "point_map.fits"
 
 
 def pixel_directory(
-    catalog_base_dir: UPath | None,
+    catalog_base_dir: str | Path | UPath | None,
     pixel_order: int,
     pixel_number: int | None = None,
     directory_number: int | None = None,
@@ -91,7 +92,7 @@ def get_healpix_from_path(path: str) -> HealpixPixel:
 
 
 def pixel_catalog_files(
-    catalog_base_dir: UPath | None,
+    catalog_base_dir: str | Path | UPath | None,
     pixels: List[HealpixPixel],
     query_params: Dict | None = None,
 ) -> List[UPath]:
@@ -166,7 +167,7 @@ def dict_to_query_urlparams(query_params: Dict | None = None) -> str:
 
 
 def pixel_catalog_file(
-    catalog_base_dir: UPath | None, pixel: HealpixPixel, query_params: Dict | None = None
+    catalog_base_dir: str | Path | UPath | None, pixel: HealpixPixel, query_params: Dict | None = None
 ) -> UPath:
     """Create path *pointer* for a pixel catalog file. This will not create the directory
     or file.
@@ -220,7 +221,7 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
     return get_upath(base_dir).joinpath(*partition_tokens)
 
 
-def get_catalog_info_pointer(catalog_base_dir: UPath) -> UPath:
+def get_catalog_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `catalog_info.json` metadata file
 
     Args:
@@ -231,7 +232,7 @@ def get_catalog_info_pointer(catalog_base_dir: UPath) -> UPath:
     return get_upath(catalog_base_dir) / CATALOG_INFO_FILENAME
 
 
-def get_partition_info_pointer(catalog_base_dir: UPath) -> UPath:
+def get_partition_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `partition_info.csv` metadata file
 
     Args:
@@ -242,7 +243,7 @@ def get_partition_info_pointer(catalog_base_dir: UPath) -> UPath:
     return get_upath(catalog_base_dir) / PARTITION_INFO_FILENAME
 
 
-def get_provenance_pointer(catalog_base_dir: UPath) -> UPath:
+def get_provenance_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `provenance_info.json` metadata file
 
     Args:
@@ -253,7 +254,7 @@ def get_provenance_pointer(catalog_base_dir: UPath) -> UPath:
     return get_upath(catalog_base_dir) / PROVENANCE_INFO_FILENAME
 
 
-def get_common_metadata_pointer(catalog_base_dir: UPath) -> UPath:
+def get_common_metadata_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `_common_metadata` parquet metadata file
 
     Args:
@@ -264,7 +265,7 @@ def get_common_metadata_pointer(catalog_base_dir: UPath) -> UPath:
     return get_upath(catalog_base_dir) / PARQUET_COMMON_METADATA_FILENAME
 
 
-def get_parquet_metadata_pointer(catalog_base_dir: UPath) -> UPath:
+def get_parquet_metadata_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `_metadata` parquet metadata file
 
     Args:
@@ -275,7 +276,7 @@ def get_parquet_metadata_pointer(catalog_base_dir: UPath) -> UPath:
     return get_upath(catalog_base_dir) / PARQUET_METADATA_FILENAME
 
 
-def get_point_map_file_pointer(catalog_base_dir: UPath) -> UPath:
+def get_point_map_file_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `point_map.fits` FITS image file.
 
     Args:
@@ -286,7 +287,7 @@ def get_point_map_file_pointer(catalog_base_dir: UPath) -> UPath:
     return get_upath(catalog_base_dir) / POINT_MAP_FILENAME
 
 
-def get_partition_join_info_pointer(catalog_base_dir: UPath) -> UPath:
+def get_partition_join_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `partition_join_info.csv` association metadata file
 
     Args:

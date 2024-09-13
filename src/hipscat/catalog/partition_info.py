@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -49,15 +50,15 @@ class PartitionInfo:
 
     def write_to_file(
         self,
-        partition_info_file: UPath = None,
-        catalog_path: UPath = None,
+        partition_info_file: str | Path | UPath | None = None,
+        catalog_path: str | Path | UPath | None = None,
     ):
         """Write all partition data to CSV file.
 
         If no paths are provided, the catalog base directory from the `read_from_dir` call is used.
 
         Args:
-            partition_info_file: UPath to where the `partition_info.csv`
+            partition_info_file: path to where the `partition_info.csv`
                 file will be written.
             catalog_path: base directory for a catalog where the `partition_info.csv`
                 file will be written.
@@ -75,7 +76,7 @@ class PartitionInfo:
 
         file_io.write_dataframe_to_csv(self.as_dataframe(), partition_info_file, index=False)
 
-    def write_to_metadata_files(self, catalog_path: UPath = None):
+    def write_to_metadata_files(self, catalog_path: str | Path | UPath | None = None):
         """Generate parquet metadata, using the known partitions.
 
         If no catalog_path is provided, the catalog base directory from the `read_from_dir` call is used.
@@ -111,7 +112,7 @@ class PartitionInfo:
         return write_parquet_metadata_for_batches(batches, catalog_path)
 
     @classmethod
-    def read_from_dir(cls, catalog_base_dir: UPath) -> PartitionInfo:
+    def read_from_dir(cls, catalog_base_dir: str | Path | UPath | None) -> PartitionInfo:
         """Read partition info from a file within a hipscat directory.
 
         This will look for a `partition_info.csv` file, and if not found, will look for
@@ -142,11 +143,11 @@ class PartitionInfo:
         return cls(pixel_list, catalog_base_dir)
 
     @classmethod
-    def read_from_file(cls, metadata_file: UPath, strict: bool = False) -> PartitionInfo:
+    def read_from_file(cls, metadata_file: str | Path | UPath, strict: bool = False) -> PartitionInfo:
         """Read partition info from a `_metadata` file to create an object
 
         Args:
-            metadata_file (UPath): UPath to the `_metadata` file
+            metadata_file (UPath): path to the `_metadata` file
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
 
@@ -156,11 +157,13 @@ class PartitionInfo:
         return cls(cls._read_from_metadata_file(metadata_file, strict))
 
     @classmethod
-    def _read_from_metadata_file(cls, metadata_file: UPath, strict: bool = False) -> List[HealpixPixel]:
+    def _read_from_metadata_file(
+        cls, metadata_file: str | Path | UPath, strict: bool = False
+    ) -> List[HealpixPixel]:
         """Read partition info list from a `_metadata` file.
 
         Args:
-            metadata_file (UPath): UPath to the `_metadata` file
+            metadata_file (UPath): path to the `_metadata` file
             strict (bool): use strict parsing of _metadata file. this is slower, but
                 gives more helpful error messages in the case of invalid data.
 
@@ -208,11 +211,11 @@ class PartitionInfo:
         return list(dict.fromkeys(pixel_list))
 
     @classmethod
-    def read_from_csv(cls, partition_info_file: UPath) -> PartitionInfo:
+    def read_from_csv(cls, partition_info_file: str | Path | UPath) -> PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
-            partition_info_file (UPath): UPath to the `partition_info.csv` file
+            partition_info_file (UPath): path to the `partition_info.csv` file
 
         Returns:
             A `PartitionInfo` object with the data from the file
@@ -220,11 +223,11 @@ class PartitionInfo:
         return cls(cls._read_from_csv(partition_info_file))
 
     @classmethod
-    def _read_from_csv(cls, partition_info_file: UPath) -> PartitionInfo:
+    def _read_from_csv(cls, partition_info_file: str | Path | UPath) -> PartitionInfo:
         """Read partition info from a `partition_info.csv` file to create an object
 
         Args:
-            partition_info_file (UPath): UPath to the `partition_info.csv` file
+            partition_info_file (UPath): path to the `partition_info.csv` file
 
         Returns:
             A `PartitionInfo` object with the data from the file
