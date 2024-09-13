@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
+from pathlib import Path
 
 from typing_extensions import Self
 from upath import UPath
@@ -45,11 +46,11 @@ class BaseCatalogInfo:
         return formatted_string
 
     @classmethod
-    def read_from_metadata_file(cls, catalog_info_file: UPath) -> Self:
+    def read_from_metadata_file(cls, catalog_info_file: str | Path | UPath) -> Self:
         """Read catalog info from the `catalog_info.json` metadata file
 
         Args:
-            catalog_info_file: UPath pointing to the `catalog_info.json` file
+            catalog_info_file: path pointing to the `catalog_info.json` file
 
         Returns:
             A CatalogInfo object with the data from the `catalog_info.json` file

@@ -1,5 +1,7 @@
 """Utility functions for writing metadata files"""
 
+from __future__ import annotations
+
 import dataclasses
 import json
 from datetime import datetime
@@ -35,7 +37,7 @@ class HipscatEncoder(json.JSONEncoder):
         return super().default(o)  # pragma: no cover
 
 
-def write_json_file(metadata_dictionary: dict, file_pointer: UPath):
+def write_json_file(metadata_dictionary: dict, file_pointer: str | Path | UPath):
     """Convert metadata_dictionary to a json string and print to file.
 
     Args:
@@ -59,7 +61,7 @@ def write_catalog_info(catalog_base_dir, dataset_info):
     write_json_file(metadata, catalog_info_pointer)
 
 
-def write_provenance_info(catalog_base_dir: UPath, dataset_info, tool_args: dict):
+def write_provenance_info(catalog_base_dir: str | Path | UPath, dataset_info, tool_args: dict):
     """Write a provenance_info.json file with all assorted catalog creation metadata
 
     Args:
@@ -79,7 +81,7 @@ def write_provenance_info(catalog_base_dir: UPath, dataset_info, tool_args: dict
     write_json_file(metadata, metadata_pointer)
 
 
-def write_partition_info(catalog_base_dir: UPath, destination_healpix_pixel_map: dict):
+def write_partition_info(catalog_base_dir: str | Path | UPath, destination_healpix_pixel_map: dict):
     """Write all partition data to CSV file.
 
     Args:

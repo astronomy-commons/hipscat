@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Tuple, Union
 
 import pandas as pd
@@ -65,14 +66,14 @@ class AssociationCatalog(HealpixDataset):
 
     @classmethod
     def _read_args(
-        cls, catalog_base_dir: UPath
+        cls, catalog_base_dir: str | Path | UPath
     ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_dir(catalog_base_dir)
         return args + (partition_join_info,)
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: UPath):
+    def _check_files_exist(cls, catalog_base_dir: str | Path | UPath):
         super()._check_files_exist(catalog_base_dir)
         partition_join_info_file = paths.get_partition_join_info_pointer(catalog_base_dir)
         metadata_file = paths.get_parquet_metadata_pointer(catalog_base_dir)

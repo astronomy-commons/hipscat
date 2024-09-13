@@ -4,6 +4,7 @@ import json
 import tempfile
 import warnings
 from collections.abc import Generator
+from pathlib import Path
 from typing import Any, Tuple
 
 import numpy as np
@@ -18,7 +19,7 @@ import hipscat.pixel_math.healpix_shim as hp
 from hipscat.io.file_io.file_pointer import get_upath
 
 
-def make_directory(file_pointer: UPath, exist_ok: bool = False):
+def make_directory(file_pointer: str | Path | UPath, exist_ok: bool = False):
     """Make a directory at a given file pointer
 
     Will raise an error if a directory already exists, unless `exist_ok` is True in which case
@@ -45,7 +46,7 @@ def _rmdir_recursive(directory):
     directory.rmdir()
 
 
-def remove_directory(file_pointer: UPath, ignore_errors=False):
+def remove_directory(file_pointer: str | Path | UPath, ignore_errors=False):
     """Remove a directory, and all contents, recursively.
 
     Args:
@@ -63,7 +64,7 @@ def remove_directory(file_pointer: UPath, ignore_errors=False):
         _rmdir_recursive(file_pointer)
 
 
-def write_string_to_file(file_pointer: UPath, string: str, encoding: str = "utf-8"):
+def write_string_to_file(file_pointer: str | Path | UPath, string: str, encoding: str = "utf-8"):
     """Write a string to a text file
 
     Args:
@@ -76,7 +77,7 @@ def write_string_to_file(file_pointer: UPath, string: str, encoding: str = "utf-
         _file.write(string)
 
 
-def load_text_file(file_pointer: UPath, encoding: str = "utf-8"):
+def load_text_file(file_pointer: str | Path | UPath, encoding: str = "utf-8"):
     """Load a text file content to a list of strings.
 
     Args:
@@ -92,7 +93,7 @@ def load_text_file(file_pointer: UPath, encoding: str = "utf-8"):
     return text_file
 
 
-def load_json_file(file_pointer: UPath, encoding: str = "utf-8") -> dict:
+def load_json_file(file_pointer: str | Path | UPath, encoding: str = "utf-8") -> dict:
     """Load a json file to a dictionary
 
     Args:
@@ -109,7 +110,7 @@ def load_json_file(file_pointer: UPath, encoding: str = "utf-8") -> dict:
     return json_dict
 
 
-def load_csv_to_pandas(file_pointer: UPath, **kwargs) -> pd.DataFrame:
+def load_csv_to_pandas(file_pointer: str | Path | UPath, **kwargs) -> pd.DataFrame:
     """Load a csv file to a pandas dataframe
 
     Args:
@@ -124,7 +125,9 @@ def load_csv_to_pandas(file_pointer: UPath, **kwargs) -> pd.DataFrame:
     return frame
 
 
-def load_csv_to_pandas_generator(file_pointer: UPath, chunksize=10_000, **kwargs) -> Generator[pd.DataFrame]:
+def load_csv_to_pandas_generator(
+    file_pointer: str | Path | UPath, chunksize=10_000, **kwargs
+) -> Generator[pd.DataFrame]:
     """Load a csv file to a pandas dataframe
     Args:
         file_pointer: location of csv file to load
@@ -139,7 +142,7 @@ def load_csv_to_pandas_generator(file_pointer: UPath, chunksize=10_000, **kwargs
             yield from reader
 
 
-def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: UPath, **kwargs):
+def write_dataframe_to_csv(dataframe: pd.DataFrame, file_pointer: str | Path | UPath, **kwargs):
     """Write a pandas DataFrame to a CSV file
 
     Args:
@@ -162,7 +165,7 @@ def write_dataframe_to_parquet(dataframe: pd.DataFrame, file_pointer):
     dataframe.to_parquet(file_pointer.path, filesystem=file_pointer.fs)
 
 
-def read_parquet_metadata(file_pointer: UPath, **kwargs) -> pq.FileMetaData:
+def read_parquet_metadata(file_pointer: str | Path | UPath, **kwargs) -> pq.FileMetaData:
     """Read FileMetaData from footer of a single Parquet file.
 
     Args:
@@ -176,7 +179,7 @@ def read_parquet_metadata(file_pointer: UPath, **kwargs) -> pq.FileMetaData:
     return parquet_file
 
 
-def read_parquet_dataset(source: UPath, **kwargs) -> Tuple[UPath, Dataset]:
+def read_parquet_dataset(source: str | Path | UPath, **kwargs) -> Tuple[UPath, Dataset]:
     """Read parquet dataset from directory pointer or list of files.
 
     Note that pyarrow.dataset reads require that directory pointers don't contain a
@@ -213,7 +216,7 @@ def read_parquet_dataset(source: UPath, **kwargs) -> Tuple[UPath, Dataset]:
 
 
 def write_parquet_metadata(
-    schema: Any, file_pointer: UPath, metadata_collector: list | None = None, **kwargs
+    schema: Any, file_pointer: str | Path | UPath, metadata_collector: list | None = None, **kwargs
 ):
     """Write a metadata only parquet file from a schema
 
@@ -229,7 +232,7 @@ def write_parquet_metadata(
     )
 
 
-def read_fits_image(map_file_pointer: UPath):
+def read_fits_image(map_file_pointer: str | Path | UPath):
     """Read the object spatial distribution information from a healpix FITS file.
 
     Args:
@@ -256,7 +259,7 @@ def read_fits_image(map_file_pointer: UPath):
             return map_fits_image[0]
 
 
-def write_fits_image(histogram: np.ndarray, map_file_pointer: UPath):
+def write_fits_image(histogram: np.ndarray, map_file_pointer: str | Path | UPath):
     """Write the object spatial distribution information to a healpix FITS file.
 
     Args:
@@ -271,7 +274,7 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: UPath):
             _map_file.write(_tmp_file.read())
 
 
-def read_yaml(file_handle: UPath):
+def read_yaml(file_handle: str | Path | UPath):
     """Reads yaml file from filesystem.
 
     Args:
@@ -283,7 +286,7 @@ def read_yaml(file_handle: UPath):
     return metadata
 
 
-def delete_file(file_handle: UPath):
+def delete_file(file_handle: str | Path | UPath):
     """Deletes file from filesystem.
 
     Args:
@@ -293,7 +296,9 @@ def delete_file(file_handle: UPath):
     file_handle.unlink()
 
 
-def read_parquet_file_to_pandas(file_pointer: UPath, file_open_kwargs: dict = None, **kwargs) -> pd.DataFrame:
+def read_parquet_file_to_pandas(
+    file_pointer: str | Path | UPath, file_open_kwargs: dict = None, **kwargs
+) -> pd.DataFrame:
     """Reads a parquet file to a pandas DataFrame
 
     Args:

@@ -15,7 +15,7 @@ def get_upath(path: str | Path | UPath) -> UPath:
     return UPath(path)
 
 
-def append_paths_to_pointer(pointer: UPath, *paths: str) -> UPath:
+def append_paths_to_pointer(pointer: str | Path | UPath, *paths: str) -> UPath:
     """Append directories and/or a file name to a specified file pointer.
 
     Args:
@@ -30,7 +30,7 @@ def append_paths_to_pointer(pointer: UPath, *paths: str) -> UPath:
     return pointer.joinpath(*paths)
 
 
-def does_file_or_directory_exist(pointer: UPath) -> bool:
+def does_file_or_directory_exist(pointer: str | Path | UPath) -> bool:
     """Checks if a file or directory exists for a given file pointer
 
     Args:
@@ -43,7 +43,7 @@ def does_file_or_directory_exist(pointer: UPath) -> bool:
     return pointer.exists()
 
 
-def is_regular_file(pointer: UPath) -> bool:
+def is_regular_file(pointer: str | Path | UPath) -> bool:
     """Checks if a regular file (NOT a directory) exists for a given file pointer.
 
     Args:
@@ -56,7 +56,7 @@ def is_regular_file(pointer: UPath) -> bool:
     return pointer.is_file()
 
 
-def find_files_matching_path(pointer: UPath, *paths: str) -> List[UPath]:
+def find_files_matching_path(pointer: str | Path | UPath, *paths: str) -> List[UPath]:
     """Find files or directories matching the provided path parts.
 
     Args:
@@ -83,7 +83,7 @@ def find_files_matching_path(pointer: UPath, *paths: str) -> List[UPath]:
     return contents
 
 
-def directory_has_contents(pointer: UPath) -> bool:
+def directory_has_contents(pointer: str | Path | UPath) -> bool:
     """Checks if a directory already has some contents (any files or subdirectories)
 
     Args:
@@ -96,7 +96,7 @@ def directory_has_contents(pointer: UPath) -> bool:
     return len(find_files_matching_path(pointer, "*")) > 0
 
 
-def get_directory_contents(pointer: UPath) -> List[UPath]:
+def get_directory_contents(pointer: str | Path | UPath) -> List[UPath]:
     """Finds all files and directories in the specified directory.
 
     NB: This is not recursive, and will return only the first level of directory contents.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Tuple
 
 from typing_extensions import Self
@@ -15,7 +16,9 @@ class Dataset:
 
     CatalogInfoClass = BaseCatalogInfo
 
-    def __init__(self, catalog_info: CatalogInfoClass, catalog_path=None) -> None:
+    def __init__(
+        self, catalog_info: CatalogInfoClass, catalog_path: str | Path | UPath | None = None
+    ) -> None:
         """Initializes a Dataset
 
         Args:
@@ -34,7 +37,7 @@ class Dataset:
         self.catalog_base_dir = file_io.get_upath(self.catalog_path)
 
     @classmethod
-    def read_from_hipscat(cls, catalog_path: UPath | str) -> Self:
+    def read_from_hipscat(cls, catalog_path: str | Path | UPath) -> Self:
         """Reads a HiPSCat Catalog from a HiPSCat directory
 
         Args:
@@ -50,17 +53,17 @@ class Dataset:
         return cls(*args, **kwargs)
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: UPath) -> Tuple[CatalogInfoClass]:
+    def _read_args(cls, catalog_base_dir: str | Path | UPath) -> Tuple[CatalogInfoClass]:
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
         catalog_info = cls.CatalogInfoClass.read_from_metadata_file(catalog_info_file)
         return (catalog_info,)
 
     @classmethod
-    def _read_kwargs(cls, catalog_base_dir: UPath) -> dict:
+    def _read_kwargs(cls, catalog_base_dir: str | Path | UPath) -> dict:
         return {"catalog_path": catalog_base_dir}
 
     @classmethod
-    def _check_files_exist(cls, catalog_base_dir: UPath):
+    def _check_files_exist(cls, catalog_base_dir: str | Path | UPath):
         if not file_io.does_file_or_directory_exist(catalog_base_dir):
             raise FileNotFoundError(f"No directory exists at {str(catalog_base_dir)}")
         catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
