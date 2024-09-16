@@ -16,7 +16,7 @@ from hipscat.io.paths import pixel_catalog_files
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_tree import PixelAlignment, align_trees
 from hipscat.pixel_tree.pixel_tree import PixelTree
-from hipscat.io.parquet_metadata import aggregate_statistics
+
 
 def time_test_alignment_even_sky():
     """Create alignment from an even distribution at order 7"""
@@ -126,6 +126,3 @@ class MetadataSuite:
 
     def time_load_partition_join_info(self, cache):
         PartitionInfo.read_from_dir(cache[2])
-
-    def time_aggregate_statistics(self, cache):
-        aggregate_statistics(cache[0] + "/_metadata")
