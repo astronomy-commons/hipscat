@@ -5,7 +5,6 @@ import pytest
 
 from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hipscat.catalog.catalog_type import CatalogType
-from hipscat.io import file_io
 
 
 def test_association_catalog_info(association_catalog_info_data, assert_catalog_info_matches_dict):
@@ -22,8 +21,7 @@ def test_str(association_catalog_info_data):
 
 
 def test_read_from_file(association_catalog_info_file, assert_catalog_info_matches_dict):
-    cat_info_fp = file_io.get_file_pointer_from_path(association_catalog_info_file)
-    catalog_info = AssociationCatalogInfo.read_from_metadata_file(cat_info_fp)
+    catalog_info = AssociationCatalogInfo.read_from_metadata_file(association_catalog_info_file)
     for column in [
         "catalog_name",
         "catalog_type",

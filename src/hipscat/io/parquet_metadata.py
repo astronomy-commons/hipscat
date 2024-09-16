@@ -1,15 +1,19 @@
 """Utility functions for handling parquet metadata files"""
 
+from __future__ import annotations
+
 import tempfile
-from typing import Any, Dict, List, Union
+from pathlib import Path
+from typing import List
 
 import numpy as np
 import pyarrow as pa
 import pyarrow.dataset as pds
 import pyarrow.parquet as pq
+from upath import UPath
 
 from hipscat.io import file_io, paths
-from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
+from hipscat.io.file_io.file_pointer import get_upath
 from hipscat.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 from hipscat.pixel_math.healpix_pixel_function import get_pixel_argsort
 
@@ -73,10 +77,9 @@ def get_healpix_pixel_from_metadata(
 
 
 def write_parquet_metadata(
-    catalog_path: str,
+    catalog_path: str | Path | UPath,
     order_by_healpix=True,
-    output_path: str = None,
-    storage_options: Union[Dict[Any, Any], None] = None,
+    output_path: str | Path | UPath | None = None,
 ):
     """Generate parquet metadata, using the already-partitioned parquet files
     for this catalog.
@@ -88,7 +91,6 @@ def write_parquet_metadata(
         catalog_path (str): base path for the catalog
         order_by_healpix (bool): use False if the dataset is not to be reordered by
             breadth-first healpix pixel (e.g. secondary indexes)
-        storage_options: dictionary that contains abstract filesystem credentials
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
 
@@ -101,9 +103,9 @@ def write_parquet_metadata(
         "_metadata",
     ]
 
+    catalog_path = get_upath(catalog_path)
     (dataset_path, dataset) = file_io.read_parquet_dataset(
         catalog_path,
-        storage_options=storage_options,
         ignore_prefixes=ignore_prefixes,
         exclude_invalid_files=True,
     )
@@ -112,12 +114,11 @@ def write_parquet_metadata(
     healpix_pixels = []
     total_rows = 0
 
-    for hips_file in dataset.files:
-        hips_file_pointer = file_io.get_file_pointer_from_path(hips_file, include_protocol=catalog_path)
-        single_metadata = file_io.read_parquet_metadata(hips_file_pointer, storage_options=storage_options)
+    for single_file in dataset.files:
+        relative_path = single_file[len(dataset_path) + 1 :]
+        single_metadata = file_io.read_parquet_metadata(catalog_path / relative_path)
 
         # Users must set the file path of each chunk before combining the metadata.
-        relative_path = hips_file[len(dataset_path) :]
         single_metadata.set_file_path(relative_path)
 
         if order_by_healpix:
@@ -135,7 +136,7 @@ def write_parquet_metadata(
     if order_by_healpix:
         argsort = get_pixel_argsort(healpix_pixels)
         metadata_collector = np.array(metadata_collector)[argsort]
-    catalog_base_dir = file_io.get_file_pointer_from_path(output_path)
+    catalog_base_dir = file_io.get_upath(output_path)
     metadata_file_pointer = paths.get_parquet_metadata_pointer(catalog_base_dir)
     common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
@@ -144,17 +145,12 @@ def write_parquet_metadata(
         metadata_file_pointer,
         metadata_collector=metadata_collector,
         write_statistics=True,
-        storage_options=storage_options,
     )
-    file_io.write_parquet_metadata(
-        dataset.schema, common_metadata_file_pointer, storage_options=storage_options
-    )
+    file_io.write_parquet_metadata(dataset.schema, common_metadata_file_pointer)
     return total_rows
 
 
-def write_parquet_metadata_for_batches(
-    batches: List[List[pa.RecordBatch]], output_path: str = None, storage_options: dict = None
-):
+def write_parquet_metadata_for_batches(batches: List[List[pa.RecordBatch]], output_path: str = None):
     """Write parquet metadata files for some pyarrow table batches.
     This writes the batches to a temporary parquet dataset using local storage, and
     generates the metadata for the partitioned catalog parquet files.
@@ -164,7 +160,6 @@ def write_parquet_metadata_for_batches(
             into tables by the inner list.
         output_path (str): base path for writing out metadata files
             defaults to `catalog_path` if unspecified
-        storage_options: dictionary that contains abstract filesystem credentials
 
     Returns:
         sum of the number of rows in the dataset.
@@ -174,21 +169,20 @@ def write_parquet_metadata_for_batches(
         for batch_list in batches:
             temp_info_table = pa.Table.from_batches(batch_list)
             pq.write_to_dataset(temp_info_table, temp_pq_file)
-        return write_parquet_metadata(temp_pq_file, storage_options=storage_options, output_path=output_path)
+        return write_parquet_metadata(temp_pq_file, output_path=output_path)
 
 
-def read_row_group_fragments(metadata_file: str, storage_options: dict = None):
+def read_row_group_fragments(metadata_file: str):
     """Generator for metadata fragment row groups in a parquet metadata file.
 
     Args:
         metadata_file (str): path to `_metadata` file.
-        storage_options: dictionary that contains abstract filesystem credentials
     """
-    if not file_io.is_regular_file(metadata_file, storage_options=storage_options):
+    metadata_file = get_upath(metadata_file)
+    if not file_io.is_regular_file(metadata_file):
         metadata_file = paths.get_parquet_metadata_pointer(metadata_file)
-    file_system, file_pointer = get_fs(file_pointer=metadata_file, storage_options=storage_options)
-    file_pointer = strip_leading_slash_for_pyarrow(file_pointer, file_system.protocol)
-    dataset = pds.parquet_dataset(file_pointer, filesystem=file_system)
+
+    dataset = pds.parquet_dataset(metadata_file, filesystem=metadata_file.fs)
 
     for frag in dataset.get_fragments():
         yield from frag.row_groups

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pyarrow as pa
 from mocpy import MOC
 from typing_extensions import Self, TypeAlias
+from upath import UPath
 
 import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.catalog_type import CatalogType
@@ -29,10 +32,9 @@ class MarginCatalog(HealpixDataset):
         self,
         catalog_info: CatalogInfoClass,
         pixels: PixelInputTypes,
-        catalog_path: str = None,
+        catalog_path: str | Path | UPath | None = None,
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
-        storage_options: dict | None = None,
     ) -> None:
         """Initializes a Margin Catalog
 
@@ -44,7 +46,6 @@ class MarginCatalog(HealpixDataset):
                 Does not load the catalog from this path, only store as metadata
             moc (mocpy.MOC): MOC object representing the coverage of the catalog
             schema (pa.Schema): The pyarrow schema for the catalog
-            storage_options: dictionary that contains abstract filesystem credentials
         """
         if catalog_info.catalog_type != CatalogType.MARGIN:
             raise ValueError(f"Catalog info `catalog_type` must equal {CatalogType.MARGIN}")
@@ -54,7 +55,6 @@ class MarginCatalog(HealpixDataset):
             catalog_path=catalog_path,
             moc=moc,
             schema=schema,
-            storage_options=storage_options,
         )
 
     def filter_by_moc(self, moc: MOC) -> Self:
@@ -70,7 +70,8 @@ class MarginCatalog(HealpixDataset):
         Returns:
             A new margin catalog with only the pixels that overlap or that have margin area that overlap with
             the moc. Note that we reset the total_rows to None, as updating would require a scan over the new
-            pixel sizes."""
+            pixel sizes.
+        """
         max_order = moc.max_order
         max_order_size = hp.nside2resol(2**max_order, arcmin=True)
         if self.catalog_info.margin_threshold > max_order_size * 60:

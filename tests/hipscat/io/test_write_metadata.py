@@ -1,10 +1,9 @@
 """Tests of file IO (reads and writes)"""
 
-from pathlib import Path
-
 import numpy as np
 import numpy.testing as npt
 import pytest
+from upath import UPath
 
 import hipscat.io.write_metadata as io
 import hipscat.pixel_math as hist
@@ -56,11 +55,10 @@ def test_write_json_file(assert_text_file_matches, tmp_path):
 
 
 def test_write_json_paths(assert_text_file_matches, tmp_path):
-    pathlib_path = Path(tmp_path)
-    file_pointer = file_io.FilePointer(tmp_path)
+    pathlib_path = UPath(tmp_path)
     dictionary = {}
     dictionary["pathlib_path"] = pathlib_path
-    dictionary["file_pointer"] = file_pointer
+    dictionary["file_pointer"] = tmp_path
     dictionary["first_greek"] = "alpha"
     expected_lines = [
         "{\n",

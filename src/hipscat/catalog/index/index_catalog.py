@@ -8,7 +8,8 @@ from typing_extensions import TypeAlias
 from hipscat.catalog.dataset import Dataset
 from hipscat.catalog.index import IndexCatalogInfo
 from hipscat.io import paths
-from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
+
+# from hipscat.io.file_io.file_pointer import get_fs, strip_leading_slash_for_pyarrow
 from hipscat.pixel_math import HealpixPixel
 from hipscat.pixel_math.healpix_pixel_function import get_pixel_argsort
 
@@ -32,12 +33,7 @@ class IndexCatalog(Dataset):
             that may contain rows for the id values
         """
         metadata_file = paths.get_parquet_metadata_pointer(self.catalog_base_dir)
-        file_system, metadata_file = get_fs(file_pointer=metadata_file, storage_options=self.storage_options)
-
-        # pyarrow.dataset requires the pointer not lead with a slash
-        metadata_file = strip_leading_slash_for_pyarrow(metadata_file, file_system.protocol)
-
-        dataset = pds.parquet_dataset(metadata_file, filesystem=file_system)
+        dataset = pds.parquet_dataset(metadata_file, filesystem=metadata_file.fs)
 
         # There's a lot happening in a few pyarrow dataset methods:
         # We create a simple pyarrow expression that roughly corresponds to a SQL statement like
