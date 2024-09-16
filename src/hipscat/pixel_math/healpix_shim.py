@@ -46,10 +46,6 @@ def ring2nest(*args, **kwargs):
     return hp.ring2nest(*args, **kwargs)
 
 
-def nest2ring(*args, **kwargs):
-    return hp.nest2ring(*args, **kwargs)
-
-
 def unseen_pixel():
     return hp.pixelfunc.UNSEEN
 

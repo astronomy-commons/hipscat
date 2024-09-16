@@ -154,9 +154,6 @@ faces).
 #### Implementation
 Pretty straightforward implementation of the algorithm above.
 
-### pixel_is_polar
-Because of the nature of spherical coordinate systems, hipscat runs into some tricky edge cases at the poles. To ensure we can appropriately handle those problems, we need to check if a pixel is one of the four 'polar pixels'.
-
 #### Algorithm
 In the ring id scheme for `healpix`, the first and last 4 pixels are the polar pixels. To determine whether a nest scheme pixel is at the poles, all we have to do is convert the pixel into the ring scheme and determine if it falls at the beginning or end of the range 0 -> npix. So, if in the ring scheme the pix is `<= 3`, or `>= npix - 4`, we can safely assume that it is a polar pixel.
 
