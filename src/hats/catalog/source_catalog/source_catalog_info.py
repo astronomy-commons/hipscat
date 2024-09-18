@@ -1,4 +1,4 @@
-"""Catalog Info for a HiPSCat Source (detection/timeseries) table"""
+"""Catalog Info for a HATS Source (detection/timeseries) table"""
 
 from dataclasses import dataclass
 
@@ -8,7 +8,7 @@ from hats.catalog.catalog_type import CatalogType
 
 @dataclass
 class SourceCatalogInfo(CatalogInfo):
-    """Catalog Info for a HiPSCat Source (detection/timeseries) table.
+    """Catalog Info for a HATS Source (detection/timeseries) table.
 
     Includes some optional specification for timeseries-level columns.
     """

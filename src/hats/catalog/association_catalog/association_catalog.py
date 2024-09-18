@@ -17,7 +17,7 @@ from hats.io import file_io, paths
 
 
 class AssociationCatalog(HealpixDataset):
-    """A HiPSCat Catalog for enabling fast joins between two HiPSCat catalogs
+    """A HATS Catalog for enabling fast joins between two HATS catalogs
 
     Catalogs of this type are partitioned based on the partitioning of the left catalog.
     The `partition_join_info` metadata file specifies all pairs of pixels in the Association

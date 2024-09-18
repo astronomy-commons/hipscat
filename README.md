@@ -1,6 +1,6 @@
 <img src="https://github.com/astronomy-commons/lsdb/blob/main/docs/lincc-logo.png?raw=true" width="300" height="100">
 
-# HiPSCat
+# HATS
 
 [![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/stable/)
 
@@ -12,9 +12,9 @@
 [![Read the Docs](https://img.shields.io/readthedocs/hats)](https://hats.readthedocs.io/)
 [![benchmarks](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hats/asv-main.yml?label=benchmarks)](https://astronomy-commons.github.io/hats/)
 
-## Hierarchical Progressive Survey Catalog
+## Hierarchal Adaptive Tiling Scheme
 
-A HiPSCat catalog is a partitioning of objects on a sphere. Its purpose is for 
+A HATS catalog is a partitioning of objects on a sphere. Its purpose is for 
 storing data from large astronomy surveys, but could probably be used for other 
 use cases where you have large data with some spherical properties.
 
@@ -23,7 +23,7 @@ for more information on partitioning, installation, and contributing.
 
 See related projects:
 
-* HiPSCat Import ([on GitHub](https://github.com/astronomy-commons/hats-import))
+* HATS Import ([on GitHub](https://github.com/astronomy-commons/hats-import))
   ([on ReadTheDocs](https://hats-import.readthedocs.io/en/stable/))
 * LSDB ([on GitHub](https://github.com/astronomy-commons/lsdb)) 
   ([on ReadTheDocs](https://lsdb.readthedocs.io/en/stable/))

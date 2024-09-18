@@ -52,7 +52,7 @@ def test_write_to_file_load_almanac(tmp_path, small_sky_dir):
 
 def test_write_to_bad_file(tmp_path, small_sky_dir):
     """Test failure conditions when writing almanac."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = str(tmp_path)
+    os.environ["HATS_ALMANAC_DIR"] = str(tmp_path)
     almanac_info = AlmanacInfo.from_catalog_dir(small_sky_dir)
 
     with pytest.raises(ValueError, match="only one"):

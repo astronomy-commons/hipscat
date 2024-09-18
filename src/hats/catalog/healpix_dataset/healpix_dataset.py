@@ -27,7 +27,7 @@ PixelInputTypes = Union[PartitionInfo, PixelTree, List[HealpixPixel]]
 
 
 class HealpixDataset(Dataset):
-    """A HiPSCat dataset partitioned with a HEALPix partitioning structure.
+    """A HATS dataset partitioned with a HEALPix partitioning structure.
 
     Catalogs of this type are partitioned based on the ra and dec of the points with each partition
     containing points within a given HEALPix pixel. The files are in the form::

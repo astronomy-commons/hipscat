@@ -1,4 +1,4 @@
-"""Catalog Info for a HiPSCat Margin cache table"""
+"""Catalog Info for a HATS Margin cache table"""
 
 from dataclasses import dataclass
 
@@ -8,7 +8,7 @@ from hats.catalog.catalog_type import CatalogType
 
 @dataclass
 class MarginCacheCatalogInfo(CatalogInfo):
-    """Catalog Info for a HiPSCat Margin Cache table"""
+    """Catalog Info for a HATS Margin Cache table"""
 
     primary_catalog: str = None
     """Reference to object or source catalog"""

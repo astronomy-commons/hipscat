@@ -1,4 +1,4 @@
-catalog_path: $HIPSCAT_DEFAULT_DIR/small_sky_order1_margin
+catalog_path: $HATS_DEFAULT_DIR/small_sky_order1_margin
 catalog_name: small_sky_order1_margin
 catalog_type: margin
 creators: []

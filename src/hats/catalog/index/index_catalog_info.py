@@ -1,4 +1,4 @@
-"""Catalog Info for a HiPSCat Index table"""
+"""Catalog Info for a HATS Index table"""
 
 from dataclasses import dataclass, field
 from typing import List
@@ -9,7 +9,7 @@ from hats.catalog.dataset.base_catalog_info import BaseCatalogInfo
 
 @dataclass
 class IndexCatalogInfo(BaseCatalogInfo):
-    """Catalog Info for a HiPSCat Index table"""
+    """Catalog Info for a HATS Index table"""
 
     primary_catalog: str = None
     """Reference to object or source catalog"""

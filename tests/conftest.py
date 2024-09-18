@@ -368,7 +368,7 @@ def association_catalog_join_pixels() -> pd.DataFrame:
 @pytest.fixture
 def default_almanac(almanac_dir, test_data_dir):
     """Set up default environment variables and fetch default almanac data."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = str(almanac_dir)
-    os.environ["HIPSCAT_DEFAULT_DIR"] = str(test_data_dir)
+    os.environ["HATS_ALMANAC_DIR"] = str(almanac_dir)
+    os.environ["HATS_DEFAULT_DIR"] = str(test_data_dir)
 
     return Almanac()

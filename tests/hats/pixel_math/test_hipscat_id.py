@@ -6,7 +6,7 @@ import pytest
 
 import hats.pixel_math.healpix_shim as hp
 from hats.pixel_math.hipscat_id import (
-    HIPSCAT_ID_HEALPIX_ORDER,
+    SPATIAL_INDEX_ORDER,
     compute_hipscat_id,
     healpix_to_hipscat_id,
     hipscat_id_to_healpix,
@@ -140,9 +140,9 @@ def test_hipscat_id_to_healpix_low_order():
 def test_healpix_to_hipscat_id_single():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
-    pixels_at_high_order = [p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)]
+    pixels_at_high_order = [p * (4 ** (SPATIAL_INDEX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
-        [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
+        [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
     actual_hipscat_ids = compute_hipscat_id(lon, lat)
     test_hipscat_ids = [healpix_to_hipscat_id(o, p) for o, p in zip(orders, pixels)]
@@ -152,9 +152,9 @@ def test_healpix_to_hipscat_id_single():
 def test_healpix_to_hipscat_id_array():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
-    pixels_at_high_order = [p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)]
+    pixels_at_high_order = [p * (4 ** (SPATIAL_INDEX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
-        [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
+        [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
     actual_hipscat_ids = compute_hipscat_id(lon, lat)
     test_hipscat_ids = healpix_to_hipscat_id(orders, pixels)
@@ -165,9 +165,9 @@ def test_healpix_to_hipscat_id_offset():
     orders = [3, 3, 4, 1]
     pixels = [0, 0, 1231, 11]
     offsets = [0, 1, 0, 0]
-    pixels_at_high_order = [p * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - o)) for o, p in zip(orders, pixels)]
+    pixels_at_high_order = [p * (4 ** (SPATIAL_INDEX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
-        [2**HIPSCAT_ID_HEALPIX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
+        [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
     actual_hipscat_ids = compute_hipscat_id(lon, lat)
     test_hipscat_ids = healpix_to_hipscat_id(orders, pixels, offsets)

@@ -24,8 +24,8 @@ import numpy as np
 
 import hats.pixel_math.healpix_shim as hp
 
-HIPSCAT_ID_COLUMN = "_healpix_29"
-HIPSCAT_ID_HEALPIX_ORDER = 19
+SPATIAL_INDEX_COLUMN = "_healpix_29"
+SPATIAL_INDEX_ORDER = 19
 HIPSCAT_ID_MAX = 2**64 - 1
 
 
@@ -45,7 +45,7 @@ def compute_hipscat_id(ra_values: List[float], dec_values: List[float]) -> np.nd
 
     ## Construct the bit-shifted healpix segment
     value_count = len(ra_values)
-    mapped_pixels = hp.ang2pix(2**HIPSCAT_ID_HEALPIX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
+    mapped_pixels = hp.ang2pix(2**SPATIAL_INDEX_ORDER, ra_values, dec_values, nest=True, lonlat=True)
 
     ## We sort to put pixels next to each other that will need to be counted.
     ## This simplifies the counter logic, as we can subtract the index where
@@ -67,18 +67,18 @@ def compute_hipscat_id(ra_values: List[float], dec_values: List[float]) -> np.nd
 
 
 def _compute_hipscat_id_from_mapped_pixels(mapped_pixels, offset_counter):
-    shifted_pixels = mapped_pixels.astype(np.uint64) << np.uint64(64 - (4 + 2 * HIPSCAT_ID_HEALPIX_ORDER))
+    shifted_pixels = mapped_pixels.astype(np.uint64) << np.uint64(64 - (4 + 2 * SPATIAL_INDEX_ORDER))
     shifted_pixels = shifted_pixels + offset_counter
     return shifted_pixels
 
 
-def hipscat_id_to_healpix(ids: List[int], target_order: int = HIPSCAT_ID_HEALPIX_ORDER) -> np.ndarray:
+def hipscat_id_to_healpix(ids: List[int], target_order: int = SPATIAL_INDEX_ORDER) -> np.ndarray:
     """Convert some hipscat ids to the healpix pixel at the specified order
     This is just bit-shifting the counter away.
 
     Args:
         ids (List[int64]): list of well-formatted hipscat ids
-        target_order (int64): Defaults to `HIPSCAT_ID_HEALPIX_ORDER`.
+        target_order (int64): Defaults to `SPATIAL_INDEX_ORDER`.
             The order of the pixel to get from the hipscat ids.
     Returns:
         numpy array of target_order pixels from the hipscat id
@@ -106,6 +106,6 @@ def healpix_to_hipscat_id(
     order = np.uint64(order)
     pixel = np.uint64(pixel)
     counter = np.uint64(counter)
-    pixel_higher_order = pixel * (4 ** (HIPSCAT_ID_HEALPIX_ORDER - order))
+    pixel_higher_order = pixel * (4 ** (SPATIAL_INDEX_ORDER - order))
     hipscat_id = _compute_hipscat_id_from_mapped_pixels(pixel_higher_order, counter)
     return hipscat_id

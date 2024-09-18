@@ -12,7 +12,7 @@ from hats.pixel_math.healpix_pixel_function import get_pixels_from_intervals
 
 
 class PixelTree:
-    """Sparse Quadtree of HEALPix pixels that make up the HiPSCat catalog
+    """Sparse Quadtree of HEALPix pixels that make up the HATS catalog
 
     This class stores each node in the tree, with leaf nodes corresponding to pixels with data
     files.

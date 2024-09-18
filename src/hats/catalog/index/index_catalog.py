@@ -13,9 +13,9 @@ from hats.pixel_math.healpix_pixel_function import get_pixel_argsort
 
 
 class IndexCatalog(Dataset):
-    """An index into HiPSCat Catalog for enabling fast lookups on non-spatial values.
+    """An index into HATS Catalog for enabling fast lookups on non-spatial values.
 
-    Note that this is not a true "HiPScat Catalog", as it is not partitioned spatially.
+    Note that this is not a true "HATS Catalog", as it is not partitioned spatially.
     """
 
     CatalogInfoClass: TypeAlias = IndexCatalogInfo

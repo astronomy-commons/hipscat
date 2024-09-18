@@ -1,7 +1,7 @@
 import pytest
 
 from hats.pixel_math.healpix_pixel import HealpixPixel
-from hats.pixel_math.hipscat_id import HIPSCAT_ID_HEALPIX_ORDER
+from hats.pixel_math.hipscat_id import SPATIAL_INDEX_ORDER
 
 
 def test_pixels_equal():
@@ -104,7 +104,7 @@ def test_convert_higher_order_fails_above_limit():
     pixel = 3
     pixel = HealpixPixel(order, pixel)
     with pytest.raises(ValueError):
-        pixel.convert_to_higher_order(HIPSCAT_ID_HEALPIX_ORDER - order + 1)
+        pixel.convert_to_higher_order(SPATIAL_INDEX_ORDER - order + 1)
 
 
 def test_convert_higher_order_fails_negative():

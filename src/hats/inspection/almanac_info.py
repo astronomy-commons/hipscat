@@ -50,25 +50,25 @@ class AlmanacInfo:
             if self.catalog_info and "join_catalog" in self.catalog_info and not self.join:
                 self.join = self.catalog_info["join_catalog"]
 
-        ## Allows use of $HIPSCAT_DEFAULT_DIR in paths
+        ## Allows use of $HATS_DEFAULT_DIR in paths
         self.catalog_path = os.path.expandvars(self.catalog_path)
 
     @staticmethod
     def get_default_dir() -> str:
         """Fetch the default directory for environment variables.
 
-        This is set via the environment variable: HIPSCAT_ALMANAC_DIR
+        This is set via the environment variable: HATS_ALMANAC_DIR
 
         To set this in a linux-like environment, use a command like::
 
-            export HIPSCAT_ALMANAC_DIR=/data/path/to/almanacs
+            export HATS_ALMANAC_DIR=/data/path/to/almanacs
 
         This will also attempt to expand any environment variables WITHIN the default
         directory environment variable. This can be useful in cases where::
 
-            $HIPSCAT_ALMANAC_DIR=$HIPSCAT_DEFAULT_DIR/almanacs/
+            $HATS_ALMANAC_DIR=$HATS_DEFAULT_DIR/almanacs/
         """
-        default_dir = os.environ.get("HIPSCAT_ALMANAC_DIR", "")
+        default_dir = os.environ.get("HATS_ALMANAC_DIR", "")
         if default_dir:
             default_dir = os.path.expandvars(default_dir)
         return default_dir

@@ -1,4 +1,4 @@
-catalog_path: $HIPSCAT_DEFAULT_DIR/small_sky_source
+catalog_path: $HATS_DEFAULT_DIR/small_sky_source
 catalog_name: small_sky_source
 catalog_type: source
 catalog_info:

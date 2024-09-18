@@ -1,6 +1,6 @@
 catalog_name: small_sky
 catalog_type: object
-catalog_path: $HIPSCAT_DEFAULT_DIR/small_sky
+catalog_path: $HATS_DEFAULT_DIR/small_sky
 catalog_info:
   catalog_name: small_sky
   catalog_type: object

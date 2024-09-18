@@ -11,7 +11,7 @@ def test_read_hats_wrong_catalog_type(small_sky_dir):
         read_hats(small_sky_dir, catalog_type="unknown")
 
 
-def test_read_hipscat_branches(
+def test_read_hats_branches(
     small_sky_dir,
     small_sky_order1_dir,
     association_catalog_path,

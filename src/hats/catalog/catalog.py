@@ -29,7 +29,7 @@ from hats.pixel_tree.negative_tree import compute_negative_tree_pixels
 
 
 class Catalog(HealpixDataset):
-    """A HiPSCat Catalog with data stored in a HEALPix Hive partitioned structure
+    """A HATS Catalog with data stored in a HEALPix Hive partitioned structure
 
     Catalogs of this type are partitioned spatially, contain `partition_info` metadata specifying
     the pixels in Catalog, and on disk conform to the parquet partitioning structure

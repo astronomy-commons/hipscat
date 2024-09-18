@@ -20,7 +20,7 @@ CATALOG_TYPE_TO_CLASS = {
 
 
 def read_hats(catalog_path: str | Path | UPath, catalog_type: CatalogType | None = None) -> Dataset:
-    """Reads a HiPSCat Catalog from a HiPSCat directory
+    """Reads a HATS Catalog from a HATS directory
 
     Args:
         catalog_path (str): path to the root directory of the catalog

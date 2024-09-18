@@ -7,23 +7,23 @@ from hats.inspection.almanac import Almanac
 
 def test_default(almanac_dir, test_data_dir):
     """Test loading from a default directory"""
-    os.environ["HIPSCAT_DEFAULT_DIR"] = str(test_data_dir)
+    os.environ["HATS_DEFAULT_DIR"] = str(test_data_dir)
 
     alms = Almanac(include_default_dir=True)
     assert len(alms.catalogs()) == 0
 
-    os.environ["HIPSCAT_ALMANAC_DIR"] = str(almanac_dir)
+    os.environ["HATS_ALMANAC_DIR"] = str(almanac_dir)
     alms = Almanac(include_default_dir=True)
     assert len(alms.catalogs()) == 7
 
-    os.environ.pop("HIPSCAT_ALMANAC_DIR")
+    os.environ.pop("HATS_ALMANAC_DIR")
     alms = Almanac(include_default_dir=True)
     assert len(alms.catalogs()) == 0
 
 
 def test_non_default(almanac_dir, test_data_dir):
     """Test loading with explicit (non-default) almanac base directory."""
-    os.environ["HIPSCAT_DEFAULT_DIR"] = str(test_data_dir)
+    os.environ["HATS_DEFAULT_DIR"] = str(test_data_dir)
 
     alms = Almanac(include_default_dir=False)
     assert len(alms.catalogs()) == 0
@@ -46,8 +46,8 @@ def test_non_default(almanac_dir, test_data_dir):
 
 def test_namespaced(almanac_dir, test_data_dir):
     """Test that we can add duplicate catalogs, so long as we add a namespace."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = str(almanac_dir)
-    os.environ["HIPSCAT_DEFAULT_DIR"] = str(test_data_dir)
+    os.environ["HATS_ALMANAC_DIR"] = str(almanac_dir)
+    os.environ["HATS_DEFAULT_DIR"] = str(test_data_dir)
 
     with pytest.warns(match="Duplicate"):
         Almanac(include_default_dir=True, dirs=almanac_dir)

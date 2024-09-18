@@ -15,7 +15,7 @@ from hats.pixel_tree.moc_utils import copy_moc
 
 
 class MarginCatalog(HealpixDataset):
-    """A HiPSCat Catalog used to contain the 'margin' of another HiPSCat catalog.
+    """A HATS Catalog used to contain the 'margin' of another HATS catalog.
 
     Catalogs of this type are used alongside a primary catalog, and contains the margin points for each
     HEALPix pixel - any points that are within a certain distance from the HEALPix pixel boundary. This is

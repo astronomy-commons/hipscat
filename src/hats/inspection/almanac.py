@@ -18,7 +18,7 @@ class Almanac:
 
     Params:
         include_default_dir:
-            include directory indicated in HIPSCAT_ALMANAC_DIR
+            include directory indicated in HATS_ALMANAC_DIR
             environment variable. see AlmanacInfo.get_default_dir
         dirs:
             additional directories or files to look for almanac files in. we support a
@@ -48,7 +48,7 @@ class Almanac:
         Each almanac file corresponds to a single catalog.
 
         Args:
-            include_default_dir: include directory indicated in HIPSCAT_ALMANAC_DIR
+            include_default_dir: include directory indicated in HATS_ALMANAC_DIR
                 environment variable. see AlmanacInfo.get_default_dir
             dirs: additional directories to look for almanac files in
         """

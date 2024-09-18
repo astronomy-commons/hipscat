@@ -11,7 +11,7 @@ from hats.io import file_io, paths
 
 
 class Dataset:
-    """A base HiPSCat dataset that contains a catalog_info metadata file
+    """A base HATS dataset that contains a catalog_info metadata file
     and the data contained in parquet files"""
 
     CatalogInfoClass = BaseCatalogInfo
@@ -38,7 +38,7 @@ class Dataset:
 
     @classmethod
     def read_hats(cls, catalog_path: str | Path | UPath) -> Self:
-        """Reads a HiPSCat Catalog from a HiPSCat directory
+        """Reads a HATS Catalog from a HATS directory
 
         Args:
             catalog_path: path to the root directory of the catalog

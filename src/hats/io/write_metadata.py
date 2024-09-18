@@ -16,7 +16,7 @@ from hats.io import file_io, paths
 from hats.pixel_math.healpix_pixel import HealpixPixel
 
 
-class HipscatEncoder(json.JSONEncoder):
+class HatsEncoder(json.JSONEncoder):
     """Special json encoder for types commonly encountered with hats.
 
     NB: This will only be used by JSON encoding when encountering a type
@@ -44,7 +44,7 @@ def write_json_file(metadata_dictionary: dict, file_pointer: str | Path | UPath)
         metadata_dictionary (:obj:`dictionary`): a dictionary of key-value pairs
         file_pointer (str): destination for the json file
     """
-    dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=HipscatEncoder)
+    dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=HatsEncoder)
     file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
 
 

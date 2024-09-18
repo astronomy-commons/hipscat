@@ -5,7 +5,7 @@ from typing import List
 
 import numpy as np
 
-from hats.pixel_math.hipscat_id import HIPSCAT_ID_HEALPIX_ORDER
+from hats.pixel_math.hipscat_id import SPATIAL_INDEX_ORDER
 
 
 @dataclass(eq=True, frozen=True, order=True)
@@ -24,8 +24,8 @@ class HealpixPixel:
             order: HEALPix order
             pixel: HEALPix pixel number in NESTED ordering scheme
         """
-        if self.order > HIPSCAT_ID_HEALPIX_ORDER:
-            raise ValueError(f"HEALPix order cannot be greater than {HIPSCAT_ID_HEALPIX_ORDER}")
+        if self.order > SPATIAL_INDEX_ORDER:
+            raise ValueError(f"HEALPix order cannot be greater than {SPATIAL_INDEX_ORDER}")
 
     def __str__(self) -> str:
         return f"Order: {self.order}, Pixel: {self.pixel}"
@@ -131,8 +131,8 @@ def get_higher_order_pixels(order: int, pixel: int, delta_order: int) -> np.ndar
     """
     if order == -1:
         return np.arange(0, 12)
-    if order + delta_order > HIPSCAT_ID_HEALPIX_ORDER:
-        raise ValueError(f"Pixel Order cannot be above maximum order {HIPSCAT_ID_HEALPIX_ORDER}")
+    if order + delta_order > SPATIAL_INDEX_ORDER:
+        raise ValueError(f"Pixel Order cannot be above maximum order {SPATIAL_INDEX_ORDER}")
     if delta_order < 0:
         raise ValueError("delta order cannot be below zero")
     new_pixels = np.arange(pixel << (2 * delta_order), (pixel + 1) << (2 * delta_order))

@@ -8,7 +8,7 @@ from hats.catalog.dataset.base_catalog_info import BaseCatalogInfo
 
 @dataclass
 class AssociationCatalogInfo(BaseCatalogInfo):
-    """Catalog Info for a HiPSCat Association Catalog"""
+    """Catalog Info for a HATS Association Catalog"""
 
     primary_catalog: str | None = None
     """Catalog name for the primary (left) side of association"""

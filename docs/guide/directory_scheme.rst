@@ -1,4 +1,4 @@
-HiPSCat Directory Scheme
+HATS Directory Scheme
 ===============================================================================
 
 Partitioning Scheme
@@ -20,6 +20,8 @@ structure:
 .. code-block:: 
         
     __ /path/to/catalogs/<catalog_name>/
+       |__ _common_metadata
+       |__ _metadata
        |__ catalog_info.json
        |__ partition_info.csv
        |__ Norder=1/
