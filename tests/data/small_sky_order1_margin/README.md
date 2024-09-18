@@ -6,8 +6,8 @@ allowing spatial operations to be performed efficiently and accurately.
 This catalog was generated using the following snippet:
 
 ```
-from hipscat_import.margin_cache.margin_cache_arguments import MarginCacheArguments
-from hipscat_import.margin_cache import generate_margin_cache
+from _import.margin_cache.margin_cache_arguments import MarginCacheArguments
+from _import.margin_cache import generate_margin_cache
 
 margin_args = MarginCacheArguments(
     margin_threshold=7200,

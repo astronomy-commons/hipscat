@@ -1,12 +1,12 @@
 # Pixel Math Appendix
-A reference document for the various utility functions of `hipscat/pixel_math`.
+A reference document for the various utility functions of `hats/pixel_math`.
 
 ## Pixel Margins
 The functions made to find the pixels that make up the border region of a given 
 healpixel. Primarly used as a way to speed up the neighbor/margin caching code 
-for [hipscat-import](https://github.com/astronomy-commons/hipscat-import/). Code 
+for [hats-import](https://github.com/astronomy-commons/hats-import/). Code 
 originally created by Mario Juric for HIPS, found 
-[here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hipscat/healpix.py).
+[here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hats/healpix.py).
 
 ### get_edge
 Given a pixel pix at some order, return all
@@ -210,10 +210,10 @@ Visually, in bits:
 This provides us with an increasing index, that will not overlap
 between spatially partitioned data files.
 
-### compute_hipscat_id
+### compute_hats_id
 
 For a given list of coordinates, compute the HiPSCat ID s.t. coordinates in the
-same order 19 pixel are appended with a counter to make a unique hipscat_id.
+same order 19 pixel are appended with a counter to make a unique hats_id.
 
 For the example, we'll work with the following simplified hex numbers to help 
 illustrate: `[0xbeee, 0xbeef, 0xbeee, 0xfeed, 0xbeef]`
@@ -267,7 +267,7 @@ e.g.
 [0x5F7700000, 0x5F7700001, 0x5F7780000, 0x5F7780001, 0x7F7680000]
 ```
 
-And finally, we unsort the array to get back the hipscat ids in the order the 
+And finally, we unsort the array to get back the hats ids in the order the 
 coordinates were provided.
 
 `[0x5F7700000, 0x5F7780000, 0x5F7700001, 0x7F7680000, 0x5F7780001]`

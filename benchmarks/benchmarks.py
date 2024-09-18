@@ -7,15 +7,15 @@ import os
 
 import numpy as np
 
-import hipscat.pixel_math as hist
-import hipscat.pixel_math.healpix_shim as hp
-from hipscat.catalog import Catalog, PartitionInfo
-from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
-from hipscat.catalog.catalog_info import CatalogInfo
-from hipscat.io.paths import pixel_catalog_files
-from hipscat.pixel_math import HealpixPixel
-from hipscat.pixel_tree import PixelAlignment, align_trees
-from hipscat.pixel_tree.pixel_tree import PixelTree
+import hats.pixel_math as hist
+import hats.pixel_math.healpix_shim as hp
+from hats.catalog import Catalog, PartitionInfo
+from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
+from hats.catalog.catalog_info import CatalogInfo
+from hats.io.paths import pixel_catalog_files
+from hats.pixel_math import HealpixPixel
+from hats.pixel_tree import PixelAlignment, align_trees
+from hats.pixel_tree.pixel_tree import PixelTree
 
 
 def time_test_alignment_even_sky():
