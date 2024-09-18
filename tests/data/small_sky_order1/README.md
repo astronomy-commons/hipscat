@@ -10,12 +10,12 @@ be useful for confirming reads/writes over multiple leaf partition files.
 This catalog was generated with the following snippet:
 
 ```
-import hipscat_import.pipeline as runner
-from hipscat_import.catalog.arguments import ImportArguments
+import hats_import.pipeline as runner
+from hats_import.catalog.arguments import ImportArguments
 
 def create_order1():
     args = ImportArguments(
-        input_path="tests/hipscat_import/data/small_sky",
+        input_path="tests/hats_import/data/small_sky",
         output_path="tests/data",
         input_format="csv",
         output_artifact_name="small_sky_order1",

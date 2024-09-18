@@ -7,13 +7,13 @@ import pandas as pd
 import pyarrow as pa
 import pytest
 
-from hipscat.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
-from hipscat.catalog.association_catalog.partition_join_info import PartitionJoinInfo
-from hipscat.catalog.catalog_info import CatalogInfo
-from hipscat.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hipscat.catalog.margin_cache import MarginCacheCatalogInfo
-from hipscat.inspection.almanac import Almanac
-from hipscat.pixel_math import HealpixPixel
+from hats.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
+from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
+from hats.catalog.catalog_info import CatalogInfo
+from hats.catalog.dataset.base_catalog_info import BaseCatalogInfo
+from hats.catalog.margin_cache import MarginCacheCatalogInfo
+from hats.inspection.almanac import Almanac
+from hats.pixel_math import HealpixPixel
 
 DATA_DIR_NAME = "data"
 ALMANAC_DIR_NAME = "almanac"
@@ -178,7 +178,7 @@ def small_sky_schema() -> pa.Schema:
             pa.field("Norder", pa.uint8()),
             pa.field("Dir", pa.uint64()),
             pa.field("Npix", pa.uint64()),
-            pa.field("_hipscat_index", pa.uint64()),
+            pa.field("_healpix_29", pa.uint64()),
         ]
     )
 
@@ -199,7 +199,7 @@ def small_sky_source_schema() -> pa.Schema:
             pa.field("Norder", pa.uint8()),
             pa.field("Dir", pa.uint64()),
             pa.field("Npix", pa.uint64()),
-            pa.field("_hipscat_index", pa.uint64()),
+            pa.field("_healpix_29", pa.uint64()),
         ]
     )
 
@@ -228,7 +228,7 @@ def margin_catalog_schema() -> pa.Schema:
             pa.field("Norder", pa.uint8()),
             pa.field("Dir", pa.uint64()),
             pa.field("Npix", pa.uint64()),
-            pa.field("_hipscat_index", pa.uint64()),
+            pa.field("_healpix_29", pa.uint64()),
             pa.field("margin_Norder", pa.uint8()),
             pa.field("margin_Dir", pa.uint64()),
             pa.field("margin_Npix", pa.uint64()),
@@ -368,7 +368,7 @@ def association_catalog_join_pixels() -> pd.DataFrame:
 @pytest.fixture
 def default_almanac(almanac_dir, test_data_dir):
     """Set up default environment variables and fetch default almanac data."""
-    os.environ["HIPSCAT_ALMANAC_DIR"] = str(almanac_dir)
-    os.environ["HIPSCAT_DEFAULT_DIR"] = str(test_data_dir)
+    os.environ["HATS_ALMANAC_DIR"] = str(almanac_dir)
+    os.environ["HATS_DEFAULT_DIR"] = str(test_data_dir)
 
     return Almanac()

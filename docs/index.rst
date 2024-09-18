@@ -1,4 +1,4 @@
-HiPSCat - Hierarchical Progressive Survey Catalog
+HATS - Hierarchal Adaptive Tiling Scheme
 ========================================================================================
 
 .. toctree::

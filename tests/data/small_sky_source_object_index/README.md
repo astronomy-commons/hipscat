@@ -16,7 +16,7 @@ def create_index():
         indexing_column="object_id",
         output_path="./tests/data/",
         output_artifact_name="small_sky_source_object_index",
-        include_hipscat_index=False,
+        include_healpix_29=False,
         compute_partition_size=200_000,
     )
     runner.pipeline(args)
@@ -31,6 +31,6 @@ NB:
 - Setting `compute_partition_size` to something less than `1_000_000` 
   coerces the import pipeline to create smaller result partitions, 
   and so we have three distinct index partitions.
-- Setting `include_hipscat_index=False` keeps us from needing a row for every 
+- Setting `include_healpix_29=False` keeps us from needing a row for every 
   source and lets the indexing pipeline create only one row per 
   unique objectId/Norder/Npix
