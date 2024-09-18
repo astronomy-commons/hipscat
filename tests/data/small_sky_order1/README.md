@@ -10,8 +10,8 @@ be useful for confirming reads/writes over multiple leaf partition files.
 This catalog was generated with the following snippet:
 
 ```
-import _import.pipeline as runner
-from _import.catalog.arguments import ImportArguments
+import hats_import.pipeline as runner
+from hats_import.catalog.arguments import ImportArguments
 
 def create_order1():
     args = ImportArguments(

@@ -210,7 +210,7 @@ Visually, in bits:
 This provides us with an increasing index, that will not overlap
 between spatially partitioned data files.
 
-### compute_hats_id
+### compute_hipscat_id
 
 For a given list of coordinates, compute the HiPSCat ID s.t. coordinates in the
 same order 19 pixel are appended with a counter to make a unique hats_id.
