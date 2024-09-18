@@ -22,7 +22,7 @@ _suffixes = {}
 
 def get_edge(d_order, pix, edge):
     """Get all the pixels at order kk+dk bordering pixel pix.
-    See /pixel_math/README.md for more info.
+    See hats/pixel_math/README.md for more info.
 
     Args:
         dk (int): the change in k that we wish to find the margins for.
@@ -67,7 +67,7 @@ def get_edge(d_order, pix, edge):
 
 def get_margin(order, pix, d_order):
     """Get all the pixels at order order+dk bordering pixel pix.
-    See /pixel_math/README.md for more info.
+    See hats/pixel_math/README.md for more info.
 
     Args:
         order (int): the healpix order of pix.

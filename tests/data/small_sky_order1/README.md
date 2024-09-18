@@ -15,7 +15,7 @@ from hats_import.catalog.arguments import ImportArguments
 
 def create_order1():
     args = ImportArguments(
-        input_path="tests/_import/data/small_sky",
+        input_path="tests/hats_import/data/small_sky",
         output_path="tests/data",
         input_format="csv",
         output_artifact_name="small_sky_order1",
