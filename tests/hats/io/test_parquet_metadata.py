@@ -16,7 +16,6 @@ from hats.io.parquet_metadata import (
 from hats.pixel_math.healpix_pixel import HealpixPixel
 
 
-@pytest.mark.skip(reason="HIPSCAT2HATS on-disk file discrepancy")
 def test_write_parquet_metadata(tmp_path, small_sky_dir, small_sky_schema, check_parquet_schema):
     """Copy existing catalog and create new metadata files for it"""
     catalog_base_dir = tmp_path / "catalog"
@@ -45,7 +44,6 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir, small_sky_schema, check
     )
 
 
-@pytest.mark.skip(reason="HIPSCAT2HATS on-disk file discrepancy")
 def test_write_parquet_metadata_order1(
     tmp_path, small_sky_order1_dir, small_sky_schema, check_parquet_schema
 ):
@@ -73,7 +71,6 @@ def test_write_parquet_metadata_order1(
     )
 
 
-@pytest.mark.skip(reason="HIPSCAT2HATS on-disk file discrepancy")
 def test_write_parquet_metadata_sorted(
     tmp_path, small_sky_order1_dir, small_sky_schema, check_parquet_schema
 ):

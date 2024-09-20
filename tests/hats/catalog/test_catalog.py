@@ -80,7 +80,6 @@ def test_get_pixels_list(catalog_info, catalog_pixels):
     assert pixels == catalog_pixels
 
 
-@pytest.mark.skip(reason="HIPSCAT2HATS on-disk file discrepancy")
 def test_load_catalog_small_sky(small_sky_dir, small_sky_schema):
     """Instantiate a catalog with 1 pixel"""
     cat = read_hats(small_sky_dir)
@@ -114,7 +113,6 @@ def test_load_catalog_small_sky_order1_moc(small_sky_order1_dir):
     assert np.all(cat.moc.flatten() == np.where(counts_skymap > 0))
 
 
-@pytest.mark.skip(reason="HIPSCAT2HATS on-disk file discrepancy")
 def test_load_catalog_small_sky_source(small_sky_source_dir, small_sky_source_schema):
     """Instantiate a source catalog with 14 pixels"""
     cat = read_hats(small_sky_source_dir)
