@@ -8,6 +8,7 @@ from hats.loaders import read_hats
 # pylint: disable=no-member
 
 
+@pytest.mark.timeout(10)
 def test_generate_projections(small_sky_dir, mocker):
     """Basic test that map data can be generated"""
 

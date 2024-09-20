@@ -33,7 +33,6 @@ def test_wrong_catalog_info_type(catalog_info, margin_catalog_pixels):
         MarginCatalog(catalog_info, margin_catalog_pixels)
 
 
-@pytest.mark.skip(reason="HIPSCAT2HATS on-disk file discrepancy")
 def test_read_from_file(margin_catalog_path, margin_catalog_pixels, margin_catalog_schema):
     catalog = read_hats(margin_catalog_path)
 
