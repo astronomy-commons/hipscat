@@ -66,14 +66,14 @@ def test_write_to_bad_file(tmp_path, small_sky_dir):
         almanac_info.write_to_file(default_dir=True)
 
 
-def test_association_fields(association_catalog_path, index_catalog_info_file, small_sky_dir):
+def test_association_fields(association_catalog_path, test_data_dir, small_sky_dir):
     """Test additional text fields tables with primary/join relationships."""
     almanac_info = AlmanacInfo.from_catalog_dir(association_catalog_path)
     assert almanac_info.catalog_name == "small_sky_to_small_sky_order1"
     assert almanac_info.primary == "small_sky"
     assert almanac_info.join == "small_sky_order1"
 
-    almanac_info = AlmanacInfo.from_catalog_dir(index_catalog_info_file)
+    almanac_info = AlmanacInfo.from_catalog_dir(test_data_dir / "info_only" / "index_catalog")
     assert almanac_info.primary == "catalog"
     assert almanac_info.join is None
 

@@ -9,9 +9,8 @@ import numpy as np
 
 import hats.pixel_math as hist
 import hats.pixel_math.healpix_shim as hp
-from hats.catalog import Catalog, PartitionInfo
+from hats.catalog import Catalog, PartitionInfo, TableProperties
 from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
-from hats.catalog.catalog_info import CatalogInfo
 from hats.io.paths import pixel_catalog_files
 from hats.pixel_math import HealpixPixel
 from hats.pixel_tree import PixelAlignment, align_trees
@@ -29,7 +28,7 @@ def time_test_alignment_even_sky():
 
 def time_test_cone_filter_multiple_order():
     """Create a catalog cone filter where we have multiple orders in the catalog"""
-    catalog_info = CatalogInfo(
+    catalog_info = TableProperties(
         **{
             "catalog_name": "test_name",
             "catalog_type": "object",

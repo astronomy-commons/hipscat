@@ -8,12 +8,11 @@ from typing import List, Tuple
 import numpy as np
 import pyarrow as pa
 from mocpy import MOC
-from typing_extensions import TypeAlias
 from upath import UPath
 
 import hats.pixel_math.healpix_shim as hp
-from hats.catalog.catalog_info import CatalogInfo
 from hats.catalog.catalog_type import CatalogType
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hats.pixel_math import HealpixPixel
 from hats.pixel_math.box_filter import generate_box_moc, wrap_ra_angles
@@ -38,14 +37,9 @@ class Catalog(HealpixDataset):
 
     HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE]
 
-    # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
-    # set the catalog info to the correct type
-    CatalogInfoClass: TypeAlias = CatalogInfo
-    catalog_info: CatalogInfoClass
-
     def __init__(
         self,
-        catalog_info: CatalogInfoClass,
+        catalog_info: TableProperties,
         pixels: PixelInputTypes,
         catalog_path: str | Path | UPath | None = None,
         moc: MOC | None = None,
@@ -54,7 +48,7 @@ class Catalog(HealpixDataset):
         """Initializes a Catalog
 
         Args:
-            catalog_info: CatalogInfo object with catalog metadata
+            catalog_info: TableProperties object with catalog metadata
             pixels: Specifies the pixels contained in the catalog. Can be either a
                 list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog

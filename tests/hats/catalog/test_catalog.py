@@ -10,6 +10,7 @@ from mocpy import MOC
 
 import hats.pixel_math.healpix_shim as hp
 from hats.catalog import Catalog, CatalogType, PartitionInfo
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.io import paths
 from hats.io.file_io import read_fits_image
 from hats.loaders import read_hats
@@ -26,11 +27,6 @@ def test_catalog_load(catalog_info, catalog_pixels):
 
     for hp_pixel in catalog_pixels:
         assert hp_pixel in catalog.pixel_tree
-
-
-def test_catalog_load_wrong_catalog_info(base_catalog_info, catalog_pixels):
-    with pytest.raises(TypeError):
-        Catalog(base_catalog_info, catalog_pixels)
 
 
 def test_catalog_wrong_catalog_type(catalog_info, catalog_pixels):
@@ -476,7 +472,7 @@ def test_box_filter_invalid_args(small_sky_order1_catalog):
         small_sky_order1_catalog.filter_by_box(ra=None, dec=None)
 
 
-def test_empty_directory(tmp_path):
+def test_empty_directory(tmp_path, catalog_info_data):
     """Test loading empty or incomplete data"""
     ## Path doesn't exist
     with pytest.raises(FileNotFoundError):
@@ -486,13 +482,12 @@ def test_empty_directory(tmp_path):
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError, match="catalog_info"):
+    with pytest.raises(FileNotFoundError, match="properties file"):
         read_hats(catalog_path)
 
     ## catalog_info file exists - getting closer
-    file_name = catalog_path / "catalog_info.json"
-    with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write('{"catalog_name":"empty", "catalog_type":"source"}')
+    properties = TableProperties(**catalog_info_data)
+    properties.to_properties_file(catalog_path)
 
     with pytest.raises(FileNotFoundError, match="metadata"):
         read_hats(catalog_path)
@@ -503,7 +498,7 @@ def test_empty_directory(tmp_path):
 
     with pytest.warns(UserWarning, match="slow"):
         catalog = read_hats(catalog_path)
-    assert catalog.catalog_name == "empty"
+    assert catalog.catalog_name == "test_name"
 
 
 def test_generate_negative_tree_pixels(small_sky_order1_catalog):

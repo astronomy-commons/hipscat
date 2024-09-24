@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 from hats.catalog import PartitionInfo
-from hats.io import paths, write_catalog_info
 from hats.io.validation import is_valid_catalog
 
 
@@ -17,7 +16,7 @@ def test_is_valid_catalog(tmp_path, small_sky_catalog, small_sky_pixels):
     assert not is_valid_catalog(tmp_path)
 
     # Having the catalog_info file is not enough
-    write_catalog_info(tmp_path, small_sky_catalog.catalog_info)
+    small_sky_catalog.catalog_info.to_properties_file(tmp_path)
     assert not is_valid_catalog(tmp_path)
 
     # The catalog is valid if both the catalog_info and _metadata files exist,
@@ -27,13 +26,12 @@ def test_is_valid_catalog(tmp_path, small_sky_catalog, small_sky_pixels):
     assert is_valid_catalog(tmp_path)
 
     # A partition_info file alone is also not enough
-    catalog_info_pointer = paths.get_catalog_info_pointer(tmp_path)
-    os.remove(catalog_info_pointer)
+    os.remove(tmp_path / "properties")
     assert not is_valid_catalog(tmp_path)
 
     # The catalog_info file needs to be in the correct format
     small_sky_catalog.catalog_info.catalog_type = "invalid"
-    write_catalog_info(tmp_path, small_sky_catalog.catalog_info)
+    small_sky_catalog.catalog_info.to_properties_file(tmp_path)
     assert not is_valid_catalog(tmp_path)
 
 
@@ -51,7 +49,7 @@ def test_is_valid_catalog_strict(tmp_path, small_sky_catalog, small_sky_pixels, 
         assert not is_valid_catalog(tmp_path, **flags)
 
     # Having the catalog_info file is not enough
-    write_catalog_info(tmp_path, small_sky_catalog.catalog_info)
+    small_sky_catalog.catalog_info.to_properties_file(tmp_path)
     with pytest.warns():
         assert not is_valid_catalog(tmp_path, **flags)
 
@@ -90,11 +88,11 @@ def test_is_valid_catalog_fail_fast(tmp_path, small_sky_catalog, small_sky_pixel
         "verbose": False,  # don't bother printing anything.
     }
     # An empty directory means an invalid catalog
-    with pytest.raises(ValueError, match="catalog_info.json"):
+    with pytest.raises(ValueError, match="properties file"):
         is_valid_catalog(tmp_path, **flags)
 
     # Having the catalog_info file is not enough
-    write_catalog_info(tmp_path, small_sky_catalog.catalog_info)
+    small_sky_catalog.catalog_info.to_properties_file(tmp_path)
     with pytest.raises(ValueError, match="partition_info.csv"):
         is_valid_catalog(tmp_path, **flags)
 
@@ -128,7 +126,7 @@ def test_is_valid_catalog_verbose_fail(tmp_path, capsys):
 
     captured = capsys.readouterr().out
     assert "Validating catalog at path" in captured
-    assert "catalog_info.json file does not exist or is invalid" in captured
+    assert "properties file does not exist or is invalid" in captured
     assert "partition_info.csv file does not exist" in captured
     assert "_metadata file does not exist" in captured
     assert "_common_metadata file does not exist" in captured
@@ -155,7 +153,7 @@ def test_valid_catalog_strict_all(small_sky_source_dir, small_sky_order1_dir, sm
     flags = {
         "strict": True,  # more intensive checks
         "fail_fast": False,  # check everything, and just return true/false
-        "verbose": False,  # don't bother printing anything.
+        "verbose": True,  # don't bother printing anything.
     }
     assert is_valid_catalog(small_sky_source_dir, **flags)
     assert is_valid_catalog(small_sky_order1_dir, **flags)

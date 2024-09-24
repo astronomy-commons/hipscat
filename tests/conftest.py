@@ -1,4 +1,3 @@
-import dataclasses
 import os.path
 from pathlib import Path
 from typing import List
@@ -7,11 +6,8 @@ import pandas as pd
 import pyarrow as pa
 import pytest
 
-from hats.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
-from hats.catalog.catalog_info import CatalogInfo
-from hats.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hats.catalog.margin_cache import MarginCacheCatalogInfo
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.inspection.almanac import Almanac
 from hats.pixel_math import HealpixPixel
 
@@ -52,27 +48,6 @@ def small_sky_source_object_index_dir(test_data_dir):
 
 
 @pytest.fixture
-def assert_catalog_info_matches_dict():
-    def assert_match(catalog_info: BaseCatalogInfo, dictionary: dict):
-        """Check that all members of the catalog_info object match dictionary
-        elements, where specified."""
-        catalog_info_dict = dataclasses.asdict(catalog_info)
-        for key, value in dictionary.items():
-            assert catalog_info_dict[key] == value
-
-    return assert_match
-
-
-@pytest.fixture
-def base_catalog_info_data() -> dict:
-    return {
-        "catalog_name": "test_name",
-        "catalog_type": "object",
-        "total_rows": 10,
-    }
-
-
-@pytest.fixture
 def catalog_info_data() -> dict:
     return {
         "catalog_name": "test_name",
@@ -82,6 +57,11 @@ def catalog_info_data() -> dict:
         "ra_column": "ra",
         "dec_column": "dec",
     }
+
+
+@pytest.fixture
+def catalog_info(catalog_info_data) -> TableProperties:
+    return TableProperties(**catalog_info_data)
 
 
 @pytest.fixture
@@ -101,6 +81,11 @@ def association_catalog_info_data() -> dict:
 
 
 @pytest.fixture
+def association_catalog_info(association_catalog_info_data) -> TableProperties:
+    return TableProperties(**association_catalog_info_data)
+
+
+@pytest.fixture
 def source_catalog_info() -> dict:
     return {
         "catalog_name": "test_source",
@@ -109,23 +94,6 @@ def source_catalog_info() -> dict:
         "epoch": "J2000",
         "ra_column": "source_ra",
         "dec_column": "source_dec",
-    }
-
-
-@pytest.fixture
-def source_catalog_info_with_extra() -> dict:
-    return {
-        "catalog_name": "test_source",
-        "catalog_type": "source",
-        "total_rows": 100,
-        "epoch": "J2000",
-        "ra_column": "source_ra",
-        "dec_column": "source_dec",
-        "primary_catalog": "test_name",
-        "mjd_column": "mjd",
-        "band_column": "band",
-        "mag_column": "mag",
-        "mag_err_column": "",
     }
 
 
@@ -144,26 +112,8 @@ def margin_cache_catalog_info_data() -> dict:
 
 
 @pytest.fixture
-def index_catalog_info() -> dict:
-    return {
-        "catalog_name": "test_index",
-        "catalog_type": "index",
-        "total_rows": 100,
-        "primary_catalog": "test_name",
-        "indexing_column": "id",
-    }
-
-
-@pytest.fixture
-def index_catalog_info_with_extra() -> dict:
-    return {
-        "catalog_name": "test_index",
-        "catalog_type": "index",
-        "total_rows": 100,
-        "primary_catalog": "test_name",
-        "indexing_column": "id",
-        "extra_columns": ["foo", "bar"],
-    }
+def margin_catalog_info(margin_cache_catalog_info_data) -> TableProperties:
+    return TableProperties(**margin_cache_catalog_info_data)
 
 
 @pytest.fixture
@@ -242,33 +192,8 @@ def dataset_path(test_data_dir) -> str:
 
 
 @pytest.fixture
-def base_catalog_info_file(dataset_path) -> str:
-    return dataset_path / "catalog_info.json"
-
-
-@pytest.fixture
-def base_catalog_info(base_catalog_info_data) -> BaseCatalogInfo:
-    return BaseCatalogInfo(**base_catalog_info_data)
-
-
-@pytest.fixture
 def catalog_path(test_data_dir) -> str:
     return test_data_dir / "info_only" / "catalog"
-
-
-@pytest.fixture
-def catalog_info_file(catalog_path) -> str:
-    return catalog_path / "catalog_info.json"
-
-
-@pytest.fixture
-def catalog_info(catalog_info_data) -> CatalogInfo:
-    return CatalogInfo(**catalog_info_data)
-
-
-@pytest.fixture
-def margin_catalog_info(margin_cache_catalog_info_data) -> MarginCacheCatalogInfo:
-    return MarginCacheCatalogInfo(**margin_cache_catalog_info_data)
 
 
 @pytest.fixture
@@ -298,26 +223,6 @@ def association_catalog_path(test_data_dir) -> str:
 
 
 @pytest.fixture
-def association_catalog_info_file(association_catalog_path) -> str:
-    return association_catalog_path / "catalog_info.json"
-
-
-@pytest.fixture
-def index_catalog_info_file(test_data_dir) -> str:
-    return test_data_dir / "info_only" / "index_catalog" / "catalog_info.json"
-
-
-@pytest.fixture
-def margin_cache_catalog_info_file(test_data_dir) -> str:
-    return test_data_dir / "info_only" / "margin_cache" / "catalog_info.json"
-
-
-@pytest.fixture
-def source_catalog_info_file(test_data_dir) -> str:
-    return test_data_dir / "small_sky_source" / "catalog_info.json"
-
-
-@pytest.fixture
 def small_sky_source_dir(test_data_dir) -> str:
     return test_data_dir / "small_sky_source"
 
@@ -341,11 +246,6 @@ def small_sky_source_pixels():
         HealpixPixel(2, 187),
         HealpixPixel(1, 47),
     ]
-
-
-@pytest.fixture
-def association_catalog_info(association_catalog_info_data) -> AssociationCatalogInfo:
-    return AssociationCatalogInfo(**association_catalog_info_data)
 
 
 @pytest.fixture

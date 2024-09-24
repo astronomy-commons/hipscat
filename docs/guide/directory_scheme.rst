@@ -22,8 +22,8 @@ structure:
     __ /path/to/catalogs/<catalog_name>/
        |__ _common_metadata
        |__ _metadata
-       |__ catalog_info.json
        |__ partition_info.csv
+       |__ properties
        |__ Norder=1/
        |   |__ Dir=0/
        |       |__ Npix=0.parquet

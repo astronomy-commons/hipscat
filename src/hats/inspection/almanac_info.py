@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
 import os
 from dataclasses import dataclass, field
 from typing import List
@@ -8,8 +7,7 @@ from typing import List
 import yaml
 from typing_extensions import Self
 
-from hats.catalog.dataset import catalog_info_factory
-from hats.catalog.dataset.base_catalog_info import BaseCatalogInfo
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.io import file_io
 
 
@@ -40,11 +38,8 @@ class AlmanacInfo:
 
     catalog_info: dict = field(default_factory=dict)
 
-    catalog_info_object: BaseCatalogInfo | None = None
-
     def __post_init__(self):
         if len(self.catalog_info):
-            self.catalog_info_object = catalog_info_factory.create_catalog_info(self.catalog_info)
             if self.catalog_info and "primary_catalog" in self.catalog_info and not self.primary:
                 self.primary = self.catalog_info["primary_catalog"]
             if self.catalog_info and "join_catalog" in self.catalog_info and not self.join:
@@ -76,15 +71,12 @@ class AlmanacInfo:
     @classmethod
     def from_catalog_dir(cls, catalog_base_dir: str) -> Self:
         """Create almanac information from the catalog information found at the target directory"""
-        catalog_info = catalog_info_factory.from_catalog_dir(
-            catalog_base_dir=file_io.get_upath(catalog_base_dir)
-        )
+        catalog_info = TableProperties.read_from_dir(catalog_base_dir)
         args = {
             "catalog_path": catalog_base_dir,
             "catalog_name": catalog_info.catalog_name,
             "catalog_type": catalog_info.catalog_type,
-            "catalog_info_object": catalog_info,
-            "catalog_info": dataclasses.asdict(catalog_info),
+            "catalog_info": catalog_info.explicit_dict(),
         }
         return cls(**args)
 

@@ -6,12 +6,11 @@ from typing import Tuple, Union
 import pandas as pd
 import pyarrow as pa
 from mocpy import MOC
-from typing_extensions import TypeAlias
 from upath import UPath
 
-from hats.catalog.association_catalog.association_catalog_info import AssociationCatalogInfo
 from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
 from hats.catalog.catalog_type import CatalogType
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hats.io import file_io, paths
 
@@ -24,16 +23,11 @@ class AssociationCatalog(HealpixDataset):
     Catalog, corresponding to each pair of partitions in each catalog that contain rows to join.
     """
 
-    # Update CatalogInfoClass, used to check if the catalog_info is the correct type, and
-    # set the catalog info to the correct type
-    CatalogInfoClass: TypeAlias = AssociationCatalogInfo
-    catalog_info: CatalogInfoClass
-
     JoinPixelInputTypes = Union[list, pd.DataFrame, PartitionJoinInfo]
 
     def __init__(
         self,
-        catalog_info: CatalogInfoClass,
+        catalog_info: TableProperties,
         pixels: PixelInputTypes,
         join_pixels: JoinPixelInputTypes,
         catalog_path=None,
@@ -67,7 +61,7 @@ class AssociationCatalog(HealpixDataset):
     @classmethod
     def _read_args(
         cls, catalog_base_dir: str | Path | UPath
-    ) -> Tuple[CatalogInfoClass, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
+    ) -> Tuple[TableProperties, PixelInputTypes, JoinPixelInputTypes]:  # type: ignore[override]
         args = super()._read_args(catalog_base_dir)
         partition_join_info = PartitionJoinInfo.read_from_dir(catalog_base_dir)
         return args + (partition_join_info,)

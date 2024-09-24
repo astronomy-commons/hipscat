@@ -6,29 +6,22 @@ from typing import Tuple
 from typing_extensions import Self
 from upath import UPath
 
-from hats.catalog.dataset.base_catalog_info import BaseCatalogInfo
-from hats.io import file_io, paths
+from hats.catalog.dataset.table_properties import TableProperties
+from hats.io import file_io
 
 
 class Dataset:
-    """A base HATS dataset that contains a catalog_info metadata file
+    """A base HATS dataset that contains a properties file
     and the data contained in parquet files"""
 
-    CatalogInfoClass = BaseCatalogInfo
-
-    def __init__(
-        self, catalog_info: CatalogInfoClass, catalog_path: str | Path | UPath | None = None
-    ) -> None:
+    def __init__(self, catalog_info: TableProperties, catalog_path: str | Path | UPath | None = None) -> None:
         """Initializes a Dataset
 
         Args:
-            catalog_info: A catalog_info object with the catalog metadata
+            catalog_info: A TableProperties object with the catalog metadata
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
                 Does not load the catalog from this path, only store as metadata
         """
-        if not isinstance(catalog_info, self.CatalogInfoClass):
-            raise TypeError(f"catalog_info type must be {self.CatalogInfoClass}")
-
         self.catalog_info = catalog_info
         self.catalog_name = self.catalog_info.catalog_name
 
@@ -53,9 +46,8 @@ class Dataset:
         return cls(*args, **kwargs)
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: str | Path | UPath) -> Tuple[CatalogInfoClass]:
-        catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
-        catalog_info = cls.CatalogInfoClass.read_from_metadata_file(catalog_info_file)
+    def _read_args(cls, catalog_base_dir: str | Path | UPath) -> Tuple[TableProperties]:
+        catalog_info = TableProperties.read_from_dir(catalog_base_dir)
         return (catalog_info,)
 
     @classmethod
@@ -66,6 +58,5 @@ class Dataset:
     def _check_files_exist(cls, catalog_base_dir: str | Path | UPath):
         if not file_io.does_file_or_directory_exist(catalog_base_dir):
             raise FileNotFoundError(f"No directory exists at {str(catalog_base_dir)}")
-        catalog_info_file = paths.get_catalog_info_pointer(catalog_base_dir)
-        if not file_io.does_file_or_directory_exist(catalog_info_file):
-            raise FileNotFoundError(f"No catalog info found where expected: {str(catalog_info_file)}")
+        if not file_io.does_file_or_directory_exist(catalog_base_dir / "properties"):
+            raise FileNotFoundError(f"No properties file found where expected: {str(catalog_base_dir)}")

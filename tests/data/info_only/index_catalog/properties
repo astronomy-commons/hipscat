@@ -1,0 +1,7 @@
+obs_collection = index_catalog
+dataproduct_type = index
+hats_max_rows = 1000
+hats_nrows = 100
+hats_order = 0
+hats_index_column=id
+hats_primary_table_url=catalog

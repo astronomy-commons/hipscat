@@ -5,9 +5,8 @@ from typing import Type
 
 from upath import UPath
 
-from hats import io
 from hats.catalog import AssociationCatalog, Catalog, CatalogType, Dataset, MarginCatalog
-from hats.catalog.dataset import BaseCatalogInfo
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.catalog.index.index_catalog import IndexCatalog
 
 CATALOG_TYPE_TO_CLASS = {
@@ -41,10 +40,7 @@ def read_hats(catalog_path: str | Path | UPath, catalog_type: CatalogType | None
 
 
 def _read_dataset_class_from_metadata(catalog_base_path: str) -> CatalogType:
-    catalog_base_dir = io.file_io.get_upath(catalog_base_path)
-    catalog_info_path = io.paths.get_catalog_info_pointer(catalog_base_dir)
-    catalog_info = BaseCatalogInfo.read_from_metadata_file(catalog_info_path)
-    return catalog_info.catalog_type
+    return TableProperties.read_from_dir(catalog_base_path).catalog_type
 
 
 def _get_loader_from_catalog_type(catalog_type: CatalogType) -> Type[Dataset]:

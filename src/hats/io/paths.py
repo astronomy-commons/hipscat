@@ -20,10 +20,8 @@ JOIN_ORDER_DIRECTORY_PREFIX = "join_Norder"
 JOIN_DIR_DIRECTORY_PREFIX = "join_Dir"
 JOIN_PIXEL_DIRECTORY_PREFIX = "join_Npix"
 
-CATALOG_INFO_FILENAME = "catalog_info.json"
 PARTITION_INFO_FILENAME = "partition_info.csv"
 PARTITION_JOIN_INFO_FILENAME = "partition_join_info.csv"
-PROVENANCE_INFO_FILENAME = "provenance_info.json"
 PARQUET_METADATA_FILENAME = "_metadata"
 PARQUET_COMMON_METADATA_FILENAME = "_common_metadata"
 POINT_MAP_FILENAME = "point_map.fits"
@@ -221,17 +219,6 @@ def create_hive_directory_name(base_dir, partition_token_names, partition_token_
     return get_upath(base_dir).joinpath(*partition_tokens)
 
 
-def get_catalog_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
-    """Get file pointer to `catalog_info.json` metadata file
-
-    Args:
-        catalog_base_dir: pointer to base catalog directory
-    Returns:
-        File Pointer to the catalog's `catalog_info.json` file
-    """
-    return get_upath(catalog_base_dir) / CATALOG_INFO_FILENAME
-
-
 def get_partition_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     """Get file pointer to `partition_info.csv` metadata file
 
@@ -241,17 +228,6 @@ def get_partition_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
         File Pointer to the catalog's `partition_info.csv` file
     """
     return get_upath(catalog_base_dir) / PARTITION_INFO_FILENAME
-
-
-def get_provenance_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
-    """Get file pointer to `provenance_info.json` metadata file
-
-    Args:
-        catalog_base_dir: pointer to base catalog directory
-    Returns:
-        File Pointer to the catalog's `provenance_info.json` file
-    """
-    return get_upath(catalog_base_dir) / PROVENANCE_INFO_FILENAME
 
 
 def get_common_metadata_pointer(catalog_base_dir: str | Path | UPath) -> UPath:

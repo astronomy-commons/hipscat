@@ -1,10 +1,10 @@
-import json
 import os
 
 import pyarrow as pa
 import pytest
 
 from hats.catalog import CatalogType, MarginCatalog, PartitionInfo
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.loaders import read_hats
 from hats.pixel_math import HealpixPixel
 
@@ -21,18 +21,6 @@ def test_init_catalog(margin_catalog_info, margin_catalog_pixels):
         assert hp_pixel in catalog.pixel_tree
 
 
-def test_wrong_catalog_type(margin_catalog_info, margin_catalog_pixels):
-    margin_catalog_info.catalog_type = CatalogType.OBJECT
-    with pytest.raises(ValueError, match="catalog_type"):
-        MarginCatalog(margin_catalog_info, margin_catalog_pixels)
-
-
-def test_wrong_catalog_info_type(catalog_info, margin_catalog_pixels):
-    catalog_info.catalog_type = CatalogType.MARGIN
-    with pytest.raises(TypeError, match="catalog_info"):
-        MarginCatalog(catalog_info, margin_catalog_pixels)
-
-
 def test_read_from_file(margin_catalog_path, margin_catalog_pixels, margin_catalog_schema):
     catalog = read_hats(margin_catalog_path)
 
@@ -45,7 +33,6 @@ def test_read_from_file(margin_catalog_path, margin_catalog_pixels, margin_catal
     info = catalog.catalog_info
     assert info.catalog_name == "small_sky_order1_margin"
     assert info.catalog_type == CatalogType.MARGIN
-    assert info.epoch == "J2000"
     assert info.ra_column == "ra"
     assert info.dec_column == "dec"
     assert info.primary_catalog == "small_sky_order1"
@@ -66,13 +53,12 @@ def test_empty_directory(tmp_path, margin_cache_catalog_info_data, margin_catalo
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError, match="catalog_info"):
+    with pytest.raises(FileNotFoundError, match="properties file"):
         read_hats(catalog_path)
 
     ## catalog_info file exists - getting closer
-    file_name = catalog_path / "catalog_info.json"
-    with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write(json.dumps(margin_cache_catalog_info_data))
+    properties = TableProperties(**margin_cache_catalog_info_data)
+    properties.to_properties_file(catalog_path)
 
     with pytest.raises(FileNotFoundError, match="metadata"):
         read_hats(catalog_path)
