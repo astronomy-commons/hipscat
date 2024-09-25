@@ -1,4 +1,5 @@
-from typing import List, Optional
+from pathlib import Path
+from typing import List, Optional, Union
 
 from jproperties import Properties
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
@@ -140,7 +141,7 @@ class TableProperties(BaseModel):
         return formatted_string
 
     @classmethod
-    def read_from_dir(cls, catalog_dir: UPath) -> Self:
+    def read_from_dir(cls, catalog_dir: Union[str, Path, UPath]) -> Self:
         """Read field values from a java-style properties file."""
         file_path = file_io.get_upath(catalog_dir) / "properties"
         if not file_io.does_file_or_directory_exist(file_path):
@@ -150,7 +151,7 @@ class TableProperties(BaseModel):
             p.load(f, "utf-8")
         return cls(**p.properties)
 
-    def to_properties_file(self, catalog_dir: UPath) -> Self:
+    def to_properties_file(self, catalog_dir: Union[str, Path, UPath]) -> Self:
         """Write fields to a java-style properties file."""
         # pylint: disable=protected-access
         parameters = self.model_dump(by_alias=True, exclude_none=True)
