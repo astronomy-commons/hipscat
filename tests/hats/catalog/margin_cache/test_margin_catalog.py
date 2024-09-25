@@ -3,8 +3,7 @@ import os
 import pyarrow as pa
 import pytest
 
-from hats.catalog import CatalogType, MarginCatalog, PartitionInfo
-from hats.catalog.dataset.table_properties import TableProperties
+from hats.catalog import CatalogType, MarginCatalog, PartitionInfo, TableProperties
 from hats.loaders import read_hats
 from hats.pixel_math import HealpixPixel
 
