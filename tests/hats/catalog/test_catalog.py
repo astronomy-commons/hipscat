@@ -9,8 +9,7 @@ import pytest
 from mocpy import MOC
 
 import hats.pixel_math.healpix_shim as hp
-from hats.catalog import Catalog, CatalogType, PartitionInfo
-from hats.catalog.dataset.table_properties import TableProperties
+from hats.catalog import Catalog, PartitionInfo, TableProperties
 from hats.io import paths
 from hats.io.file_io import read_fits_image
 from hats.loaders import read_hats
@@ -27,12 +26,6 @@ def test_catalog_load(catalog_info, catalog_pixels):
 
     for hp_pixel in catalog_pixels:
         assert hp_pixel in catalog.pixel_tree
-
-
-def test_catalog_wrong_catalog_type(catalog_info, catalog_pixels):
-    catalog_info.catalog_type = CatalogType.INDEX
-    with pytest.raises(ValueError):
-        Catalog(catalog_info, catalog_pixels)
 
 
 def test_partition_info_pixel_input_types(catalog_info, catalog_pixels):

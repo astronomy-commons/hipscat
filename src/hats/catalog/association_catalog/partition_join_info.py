@@ -73,7 +73,7 @@ class PartitionJoinInfo:
         return primary_to_join
 
     def write_to_metadata_files(self, catalog_path: str | Path | UPath | None = None):
-        """Generate parquet metadata, using the known partitions.
+        """Generate parquet metadata, using the known joint partitions.
 
         Args:
             catalog_path (UPath): base path for the catalog
@@ -86,7 +86,7 @@ class PartitionJoinInfo:
         """
         if catalog_path is None:
             if self.catalog_base_dir is None:
-                raise ValueError("catalog_path is required if info was not loaded from a directory")
+                raise ValueError("catalog_path is required if join info was not loaded from a directory")
             catalog_path = self.catalog_base_dir
 
         batches = [

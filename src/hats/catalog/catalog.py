@@ -2,18 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
-import pyarrow as pa
-from mocpy import MOC
-from upath import UPath
 
 import hats.pixel_math.healpix_shim as hp
-from hats.catalog.catalog_type import CatalogType
-from hats.catalog.dataset.table_properties import TableProperties
-from hats.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
+from hats.catalog.healpix_dataset.healpix_dataset import HealpixDataset
 from hats.pixel_math import HealpixPixel
 from hats.pixel_math.box_filter import generate_box_moc, wrap_ra_angles
 from hats.pixel_math.cone_filter import generate_cone_moc
@@ -34,40 +28,6 @@ class Catalog(HealpixDataset):
     the pixels in Catalog, and on disk conform to the parquet partitioning structure
     `Norder=/Dir=/Npix=.parquet`
     """
-
-    HIPS_CATALOG_TYPES = [CatalogType.OBJECT, CatalogType.SOURCE]
-
-    def __init__(
-        self,
-        catalog_info: TableProperties,
-        pixels: PixelInputTypes,
-        catalog_path: str | Path | UPath | None = None,
-        moc: MOC | None = None,
-        schema: pa.Schema | None = None,
-    ) -> None:
-        """Initializes a Catalog
-
-        Args:
-            catalog_info: TableProperties object with catalog metadata
-            pixels: Specifies the pixels contained in the catalog. Can be either a
-                list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
-            catalog_path: If the catalog is stored on disk, specify the location of the catalog
-                Does not load the catalog from this path, only store as metadata
-            moc (mocpy.MOC): MOC object representing the coverage of the catalog
-            schema (pa.Schema): The pyarrow schema for the catalog
-        """
-        if catalog_info.catalog_type not in self.HIPS_CATALOG_TYPES:
-            raise ValueError(
-                f"Catalog info `catalog_type` must be one of "
-                f"{', '.join([t.value for t in self.HIPS_CATALOG_TYPES])}"
-            )
-        super().__init__(
-            catalog_info,
-            pixels,
-            catalog_path=catalog_path,
-            moc=moc,
-            schema=schema,
-        )
 
     def filter_by_cone(self, ra: float, dec: float, radius_arcsec: float) -> Catalog:
         """Filter the pixels in the catalog to only include the pixels that overlap with a cone

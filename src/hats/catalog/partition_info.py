@@ -92,7 +92,7 @@ class PartitionInfo:
         """
         if catalog_path is None:
             if self.catalog_base_dir is None:
-                raise ValueError("catalog_path is required if info was not loaded from a directory")
+                raise ValueError("catalog_path is required if partition info was not loaded from a directory")
             catalog_path = self.catalog_base_dir
 
         batches = [
