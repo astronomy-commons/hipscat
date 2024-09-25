@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from jproperties import Properties
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
 from typing_extensions import Self
 from upath import UPath
 
@@ -84,6 +84,22 @@ class TableProperties(BaseModel):
     ## Allow any extra keyword args to be stored on the properties object.
     model_config = ConfigDict(extra="allow", populate_by_name=True, use_enum_values=True)
 
+    @field_validator("extra_columns", mode="before")
+    @classmethod
+    def space_delimited_list(cls, str_value: str) -> List[str]:
+        """Convert a space-delimited list string into a python list of strings."""
+        if isinstance(str_value, str):
+            if str_value:
+                str_value = str_value.strip()
+            if str_value:
+                return str_value.split(" ")
+        return str_value
+
+    @field_serializer("extra_columns")
+    def serialize_space_delimited_list(self, str_list) -> str:
+        """Convert a python list of strings into a space-delimited string."""
+        return " ".join(str_list)
+
     @model_validator(mode="after")
     def check_allowed_and_required(self) -> Self:
         """Check that type-specific fields are appropriate, and required fields are set."""
@@ -143,4 +159,4 @@ class TableProperties(BaseModel):
         properties._key_order = parameters.keys()
         file_path = file_io.get_upath(catalog_dir) / "properties"
         with file_path.open("wb") as _file:
-            properties.store(_file, "utf-8", timestamp=False)
+            properties.store(_file, encoding="utf-8", initial_comments="HATS catalog", timestamp=False)

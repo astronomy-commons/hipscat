@@ -1,7 +1,8 @@
-obs_collection = dataset
-dataproduct_type = object
-hats_col_j2000_ra = ra
-hats_col_j2000_dec = dec
-hats_max_rows = 1000
-hats_nrows = 10
-hats_order = 0
+#HATS catalog
+obs_collection=dataset
+dataproduct_type=object
+hats_nrows=10
+hats_col_j2000_ra=ra
+hats_col_j2000_dec=dec
+hats_max_rows=1000
+hats_order=0
