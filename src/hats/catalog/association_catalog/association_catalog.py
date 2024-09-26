@@ -9,7 +9,6 @@ from mocpy import MOC
 from upath import UPath
 
 from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
-from hats.catalog.catalog_type import CatalogType
 from hats.catalog.dataset.table_properties import TableProperties
 from hats.catalog.healpix_dataset.healpix_dataset import HealpixDataset, PixelInputTypes
 from hats.io import file_io, paths
@@ -34,8 +33,6 @@ class AssociationCatalog(HealpixDataset):
         moc: MOC | None = None,
         schema: pa.Schema | None = None,
     ) -> None:
-        if not catalog_info.catalog_type == CatalogType.ASSOCIATION:
-            raise ValueError("Catalog info `catalog_type` must be 'association'")
         super().__init__(catalog_info, pixels, catalog_path, moc=moc, schema=schema)
         self.join_info = self._get_partition_join_info_from_pixels(join_pixels)
 

@@ -153,7 +153,7 @@ def test_valid_catalog_strict_all(small_sky_source_dir, small_sky_order1_dir, sm
     flags = {
         "strict": True,  # more intensive checks
         "fail_fast": False,  # check everything, and just return true/false
-        "verbose": True,  # don't bother printing anything.
+        "verbose": False,  # don't bother printing anything.
     }
     assert is_valid_catalog(small_sky_source_dir, **flags)
     assert is_valid_catalog(small_sky_order1_dir, **flags)
