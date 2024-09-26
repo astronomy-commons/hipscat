@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
 import warnings
 from pathlib import Path
 from typing import List, Tuple, Union
@@ -9,11 +8,12 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 from mocpy import MOC
-from typing_extensions import Self, TypeAlias
+from typing_extensions import Self
 from upath import UPath
 
 import hats.pixel_math.healpix_shim as hp
-from hats.catalog.dataset import BaseCatalogInfo, Dataset
+from hats.catalog.dataset import Dataset
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.catalog.partition_info import PartitionInfo
 from hats.io import file_io, paths
 from hats.io.file_io import read_parquet_metadata
@@ -35,12 +35,9 @@ class HealpixDataset(Dataset):
         Norder=/Dir=/Npix=.parquet
     """
 
-    CatalogInfoClass: TypeAlias = BaseCatalogInfo
-    catalog_info: CatalogInfoClass
-
     def __init__(
         self,
-        catalog_info: CatalogInfoClass,
+        catalog_info: TableProperties,
         pixels: PixelInputTypes,
         catalog_path: str | Path | UPath | None = None,
         moc: MOC | None = None,
@@ -49,7 +46,7 @@ class HealpixDataset(Dataset):
         """Initializes a Catalog
 
         Args:
-            catalog_info: CatalogInfo object with catalog metadata
+            catalog_info: TableProperties object with catalog metadata
             pixels: Specifies the pixels contained in the catalog. Can be either a
                 list of HealpixPixel, `PartitionInfo object`, or a `PixelTree` object
             catalog_path: If the catalog is stored on disk, specify the location of the catalog
@@ -92,7 +89,7 @@ class HealpixDataset(Dataset):
         raise TypeError("Pixels must be of type PartitionInfo, PixelTree, or List[HealpixPixel]")
 
     @classmethod
-    def _read_args(cls, catalog_base_dir: str | Path | UPath) -> Tuple[CatalogInfoClass, PartitionInfo]:
+    def _read_args(cls, catalog_base_dir: str | Path | UPath) -> Tuple[TableProperties, PartitionInfo]:
         args = super()._read_args(catalog_base_dir)
         partition_info = PartitionInfo.read_from_dir(catalog_base_dir)
         return args + (partition_info,)
@@ -184,7 +181,8 @@ class HealpixDataset(Dataset):
         to None, as updating would require a scan over the new pixel sizes."""
         filtered_tree = filter_by_moc(self.pixel_tree, moc)
         filtered_moc = self.moc.intersection(moc) if self.moc is not None else None
-        filtered_catalog_info = dataclasses.replace(self.catalog_info, total_rows=None)
+        filtered_catalog_info = self.catalog_info.model_copy()
+        filtered_catalog_info.total_rows = None
         return self.__class__(filtered_catalog_info, filtered_tree, moc=filtered_moc, schema=self.schema)
 
     def align(

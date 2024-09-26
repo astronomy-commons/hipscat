@@ -7,7 +7,7 @@ import numpy as np
 from upath import UPath
 
 import hats.pixel_math.healpix_shim as hp
-from hats.catalog.dataset.catalog_info_factory import from_catalog_dir
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.catalog.partition_info import PartitionInfo
 from hats.io import get_common_metadata_pointer, get_parquet_metadata_pointer, get_partition_info_pointer
 from hats.io.file_io import read_parquet_dataset
@@ -37,7 +37,7 @@ def is_valid_catalog(
             progress, and approximate sky coverage?
 
     Returns:
-        True if both the catalog_info and partition_info files are
+        True if both the properties and partition_info files are
         valid, False otherwise
     """
     if not strict:
@@ -65,7 +65,7 @@ def is_valid_catalog(
         is_valid = False
 
     if not is_catalog_info_valid(pointer):
-        handle_error("catalog_info.json file does not exist or is invalid.")
+        handle_error("properties file does not exist or is invalid.")
 
     if not is_partition_info_valid(pointer):
         handle_error("partition_info.csv file does not exist.")
@@ -114,6 +114,7 @@ def is_valid_catalog(
         "_common_metadata",
         "_metadata",
         "catalog_info.json",
+        "properties",
         "provenance_info.json",
         "partition_info.csv",
         "point_map.fits",
@@ -155,17 +156,17 @@ def is_valid_catalog(
 
 
 def is_catalog_info_valid(pointer: str | Path | UPath) -> bool:
-    """Checks if catalog_info is valid for a given base catalog pointer
+    """Checks if properties file is valid for a given base catalog pointer
 
     Args:
         pointer (UPath): pointer to base catalog directory
 
     Returns:
-        True if the catalog_info file exists, and it is correctly formatted,
+        True if the properties file exists, and it is correctly formatted,
         False otherwise
     """
     try:
-        from_catalog_dir(pointer)
+        TableProperties.read_from_dir(pointer)
     except (FileNotFoundError, ValueError, NotImplementedError):
         return False
     return True

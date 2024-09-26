@@ -1,13 +1,12 @@
-import json
 import os
 
 import pandas as pd
 import pyarrow as pa
 import pytest
 
-from hats.catalog import CatalogType
 from hats.catalog.association_catalog.association_catalog import AssociationCatalog
 from hats.catalog.association_catalog.partition_join_info import PartitionJoinInfo
+from hats.catalog.dataset.table_properties import TableProperties
 from hats.loaders import read_hats
 from hats.pixel_math import HealpixPixel
 
@@ -25,18 +24,6 @@ def test_init_catalog(association_catalog_info, association_catalog_join_pixels)
     for hp_pixel in catalog.get_healpix_pixels():
         assert hp_pixel in [HealpixPixel(0, 11)]
         assert hp_pixel in catalog.pixel_tree
-
-
-def test_wrong_catalog_type(association_catalog_info, association_catalog_join_pixels):
-    association_catalog_info.catalog_type = CatalogType.OBJECT
-    with pytest.raises(ValueError, match="catalog_type"):
-        AssociationCatalog(association_catalog_info, [HealpixPixel(0, 11)], association_catalog_join_pixels)
-
-
-def test_wrong_catalog_info_type(catalog_info, association_catalog_join_pixels):
-    catalog_info.catalog_type = CatalogType.ASSOCIATION
-    with pytest.raises(TypeError, match="catalog_info"):
-        AssociationCatalog(catalog_info, [HealpixPixel(0, 11)], association_catalog_join_pixels)
 
 
 def test_wrong_join_pixels_type(association_catalog_info):
@@ -83,13 +70,12 @@ def test_empty_directory(tmp_path, association_catalog_info_data, association_ca
     os.makedirs(catalog_path, exist_ok=True)
 
     ## Path exists but there's nothing there
-    with pytest.raises(FileNotFoundError, match="catalog info"):
+    with pytest.raises(FileNotFoundError, match="properties file"):
         AssociationCatalog.read_hats(catalog_path)
 
     ## catalog_info file exists - getting closer
-    file_name = catalog_path / "catalog_info.json"
-    with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write(json.dumps(association_catalog_info_data))
+    properties = TableProperties(**association_catalog_info_data)
+    properties.to_properties_file(catalog_path)
 
     with pytest.raises(FileNotFoundError, match="metadata"):
         read_hats(catalog_path)
@@ -110,9 +96,8 @@ def test_csv_round_trip(tmp_path, association_catalog_info_data, association_cat
     catalog_path = tmp_path / "empty"
     os.makedirs(catalog_path, exist_ok=True)
 
-    file_name = catalog_path / "catalog_info.json"
-    with open(file_name, "w", encoding="utf-8") as metadata_file:
-        metadata_file.write(json.dumps(association_catalog_info_data))
+    properties = TableProperties(**association_catalog_info_data)
+    properties.to_properties_file(catalog_path)
 
     with pytest.raises(FileNotFoundError, match="partition"):
         read_hats(catalog_path)
@@ -120,7 +105,7 @@ def test_csv_round_trip(tmp_path, association_catalog_info_data, association_cat
     file_name = catalog_path / "partition_info.csv"
     with open(file_name, "w", encoding="utf-8") as metadata_file:
         # dump some garbage in there - just needs to exist.
-        metadata_file.write(json.dumps(association_catalog_info_data))
+        metadata_file.write("Norder,Npix")
     with pytest.raises(FileNotFoundError, match="partition"):
         read_hats(catalog_path)
 

@@ -2,7 +2,6 @@ from .file_io import (
     delete_file,
     load_csv_to_pandas,
     load_csv_to_pandas_generator,
-    load_json_file,
     load_text_file,
     make_directory,
     read_fits_image,

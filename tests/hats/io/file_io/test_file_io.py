@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,7 +6,6 @@ from hats.io.file_io import (
     delete_file,
     load_csv_to_pandas,
     load_csv_to_pandas_generator,
-    load_json_file,
     make_directory,
     read_parquet_dataset,
     read_parquet_file_to_pandas,
@@ -74,15 +71,6 @@ def test_write_string_to_file(tmp_path):
         assert data == test_string
     delete_file(test_file_path)
     assert not does_file_or_directory_exist(test_file_path)
-
-
-def test_load_json(small_sky_dir):
-    catalog_info_path = small_sky_dir / "catalog_info.json"
-    json_dict = None
-    with open(catalog_info_path, "r", encoding="utf-8") as json_file:
-        json_dict = json.load(json_file)
-    loaded_json_dict = load_json_file(catalog_info_path, encoding="utf-8")
-    assert loaded_json_dict == json_dict
 
 
 def test_load_csv_to_pandas(small_sky_source_dir):

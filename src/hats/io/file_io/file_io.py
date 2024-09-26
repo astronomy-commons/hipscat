@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import tempfile
 import warnings
 from collections.abc import Generator
@@ -91,23 +90,6 @@ def load_text_file(file_pointer: str | Path | UPath, encoding: str = "utf-8"):
         text_file = _text_file.readlines()
 
     return text_file
-
-
-def load_json_file(file_pointer: str | Path | UPath, encoding: str = "utf-8") -> dict:
-    """Load a json file to a dictionary
-
-    Args:
-        file_pointer: location of file to read
-        encoding: string encoding method used by the file
-    Returns:
-        dictionary of key value pairs loaded from the JSON file
-    """
-    file_pointer = get_upath(file_pointer)
-    json_dict = None
-    with file_pointer.open("r", encoding=encoding) as json_file:
-        json_dict = json.load(json_file)
-
-    return json_dict
 
 
 def load_csv_to_pandas(file_pointer: str | Path | UPath, **kwargs) -> pd.DataFrame:

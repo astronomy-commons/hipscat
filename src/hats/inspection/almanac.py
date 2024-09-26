@@ -6,7 +6,7 @@ from typing import List
 
 import pandas as pd
 
-from hats.catalog.catalog import CatalogType
+from hats.catalog.catalog_type import CatalogType
 from hats.catalog.dataset.dataset import Dataset
 from hats.inspection.almanac_info import AlmanacInfo
 from hats.io.file_io import file_pointer

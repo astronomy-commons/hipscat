@@ -13,7 +13,7 @@ from hats.io.file_io import (
 def test_file_or_dir_exist(small_sky_dir):
     assert does_file_or_directory_exist(small_sky_dir)
 
-    catalog_info_string = small_sky_dir / "catalog_info.json"
+    catalog_info_string = small_sky_dir / "properties"
     assert does_file_or_directory_exist(catalog_info_string)
 
 
@@ -28,8 +28,8 @@ def test_append_paths_to_pointer(tmp_path):
 
 
 def test_is_regular_file(small_sky_dir):
-    catalog_info_file = small_sky_dir / "catalog_info.json"
-    assert is_regular_file(catalog_info_file)
+    properties_file = small_sky_dir / "properties"
+    assert is_regular_file(properties_file)
 
     assert not is_regular_file(small_sky_dir)
 
@@ -39,11 +39,11 @@ def test_is_regular_file(small_sky_dir):
 
 def test_find_files_matching_path(small_sky_dir):
     ## no_wildcard
-    matching_files = find_files_matching_path(small_sky_dir, "catalog_info.json")
+    matching_files = find_files_matching_path(small_sky_dir, "properties")
     assert len(matching_files) == 1
 
-    ## wilcard in the name (matches catalog_info and provenance_info)
-    assert len(find_files_matching_path(small_sky_dir, "*.json")) == 2
+    ## wilcard in the name (matches _metadata and _common_metadata)
+    assert len(find_files_matching_path(small_sky_dir, "*metadata*")) == 2
 
 
 def test_find_files_matching_path_directory(small_sky_order1_dir):
@@ -68,10 +68,9 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
         "README.md",
         "_common_metadata",
         "_metadata",
-        "catalog_info.json",
         "partition_info.csv",
         "point_map.fits",
-        "provenance_info.json",
+        "properties",
     ]
 
     expected = [small_sky_order1_dir / file_name for file_name in expected]

@@ -1,0 +1,7 @@
+obs_collection = small_sky_order1_id_index
+dataproduct_type = index
+hats_max_rows = 1000
+hats_nrows = 131
+hats_order = 0
+hats_index_column=id
+hats_primary_table_url=small_sky

@@ -3,10 +3,8 @@ from typing import List
 import numpy as np
 import pyarrow.compute as pc
 import pyarrow.dataset as pds
-from typing_extensions import TypeAlias
 
 from hats.catalog.dataset import Dataset
-from hats.catalog.index import IndexCatalogInfo
 from hats.io import paths
 from hats.pixel_math import HealpixPixel
 from hats.pixel_math.healpix_pixel_function import get_pixel_argsort
@@ -17,9 +15,6 @@ class IndexCatalog(Dataset):
 
     Note that this is not a true "HATS Catalog", as it is not partitioned spatially.
     """
-
-    CatalogInfoClass: TypeAlias = IndexCatalogInfo
-    catalog_info: CatalogInfoClass
 
     def loc_partitions(self, ids) -> List[HealpixPixel]:
         """Find the set of partitions in the primary catalog for the ids provided.

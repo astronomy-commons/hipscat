@@ -1,0 +1,90 @@
+import pytest
+
+from hats.catalog.dataset.table_properties import TableProperties
+
+
+@pytest.mark.parametrize("data_dir", ["catalog", "dataset", "index_catalog", "margin_cache"])
+def test_read_from_file_round_trip(test_data_dir, data_dir, tmp_path):
+    dataset_path = test_data_dir / "info_only" / data_dir
+
+    table_properties = TableProperties.read_from_dir(dataset_path)
+    table_properties.to_properties_file(tmp_path)
+    round_trip_properties = TableProperties.read_from_dir(tmp_path)
+
+    assert table_properties == round_trip_properties
+
+    kwarg_properties = TableProperties(**round_trip_properties.model_dump(by_alias=False, exclude_none=True))
+    assert table_properties == kwarg_properties
+
+
+def test_properties_parsing():
+    table_properties = TableProperties(
+        catalog_name="foo",
+        catalog_type="index",
+        total_rows=15,
+        extra_columns="a , b",
+        indexing_column="a",
+        primary_catalog="bar",
+        unexpected_kwarg="how did this get here",
+    )
+    assert table_properties.extra_columns == ["a", "b"]
+
+    # unexpected_kwarg is not part of the named args, so it shouldn't show up in the debug string
+    assert (
+        str(table_properties)
+        == """  catalog_name foo
+  catalog_type index
+  total_rows 15
+  primary_catalog bar
+  indexing_column a
+  extra_columns a b
+"""
+    )
+    table_properties_using_list = TableProperties(
+        catalog_name="foo",
+        catalog_type="index",
+        total_rows=15,
+        extra_columns=["a", "b"],
+        indexing_column="a",
+        primary_catalog="bar",
+        unexpected_kwarg="how did this get here",
+    )
+    assert table_properties_using_list == table_properties
+
+
+def test_properties_allowed_required():
+    # Missing required field indexing_column
+    with pytest.raises(ValueError, match="indexing_column"):
+        TableProperties(
+            catalog_name="foo",
+            catalog_type="index",
+            total_rows=15,
+            primary_catalog="bar",
+        )
+
+    # join_column is only allowed on association catalogs
+    with pytest.raises(ValueError, match="join_column"):
+        TableProperties(
+            catalog_name="foo",
+            catalog_type="index",
+            total_rows=15,
+            indexing_column="a",
+            primary_catalog="bar",
+            join_column="b",
+        )
+
+
+def test_read_from_dir_branches(
+    small_sky_dir,
+    small_sky_order1_dir,
+    association_catalog_path,
+    small_sky_source_object_index_dir,
+    margin_catalog_path,
+    small_sky_source_dir,
+):
+    TableProperties.read_from_dir(small_sky_dir)
+    TableProperties.read_from_dir(small_sky_order1_dir)
+    TableProperties.read_from_dir(association_catalog_path)
+    TableProperties.read_from_dir(small_sky_source_object_index_dir)
+    TableProperties.read_from_dir(margin_catalog_path)
+    TableProperties.read_from_dir(small_sky_source_dir)

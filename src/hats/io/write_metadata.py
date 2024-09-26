@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import dataclasses
-import json
-from datetime import datetime
-from importlib.metadata import version
 from pathlib import Path
 
 import numpy as np
@@ -13,72 +9,6 @@ import pandas as pd
 from upath import UPath
 
 from hats.io import file_io, paths
-from hats.pixel_math.healpix_pixel import HealpixPixel
-
-
-class HatsEncoder(json.JSONEncoder):
-    """Special json encoder for types commonly encountered with hats.
-
-    NB: This will only be used by JSON encoding when encountering a type
-    that is unhandled by the default encoder.
-    """
-
-    def default(self, o):
-        if isinstance(o, Path):
-            return str(o)
-        if isinstance(o, (type, np.dtype, pd.core.dtypes.base.ExtensionDtype)):
-            return str(o)
-        if isinstance(o, HealpixPixel):
-            return str(o)
-        if np.issubdtype(o.dtype, np.integer):
-            return int(o)
-        if isinstance(o, np.ndarray):
-            return o.tolist()
-        return super().default(o)  # pragma: no cover
-
-
-def write_json_file(metadata_dictionary: dict, file_pointer: str | Path | UPath):
-    """Convert metadata_dictionary to a json string and print to file.
-
-    Args:
-        metadata_dictionary (:obj:`dictionary`): a dictionary of key-value pairs
-        file_pointer (str): destination for the json file
-    """
-    dumped_metadata = json.dumps(metadata_dictionary, indent=4, cls=HatsEncoder)
-    file_io.write_string_to_file(file_pointer, dumped_metadata + "\n")
-
-
-def write_catalog_info(catalog_base_dir, dataset_info):
-    """Write a catalog_info.json file with catalog metadata
-
-    Args:
-        catalog_base_dir (str): base directory for catalog, where file will be written
-        dataset_info (:obj:`BaseCatalogInfo`) base metadata for the catalog
-    """
-    metadata = dataclasses.asdict(dataset_info)
-    catalog_info_pointer = paths.get_catalog_info_pointer(catalog_base_dir)
-
-    write_json_file(metadata, catalog_info_pointer)
-
-
-def write_provenance_info(catalog_base_dir: str | Path | UPath, dataset_info, tool_args: dict):
-    """Write a provenance_info.json file with all assorted catalog creation metadata
-
-    Args:
-        catalog_base_dir (str): base directory for catalog, where file will be written
-        dataset_info (:obj:`BaseCatalogInfo`) base metadata for the catalog
-        tool_args (:obj:`dict`): dictionary of additional arguments provided by the tool creating
-            this catalog.
-    """
-    metadata = dataclasses.asdict(dataset_info)
-    metadata["version"] = version("hats")
-    now = datetime.now()
-    metadata["generation_date"] = now.strftime("%Y.%m.%d")
-
-    metadata["tool_args"] = tool_args
-
-    metadata_pointer = paths.get_provenance_pointer(catalog_base_dir)
-    write_json_file(metadata, metadata_pointer)
 
 
 def write_partition_info(catalog_base_dir: str | Path | UPath, destination_healpix_pixel_map: dict):
