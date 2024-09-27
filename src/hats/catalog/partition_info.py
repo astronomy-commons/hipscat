@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 from upath import UPath
+import hats.pixel_math.healpix_shim as hp
 
 from hats.io import file_io, paths
 from hats.io.parquet_metadata import (
@@ -268,3 +269,10 @@ class PartitionInfo:
             A `PartitionInfo` object with the same healpix pixels
         """
         return cls(healpix_pixels)
+
+    def calculate_fractional_coverage(self):
+        """Calculate what fraction of the sky is covered by partition tiles."""
+        pixel_orders = [p.order for p in self.pixel_list]
+        cov_order, cov_count = np.unique(pixel_orders, return_counts=True)
+        area_by_order = [hp.nside2pixarea(hp.order2nside(order), degrees=True) for order in cov_order]
+        return (area_by_order * cov_count).sum() / 41253

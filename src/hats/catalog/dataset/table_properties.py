@@ -135,6 +135,8 @@ class TableProperties(BaseModel):
     @field_serializer("default_columns", "extra_columns")
     def serialize_as_space_delimited_list(self, str_list: Iterable[str]) -> str:
         """Convert a python list of strings into a space-delimited string."""
+        if str_list is None:
+            return None
         return " ".join(str_list)
 
     @model_validator(mode="after")
@@ -159,7 +161,7 @@ class TableProperties(BaseModel):
             raise ValueError(
                 f"Missing required property for table type {self.catalog_type}: {missing_required}"
             )
-    
+
         # Check against all known properties - catches typos.
         non_allowed = set(self.__pydantic_extra__.keys()) - set(EXTRA_ALLOWED_FIELDS)
         if len(non_allowed) > 0:
