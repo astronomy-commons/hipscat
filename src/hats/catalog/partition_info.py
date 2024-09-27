@@ -24,7 +24,6 @@ class PartitionInfo:
     """Container class for per-partition info."""
 
     METADATA_ORDER_COLUMN_NAME = "Norder"
-    METADATA_DIR_COLUMN_NAME = "Dir"
     METADATA_PIXEL_COLUMN_NAME = "Npix"
 
     def __init__(self, pixel_list: List[HealpixPixel], catalog_base_dir: str = None) -> None:
@@ -98,10 +97,9 @@ class PartitionInfo:
         batches = [
             [
                 pa.RecordBatch.from_arrays(
-                    [[pixel.order], [pixel.dir], [pixel.pixel]],
+                    [[pixel.order], [pixel.pixel]],
                     names=[
                         self.METADATA_ORDER_COLUMN_NAME,
-                        self.METADATA_DIR_COLUMN_NAME,
                         self.METADATA_PIXEL_COLUMN_NAME,
                     ],
                 )
@@ -254,12 +252,10 @@ class PartitionInfo:
         partition_info_dict = {
             PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
             PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],
-            PartitionInfo.METADATA_DIR_COLUMN_NAME: [],
         }
         for pixel in self.pixel_list:
             partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(pixel.order)
             partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(pixel.pixel)
-            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(pixel.dir)
         return pd.DataFrame.from_dict(partition_info_dict)
 
     @classmethod

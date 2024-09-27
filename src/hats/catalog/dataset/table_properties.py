@@ -12,8 +12,8 @@ from hats.io import file_io
 
 ## catalog_name, catalog_type, and total_rows are allowed for ALL types
 CATALOG_TYPE_ALLOWED_FIELDS = {
-    CatalogType.OBJECT: ["ra_column", "dec_column"],
-    CatalogType.SOURCE: ["primary_catalog", "ra_column", "dec_column"],
+    CatalogType.OBJECT: ["ra_column", "dec_column", "default_columns"],
+    CatalogType.SOURCE: ["primary_catalog", "ra_column", "dec_column", "default_columns"],
     CatalogType.ASSOCIATION: [
         "primary_catalog",
         "primary_column",
@@ -24,7 +24,7 @@ CATALOG_TYPE_ALLOWED_FIELDS = {
         "contains_leaf_files",
     ],
     CatalogType.INDEX: ["primary_catalog", "indexing_column", "extra_columns"],
-    CatalogType.MARGIN: ["primary_catalog", "margin_threshold", "ra_column", "dec_column"],
+    CatalogType.MARGIN: ["primary_catalog", "margin_threshold", "ra_column", "dec_column", "default_columns"],
 }
 
 ## catalog_name, catalog_type, and total_rows are required for ALL types
@@ -42,6 +42,41 @@ CATALOG_TYPE_REQUIRED_FIELDS = {
     CatalogType.MARGIN: ["primary_catalog", "margin_threshold"],
 }
 
+# All additional properties in the HATS recommendation.
+EXTRA_ALLOWED_FIELDS = [
+    "addendum_did",
+    "bib_reference",
+    "bib_reference_url",
+    "creator_did",
+    "data_ucd",
+    "hats_builder",
+    "hats_cols_sort",
+    "hats_cols_survey_id",
+    "hats_copyright",
+    "hats_creation_date",
+    "hats_creator",
+    "hats_estsize",
+    "hats_frame",
+    "hats_max_rows",
+    "hats_order",
+    "hats_progenitor_url",
+    "hats_release_date",
+    "hats_service_url",
+    "hats_status",
+    "hats_version",
+    "moc_sky_fraction",
+    "obs_ack",
+    "obs_copyright",
+    "obs_copyright_url",
+    "obs_description",
+    "obs_regime",
+    "obs_title",
+    "prov_progenitor",
+    "publisher_id",
+    "t_max",
+    "t_min",
+]
+
 
 class TableProperties(BaseModel):
     """Container class for catalog metadata"""
@@ -52,6 +87,8 @@ class TableProperties(BaseModel):
 
     ra_column: Optional[str] = Field(default=None, alias="hats_col_j2000_ra")
     dec_column: Optional[str] = Field(default=None, alias="hats_col_j2000_dec")
+    default_columns: Optional[List[str]] = Field(default=None, alias="hats_cols_default")
+    """Which columns should be read from parquet files, when user doesn't otherwise specify."""
 
     primary_catalog: Optional[str] = Field(default=None, alias="hats_primary_table_url")
     """Reference to object catalog. Relevant for nested, margin, association, and index."""
@@ -86,7 +123,7 @@ class TableProperties(BaseModel):
     ## Allow any extra keyword args to be stored on the properties object.
     model_config = ConfigDict(extra="allow", populate_by_name=True, use_enum_values=True)
 
-    @field_validator("extra_columns", mode="before")
+    @field_validator("default_columns", "extra_columns", mode="before")
     @classmethod
     def space_delimited_list(cls, str_value: str) -> List[str]:
         """Convert a space-delimited list string into a python list of strings."""
@@ -95,7 +132,7 @@ class TableProperties(BaseModel):
             return list(filter(None, re.split(";| |,|\n", str_value)))
         return str_value
 
-    @field_serializer("extra_columns")
+    @field_serializer("default_columns", "extra_columns")
     def serialize_as_space_delimited_list(self, str_list: Iterable[str]) -> str:
         """Convert a python list of strings into a space-delimited string."""
         return " ".join(str_list)
@@ -122,6 +159,11 @@ class TableProperties(BaseModel):
             raise ValueError(
                 f"Missing required property for table type {self.catalog_type}: {missing_required}"
             )
+    
+        # Check against all known properties - catches typos.
+        non_allowed = set(self.__pydantic_extra__.keys()) - set(EXTRA_ALLOWED_FIELDS)
+        if len(non_allowed) > 0:
+            raise ValueError(f"Unexpected extra property: {non_allowed}")
         return self
 
     def explicit_dict(self):

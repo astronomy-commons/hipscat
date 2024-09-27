@@ -25,11 +25,11 @@ def test_properties_parsing():
         extra_columns="a , b",
         indexing_column="a",
         primary_catalog="bar",
-        unexpected_kwarg="how did this get here",
+        hats_copyright="LINCC Frameworks 2024",
     )
     assert table_properties.extra_columns == ["a", "b"]
 
-    # unexpected_kwarg is not part of the named args, so it shouldn't show up in the debug string
+    # hats_copyright is not part of the named args, so it shouldn't show up in the debug string
     assert (
         str(table_properties)
         == """  catalog_name foo
@@ -47,7 +47,7 @@ def test_properties_parsing():
         extra_columns=["a", "b"],
         indexing_column="a",
         primary_catalog="bar",
-        unexpected_kwarg="how did this get here",
+        hats_copyright="LINCC Frameworks 2024",
     )
     assert table_properties_using_list == table_properties
 
@@ -71,6 +71,17 @@ def test_properties_allowed_required():
             indexing_column="a",
             primary_catalog="bar",
             join_column="b",
+        )
+
+    # extra_columnsss is a typo
+    with pytest.raises(ValueError, match="extra_columnsss"):
+        TableProperties(
+            catalog_name="foo",
+            catalog_type="index",
+            total_rows=15,
+            indexing_column="a",
+            primary_catalog="bar",
+            extra_columnsss=["beep"],
         )
 
 
