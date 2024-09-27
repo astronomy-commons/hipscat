@@ -8,7 +8,7 @@ import hats.pixel_math.healpix_shim as hp
 from hats.pixel_math.spatial_index import (
     SPATIAL_INDEX_ORDER,
     compute_spatial_index,
-    spatial_to_healpix_index,
+    healpix_to_spatial_index,
     spatial_index_to_healpix,
 )
 
@@ -153,7 +153,7 @@ def test_healpix_to_hipscat_id_single():
         [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
     actual_hipscat_ids = compute_spatial_index(lon, lat)
-    test_hipscat_ids = [spatial_to_healpix_index(o, p) for o, p in zip(orders, pixels)]
+    test_hipscat_ids = [healpix_to_spatial_index(o, p) for o, p in zip(orders, pixels)]
     assert np.all(test_hipscat_ids == actual_hipscat_ids)
 
 
@@ -165,5 +165,5 @@ def test_healpix_to_hipscat_id_array():
         [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
     actual_hipscat_ids = compute_spatial_index(lon, lat)
-    test_hipscat_ids = spatial_to_healpix_index(orders, pixels)
+    test_hipscat_ids = healpix_to_spatial_index(orders, pixels)
     assert np.all(test_hipscat_ids == actual_hipscat_ids)
