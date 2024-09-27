@@ -33,7 +33,6 @@ def time_test_cone_filter_multiple_order():
             "catalog_name": "test_name",
             "catalog_type": "object",
             "total_rows": 10,
-            "epoch": "J2000",
             "ra_column": "ra",
             "dec_column": "dec",
         }

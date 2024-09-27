@@ -13,12 +13,13 @@ from upath import UPath
 from hats.io.file_io.file_pointer import get_upath
 from hats.pixel_math.healpix_pixel import INVALID_PIXEL, HealpixPixel
 
-ORDER_DIRECTORY_PREFIX = "Norder"
-DIR_DIRECTORY_PREFIX = "Dir"
-PIXEL_DIRECTORY_PREFIX = "Npix"
-JOIN_ORDER_DIRECTORY_PREFIX = "join_Norder"
-JOIN_DIR_DIRECTORY_PREFIX = "join_Dir"
-JOIN_PIXEL_DIRECTORY_PREFIX = "join_Npix"
+PARTITION_ORDER = "Norder"
+PARTITION_DIR = "Dir"
+PARTITION_PIXEL = "Npix"
+
+MARGIN_ORDER = "margin_Norder"
+MARGIN_DIR = "margin_Dir"
+MARGIN_PIXEL = "margin_Npix"
 
 PARTITION_INFO_FILENAME = "partition_info.csv"
 PARTITION_JOIN_INFO_FILENAME = "partition_join_info.csv"
@@ -62,7 +63,7 @@ def pixel_directory(
         raise ValueError("One of pixel_number or directory_number is required to create pixel directory")
     return create_hive_directory_name(
         catalog_base_dir,
-        [ORDER_DIRECTORY_PREFIX, DIR_DIRECTORY_PREFIX],
+        [PARTITION_ORDER, PARTITION_DIR],
         [norder, ndir],
     )
 
@@ -127,9 +128,9 @@ def pixel_catalog_files(
         base_path
         + fs.sep.join(
             [
-                f"{ORDER_DIRECTORY_PREFIX}={pixel.order}",
-                f"{DIR_DIRECTORY_PREFIX}={pixel.dir}",
-                f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet" + url_params,
+                f"{PARTITION_ORDER}={pixel.order}",
+                f"{PARTITION_DIR}={pixel.dir}",
+                f"{PARTITION_PIXEL}={pixel.pixel}.parquet" + url_params,
             ]
         )
         for pixel in pixels
@@ -193,9 +194,9 @@ def pixel_catalog_file(
 
     return (
         catalog_base_dir
-        / f"{ORDER_DIRECTORY_PREFIX}={pixel.order}"
-        / f"{DIR_DIRECTORY_PREFIX}={pixel.dir}"
-        / f"{PIXEL_DIRECTORY_PREFIX}={pixel.pixel}.parquet{url_params}"
+        / f"{PARTITION_ORDER}={pixel.order}"
+        / f"{PARTITION_DIR}={pixel.dir}"
+        / f"{PARTITION_PIXEL}={pixel.pixel}.parquet{url_params}"
     )
 
 

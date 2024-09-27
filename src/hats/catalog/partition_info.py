@@ -11,6 +11,7 @@ import pandas as pd
 import pyarrow as pa
 from upath import UPath
 
+import hats.pixel_math.healpix_shim as hp
 from hats.io import file_io, paths
 from hats.io.parquet_metadata import (
     read_row_group_fragments,
@@ -24,7 +25,6 @@ class PartitionInfo:
     """Container class for per-partition info."""
 
     METADATA_ORDER_COLUMN_NAME = "Norder"
-    METADATA_DIR_COLUMN_NAME = "Dir"
     METADATA_PIXEL_COLUMN_NAME = "Npix"
 
     def __init__(self, pixel_list: List[HealpixPixel], catalog_base_dir: str = None) -> None:
@@ -98,10 +98,9 @@ class PartitionInfo:
         batches = [
             [
                 pa.RecordBatch.from_arrays(
-                    [[pixel.order], [pixel.dir], [pixel.pixel]],
+                    [[pixel.order], [pixel.pixel]],
                     names=[
                         self.METADATA_ORDER_COLUMN_NAME,
-                        self.METADATA_DIR_COLUMN_NAME,
                         self.METADATA_PIXEL_COLUMN_NAME,
                     ],
                 )
@@ -254,12 +253,10 @@ class PartitionInfo:
         partition_info_dict = {
             PartitionInfo.METADATA_ORDER_COLUMN_NAME: [],
             PartitionInfo.METADATA_PIXEL_COLUMN_NAME: [],
-            PartitionInfo.METADATA_DIR_COLUMN_NAME: [],
         }
         for pixel in self.pixel_list:
             partition_info_dict[PartitionInfo.METADATA_ORDER_COLUMN_NAME].append(pixel.order)
             partition_info_dict[PartitionInfo.METADATA_PIXEL_COLUMN_NAME].append(pixel.pixel)
-            partition_info_dict[PartitionInfo.METADATA_DIR_COLUMN_NAME].append(pixel.dir)
         return pd.DataFrame.from_dict(partition_info_dict)
 
     @classmethod
@@ -272,3 +269,12 @@ class PartitionInfo:
             A `PartitionInfo` object with the same healpix pixels
         """
         return cls(healpix_pixels)
+
+    def calculate_fractional_coverage(self):
+        """Calculate what fraction of the sky is covered by partition tiles."""
+        pixel_orders = [p.order for p in self.pixel_list]
+        cov_order, cov_count = np.unique(pixel_orders, return_counts=True)
+        area_by_order = [hp.nside2pixarea(hp.order2nside(order), degrees=True) for order in cov_order]
+        # 41253 is the number of square degrees in a sphere
+        # https://en.wikipedia.org/wiki/Square_degree
+        return (area_by_order * cov_count).sum() / 41253

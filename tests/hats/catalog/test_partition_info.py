@@ -105,6 +105,16 @@ def test_get_highest_order(small_sky_order1_dir):
     assert highest_order == 1
 
 
+def test_calculate_fractional_coverage(small_sky_order1_dir):
+    """test the `calculate_fractional_coverage` method"""
+    partition_info_file = paths.get_parquet_metadata_pointer(small_sky_order1_dir)
+    partitions = PartitionInfo.read_from_file(partition_info_file)
+
+    fractional_coverage = partitions.calculate_fractional_coverage()
+
+    assert fractional_coverage == pytest.approx(0.083, abs=0.001)
+
+
 def test_write_to_file(tmp_path, small_sky_pixels):
     """Write out the partition info to file and make sure we can read it again."""
     partition_info_pointer = paths.get_parquet_metadata_pointer(tmp_path)
