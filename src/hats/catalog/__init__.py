@@ -7,3 +7,4 @@ from .dataset.dataset import Dataset
 from .dataset.table_properties import TableProperties
 from .margin_cache.margin_catalog import MarginCatalog
 from .partition_info import PartitionInfo
+from .association_catalog.partition_join_info import PartitionJoinInfo
