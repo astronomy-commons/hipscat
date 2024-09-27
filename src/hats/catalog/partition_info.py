@@ -275,4 +275,6 @@ class PartitionInfo:
         pixel_orders = [p.order for p in self.pixel_list]
         cov_order, cov_count = np.unique(pixel_orders, return_counts=True)
         area_by_order = [hp.nside2pixarea(hp.order2nside(order), degrees=True) for order in cov_order]
+        # 41253 is the number of square degrees in a sphere
+        # https://en.wikipedia.org/wiki/Square_degree
         return (area_by_order * cov_count).sum() / 41253
