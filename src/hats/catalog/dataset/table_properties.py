@@ -168,6 +168,11 @@ class TableProperties(BaseModel):
             raise ValueError(f"Unexpected extra property: {non_allowed}")
         return self
 
+    def copy_and_update(self, **kwargs):
+        new_properties = self.model_copy(update=kwargs)
+        TableProperties.model_validate(new_properties)
+        return new_properties
+
     def explicit_dict(self):
         """Create a dict, based on fields that have been explicitly set, and are not "extra" keys."""
         explicit = self.model_dump(by_alias=False, exclude_none=True)
