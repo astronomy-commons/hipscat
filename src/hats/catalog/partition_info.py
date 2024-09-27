@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 from upath import UPath
-import hats.pixel_math.healpix_shim as hp
 
+import hats.pixel_math.healpix_shim as hp
 from hats.io import file_io, paths
 from hats.io.parquet_metadata import (
     read_row_group_fragments,

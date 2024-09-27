@@ -112,7 +112,7 @@ def test_calculate_fractional_coverage(small_sky_order1_dir):
 
     fractional_coverage = partitions.calculate_fractional_coverage()
 
-    assert fractional_coverage == pytest.approx(.083, abs=.001)
+    assert fractional_coverage == pytest.approx(0.083, abs=0.001)
 
 
 def test_write_to_file(tmp_path, small_sky_pixels):
