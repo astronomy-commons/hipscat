@@ -1,7 +1,7 @@
 import pytest
 
 from hats.pixel_math.healpix_pixel import HealpixPixel
-from hats.pixel_math.hipscat_id import SPATIAL_INDEX_ORDER
+from hats.pixel_math.spatial_index import SPATIAL_INDEX_ORDER
 
 
 def test_pixels_equal():
@@ -16,7 +16,7 @@ def test_pixels_equal():
 
 def test_order_greater_than_max_order_fails():
     with pytest.raises(ValueError):
-        HealpixPixel(order=20, pixel=0)
+        HealpixPixel(order=30, pixel=0)
 
 
 def test_equal_pixel_hash_equal():
