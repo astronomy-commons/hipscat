@@ -34,15 +34,7 @@ def test_jagged_list():
 
 
 def test_short_list():
-    """Multiple points that will sit in the same higher-order-pixel.
-
-    There are a handful of points at (5,5), and these should be assigned
-    hipscat_id in sequential order, starting at
-    5482513871577022464 (0x4C15CD518F800000).
-
-    Interspersed are points at (1,1), which will start at
-    5476738131329810432 (0x4C0148503DC00000)
-    """
+    """Multiple points that will sit in the same higher-order-pixel."""
     ra = [5, 1, 5]
     dec = [5, 1, 5]
     result = compute_spatial_index(ra, dec)
@@ -57,15 +49,7 @@ def test_short_list():
 
 
 def test_list():
-    """Multiple points that will sit in the same higher-order-pixel.
-
-    There are a handful of points at (5,5), and these should be assigned
-    hipscat_id in sequential order, starting at
-    5482513871577022464 (0x4C15CD518F800000).
-
-    Interspersed are points at (1,1), which will start at
-    5476738131329810432 (0x4C0148503DC00000)
-    """
+    """Multiple points that will sit in the same higher-order-pixel."""
     ra = [5, 5, 5, 1, 5, 5, 5, 1, 5]
     dec = [5, 5, 5, 1, 5, 5, 5, 1, 5]
     result = compute_spatial_index(ra, dec)
@@ -93,49 +77,49 @@ def test_load():
     assert len(result) == test_num
 
 
-def test_hipscat_id_to_healpix():
+def test_spatial_index_to_healpix():
     """Test the inverse operation"""
     ids = [
-        5482513871577022464,
-        5482513871577022465,
-        5482513871577022466,
-        5476738131329810432,  # out of sequence
-        5482513871577022467,
-        5482513871577022468,
-        5482513871577022469,
-        5476738131329810433,  # out of sequence
-        5482513871577022470,
+        3458764513820540924,
+        3458764513820540924,
+        3458764513820540924,
+        3138264513820540924,  # out of sequence
+        3458764513820540924,
+        3458764513820540924,
+        3458764513820540924,
+        3138264513820540924,  # out of sequence
+        3458764513820540924,
     ]
 
     result = spatial_index_to_healpix(ids)
 
     expected = [
-        5482513871577022464,
-        5482513871577022465,
-        5482513871577022466,
-        5476738131329810432,  # out of sequence
-        5482513871577022467,
-        5482513871577022468,
-        5482513871577022469,
-        5476738131329810433,  # out of sequence
-        5482513871577022470,
+        3458764513820540924,
+        3458764513820540924,
+        3458764513820540924,
+        3138264513820540924,  # out of sequence
+        3458764513820540924,
+        3458764513820540924,
+        3458764513820540924,
+        3138264513820540924,  # out of sequence
+        3458764513820540924,
     ]
 
     npt.assert_array_equal(result, expected)
 
 
-def test_hipscat_id_to_healpix_low_order():
+def test_spatial_index_to_healpix_low_order():
     """Test the inverse operation"""
     ids = [
-        5482513871577022464,
-        5482513871577022465,
-        5482513871577022466,
-        5476738131329810432,  # out of sequence
-        5482513871577022467,
-        5482513871577022468,
-        5482513871577022469,
-        5476738131329810433,  # out of sequence
-        5482513871577022470,
+        3458764513820540924,
+        3458764513820540924,
+        3458764513820540924,
+        3138264513820540924,  # out of sequence
+        3458764513820540924,
+        3458764513820540924,
+        3458764513820540924,
+        3138264513820540924,  # out of sequence
+        3458764513820540924,
     ]
 
     result = spatial_index_to_healpix(ids, target_order=4)
@@ -145,25 +129,25 @@ def test_hipscat_id_to_healpix_low_order():
     npt.assert_array_equal(result, expected)
 
 
-def test_healpix_to_hipscat_id_single():
+def test_healpix_to_spatial_index_single():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
     pixels_at_high_order = [p * (4 ** (SPATIAL_INDEX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
         [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
-    actual_hipscat_ids = compute_spatial_index(lon, lat)
-    test_hipscat_ids = [healpix_to_spatial_index(o, p) for o, p in zip(orders, pixels)]
-    assert np.all(test_hipscat_ids == actual_hipscat_ids)
+    actual_spatial_indices = compute_spatial_index(lon, lat)
+    test_spatial_indices = [healpix_to_spatial_index(o, p) for o, p in zip(orders, pixels)]
+    assert np.all(test_spatial_indices == actual_spatial_indices)
 
 
-def test_healpix_to_hipscat_id_array():
+def test_healpix_to_spatial_index_array():
     orders = [3, 3, 4, 1]
     pixels = [0, 12, 1231, 11]
     pixels_at_high_order = [p * (4 ** (SPATIAL_INDEX_ORDER - o)) for o, p in zip(orders, pixels)]
     lon, lat = hp.pix2ang(
         [2**SPATIAL_INDEX_ORDER] * len(orders), pixels_at_high_order, nest=True, lonlat=True
     )
-    actual_hipscat_ids = compute_spatial_index(lon, lat)
-    test_hipscat_ids = healpix_to_spatial_index(orders, pixels)
-    assert np.all(test_hipscat_ids == actual_hipscat_ids)
+    actual_spatial_indices = compute_spatial_index(lon, lat)
+    test_spatial_indices = healpix_to_spatial_index(orders, pixels)
+    assert np.all(test_spatial_indices == actual_spatial_indices)
