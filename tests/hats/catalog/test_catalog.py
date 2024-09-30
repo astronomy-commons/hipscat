@@ -145,7 +145,7 @@ def test_cone_filter(small_sky_order1_catalog):
     assert filtered_pixels == [HealpixPixel(1, 44)]
 
     assert (1, 44) in filtered_catalog.pixel_tree
-    assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.catalog_info.total_rows == 0
 
     assert filtered_catalog.moc is not None
     cone_moc = MOC.from_cone(
@@ -200,7 +200,7 @@ def test_polygonal_filter(small_sky_order1_catalog):
     assert len(filtered_pixels) == 1
     assert filtered_pixels == [HealpixPixel(1, 46)]
     assert (1, 46) in filtered_catalog.pixel_tree
-    assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.catalog_info.total_rows == 0
     assert filtered_catalog.moc is not None
     ra, dec = np.array(polygon_vertices).T
     polygon_moc = MOC.from_polygon(
@@ -291,7 +291,7 @@ def test_box_filter_ra(small_sky_order1_catalog):
     assert (1, 44) in filtered_catalog.pixel_tree
     assert (1, 46) in filtered_catalog.pixel_tree
     assert len(filtered_catalog.pixel_tree.pixels[1]) == 2
-    assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.catalog_info.total_rows == 0
 
     assert filtered_catalog.moc is not None
     box_moc = generate_box_moc(ra=ra, dec=None, order=small_sky_order1_catalog.get_max_coverage_order())
@@ -310,7 +310,7 @@ def test_box_filter_wrapped_ra(small_sky_order1_catalog):
     assert (1, 44) in filtered_catalog.pixel_tree
     assert (1, 45) in filtered_catalog.pixel_tree
     assert len(filtered_catalog.pixel_tree.pixels[1]) == 2
-    assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.catalog_info.total_rows == 0
 
 
 def test_box_filter_ra_divisions_edge_cases(small_sky_order1_catalog):
@@ -377,14 +377,14 @@ def test_box_filter_dec(small_sky_order1_catalog):
     filtered_catalog = small_sky_order1_catalog.filter_by_box(dec=(10, 20))
     assert len(filtered_catalog.get_healpix_pixels()) == 0
     assert len(filtered_catalog.pixel_tree) == 0
-    assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.catalog_info.total_rows == 0
 
     filtered_catalog_1 = small_sky_order1_catalog.filter_by_box(dec=(-10, 10))
     filtered_pixels_1 = filtered_catalog_1.get_healpix_pixels()
     assert filtered_pixels_1 == [HealpixPixel(1, 47)]
     assert (1, 47) in filtered_catalog_1.pixel_tree
     assert len(filtered_catalog_1.pixel_tree) == 1
-    assert filtered_catalog_1.catalog_info.total_rows is None
+    assert filtered_catalog_1.catalog_info.total_rows == 0
 
     filtered_catalog_2 = small_sky_order1_catalog.filter_by_box(dec=(-30, -20))
     filtered_pixels_2 = filtered_catalog_2.get_healpix_pixels()
@@ -393,7 +393,7 @@ def test_box_filter_dec(small_sky_order1_catalog):
     assert (1, 46) in filtered_catalog_2.pixel_tree
     assert (1, 47) in filtered_catalog_2.pixel_tree
     assert len(filtered_catalog_2.pixel_tree) == 3
-    assert filtered_catalog_2.catalog_info.total_rows is None
+    assert filtered_catalog_2.catalog_info.total_rows == 0
 
 
 def test_box_filter_ra_and_dec(small_sky_order1_catalog):
@@ -407,7 +407,7 @@ def test_box_filter_ra_and_dec(small_sky_order1_catalog):
     assert (1, 46) in filtered_catalog.pixel_tree
     assert (1, 47) in filtered_catalog.pixel_tree
     assert len(filtered_catalog.pixel_tree.pixels[1]) == 2
-    assert filtered_catalog.catalog_info.total_rows is None
+    assert filtered_catalog.catalog_info.total_rows == 0
 
     # Check that the previous filter is the same as intersecting the ra and dec filters
     filtered_catalog_ra = small_sky_order1_catalog.filter_by_box(ra=(280, 300))
