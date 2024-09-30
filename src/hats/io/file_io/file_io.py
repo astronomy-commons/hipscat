@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import tempfile
-import warnings
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any, Tuple

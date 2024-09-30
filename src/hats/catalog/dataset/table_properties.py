@@ -172,6 +172,7 @@ class TableProperties(BaseModel):
         return self
 
     def copy_and_update(self, **kwargs):
+        """Create a validated copy of these table properties, updating the fields provided in kwargs."""
         new_properties = self.model_copy(update=kwargs)
         TableProperties.model_validate(new_properties)
         return new_properties
