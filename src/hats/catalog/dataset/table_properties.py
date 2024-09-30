@@ -130,12 +130,15 @@ class TableProperties(BaseModel):
         if isinstance(str_value, str):
             # Split on a few kinds of delimiters (just to be safe), and remove duplicates
             return list(filter(None, re.split(";| |,|\n", str_value)))
-        return str_value
+        if str_value:
+            return str_value
+        ## Convert empty strings and empty lists to None
+        return None
 
     @field_serializer("default_columns", "extra_columns")
     def serialize_as_space_delimited_list(self, str_list: Iterable[str]) -> str:
         """Convert a python list of strings into a space-delimited string."""
-        if str_list is None:
+        if str_list is None or len(str_list) == 0:
             return None
         return " ".join(str_list)
 
