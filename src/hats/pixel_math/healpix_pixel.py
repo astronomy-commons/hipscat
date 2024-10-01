@@ -5,7 +5,7 @@ from typing import List
 
 import numpy as np
 
-from hats.pixel_math.hipscat_id import SPATIAL_INDEX_ORDER
+from hats.pixel_math.spatial_index import SPATIAL_INDEX_ORDER
 
 
 @dataclass(eq=True, frozen=True, order=True)
