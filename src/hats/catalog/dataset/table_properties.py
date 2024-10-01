@@ -130,12 +130,13 @@ class TableProperties(BaseModel):
         if isinstance(str_value, str):
             # Split on a few kinds of delimiters (just to be safe), and remove duplicates
             return list(filter(None, re.split(";| |,|\n", str_value)))
-        return str_value
+        ## Convert empty strings and empty lists to None
+        return str_value if str_value else None
 
     @field_serializer("default_columns", "extra_columns")
     def serialize_as_space_delimited_list(self, str_list: Iterable[str]) -> str:
         """Convert a python list of strings into a space-delimited string."""
-        if str_list is None:
+        if str_list is None or len(str_list) == 0:
             return None
         return " ".join(str_list)
 
@@ -169,6 +170,7 @@ class TableProperties(BaseModel):
         return self
 
     def copy_and_update(self, **kwargs):
+        """Create a validated copy of these table properties, updating the fields provided in kwargs."""
         new_properties = self.model_copy(update=kwargs)
         TableProperties.model_validate(new_properties)
         return new_properties

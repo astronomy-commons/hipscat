@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import tempfile
-import warnings
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any, Tuple
@@ -228,17 +227,7 @@ def read_fits_image(map_file_pointer: str | Path | UPath):
         with map_file_pointer.open("rb") as _map_file:
             map_data = _map_file.read()
             _tmp_file.write(map_data)
-            map_fits_image = hp.read_map(_tmp_file.name, nest=True, h=True)
-            header_dict = dict(map_fits_image[1])
-            if header_dict["ORDERING"] != "NESTED":
-                warnings.warn(
-                    "point_map.fits file written in RING ordering, due to "
-                    "https://github.com/astronomy-commons/hats/issues/271. "
-                    "Converting to NESTED."
-                )
-                map_fits_image = hp.read_map(_tmp_file.name)
-                return map_fits_image
-            return map_fits_image[0]
+            return hp.read_map(_tmp_file.name, nest=True)
 
 
 def write_fits_image(histogram: np.ndarray, map_file_pointer: str | Path | UPath):
@@ -252,7 +241,7 @@ def write_fits_image(histogram: np.ndarray, map_file_pointer: str | Path | UPath
     map_file_pointer = get_upath(map_file_pointer)
     with tempfile.NamedTemporaryFile() as _tmp_file:
         with map_file_pointer.open("wb") as _map_file:
-            hp.write_map(_tmp_file.name, histogram, overwrite=True, dtype=np.int64, nest=True)
+            hp.write_map(_tmp_file.name, histogram, overwrite=True, dtype=np.int32, nest=True, coord="CEL")
             _map_file.write(_tmp_file.read())
 
 
