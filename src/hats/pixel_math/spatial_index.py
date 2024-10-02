@@ -43,7 +43,7 @@ def spatial_index_to_healpix(ids: List[int], target_order: int = SPATIAL_INDEX_O
     return np.array(ids) >> (2 * delta_order)
 
 
-def healpix_to_spatial_index(order: int | List[int], pixel: int | List[int]) -> np.uint64 | np.ndarray:
+def healpix_to_spatial_index(order: int | List[int], pixel: int | List[int]) -> np.int64 | np.ndarray:
     """Convert a healpix pixel to the healpix index
 
     This maps the healpix pixel to the lowest pixel number within that pixel at order 29.
