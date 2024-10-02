@@ -56,7 +56,7 @@ def healpix_to_spatial_index(order: int | List[int], pixel: int | List[int]) -> 
     Returns:
         healpix index or numpy array of healpix indices
     """
-    order = np.uint64(order)
-    pixel = np.uint64(pixel)
+    order = np.int64(order)
+    pixel = np.int64(pixel)
     pixel_higher_order = pixel * (4 ** (SPATIAL_INDEX_ORDER - order))
     return pixel_higher_order
