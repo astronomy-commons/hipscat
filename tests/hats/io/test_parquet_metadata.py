@@ -104,12 +104,12 @@ def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
 
     index_parquet_path = temp_path / "Parts=0" / "part_000_of_001.parquet"
     file_io.make_directory(temp_path / "Parts=0")
-    basic_index = pd.DataFrame({"_hipscat_id": [4000, 4001], "ps1_objid": [700, 800]})
+    basic_index = pd.DataFrame({"_healpix_29": [4000, 4001], "ps1_objid": [700, 800]})
     file_io.write_dataframe_to_parquet(basic_index, index_parquet_path)
 
     index_catalog_parquet_metadata = pa.schema(
         [
-            pa.field("_hipscat_id", pa.int64()),
+            pa.field("_healpix_29", pa.int64()),
             pa.field("ps1_objid", pa.int64()),
         ]
     )

@@ -65,7 +65,6 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
 
     expected = [
         "Norder=1",
-        "README.md",
         "_common_metadata",
         "_metadata",
         "partition_info.csv",

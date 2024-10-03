@@ -1,4 +1,4 @@
-"""Test construction (and de-construction) of the hipscat ID"""
+"""Test construction (and de-construction) of the healpix-based spatial index"""
 
 import numpy as np
 import numpy.testing as npt
