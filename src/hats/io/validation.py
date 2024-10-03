@@ -129,8 +129,8 @@ def is_valid_catalog(
     )
 
     parquet_path_pixels = []
-    for hips_file in dataset.files:
-        relative_path = hips_file[len(dataset_path) :]
+    for hats_file in dataset.files:
+        relative_path = hats_file[len(dataset_path) :]
         healpix_pixel = get_healpix_from_path(relative_path)
         if healpix_pixel == INVALID_PIXEL:
             handle_error(f"Could not derive partition pixel from parquet path: {relative_path}")
