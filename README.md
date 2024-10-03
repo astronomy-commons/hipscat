@@ -12,7 +12,7 @@
 [![Read the Docs](https://img.shields.io/readthedocs/hats)](https://hats.readthedocs.io/)
 [![benchmarks](https://img.shields.io/github/actions/workflow/status/astronomy-commons/hats/asv-main.yml?label=benchmarks)](https://astronomy-commons.github.io/hats/)
 
-## Hierarchal Adaptive Tiling Scheme
+## Hierarchical Adaptive Tiling Scheme
 
 A HATS catalog is a partitioning of objects on a sphere. Its purpose is for 
 storing data from large astronomy surveys, but could probably be used for other 
