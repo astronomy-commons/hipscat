@@ -13,7 +13,8 @@ from typing_extensions import Self, TypeAlias
 from upath import UPath
 
 import hipscat.pixel_math.healpix_shim as hp
-from hipscat.catalog.dataset import BaseCatalogInfo, Dataset
+from hipscat.catalog.catalog_info import CatalogInfo
+from hipscat.catalog.dataset import Dataset
 from hipscat.catalog.partition_info import PartitionInfo
 from hipscat.io import file_io, paths
 from hipscat.io.file_io import read_parquet_metadata
@@ -35,7 +36,7 @@ class HealpixDataset(Dataset):
         Norder=/Dir=/Npix=.parquet
     """
 
-    CatalogInfoClass: TypeAlias = BaseCatalogInfo
+    CatalogInfoClass: TypeAlias = CatalogInfo
     catalog_info: CatalogInfoClass
 
     def __init__(
