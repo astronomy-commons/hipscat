@@ -20,7 +20,7 @@ class BaseCatalogInfo:
 
     total_rows: int | None = None
     """The number of rows in the catalog. This value is undetermined when the catalog is 
-    modified by queries and spatial searches, in which case it is set to None."""
+    modified, and therefore it is set to None."""
 
     DEFAULT_TYPE = None
     """The default catalog type for this catalog info type. To be overridden by subclasses.

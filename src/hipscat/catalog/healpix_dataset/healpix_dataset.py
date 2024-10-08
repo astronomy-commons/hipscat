@@ -152,14 +152,11 @@ class HealpixDataset(Dataset):
 
         Returns:
             The number of rows in the catalog, as specified in its metadata.
-            This value is undetermined if the catalog was modified by means
-            of queries and spatial filters, in which case it raises an error.
+            This value is undetermined when the catalog is modified, and
+            therefore an error is raised.
         """
         if self.catalog_info.total_rows is None:
-            raise ValueError(
-                "The number of rows is undetermined because the catalog "
-                "was modified by filtering operations."
-            )
+            raise ValueError("The number of rows is undetermined because the catalog was modified.")
         return self.catalog_info.total_rows
 
     def get_max_coverage_order(self) -> int:
