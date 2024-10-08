@@ -17,7 +17,10 @@ class BaseCatalogInfo:
 
     catalog_name: str = ""
     catalog_type: CatalogType | None = None
+
     total_rows: int | None = None
+    """The number of rows in the catalog. This value is undetermined when the catalog is 
+    modified, and therefore it is set to None."""
 
     DEFAULT_TYPE = None
     """The default catalog type for this catalog info type. To be overridden by subclasses.
