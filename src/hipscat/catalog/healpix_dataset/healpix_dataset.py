@@ -16,7 +16,7 @@ import hipscat.pixel_math.healpix_shim as hp
 from hipscat.catalog.catalog_info import CatalogInfo
 from hipscat.catalog.dataset import Dataset
 from hipscat.catalog.partition_info import PartitionInfo
-from hipscat.inspection import plot_pixel_list
+from hipscat.inspection import plot_pixel_list, plot_pixels
 from hipscat.io import file_io, paths
 from hipscat.io.file_io import read_parquet_metadata
 from hipscat.pixel_math import HealpixPixel
@@ -232,9 +232,4 @@ class HealpixDataset(Dataset):
         )
 
     def plot_pixels(self, projection: str = "MOL", **kwargs):
-        return plot_pixel_list(
-            self.get_healpix_pixels(),
-            f"HATS HEALPix structure of {self.catalog_name}",
-            projection,
-            **kwargs,
-        )
+        return plot_pixels(self, projection, **kwargs)

@@ -31,6 +31,7 @@ from hipscat.pixel_math import HealpixPixel
 
 if TYPE_CHECKING:
     from hipscat.catalog import Catalog
+    from hipscat.catalog.healpix_dataset.healpix_dataset import HealpixDataset
 
 
 def _read_point_map(catalog_base_dir):
@@ -65,7 +66,7 @@ def plot_points(catalog: Catalog, projection="MOL", **kwargs):
     )
 
 
-def plot_pixels(catalog: Catalog, projection="MOL", **kwargs):
+def plot_pixels(catalog: HealpixDataset, projection="MOL", **kwargs):
     """Create a visual map of the pixel density of the catalog.
 
     Args:
