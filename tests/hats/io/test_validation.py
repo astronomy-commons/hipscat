@@ -66,8 +66,8 @@ def test_is_valid_catalog_strict(tmp_path, small_sky_catalog, small_sky_pixels, 
 
     # This outta do it! Add parquet files that match the _metadata pixels.
     shutil.copytree(
-        Path(small_sky_catalog.catalog_path) / "Norder=0",
-        tmp_path / "Norder=0",
+        Path(small_sky_catalog.catalog_path) / "dataset" / "Norder=0",
+        tmp_path / "dataset" / "Norder=0",
     )
 
     assert is_valid_catalog(tmp_path, **flags)
@@ -106,8 +106,8 @@ def test_is_valid_catalog_fail_fast(tmp_path, small_sky_catalog, small_sky_pixel
         is_valid_catalog(tmp_path, **flags)
 
     shutil.copytree(
-        Path(small_sky_catalog.catalog_path) / "Norder=0",
-        tmp_path / "Norder=0",
+        Path(small_sky_catalog.catalog_path) / "dataset" / "Norder=0",
+        tmp_path / "dataset" / "Norder=0",
     )
     assert is_valid_catalog(tmp_path, **flags)
 

@@ -104,8 +104,9 @@ def write_parquet_metadata(
     ]
 
     catalog_path = get_upath(catalog_path)
+    dataset_subdir = catalog_path / "dataset"
     (dataset_path, dataset) = file_io.read_parquet_dataset(
-        catalog_path,
+        dataset_subdir,
         ignore_prefixes=ignore_prefixes,
         exclude_invalid_files=True,
     )
@@ -116,7 +117,7 @@ def write_parquet_metadata(
 
     for single_file in dataset.files:
         relative_path = single_file[len(dataset_path) + 1 :]
-        single_metadata = file_io.read_parquet_metadata(catalog_path / relative_path)
+        single_metadata = file_io.read_parquet_metadata(dataset_subdir / relative_path)
 
         # Users must set the file path of each chunk before combining the metadata.
         single_metadata.set_file_path(relative_path)
@@ -136,7 +137,8 @@ def write_parquet_metadata(
     if order_by_healpix:
         argsort = get_pixel_argsort(healpix_pixels)
         metadata_collector = np.array(metadata_collector)[argsort]
-    catalog_base_dir = file_io.get_upath(output_path)
+    catalog_base_dir = get_upath(output_path)
+    file_io.make_directory(catalog_base_dir / "dataset", exist_ok=True)
     metadata_file_pointer = paths.get_parquet_metadata_pointer(catalog_base_dir)
     common_metadata_file_pointer = paths.get_common_metadata_pointer(catalog_base_dir)
 
@@ -166,9 +168,11 @@ def write_parquet_metadata_for_batches(batches: List[List[pa.RecordBatch]], outp
     """
 
     with tempfile.TemporaryDirectory() as temp_pq_file:
+        temp_dataset_dir = get_upath(temp_pq_file) / "dataset"
+        temp_dataset_dir.mkdir()
         for batch_list in batches:
             temp_info_table = pa.Table.from_batches(batch_list)
-            pq.write_to_dataset(temp_info_table, temp_pq_file)
+            pq.write_to_dataset(temp_info_table, temp_dataset_dir)
         return write_parquet_metadata(temp_pq_file, output_path=output_path)
 
 

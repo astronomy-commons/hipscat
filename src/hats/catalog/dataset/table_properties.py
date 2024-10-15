@@ -52,6 +52,7 @@ EXTRA_ALLOWED_FIELDS = [
     "hats_builder",
     "hats_cols_sort",
     "hats_cols_survey_id",
+    "hats_coordinate_epoch",
     "hats_copyright",
     "hats_creation_date",
     "hats_creator",
@@ -85,8 +86,8 @@ class TableProperties(BaseModel):
     catalog_type: CatalogType = Field(alias="dataproduct_type")
     total_rows: int = Field(alias="hats_nrows")
 
-    ra_column: Optional[str] = Field(default=None, alias="hats_col_j2000_ra")
-    dec_column: Optional[str] = Field(default=None, alias="hats_col_j2000_dec")
+    ra_column: Optional[str] = Field(default=None, alias="hats_col_ra")
+    dec_column: Optional[str] = Field(default=None, alias="hats_col_dec")
     default_columns: Optional[List[str]] = Field(default=None, alias="hats_cols_default")
     """Which columns should be read from parquet files, when user doesn't otherwise specify."""
 

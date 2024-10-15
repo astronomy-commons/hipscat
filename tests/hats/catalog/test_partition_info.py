@@ -62,7 +62,8 @@ def test_load_partition_info_from_dir_fail(tmp_path):
         PartitionInfo.read_from_dir(tmp_path)
 
     # The file is there, but doesn't have the required content.
-    metadata_filename = tmp_path / "_metadata"
+    (tmp_path / "dataset").mkdir()
+    metadata_filename = tmp_path / "dataset" / "_metadata"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.warns(UserWarning, match="slow"):
         with pytest.raises(ValueError, match="missing Norder"):
@@ -117,7 +118,7 @@ def test_calculate_fractional_coverage(small_sky_order1_dir):
 
 def test_write_to_file(tmp_path, small_sky_pixels):
     """Write out the partition info to file and make sure we can read it again."""
-    partition_info_pointer = paths.get_parquet_metadata_pointer(tmp_path)
+    partition_info_pointer = paths.get_partition_info_pointer(tmp_path)
     partition_info = PartitionInfo.from_healpix(small_sky_pixels)
     partition_info.write_to_file(partition_info_pointer)
 

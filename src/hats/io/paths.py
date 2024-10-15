@@ -21,6 +21,7 @@ MARGIN_ORDER = "margin_Norder"
 MARGIN_DIR = "margin_Dir"
 MARGIN_PIXEL = "margin_Npix"
 
+DATASET_DIR = "dataset"
 PARTITION_INFO_FILENAME = "partition_info.csv"
 PARTITION_JOIN_INFO_FILENAME = "partition_join_info.csv"
 PARQUET_METADATA_FILENAME = "_metadata"
@@ -39,7 +40,7 @@ def pixel_directory(
     One of pixel_number or directory_number is required. The directory name will
     take the HiPS standard form of::
 
-        <catalog_base_dir>/Norder=<pixel_order>/Dir=<directory number>
+        <catalog_base_dir>/dataset/Norder=<pixel_order>/Dir=<directory number>
 
     Where the directory number is calculated using integer division as::
 
@@ -61,10 +62,9 @@ def pixel_directory(
         ndir = int(npix / 10_000) * 10_000
     else:
         raise ValueError("One of pixel_number or directory_number is required to create pixel directory")
-    return create_hive_directory_name(
-        catalog_base_dir,
-        [PARTITION_ORDER, PARTITION_DIR],
-        [norder, ndir],
+
+    return (
+        get_upath(catalog_base_dir) / DATASET_DIR / f"{PARTITION_ORDER}={norder}" / f"{PARTITION_DIR}={ndir}"
     )
 
 
@@ -114,7 +114,7 @@ def pixel_catalog_files(
     Returns (List[str]):
         A list of paths to the pixels, in the same order as the input pixel list.
     """
-    catalog_base_dir = get_upath(catalog_base_dir)
+    catalog_base_dir = get_upath(catalog_base_dir) / DATASET_DIR
     fs = catalog_base_dir.fs
     base_path = str(catalog_base_dir)
     if not base_path.endswith(fs.sep):
@@ -194,30 +194,11 @@ def pixel_catalog_file(
 
     return (
         catalog_base_dir
+        / DATASET_DIR
         / f"{PARTITION_ORDER}={pixel.order}"
         / f"{PARTITION_DIR}={pixel.dir}"
         / f"{PARTITION_PIXEL}={pixel.pixel}.parquet{url_params}"
     )
-
-
-def create_hive_directory_name(base_dir, partition_token_names, partition_token_values):
-    """Create path *pointer* for a directory with hive partitioning naming.
-    This will not create the directory.
-
-    The directory name will have the form of::
-
-        <catalog_base_dir>/<name_1>=<value_1>/.../<name_n>=<value_n>
-
-    Args:
-        catalog_base_dir (UPath): base directory of the catalog (includes catalog name)
-        partition_token_names (list[string]): list of partition name parts.
-        partition_token_values (list[string]): list of partition values that
-            correspond to the token name parts.
-    """
-    partition_tokens = [
-        f"{name}={value}" for name, value in zip(partition_token_names, partition_token_values)
-    ]
-    return get_upath(base_dir).joinpath(*partition_tokens)
 
 
 def get_partition_info_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
@@ -239,7 +220,7 @@ def get_common_metadata_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     Returns:
         File Pointer to the catalog's `_common_metadata` file
     """
-    return get_upath(catalog_base_dir) / PARQUET_COMMON_METADATA_FILENAME
+    return get_upath(catalog_base_dir) / DATASET_DIR / PARQUET_COMMON_METADATA_FILENAME
 
 
 def get_parquet_metadata_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
@@ -250,7 +231,7 @@ def get_parquet_metadata_pointer(catalog_base_dir: str | Path | UPath) -> UPath:
     Returns:
         File Pointer to the catalog's `_metadata` file
     """
-    return get_upath(catalog_base_dir) / PARQUET_METADATA_FILENAME
+    return get_upath(catalog_base_dir) / DATASET_DIR / PARQUET_METADATA_FILENAME
 
 
 def get_point_map_file_pointer(catalog_base_dir: str | Path | UPath) -> UPath:

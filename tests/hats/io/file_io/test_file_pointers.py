@@ -50,7 +50,7 @@ def test_find_files_matching_path_directory(small_sky_order1_dir):
     assert len(find_files_matching_path(small_sky_order1_dir)) == 1
 
     ## wildcard in directory - will match all files at indicated depth
-    assert len(find_files_matching_path(small_sky_order1_dir, "*", "*", "*")) == 4
+    assert len(find_files_matching_path(small_sky_order1_dir, "*", "*", "*", "*")) == 4
 
 
 def test_directory_has_contents(small_sky_order1_dir, tmp_path):
@@ -64,9 +64,7 @@ def test_get_directory_contents(small_sky_order1_dir, tmp_path):
     small_sky_paths = [Path(p) for p in small_sky_contents]
 
     expected = [
-        "Norder=1",
-        "_common_metadata",
-        "_metadata",
+        "dataset",
         "partition_info.csv",
         "point_map.fits",
         "properties",

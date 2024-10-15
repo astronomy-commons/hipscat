@@ -19,7 +19,7 @@ def test_wrong_columns(association_catalog_join_pixels):
 
 
 def test_read_from_metadata(association_catalog_join_pixels, association_catalog_path):
-    info = PartitionJoinInfo.read_from_file(association_catalog_path / "_metadata")
+    info = PartitionJoinInfo.read_from_file(association_catalog_path / "dataset" / "_metadata")
     pd.testing.assert_frame_equal(info.data_frame, association_catalog_join_pixels)
 
 
@@ -59,7 +59,8 @@ def test_load_partition_join_info_from_dir_fail(tmp_path):
         PartitionJoinInfo.read_from_dir(tmp_path)
 
     # The file is there, but doesn't have the required content.
-    metadata_filename = tmp_path / "_metadata"
+    (tmp_path / "dataset").mkdir()
+    metadata_filename = tmp_path / "dataset" / "_metadata"
     empty_dataframe.to_parquet(metadata_filename)
     with pytest.warns(UserWarning, match="slow"):
         with pytest.raises(ValueError, match="missing columns"):
@@ -88,7 +89,7 @@ def test_metadata_file_round_trip(association_catalog_join_pixels, tmp_path):
     total_rows = info.write_to_metadata_files(tmp_path)
     assert total_rows == 4
 
-    new_info = PartitionJoinInfo.read_from_file(tmp_path / "_metadata")
+    new_info = PartitionJoinInfo.read_from_file(tmp_path / "dataset" / "_metadata")
     pd.testing.assert_frame_equal(new_info.data_frame, association_catalog_join_pixels)
 
 

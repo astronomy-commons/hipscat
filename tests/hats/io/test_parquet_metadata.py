@@ -25,20 +25,20 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir, small_sky_schema, check
     )
     total_rows = write_parquet_metadata(catalog_base_dir)
     assert total_rows == 131
-    check_parquet_schema(catalog_base_dir / "_metadata", small_sky_schema)
+    check_parquet_schema(catalog_base_dir / "dataset" / "_metadata", small_sky_schema)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        catalog_base_dir / "_common_metadata",
+        catalog_base_dir / "dataset" / "_common_metadata",
         small_sky_schema,
         0,
     )
     ## Re-write - should still have the same properties.
     total_rows = write_parquet_metadata(catalog_base_dir)
     assert total_rows == 131
-    check_parquet_schema(catalog_base_dir / "_metadata", small_sky_schema)
+    check_parquet_schema(catalog_base_dir / "dataset" / "_metadata", small_sky_schema)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        catalog_base_dir / "_common_metadata",
+        catalog_base_dir / "dataset" / "_common_metadata",
         small_sky_schema,
         0,
     )
@@ -59,13 +59,13 @@ def test_write_parquet_metadata_order1(
     assert total_rows == 131
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        temp_path / "_metadata",
+        temp_path / "dataset" / "_metadata",
         small_sky_schema,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        temp_path / "_common_metadata",
+        temp_path / "dataset" / "_common_metadata",
         small_sky_schema,
         0,
     )
@@ -86,13 +86,13 @@ def test_write_parquet_metadata_sorted(
     assert total_rows == 131
     ## 4 row groups for 4 partitioned parquet files
     check_parquet_schema(
-        temp_path / "_metadata",
+        temp_path / "dataset" / "_metadata",
         small_sky_schema,
         4,
     )
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        temp_path / "_common_metadata",
+        temp_path / "dataset" / "_common_metadata",
         small_sky_schema,
         0,
     )
@@ -102,8 +102,8 @@ def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
     """Create an index-like catalog, and test metadata creation."""
     temp_path = tmp_path / "index"
 
-    index_parquet_path = temp_path / "Parts=0" / "part_000_of_001.parquet"
-    file_io.make_directory(temp_path / "Parts=0")
+    index_parquet_path = temp_path / "dataset" / "Parts=0" / "part_000_of_001.parquet"
+    file_io.make_directory(temp_path / "dataset" / "Parts=0")
     basic_index = pd.DataFrame({"_healpix_29": [4000, 4001], "ps1_objid": [700, 800]})
     file_io.write_dataframe_to_parquet(basic_index, index_parquet_path)
 
@@ -117,10 +117,10 @@ def test_write_index_parquet_metadata(tmp_path, check_parquet_schema):
     total_rows = write_parquet_metadata(temp_path, order_by_healpix=False)
     assert total_rows == 2
 
-    check_parquet_schema(tmp_path / "index" / "_metadata", index_catalog_parquet_metadata)
+    check_parquet_schema(tmp_path / "index" / "dataset" / "_metadata", index_catalog_parquet_metadata)
     ## _common_metadata has 0 row groups
     check_parquet_schema(
-        tmp_path / "index" / "_common_metadata",
+        tmp_path / "index" / "dataset" / "_common_metadata",
         index_catalog_parquet_metadata,
         0,
     )
