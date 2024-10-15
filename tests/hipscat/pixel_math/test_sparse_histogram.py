@@ -5,18 +5,32 @@ import numpy.testing as npt
 import pytest
 from scipy.sparse import csr_array
 
+import hipscat.pixel_math.healpix_shim as hp
 from hipscat.pixel_math.sparse_histogram import SparseHistogram
+
+
+def test_make_empty():
+    """Tests the initialization of an empty histogram at the specified order"""
+    histogram = SparseHistogram.make_empty(5)
+    expected_hist = np.zeros(hp.order2npix(5))
+    npt.assert_array_equal(expected_hist, histogram.to_array())
 
 
 def test_read_write_round_trip(tmp_path):
     """Test that we can read what we write into a histogram file."""
-    file_name = tmp_path / "round_trip.npz"
     histogram = SparseHistogram.make_from_counts([11], [131], 0)
+
+    # Write as a sparse array
+    file_name = tmp_path / "round_trip_sparse.npz"
     histogram.to_file(file_name)
-
     read_histogram = SparseHistogram.from_file(file_name)
-
     npt.assert_array_equal(read_histogram.to_array(), histogram.to_array())
+
+    # Write as a dense 1-d numpy array
+    file_name = tmp_path / "round_trip_dense.npy"
+    histogram.to_dense_file(file_name)
+    read_histogram = np.load(str(file_name))
+    npt.assert_array_equal(read_histogram, histogram.to_array())
 
 
 def test_add_same_order():
