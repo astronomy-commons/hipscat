@@ -192,10 +192,3 @@ Given a set of ra and dec coordinates as well as the healpixel, healpix order, m
 We take a chunk of our points and generate a set matrix of points with a shape (size_of_chunk, number_of_boundary_points) with all of our data points repeated along the first axis. Then, we generate a matrix of the same shape with the boundary points repeated as well and then put both of those matrices into a `SkyCoord` so that we can calculate the separations between all of them. We also find all of the distances between adjacent boundary points, so that we can find know the distance of each boundary segment. For each data point, we find the boundary point with the minimum separation, and then find which of the two adjacent boundary points has the smaller separation from the datapoint. From there, we can do the above calculations to get the perpendicular bisector and compare this against the `margin_threshold`. For checking around the corners of the healpixel, where the data point may not actually form a neat triangle with it's closest boundary points, we check to see if the minimum distance is less than the margin threshold and return True if it is. This way, we'll keep any data points that fall within the margin threshold but would return NaN with our perpendicular bisector calculations.
 
 To speed up our calculations, the inner loops of calculations is compiled with the `numba` JIT compiler.
-
-## Spatial Index
-
-This index is defined as a 64-bit integer with the healpix pixel of the row (at order 29)
-
-This provides us with an increasing index, that will not overlap
-between spatially partitioned data files.

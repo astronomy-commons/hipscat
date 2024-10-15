@@ -35,15 +35,16 @@ structure:
     :class: no-copybutton
     
     __ /path/to/catalogs/<catalog_name>/
-       |__ _common_metadata
-       |__ _metadata
        |__ partition_info.csv
        |__ properties
-       |__ Norder=1/
-       |   |__ Dir=0/
-       |       |__ Npix=0.parquet
-       |       |__ Npix=1.parquet
-       |__ Norder=J/
-           |__ Dir=10000/
-               |__ Npix=K.parquet
-               |__ Npix=M.parquet
+       |__ dataset/
+           |__ _common_metadata
+           |__ _metadata
+           |__ Norder=1/
+           |   |__ Dir=0/
+           |       |__ Npix=0.parquet
+           |       |__ Npix=1.parquet
+           |__ Norder=J/
+               |__ Dir=10000/
+                   |__ Npix=K.parquet
+                   |__ Npix=M.parquet

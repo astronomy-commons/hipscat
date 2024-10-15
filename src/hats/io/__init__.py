@@ -7,7 +7,6 @@ from .parquet_metadata import (
     write_parquet_metadata_for_batches,
 )
 from .paths import (
-    create_hive_directory_name,
     get_common_metadata_pointer,
     get_parquet_metadata_pointer,
     get_partition_info_pointer,

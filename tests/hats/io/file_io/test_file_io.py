@@ -105,20 +105,20 @@ def test_read_parquet_data(tmp_path):
 
 
 def test_read_parquet_dataset(small_sky_dir, small_sky_order1_dir):
-    (_, ds) = read_parquet_dataset(small_sky_dir / "Norder=0")
+    (_, ds) = read_parquet_dataset(small_sky_dir / "dataset" / "Norder=0")
 
     assert ds.count_rows() == 131
 
-    (_, ds) = read_parquet_dataset([small_sky_dir / "Norder=0" / "Dir=0" / "Npix=11.parquet"])
+    (_, ds) = read_parquet_dataset([small_sky_dir / "dataset" / "Norder=0" / "Dir=0" / "Npix=11.parquet"])
 
     assert ds.count_rows() == 131
 
     (_, ds) = read_parquet_dataset(
         [
-            small_sky_order1_dir / "Norder=1" / "Dir=0" / "Npix=44.parquet",
-            small_sky_order1_dir / "Norder=1" / "Dir=0" / "Npix=45.parquet",
-            small_sky_order1_dir / "Norder=1" / "Dir=0" / "Npix=46.parquet",
-            small_sky_order1_dir / "Norder=1" / "Dir=0" / "Npix=47.parquet",
+            small_sky_order1_dir / "dataset" / "Norder=1" / "Dir=0" / "Npix=44.parquet",
+            small_sky_order1_dir / "dataset" / "Norder=1" / "Dir=0" / "Npix=45.parquet",
+            small_sky_order1_dir / "dataset" / "Norder=1" / "Dir=0" / "Npix=46.parquet",
+            small_sky_order1_dir / "dataset" / "Norder=1" / "Dir=0" / "Npix=47.parquet",
         ]
     )
 
