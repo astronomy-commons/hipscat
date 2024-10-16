@@ -1,5 +1,27 @@
-HiPSCat - Hierarchical Progressive Survey Catalog
+HATS - Hierarchical Adaptive Tiling Scheme
 ========================================================================================
+
+HATS is a directory structure and metadata for spatially arranging large catalog survey data. 
+This was originally motivated by a desire to perform spatial cross-matching between surveys 
+at large scale, but is applicable to a range of spatial analysis and algorithms.
+
+We use healpix (`Hierarchical Equal Area isoLatitude Pixelization <https://healpix.jpl.nasa.gov/>`_)
+for the spherical pixelation, and adaptively size the partitions based on the number of objects.
+Each partition will have roughly the same number of objects, instead of dividing into equal area. 
+Because each partition is roughly the same size on disk, we can expect reasonable performance of 
+parallel operations on each partition.
+
+We use parquet as the underlying storage format, as it provides efficient storage and retrieval 
+of tabular data.
+
+The ``hats`` python package provides basic access to a catalog's metadata, and shared functionality
+for interacting with the healpix space. This allows for multiple libraries to implement parallel 
+operations on top of these utilities. Some known extensions:
+
+* `LSDB <https://lsdb.readthedocs.io/>`_ - Large Survey Database - A framework for scalable 
+  spatial analysis using ``dask`` for job scheduling and execution.
+* `hats-import <https://hipscat-import.readthedocs.io/>`_ - map reduce pipelines for converting
+  large or custom catalogs into HATS format.
 
 .. toctree::
    :maxdepth: 1
