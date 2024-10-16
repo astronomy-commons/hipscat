@@ -3,6 +3,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from numpy import frombuffer
 from scipy.sparse import csr_array
 
 import hipscat.pixel_math.healpix_shim as hp
@@ -27,9 +28,10 @@ def test_read_write_round_trip(tmp_path):
     npt.assert_array_equal(read_histogram.to_array(), histogram.to_array())
 
     # Write as a dense 1-d numpy array
-    file_name = tmp_path / "round_trip_dense.npy"
+    file_name = tmp_path / "round_trip_dense.npz"
     histogram.to_dense_file(file_name)
-    read_histogram = np.load(str(file_name))
+    with open(file_name, "rb") as file_handle:
+        read_histogram = frombuffer(file_handle.read(), dtype=np.int64)
     npt.assert_array_equal(read_histogram, histogram.to_array())
 
 
