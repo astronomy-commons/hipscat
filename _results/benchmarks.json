@@ -9,7 +9,7 @@
         "repeat": 0,
         "rounds": 2,
         "sample_time": 0.01,
-        "setup_cache_key": "benchmarks:78",
+        "setup_cache_key": "benchmarks:76",
         "type": "time",
         "unit": "seconds",
         "version": "e431b00caf270712fec98bcb3b4b887c36579beca1a9d9cdfbd9571287b975a9",
@@ -25,7 +25,7 @@
         "repeat": 0,
         "rounds": 2,
         "sample_time": 0.01,
-        "setup_cache_key": "benchmarks:78",
+        "setup_cache_key": "benchmarks:76",
         "type": "time",
         "unit": "seconds",
         "version": "11e7edc14a82f8c063938abf0cca705b6ececf3f9613d27d104ca724895f7c63",
@@ -41,7 +41,7 @@
         "repeat": 0,
         "rounds": 2,
         "sample_time": 0.01,
-        "setup_cache_key": "benchmarks:78",
+        "setup_cache_key": "benchmarks:76",
         "type": "time",
         "unit": "seconds",
         "version": "c769403a57ec6b1a91c60ffcb9686bf1549195bc2329138d8d69e193dc6a57fd",
@@ -123,7 +123,7 @@
         "warmup_time": -1
     },
     "benchmarks.time_test_cone_filter_multiple_order": {
-        "code": "def time_test_cone_filter_multiple_order():\n    \"\"\"Create a catalog cone filter where we have multiple orders in the catalog\"\"\"\n    catalog_info = CatalogInfo(\n        **{\n            \"catalog_name\": \"test_name\",\n            \"catalog_type\": \"object\",\n            \"total_rows\": 10,\n            \"epoch\": \"J2000\",\n            \"ra_column\": \"ra\",\n            \"dec_column\": \"dec\",\n        }\n    )\n    pixels = [HealpixPixel(6, 30), HealpixPixel(7, 124), HealpixPixel(7, 5000)]\n    catalog = Catalog(catalog_info, pixels)\n    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30 * 3600)\n    assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]",
+        "code": "def time_test_cone_filter_multiple_order():\n    \"\"\"Create a catalog cone filter where we have multiple orders in the catalog\"\"\"\n    catalog_info = TableProperties(\n        **{\n            \"catalog_name\": \"test_name\",\n            \"catalog_type\": \"object\",\n            \"total_rows\": 10,\n            \"ra_column\": \"ra\",\n            \"dec_column\": \"dec\",\n        }\n    )\n    pixels = [HealpixPixel(6, 30), HealpixPixel(7, 124), HealpixPixel(7, 5000)]\n    catalog = Catalog(catalog_info, pixels)\n    filtered_catalog = catalog.filter_by_cone(47.1, 6, 30 * 3600)\n    assert filtered_catalog.get_healpix_pixels() == [HealpixPixel(6, 30), HealpixPixel(7, 124)]",
         "min_run_count": 2,
         "name": "benchmarks.time_test_cone_filter_multiple_order",
         "number": 0,
@@ -134,7 +134,7 @@
         "sample_time": 0.01,
         "type": "time",
         "unit": "seconds",
-        "version": "80938a43a838f21dafc45157b1f98adffe1cdea3613d42f2b8e7ad6041ad0a52",
+        "version": "ada9f87a0abf9c0a0b0f512158bb21251f2577b5cf4a131246b2b3c4c1e67a2e",
         "warmup_time": -1
     },
     "version": 2
