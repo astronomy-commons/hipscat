@@ -219,7 +219,7 @@ def read_fits_image(map_file_pointer: str | Path | UPath):
     Args:
         file_pointer: location of file to be written
     Returns:
-        one-dimensional numpy array of long integers where the
+        one-dimensional numpy array of integers where the
         value at each index corresponds to the number of objects found at the healpix pixel.
     """
     map_file_pointer = get_upath(map_file_pointer)
