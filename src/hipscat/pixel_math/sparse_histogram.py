@@ -26,8 +26,7 @@ class SparseHistogram:
             raise ValueError("Both addends should be SparseHistogram.")
         if self.sparse_array.shape != other.sparse_array.shape:
             raise ValueError(
-                "The histogram partials have incompatible sizes due to different healpix orders. "
-                + "To start the pipeline from scratch with the current order set `resume` to False."
+                "The histogram partials have incompatible sizes due to different healpix orders."
             )
         self.sparse_array += other.sparse_array
 
