@@ -48,7 +48,8 @@ class SparseHistogram:
 
     def to_dense_file(self, file_name):
         """Persist the DENSE array to disk as a numpy array."""
-        np.save(file_name, self.to_array())
+        with open(file_name, "wb+") as file_handle:
+            file_handle.write(self.to_array().data)
 
     @classmethod
     def make_empty(cls, healpix_order=10):
