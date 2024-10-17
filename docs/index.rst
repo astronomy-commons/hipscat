@@ -20,7 +20,7 @@ operations on top of these utilities. Some known extensions:
 
 * `LSDB <https://lsdb.readthedocs.io/>`_ - Large Survey Database - A framework for scalable 
   spatial analysis using ``dask`` for job scheduling and execution.
-* `hats-import <https://hipscat-import.readthedocs.io/>`_ - map reduce pipelines for converting
+* `hats-import <https://hats-import.readthedocs.io/>`_ - map reduce pipelines for converting
   large or custom catalogs into HATS format.
 
 .. toctree::
