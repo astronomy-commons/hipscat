@@ -27,6 +27,7 @@ operations on top of these utilities. Some known extensions:
    :maxdepth: 1
    :caption: Overview
 
+   getting_started
    guide/directory_scheme
    Notebooks <notebooks>
 
@@ -37,6 +38,14 @@ operations on top of these utilities. Some known extensions:
    guide/contributing
    Pixel math <guide/pixel_math>
    API Reference <autoapi/index>
+
+Getting Started
+-------------------------------------------------------------------------------
+
+For the most part, we recommend accessing and processing HATS data using the `LSDB package
+<https://github.com/astronomy-commons/lsdb>`_ framework. LSDB provides a variety of utility
+functions as well as a lazy, distributed execution framework using Dask. However if you are are
+interested in using just the HATS package, you can find installation instructions at the :ref:`getting started page<getting_started>`
 
 Acknowledgements
 -------------------------------------------------------------------------------
