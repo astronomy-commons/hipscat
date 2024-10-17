@@ -69,7 +69,7 @@ def check_margin_bounds(r_asc, dec, pixel_order, pixel, margin_threshold, step=1
             points_coords = SkyCoord(ra=ra_matrix, dec=dec_matrix, unit="deg")
             bounds_coords = SkyCoord(ra=bounds_ra_matrix, dec=bounds_dec_matrix, unit="deg")
 
-            separations = points_coords.separation(bounds_coords)
+            separations = points_coords.separation(bounds_coords).value
 
             bisectors = np.apply_along_axis(
                 _find_minimum_distance,
