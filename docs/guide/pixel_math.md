@@ -6,7 +6,7 @@ The functions made to find the pixels that make up the border region of a given
 healpixel. Primarly used as a way to speed up the neighbor/margin caching code 
 for [hats-import](https://github.com/astronomy-commons/hats-import/). Code 
 originally created by Mario Juric for HIPS, found 
-[here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hats/healpix.py).
+[here](https://github.com/mjuric/HIPS/blob/feature/multiprocess/hipscat/healpix.py).
 
 ### get_edge
 Given a pixel pix at some order, return all
