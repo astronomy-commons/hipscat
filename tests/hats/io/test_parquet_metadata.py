@@ -8,6 +8,7 @@ import pytest
 
 from hats.io import file_io, paths
 from hats.io.parquet_metadata import (
+    aggregate_column_statistics,
     get_healpix_pixel_from_metadata,
     read_row_group_fragments,
     row_group_stat_single_value,
@@ -142,6 +143,19 @@ def test_row_group_fragments_with_dir(small_sky_order1_dir):
         num_row_groups += 1
 
     assert num_row_groups == 4
+
+
+def test_aggregate_column_statistics(small_sky_order1_dir):
+    partition_info_file = paths.get_parquet_metadata_pointer(small_sky_order1_dir)
+
+    result_frame = aggregate_column_statistics(partition_info_file)
+    assert len(result_frame) == 5
+
+    result_frame = aggregate_column_statistics(partition_info_file, exclude_hats_columns=False)
+    assert len(result_frame) == 9
+
+    result_frame = aggregate_column_statistics(partition_info_file, include_columns=["ra", "dec"])
+    assert len(result_frame) == 2
 
 
 def test_row_group_stats(small_sky_dir):
