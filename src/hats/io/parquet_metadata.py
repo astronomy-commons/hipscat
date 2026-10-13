@@ -219,7 +219,7 @@ def write_parquet_metadata(
 
     # Write out the thumbnail file.
     if create_thumbnail:
-        data_thumbnail_pointer = paths.get_data_thumbnail_pointer(catalog_path)
+        data_thumbnail_pointer = paths.get_data_thumbnail_pointer(catalog_base_dir)
         data_thumbnail = pa.Table.from_batches(first_rows, dataset.schema)
         if SPATIAL_INDEX_COLUMN in data_thumbnail.column_names:
             data_thumbnail = data_thumbnail.sort_by(SPATIAL_INDEX_COLUMN)
