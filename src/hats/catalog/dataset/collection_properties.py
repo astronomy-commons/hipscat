@@ -7,6 +7,7 @@ from pydantic import (
     BeforeValidator,
     Field,
     PlainSerializer,
+    ValidationInfo,
     field_validator,
     model_validator,
 )
@@ -41,24 +42,25 @@ class CollectionProperties(HatsProperties):
     default_index: Optional[str] = Field(default=None)
 
     all_extensions: Annotated[
-        Optional[list[str]],
+        Optional[dict[str, str]],
         Field(default=None),
-        PlainSerializer(HatsProperties.serialize_list_as_space_delimited_list),
-        BeforeValidator(HatsProperties.space_delimited_list),
+        PlainSerializer(HatsProperties.serialize_dict_as_space_delimited_list),
     ]
     """Extensions of this collection, each holding a set of additional columns, and described
-    by an ``<extension>.properties`` file. Each is listed by the path to that file, relative to the
-    collection root or absolute. The ``.properties`` suffix may be left out."""
+    by an ``<extension>.properties`` file. Maps the alias of each extension to the path to that file,
+    relative to the collection root or absolute."""
 
-    @field_validator("all_indexes", mode="before")
+    @field_validator("all_indexes", "all_extensions", mode="before")
     @classmethod
-    def index_tuples(cls, str_value: str) -> dict[str, str]:
-        """Convert a space-delimited list string into a python list of strings.
+    def space_delimited_dict(cls, str_value: str, info: ValidationInfo) -> dict[str, str]:
+        """Convert a space-delimited list string of key-value pairs into a python dict of strings.
 
         Parameters
         ----------
         str_value: str
             a space-delimited list string
+        info: ValidationInfo
+            information about the field being validated
 
         Returns
         -------
@@ -69,7 +71,7 @@ class CollectionProperties(HatsProperties):
         ------
         ValueError
             if the string list has an odd number of elements (and so is not pairs of
-            field and index name)
+            name and path)
         """
         if str_value is None:
             return None
@@ -81,7 +83,7 @@ class CollectionProperties(HatsProperties):
         str_values = list(filter(None, re.split(";| |,|\n", str_value)))
         ## Convert empty strings and empty lists to None
         if len(str_values) % 2 != 0:
-            raise ValueError("Collection all_indexes map should contain pairs of field and index name")
+            raise ValueError(f"Collection {info.field_name} should contain pairs of name and path")
         all_index_dict = {}
         for index_start in range(0, len(str_values), 2):
             key = str_values[index_start]
@@ -107,6 +109,17 @@ class CollectionProperties(HatsProperties):
                 raise ValueError("all_indexes needs to be set if default_index is set")
             if self.default_index not in self.all_indexes:
                 raise ValueError(f"default_index `{self.default_index}` not found in all_indexes")
+        return self
+
+    @model_validator(mode="after")
+    def check_extension_paths(self) -> Self:
+        """Check that each extension is listed by the path to its properties file."""
+        for alias, path in (self.all_extensions or {}).items():
+            if not path.endswith(".properties"):
+                raise ValueError(
+                    f"all_extensions path `{path}` of extension `{alias}` should point to "
+                    "an `<extension>.properties` file"
+                )
         return self
 
     @classmethod

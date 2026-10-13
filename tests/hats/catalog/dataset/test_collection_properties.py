@@ -64,6 +64,18 @@ def test_read_collection_list_parse(tmp_path):
 
     file_content = """  name= foo
   hats_primary_table_url=small_sky_order1
+  all_extensions=errors errors.properties spectra s3://bucket/spectra.properties
+"""
+    write_string_to_file(test_file_path, file_content, encoding="utf-8")
+
+    parsed_properties = CollectionProperties.read_from_dir(tmp_path)
+    assert parsed_properties.all_extensions == {
+        "errors": "errors.properties",
+        "spectra": "s3://bucket/spectra.properties",
+    }
+
+    file_content = """  name= foo
+  hats_primary_table_url=small_sky_order1
   all_margins=
   all_indexes=
 """
@@ -141,8 +153,35 @@ def test_read_collection_read_errors(tmp_path):
 """
     write_string_to_file(test_file_path, file_content, encoding="utf-8")
 
-    with pytest.raises(ValueError, match="all_indexes"):
+    with pytest.raises(ValueError, match="Collection all_indexes should contain pairs"):
         CollectionProperties.read_from_dir(tmp_path)
+
+    ## Extensions listed without the path to their properties file.
+    file_content = """  name= foo
+  hats_primary_table_url=small_sky_order1
+  all_extensions=errors
+"""
+    write_string_to_file(test_file_path, file_content, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Collection all_extensions should contain pairs"):
+        CollectionProperties.read_from_dir(tmp_path)
+
+    ## Extensions listed by a path that is not to their properties file.
+    file_content = """  name= foo
+  hats_primary_table_url=small_sky_order1
+  all_extensions=errors small_sky_order1_errors
+"""
+    write_string_to_file(test_file_path, file_content, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="should point to an `<extension>.properties` file"):
+        CollectionProperties.read_from_dir(tmp_path)
+
+    with pytest.raises(ValueError, match="path `small_sky_order1_errors` of extension `errors`"):
+        CollectionProperties(
+            name="foo",
+            hats_primary_table_url="small_sky_order1",
+            all_extensions={"errors": "small_sky_order1_errors"},
+        )
 
 
 def test_read_collection_from_file_round_trip(small_sky_collection_dir, tmp_path):
@@ -221,24 +260,26 @@ def test_collection_parsing():
     results = CollectionProperties.space_delimited_list("")
     assert results is None
 
-    results = CollectionProperties.index_tuples("id small_sky_order1_id_index")
+    results = CollectionProperties.space_delimited_dict("id small_sky_order1_id_index", None)
     assert results == {"id": "small_sky_order1_id_index"}
 
     ## Comma-delimited
-    results = CollectionProperties.index_tuples("id small_sky_order1_id_index, ra small_sky_ra_index")
+    results = CollectionProperties.space_delimited_dict(
+        "id small_sky_order1_id_index, ra small_sky_ra_index", None
+    )
     assert results == {"id": "small_sky_order1_id_index", "ra": "small_sky_ra_index"}
 
     ## Already a dict of strings
-    results = CollectionProperties.index_tuples(
-        {"id": "small_sky_order1_id_index", "ra": "small_sky_ra_index"}
+    results = CollectionProperties.space_delimited_dict(
+        {"id": "small_sky_order1_id_index", "ra": "small_sky_ra_index"}, None
     )
     assert results == {"id": "small_sky_order1_id_index", "ra": "small_sky_ra_index"}
 
     ## None or empty
-    results = CollectionProperties.index_tuples(None)
+    results = CollectionProperties.space_delimited_dict(None, None)
     assert results is None
 
-    results = CollectionProperties.index_tuples("")
+    results = CollectionProperties.space_delimited_dict("", None)
     assert results is None
 
     simple_properties = CollectionProperties(
