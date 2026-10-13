@@ -513,8 +513,10 @@ def read_parquet_file_to_pandas(
             BytesIO(file_pointer.read_bytes()), partitioning=None, is_dir=is_dir, **kwargs
         )
 
+    # Remote files keep their protocol: nested-pandas picks its reader from the path alone.
+    path = file_pointer.path if file_pointer.protocol in ("", "file") else str(file_pointer)
     return npd.read_parquet(
-        file_pointer.path,
+        path,
         filesystem=file_pointer.fs,
         partitioning=None,  # Avoid the ArrowTypeError described in #367
         is_dir=is_dir,

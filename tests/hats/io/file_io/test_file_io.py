@@ -1,8 +1,10 @@
+import nested_pandas as npd
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+from upath import UPath
 
 from hats.io import paths
 from hats.io.file_io import (
@@ -16,6 +18,7 @@ from hats.io.file_io import (
     read_parquet_file_to_pandas,
     remove_directory,
     write_dataframe_to_csv,
+    write_dataframe_to_parquet,
     write_fits_image,
     write_string_to_file,
 )
@@ -133,6 +136,19 @@ def test_read_parquet_data(tmp_path):
     dataframe_from_dir = read_parquet_file_to_pandas(test_dir)
     dataframe_from_dir = dataframe_from_dir.sort_values(list("ABCD")).reset_index(drop=True)
     pd.testing.assert_frame_equal(dataframe_from_dir, random_dfs)
+
+
+def test_read_parquet_data_remote_keeps_protocol(mocker):
+    """A remote file must reach nested-pandas with its protocol, or it is read as a local file."""
+    random_df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
+    random_df = random_df.convert_dtypes(dtype_backend="pyarrow")
+    test_file_path = UPath("memory://test_read_parquet_data_remote/test.parquet")
+    write_dataframe_to_parquet(random_df, test_file_path)
+
+    read_parquet = mocker.spy(npd, "read_parquet")
+    dataframe = read_parquet_file_to_pandas(test_file_path)
+    pd.testing.assert_frame_equal(dataframe, random_df)
+    assert read_parquet.call_args.args[0].startswith("memory://")
 
 
 def test_read_parquet_dataset(small_sky_dir, small_sky_order1_dir):
