@@ -186,7 +186,9 @@ def _leaf_columns(schema: pa.Schema) -> list[tuple[str, pa.DataType]]:
     leaves = []
 
     def _walk(dtype: pa.DataType, path: str):
-        if pa.types.is_struct(dtype):
+        if isinstance(dtype, pa.BaseExtensionType):
+            _walk(dtype.storage_type, path)
+        elif pa.types.is_struct(dtype):
             for dtype_field in dtype:
                 _walk(dtype_field.type, f"{path}.{dtype_field.name}")
         elif pa.types.is_list(dtype) or pa.types.is_large_list(dtype) or pa.types.is_fixed_size_list(dtype):
