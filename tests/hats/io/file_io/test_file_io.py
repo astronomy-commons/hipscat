@@ -282,6 +282,32 @@ def test_get_parquet_write_table_kwargs_are_valid_for_pyarrow(tmp_path, nested_s
     pq.write_table(table, tmp_path / "test.parquet", **kwargs)
 
 
+def test_get_parquet_write_table_kwargs_extension_type(tmp_path):
+    """Extension types are encoded by their storage leaves, e.g. fixed-shape tensors."""
+    tensor_type = pa.fixed_shape_tensor(pa.float32(), (2, 2))
+    storage = pa.array([[1, 2, 3, 4], [5, 6, 7, 8]], type=pa.list_(pa.float32(), 4))
+    table = pa.table(
+        {
+            "image": pa.ExtensionArray.from_storage(tensor_type, storage),
+            "id": pa.array([1, 2], type=pa.int64()),
+        }
+    )
+    kwargs = get_parquet_write_table_kwargs(
+        table.schema, write_table_kwargs={"sorting_columns": [pq.SortingColumn(1)]}
+    )
+    assert kwargs["column_encoding"] == {
+        "image.list.element": "BYTE_STREAM_SPLIT",
+        "id": "DELTA_BINARY_PACKED",
+    }
+    assert kwargs["use_dictionary"] == []
+
+    path = tmp_path / "test.parquet"
+    pq.write_table(table, path, **kwargs)
+    column = pq.read_metadata(path).row_group(0).column(0)
+    assert column.path_in_schema == "image.list.element"
+    assert "BYTE_STREAM_SPLIT" in column.encodings
+
+
 @pytest.mark.parametrize(
     "compression,expected", [("NONE", "UNCOMPRESSED"), ("SNAPPY", "SNAPPY"), ("LZ4", "LZ4")]
 )
