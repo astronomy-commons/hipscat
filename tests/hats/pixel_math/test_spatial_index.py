@@ -73,6 +73,7 @@ def test_array_like_inputs():
     dec = [5, 5, 5, 1, 5, 5, 5, 1, 5]
     expected = compute_spatial_index(ra, dec)
 
+    assert len(expected) == len(ra)
     npt.assert_array_equal(compute_spatial_index(np.array(ra), np.array(dec)), expected)
     npt.assert_array_equal(compute_spatial_index(pd.Series(ra), pd.Series(dec)), expected)
 
