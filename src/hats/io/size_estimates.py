@@ -194,8 +194,9 @@ def get_mem_size_per_row(data, cols=None):
             per-row size calculation
 
     Returns:
-        list[float]: list of memory sizes for each row in the chunk. Values may
-        be fractional (bit-packed booleans, bitmap bits); sum before rounding.
+        np.ndarray: float64 array of memory sizes for each row in the chunk.
+        Values may be fractional (bit-packed booleans, bitmap bits); sum before
+        rounding.
     """
     if isinstance(data, pd.DataFrame):
         if cols is not None:
@@ -232,5 +233,4 @@ def get_mem_size_per_row(data, cols=None):
     else:
         raise NotImplementedError(f"Unsupported data type {type(data)} for memory size calculation")
 
-    # Back to plain Python floats, matching this function's documented return type.
-    return mem_sizes.tolist()
+    return mem_sizes
