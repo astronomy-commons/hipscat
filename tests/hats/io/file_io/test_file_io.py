@@ -1,6 +1,10 @@
+import nested_pandas as npd
 import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
+from upath import UPath
 
 from hats.io import paths
 from hats.io.file_io import (
@@ -14,10 +18,12 @@ from hats.io.file_io import (
     read_parquet_file_to_pandas,
     remove_directory,
     write_dataframe_to_csv,
+    write_dataframe_to_parquet,
     write_fits_image,
     write_string_to_file,
 )
-from hats.io.file_io.file_io import _parquet_precache_all_bytes
+from hats.io.file_io.file_io import _parquet_precache_all_bytes, get_parquet_write_table_kwargs
+from hats.pixel_math.spatial_index import SPATIAL_INDEX_COLUMN
 
 
 def test_make_directory(tmp_path):
@@ -132,6 +138,19 @@ def test_read_parquet_data(tmp_path):
     pd.testing.assert_frame_equal(dataframe_from_dir, random_dfs)
 
 
+def test_read_parquet_data_remote_keeps_protocol(mocker):
+    """A remote file must reach nested-pandas with its protocol, or it is read as a local file."""
+    random_df = pd.DataFrame(np.random.randint(0, 100, size=(100, 4)), columns=list("ABCD"))
+    random_df = random_df.convert_dtypes(dtype_backend="pyarrow")
+    test_file_path = UPath("memory://test_read_parquet_data_remote/test.parquet")
+    write_dataframe_to_parquet(random_df, test_file_path)
+
+    read_parquet = mocker.spy(npd, "read_parquet")
+    dataframe = read_parquet_file_to_pandas(test_file_path)
+    pd.testing.assert_frame_equal(dataframe, random_df)
+    assert read_parquet.call_args.args[0].startswith("memory://")
+
+
 def test_read_parquet_dataset(small_sky_dir, small_sky_order1_dir):
     paths, ds = read_parquet_dataset(small_sky_dir / "dataset" / "Norder=0")
 
@@ -201,3 +220,102 @@ def test_read_hats_with_http():
     assert upath_http_vizier.fs.block_size == 32 * 1024
     assert upath_http_vizier.fs.client_kwargs["headers"]["User-Agent"].startswith("hats")
     assert _parquet_precache_all_bytes(upath_http_vizier)
+
+
+@pytest.fixture
+def nested_schema():
+    return pa.schema(
+        [
+            pa.field(SPATIAL_INDEX_COLUMN, pa.int64()),
+            pa.field("ra", pa.float64()),
+            pa.field("id", pa.int64()),
+            pa.field(
+                "lc",
+                pa.struct(
+                    [
+                        pa.field("flux", pa.float32()),
+                        pa.field("band", pa.string()),
+                    ]
+                ),
+            ),
+            pa.field("tags", pa.list_(pa.string())),
+            pa.field("props", pa.map_(pa.string(), pa.float64())),
+        ]
+    )
+
+
+def test_get_parquet_write_table_kwargs_column_encoding_override_merges(nested_schema):
+    kwargs = get_parquet_write_table_kwargs(
+        nested_schema, write_table_kwargs={"column_encoding": {"id": "DELTA_BINARY_PACKED"}}
+    )
+    assert SPATIAL_INDEX_COLUMN in kwargs["column_encoding"]
+    assert "id" in kwargs["column_encoding"]
+    assert "id" not in kwargs["use_dictionary"]
+
+
+@pytest.mark.parametrize(
+    "write_table_kwargs",
+    [
+        None,
+        {"use_dictionary": ["ra", "id"]},
+        {"use_dictionary": ["id"], "column_encoding": {"id": "DELTA_BINARY_PACKED"}},
+        {"sorting_columns": [pq.SortingColumn(2)]},
+    ],
+)
+def test_get_parquet_write_table_kwargs_are_valid_for_pyarrow(tmp_path, nested_schema, write_table_kwargs):
+    """The computed kwargs should never make pyarrow itself raise a conflict error."""
+    table = pa.table(
+        {
+            SPATIAL_INDEX_COLUMN: pa.array([1, 2], type=pa.int64()),
+            "ra": pa.array([1.0, 2.0], type=pa.float64()),
+            "id": pa.array([1, 2], type=pa.int64()),
+            "lc": pa.array(
+                [{"flux": 1.0, "band": "g"}, {"flux": 2.0, "band": "r"}],
+                type=nested_schema.field("lc").type,
+            ),
+            "tags": pa.array([["a"], ["b", "c"]], type=nested_schema.field("tags").type),
+            "props": pa.array([[("a", 1.0)], [("b", 2.0)]], type=nested_schema.field("props").type),
+        },
+        schema=nested_schema,
+    )
+    kwargs = get_parquet_write_table_kwargs(nested_schema, write_table_kwargs=write_table_kwargs)
+    pq.write_table(table, tmp_path / "test.parquet", **kwargs)
+
+
+def test_get_parquet_write_table_kwargs_extension_type(tmp_path):
+    """Extension types are encoded by their storage leaves, e.g. fixed-shape tensors."""
+    tensor_type = pa.fixed_shape_tensor(pa.float32(), (2, 2))
+    storage = pa.array([[1, 2, 3, 4], [5, 6, 7, 8]], type=pa.list_(pa.float32(), 4))
+    table = pa.table(
+        {
+            "image": pa.ExtensionArray.from_storage(tensor_type, storage),
+            "id": pa.array([1, 2], type=pa.int64()),
+        }
+    )
+    kwargs = get_parquet_write_table_kwargs(
+        table.schema, write_table_kwargs={"sorting_columns": [pq.SortingColumn(1)]}
+    )
+    assert kwargs["column_encoding"] == {
+        "image.list.element": "BYTE_STREAM_SPLIT",
+        "id": "DELTA_BINARY_PACKED",
+    }
+    assert kwargs["use_dictionary"] == []
+
+    path = tmp_path / "test.parquet"
+    pq.write_table(table, path, **kwargs)
+    column = pq.read_metadata(path).row_group(0).column(0)
+    assert column.path_in_schema == "image.list.element"
+    assert "BYTE_STREAM_SPLIT" in column.encodings
+
+
+@pytest.mark.parametrize(
+    "compression,expected", [("NONE", "UNCOMPRESSED"), ("SNAPPY", "SNAPPY"), ("LZ4", "LZ4")]
+)
+def test_get_parquet_write_table_kwargs_compression_without_level(tmp_path, compression, expected):
+    """Compressions which don't support compression_level should be usable with pyarrow."""
+    schema = pa.schema([pa.field("ra", pa.float64())])
+    table = pa.table({"ra": [1.0, 2.0]}, schema=schema)
+    kwargs = get_parquet_write_table_kwargs(schema, write_table_kwargs={"compression": compression})
+    path = tmp_path / "test.parquet"
+    pq.write_table(table, path, **kwargs)
+    assert pq.read_metadata(path).row_group(0).column(0).compression == expected
