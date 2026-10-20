@@ -223,7 +223,9 @@ def test_get_mem_size_per_row_fixed_and_string_columns():
 
     # Large string: 8-byte offset entries instead of 4; no nulls, so no bitmap.
     # "ab" = 2 data bytes + 8; "cde" = 3 + 8.
-    large_string = get_mem_size_per_row(pa.table({"name": pa.array(["ab", "cde"], pa.large_string())})).tolist()
+    large_string = get_mem_size_per_row(
+        pa.table({"name": pa.array(["ab", "cde"], pa.large_string())})
+    ).tolist()
     assert large_string == [10.0, 11.0]
     assert all(isinstance(size, float) for size in large_string)
 
