@@ -179,8 +179,9 @@ def get_mem_size_per_row(data, cols=None):
     - lists: element count x element byte width (variable-width elements are
       attributed their column-wide average), plus one offset entry;
     - structs (e.g. nested columns): the sum of their fields' contributions;
-    - validity bitmaps: one bit per row/element, counted when the array holds
-      nulls (arrow only materializes the bitmap then).
+    - validity bitmaps: one bit per row/element, counted when the validity
+      buffer is present (arrow allocates it when nulls exist, but readers may
+      also materialize an all-valid bitmap for nullable columns).
 
     Column types outside this model have their total buffer size attributed
     uniformly across rows. Per-object Python overheads are deliberately
