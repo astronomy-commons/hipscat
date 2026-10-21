@@ -261,8 +261,8 @@ hats_skymap_alt_orders=2 4
 
 
 def test_is_valid_catalog_wrong_skymap_orders(tmp_path, small_sky_source_dir, caplog):
-    """Using a totally valid copy of the small sky collection, modify the
-    `collection.properties` file to point to the wrong types of catalogs."""
+    """Using a totally valid copy of the small sky source catalog, modify the properties
+    and skymap file names to trigger errors."""
     # starts with
     # skymap.fits (order 6)
     # skymap.(2,4).fits
@@ -290,3 +290,31 @@ hats_skymap_alt_orders=1 2 3
     assert "Validating catalog at path" in captured
     assert "skymap.1.fits file not found" in captured
     assert "(3) does not match order inside skymap.3.fits file (4)" in captured
+
+
+def test_is_valid_catalog_negative_skymap_orders(tmp_path, small_sky_source_dir, caplog):
+    """Using a totally valid copy of the small sky source catalog, modify the skymap orders
+    in the properties file to trigger errors."""
+    shutil.copytree(small_sky_source_dir, tmp_path / "copy")
+
+    properties = """#HATS Catalog
+obs_collection=small_sky_source
+dataproduct_type=object
+hats_col_ra=source_ra
+hats_col_dec=source_dec
+hats_col_healpix=_healpix_29
+hats_skymap_order=-5
+hats_skymap_alt_orders=2 -4
+"""
+    with (tmp_path / "copy" / "hats.properties").open("w", encoding="utf-8") as file:
+        file.write(properties)
+
+    caplog.clear()
+    caplog.at_level(logging.INFO)
+    assert not is_valid_catalog(tmp_path / "copy", strict=True)
+
+    captured = caplog.text
+
+    assert "Validating catalog at path" in captured
+    assert "skymap_order cannot be negative (-5)" in captured
+    assert "skymap alternate order cannot be negative (-4)" in captured

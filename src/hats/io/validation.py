@@ -288,32 +288,33 @@ def _is_valid_catalog_strict(pointer):
         if intended_order < 0:
             logging.warning(f"skymap_order cannot be negative ({intended_order}).")
             is_valid = False
-        point_map_order = _get_point_map_order(pointer, None)
-        if point_map_order is None:
-            logging.warning("skymap.fits file not found")
-        elif point_map_order != intended_order:
-            logging.warning(
-                f"skymap_order in hat.properties ({intended_order}) "
-                f"does not match order inside skymap.fits file ({point_map_order})."
-            )
-            is_valid = False
+        else:
+            point_map_order = _get_point_map_order(pointer, None)
+            if point_map_order is None:
+                logging.warning("skymap.fits file not found")
+            elif point_map_order != intended_order:
+                logging.warning(
+                    f"skymap_order in hat.properties ({intended_order}) "
+                    f"does not match order inside skymap.fits file ({point_map_order})."
+                )
+                is_valid = False
 
     if catalog.catalog_info.skymap_alt_orders:
         available_orders = catalog.catalog_info.skymap_alt_orders
         for intended_order in available_orders:
             if intended_order < 0:
-                logging.warning(f"skymap_order cannot be negative ({intended_order}).")
+                logging.warning(f"skymap alternate order cannot be negative ({intended_order}).")
                 is_valid = False
-
-            point_map_order = _get_point_map_order(pointer, intended_order)
-            if point_map_order is None:
-                logging.warning(f"skymap.{intended_order}.fits file not found")
-            elif point_map_order != intended_order:
-                logging.warning(
-                    f"skymap alternate order in hat.properties ({intended_order}) "
-                    f"does not match order inside skymap.{intended_order}.fits file ({point_map_order})."
-                )
-                is_valid = False
+            else:
+                point_map_order = _get_point_map_order(pointer, intended_order)
+                if point_map_order is None:
+                    logging.warning(f"skymap.{intended_order}.fits file not found")
+                elif point_map_order != intended_order:
+                    logging.warning(
+                        f"skymap alternate order in hat.properties ({intended_order}) "
+                        f"does not match order inside skymap.{intended_order}.fits file ({point_map_order})."
+                    )
+                    is_valid = False
 
     # Print a few more stats
     logging.info(
