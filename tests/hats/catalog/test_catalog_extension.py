@@ -34,8 +34,8 @@ def test_read_extension(small_sky_extension_file, small_sky_o1_with_extension_di
 def test_read_collection_extensions(small_sky_o1_with_extension_dir):
     """A collection lists its extensions by name, each described by a file at its root."""
     collection = read_hats(small_sky_o1_with_extension_dir)
-    assert collection.all_extensions == ["small_sky_order1_errors"]
-    extension_path = collection.get_extension_path("small_sky_order1_errors")
+    assert collection.all_extensions == {"errors": "small_sky_order1_errors.properties"}
+    extension_path = collection.get_extension_path("errors")
     expected_path = small_sky_o1_with_extension_dir / "small_sky_order1_errors.properties"
     assert extension_path.path == expected_path.as_posix()
     extension = read_hats(extension_path)
@@ -71,10 +71,10 @@ def test_collection_extension_elsewhere(tmp_path, small_sky_o1_with_extension_di
     CollectionProperties(
         name="small_sky_elsewhere",
         hats_primary_table_url=(small_sky_o1_with_extension_dir / "small_sky_order1").as_posix(),
-        all_extensions=[extension_file],
+        all_extensions={"errors": extension_file},
     ).to_properties_file(collection_dir)
 
-    extension_path = read_hats(collection_dir).get_extension_path("small_sky_order1_errors")
+    extension_path = read_hats(collection_dir).get_extension_path("errors")
     assert extension_path.path == extension_file
     assert isinstance(read_hats(extension_path), CatalogExtension)
 
@@ -82,14 +82,14 @@ def test_collection_extension_elsewhere(tmp_path, small_sky_o1_with_extension_di
 def test_collection_with_unknown_extension(small_sky_o1_with_extension_dir):
     collection = read_hats(small_sky_o1_with_extension_dir)
     with pytest.raises(ValueError, match="not specified in all_extensions"):
-        collection.get_extension_path("small_sky_order1_spectra")
+        collection.get_extension_path("spectra")
 
 
 def test_collection_without_extensions(small_sky_collection_dir):
     collection = read_hats(small_sky_collection_dir)
     assert collection.all_extensions is None
     with pytest.raises(ValueError, match="not specified in all_extensions"):
-        collection.get_extension_path("small_sky_order1_errors")
+        collection.get_extension_path("errors")
 
 
 def test_extension_data_must_be_catalog(tmp_path, small_sky_o1_with_extension_dir, extension_info_data):
