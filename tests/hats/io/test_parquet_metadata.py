@@ -56,6 +56,27 @@ def test_write_parquet_metadata(tmp_path, small_sky_dir, small_sky_schema, check
     )
 
 
+def test_write_parquet_metadata_output_path(tmp_path, small_sky_dir):
+    """All metadata files, including the thumbnail, go to output_path, not catalog_path."""
+    catalog_base_dir = tmp_path / "catalog"
+    shutil.copytree(small_sky_dir, catalog_base_dir)
+    (catalog_base_dir / "data_thumbnail.parquet").unlink(missing_ok=True)
+    output_dir = tmp_path / "output"
+
+    total_rows = write_parquet_metadata(
+        catalog_base_dir,
+        output_path=output_dir,
+        create_thumbnail=True,
+        create_per_partition_stats=True,
+    )
+    assert total_rows == 131
+    assert (output_dir / "dataset" / "_metadata").exists()
+    assert (output_dir / "dataset" / "_common_metadata").exists()
+    assert (output_dir / "per_partition_statistics.parquet").exists()
+    assert (output_dir / "data_thumbnail.parquet").exists()
+    assert not (catalog_base_dir / "data_thumbnail.parquet").exists()
+
+
 def test_skip_parquet_metadata_creation(tmp_path, small_sky_dir):
     """Copy existing catalog and skip metadata file creation"""
     catalog_base_dir = tmp_path / "catalog"
